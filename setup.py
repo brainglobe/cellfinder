@@ -106,7 +106,7 @@ setup(
     },
     setup_requires=["cython"],
     python_requires=">=3.6, <3.8",
-    packages=find_namespace_packages(exclude=("docs", "tests*")),
+    packages=find_namespace_packages(exclude=("docs", "doc_build", "tests")),
     include_package_data=True,
     ext_modules=[
         ball_filter_extension,

@@ -18,7 +18,9 @@ Cellfinder is a collection of tools from the
  * Atlas registration (using [amap](https://github.com/SainsburyWellcomeCentre/amap-python))
  * Analysis of cell positions in a common space
  
-Installation is with `pip install cellfinder`, but full documentation can be 
+Installation is with 
+`pip install git+https://github.com/SainsburyWellcomeCentre/cellfinder`, 
+but full documentation can be 
 found [here](https://sainsburywellcomecentre.github.io/cellfinder).
  
 This software is at a very early stage, and was written with our data in mind. 
