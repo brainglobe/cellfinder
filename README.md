@@ -30,7 +30,7 @@ Cellfinder is a collection of tools from the
  * Analysis of cell positions in a common space
  
 Installation is with 
-`pip install git+https://github.com/SainsburyWellcomeCentre/cellfinder`, 
+`pip install cellfinder`, 
 but full documentation can be 
 found [here](https://sainsburywellcomecentre.github.io/cellfinder).
  
