@@ -1,7 +1,13 @@
+[![Python Version](https://img.shields.io/pypi/pyversions/cellfinder.svg)](https://python.org)
+[![PyPI](https://img.shields.io/pypi/v/cellfinder.svg)](https://pypi.org/project/cellfinder)
+[![Development Status](https://img.shields.io/pypi/status/cellfinder.svg)](https://github.com/SainsburyWellcomeCentre/cellfinder)
+
 [![Travis](https://img.shields.io/travis/com/SainsburyWellcomeCentre/cellfinder?label=Travis%20CI)](
     https://travis-ci.com/SainsburyWellcomeCentre/cellfinder)
 [![Coverage Status](https://coveralls.io/repos/github/SainsburyWellcomeCentre/cellfinder/badge.svg?branch=master)](https://coveralls.io/github/SainsburyWellcomeCentre/cellfinder?branch=master)
 [![Dependabot Status](https://api.dependabot.com/badges/status?host=github&repo=SainsburyWellcomeCentre/cellfinder)](https://dependabot.com)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/python/black)
+
 
 # Cellfinder
 Whole-brain cell detection, registration and analysis.
