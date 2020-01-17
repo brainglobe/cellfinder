@@ -1,5 +1,6 @@
 [![Python Version](https://img.shields.io/pypi/pyversions/cellfinder.svg)](https://python.org)
 [![PyPI](https://img.shields.io/pypi/v/cellfinder.svg)](https://pypi.org/project/cellfinder)
+[![Wheel](https://img.shields.io/pypi/wheel/cellfinder.svg)](https://pypi.org/project/cellfinder)
 [![Development Status](https://img.shields.io/pypi/status/cellfinder.svg)](https://github.com/SainsburyWellcomeCentre/cellfinder)
 [![Travis](https://img.shields.io/travis/com/SainsburyWellcomeCentre/cellfinder?label=Travis%20CI)](
     https://travis-ci.com/SainsburyWellcomeCentre/cellfinder)
