@@ -33,7 +33,7 @@ questions or issues, please get in touch by
 *more to come*
 
 
-#####Tracing of inputs to retrosplenial cortex (RSP)
+##### Tracing of inputs to retrosplenial cortex (RSP)
 Input cell somas detected by cellfinder, aligned to the Allen Reference Atlas, 
 and visualised in [brainrender](https://github.com/brancolab/brainrender) along 
 with RSP.
