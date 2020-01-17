@@ -1,3 +1,8 @@
+[![Travis](https://img.shields.io/travis/com/SainsburyWellcomeCentre/cellfinder?label=Travis%20CI)](
+    https://travis-ci.com/SainsburyWellcomeCentre/cellfinder)
+[![Coverage Status](https://coveralls.io/repos/github/SainsburyWellcomeCentre/cellfinder/badge.svg?branch=master)](https://coveralls.io/github/SainsburyWellcomeCentre/cellfinder?branch=master)
+[![Dependabot Status](https://api.dependabot.com/badges/status?host=github&repo=SainsburyWellcomeCentre/cellfinder)](https://dependabot.com)
+
 # Cellfinder
 Whole-brain cell detection, registration and analysis.
 

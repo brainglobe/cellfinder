@@ -48,7 +48,8 @@ conda install cudatoolkit=10.1 cudnn
 
 
 ``` bash
-pip install cellfinder
+pip install git+https://github.com/SainsburyWellcomeCentre/cellfinder
+
 ```    
 
 **If you use a conda environment, remember to activate it
