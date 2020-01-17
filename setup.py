@@ -102,6 +102,8 @@ setup(
             "pytest-cov",
             "pytest",
             "gitpython",
+            "coveralls",
+            "coverage<=4.5.4",
         ]
     },
     setup_requires=["cython"],
