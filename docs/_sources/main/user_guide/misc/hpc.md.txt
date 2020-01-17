@@ -46,7 +46,7 @@ module load miniconda
     * Install cellfinder
 
     ``` bash
-        pip install git+https://github.com/SainsburyWellcomeCentre/cellfinder
+        pip install cellfinder
     ```
     
 * Check that tensorflow and CUDA are configured properly:
