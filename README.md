@@ -15,10 +15,11 @@ Cellfinder is a collection of tools from the
  
  * Cell detection (initial cell candidate detection and refinement using 
  deep learning.
- * Atlas registration (using [aMAP](https://github.com/SainsburyWellcomeCentre/amap-python))
+ * Atlas registration (using [amap](https://github.com/SainsburyWellcomeCentre/amap-python))
  * Analysis of cell positions in a common space
  
-Installation docs can be found [here](https://adamltyson.github.io/cellfinder).
+Installation is with `pip install cellfinder`, but full documentation can be 
+found [here](https://sainsburywellcomecentre.github.io/cellfinder).
  
  If you have any questions, please 
  [email](mailto:adam.tyson@ucl.ac.uk?subject=Cellfinder).
