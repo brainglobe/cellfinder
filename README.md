@@ -21,5 +21,23 @@ Cellfinder is a collection of tools from the
 Installation is with `pip install cellfinder`, but full documentation can be 
 found [here](https://sainsburywellcomecentre.github.io/cellfinder).
  
- If you have any questions, please 
- [email](mailto:adam.tyson@ucl.ac.uk?subject=Cellfinder).
+This software is at a very early stage, and was written with our data in mind. 
+Over time we hope to support other data types/formats. If you have any 
+questions or issues, please get in touch by 
+[email](mailto:adam.tyson@ucl.ac.uk?subject=cellfinder) or by 
+[raising an issue](https://github.com/SainsburyWellcomeCentre/cellfinder/issues/new/choose).
+
+
+---
+## Examples
+*more to come*
+
+
+##### Tracing of inputs to retrosplenial cortex (RSP)
+Input cell somas detected by cellfinder, aligned to the Allen Reference Atlas, 
+and visualised in [brainrender](https://github.com/brancolab/brainrender) along 
+with RSP.
+
+![brainrender](resources/brainrender.png)
+
+Data courtesy of Sepiedeh Keshavarzi and Chryssanthi Tsitoura. [Details here](https://www.youtube.com/watch?v=pMHP0o-KsoQ)
