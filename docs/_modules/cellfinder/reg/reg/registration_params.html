@@ -1,0 +1,402 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>cellfinder.reg.reg.registration_params &mdash; Cellfinder 0.3.3a documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../../index.html" class="icon icon-home"> Cellfinder
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.3.3
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../main/user_guide/install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../main/user_guide/run.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../main/user_guide/training.html">Training</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../main/user_guide/troubleshooting.html">Troubleshooting</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../main/user_guide/tools/cell_view_2D.html">Two dimensional cell viewer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../main/user_guide/tools/cell_view_3D.html">Three dimensional viewer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../main/user_guide/tools/cells_standard_space.html">Transforming cells into standard space</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../main/user_guide/tools/cells_to_brainrender.html">Converting cells to brainrender format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../main/user_guide/tools/count_summary.html">Organise cells into atlas regions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../main/user_guide/tools/cube_extract.html">Cube extraction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../main/user_guide/tools/figures.html">Generate figures</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../main/user_guide/tools/generate_region_volume.html">Region image generation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../main/user_guide/tools/region_summary.html">Summarise cell counts from multiple brains</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../main/user_guide/tools/roi_transform.html">ROI transformation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../main/user_guide/tools/xml_crop.html">XML file cropping</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../main/user_guide/tools/xml_scale.html">XML file rescaling</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../main/about/release_notes.html">Releases</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../main/about/roadmap.html">Future Plans</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../main/dev/development.html">Developer notes</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../main/user_guide/misc/hpc.html">Cellfinder installation in a cluster computing environment.</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">Cellfinder</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+        
+      <li>cellfinder.reg.reg.registration_params</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for cellfinder.reg.reg.registration_params</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">registration_params</span>
+<span class="sd">===================</span>
+
+<span class="sd">The module to handle all the registration options and program binaries</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<span class="kn">from</span> <span class="nn">cellfinder.reg.config.atlas</span> <span class="kn">import</span> <span class="n">Atlas</span>
+<span class="kn">from</span> <span class="nn">cellfinder.reg.config.config</span> <span class="kn">import</span> <span class="n">get_config_ob</span>
+<span class="kn">from</span> <span class="nn">cellfinder.tools</span> <span class="kn">import</span> <span class="n">source_files</span>
+
+
+<div class="viewcode-block" id="RegistrationParams"><a class="viewcode-back" href="../../../../main/api/registration.html#cellfinder.reg.reg.registration_params.RegistrationParams">[docs]</a><span class="k">class</span> <span class="nc">RegistrationParams</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A class to store and access the variables required for the registration</span>
+<span class="sd">    including the paths of the different binaries and atlases.</span>
+<span class="sd">    Options are typically stored as a tuple of (option_string, option_value)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="RegistrationParams.__init__"><a class="viewcode-back" href="../../../../main/api/registration.html#cellfinder.reg.reg.registration_params.RegistrationParams.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config_path</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">output_folder</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">get_config_ob</span><span class="p">(</span><span class="n">config_path</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">transform_program_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_binary</span><span class="p">(</span><span class="s2">&quot;transform&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">affine_reg_program_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_binary</span><span class="p">(</span><span class="s2">&quot;affine&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">freeform_reg_program_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_binary</span><span class="p">(</span><span class="s2">&quot;freeform&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">segmentation_program_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_binary</span><span class="p">(</span><span class="s2">&quot;segmentation&quot;</span><span class="p">)</span>
+
+        <span class="c1"># affine (reg_aladin)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">affine_reg_pyramid_steps</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;-ln&quot;</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">affine_n_steps</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">affine_reg_used_pyramid_steps</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;-lp&quot;</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">affine_use_n_steps</span><span class="p">)</span>
+
+        <span class="c1"># freeform (ref_f3d)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">freeform_reg_pyramid_steps</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;-ln&quot;</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">freeform_n_steps</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">freeform_reg_used_pyramid_steps</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s2">&quot;-lp&quot;</span><span class="p">,</span>
+            <span class="n">args</span><span class="o">.</span><span class="n">freeform_use_n_steps</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">freeform_reg_grid_spacing_x</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;-sx&quot;</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">grid_spacing_x</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">bending_energy_penalty_weight</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s2">&quot;-be&quot;</span><span class="p">,</span>
+            <span class="n">args</span><span class="o">.</span><span class="n">bending_energy_weight</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">reference_image_smoothing_sigma</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s2">&quot;-smooR&quot;</span><span class="p">,</span>
+            <span class="n">args</span><span class="o">.</span><span class="n">smoothing_sigma_reference</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">floating_image_smoothing_sigma</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s2">&quot;-smooF&quot;</span><span class="p">,</span>
+            <span class="n">args</span><span class="o">.</span><span class="n">smoothing_sigma_floating</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">reference_image_histo_n_bins</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s2">&quot;--rbn&quot;</span><span class="p">,</span>
+            <span class="n">args</span><span class="o">.</span><span class="n">histogram_n_bins_reference</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">floating_image_histo_n_bins</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s2">&quot;--fbn&quot;</span><span class="p">,</span>
+            <span class="n">args</span><span class="o">.</span><span class="n">histogram_n_bins_floating</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="c1"># segmentation (reg_resample)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">segmentation_interpolation_order</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;-inter&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+        <span class="c1"># The atlas has been saved to the output folder</span>
+        <span class="n">atlas</span> <span class="o">=</span> <span class="n">Atlas</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="n">src_folder</span><span class="o">=</span><span class="n">output_folder</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">atlas_path</span> <span class="o">=</span> <span class="n">atlas</span><span class="o">.</span><span class="n">get_path</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">atlas_brain_path</span> <span class="o">=</span> <span class="n">atlas</span><span class="o">.</span><span class="n">get_brain_path</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hemispheres_path</span> <span class="o">=</span> <span class="n">atlas</span><span class="o">.</span><span class="n">get_hemispheres_path</span><span class="p">()</span>
+
+        <span class="n">pixel_sizes</span> <span class="o">=</span> <span class="n">atlas</span><span class="o">.</span><span class="n">get_pixel_sizes_from_config</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">atlas_x_pix_size</span> <span class="o">=</span> <span class="n">pixel_sizes</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">atlas_y_pix_size</span> <span class="o">=</span> <span class="n">pixel_sizes</span><span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">atlas_z_pix_size</span> <span class="o">=</span> <span class="n">pixel_sizes</span><span class="p">[</span><span class="s2">&quot;z&quot;</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="RegistrationParams.get_affine_reg_params"><a class="viewcode-back" href="../../../../main/api/registration.html#cellfinder.reg.reg.registration_params.RegistrationParams.get_affine_reg_params">[docs]</a>    <span class="k">def</span> <span class="nf">get_affine_reg_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the parameters (options) required for the affine registration step</span>
+
+<span class="sd">        :return: The affine registration options.</span>
+<span class="sd">        :rtype: list</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">affine_params</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">affine_reg_pyramid_steps</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">affine_reg_used_pyramid_steps</span><span class="p">,</span>
+        <span class="p">]</span>
+        <span class="k">return</span> <span class="n">affine_params</span></div>
+
+<div class="viewcode-block" id="RegistrationParams.get_freeform_reg_params"><a class="viewcode-back" href="../../../../main/api/registration.html#cellfinder.reg.reg.registration_params.RegistrationParams.get_freeform_reg_params">[docs]</a>    <span class="k">def</span> <span class="nf">get_freeform_reg_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the parameters (options) required for the freeform (elastic)</span>
+<span class="sd">        registration step</span>
+
+<span class="sd">        :return: The freeform registration options.</span>
+<span class="sd">        :rtype: list</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">freeform_params</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">freeform_reg_pyramid_steps</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">freeform_reg_used_pyramid_steps</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">freeform_reg_grid_spacing_x</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bending_energy_penalty_weight</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">reference_image_smoothing_sigma</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">floating_image_smoothing_sigma</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">reference_image_histo_n_bins</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">floating_image_histo_n_bins</span><span class="p">,</span>
+        <span class="p">]</span>
+        <span class="k">return</span> <span class="n">freeform_params</span></div>
+
+<div class="viewcode-block" id="RegistrationParams.get_segmentation_params"><a class="viewcode-back" href="../../../../main/api/registration.html#cellfinder.reg.reg.registration_params.RegistrationParams.get_segmentation_params">[docs]</a>    <span class="k">def</span> <span class="nf">get_segmentation_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the parameters (options) required for the segmentation step</span>
+<span class="sd">        (propagation of transformation)</span>
+
+<span class="sd">        :return: The affine registration options.</span>
+<span class="sd">        :rtype: list</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">segmentation_interpolation_order</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="RegistrationParams.format_param_pairs"><a class="viewcode-back" href="../../../../main/api/registration.html#cellfinder.reg.reg.registration_params.RegistrationParams.format_param_pairs">[docs]</a>    <span class="k">def</span> <span class="nf">format_param_pairs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">params_pairs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Format the list of params pairs into a string</span>
+
+<span class="sd">        :param list params_pairs: A list of tuples of the form</span>
+<span class="sd">            (option_string, option_value) (e.g. (-sx, 10))</span>
+<span class="sd">        :return: The options as a formatted string</span>
+<span class="sd">        :rtype: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">params_pairs</span><span class="p">:</span>
+            <span class="n">out</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">*</span><span class="n">param</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">out</span></div>
+
+<div class="viewcode-block" id="RegistrationParams.format_affine_params"><a class="viewcode-back" href="../../../../main/api/registration.html#cellfinder.reg.reg.registration_params.RegistrationParams.format_affine_params">[docs]</a>    <span class="k">def</span> <span class="nf">format_affine_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generate the string of formatted affine registration options</span>
+
+<span class="sd">        :return: The formatted string</span>
+<span class="sd">        :rtype: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">format_param_pairs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_affine_reg_params</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="RegistrationParams.format_freeform_params"><a class="viewcode-back" href="../../../../main/api/registration.html#cellfinder.reg.reg.registration_params.RegistrationParams.format_freeform_params">[docs]</a>    <span class="k">def</span> <span class="nf">format_freeform_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generate the string of formatted freeform registration options</span>
+
+<span class="sd">        :return: The formatted string</span>
+<span class="sd">        :rtype: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">format_param_pairs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_freeform_reg_params</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="RegistrationParams.format_segmentation_params"><a class="viewcode-back" href="../../../../main/api/registration.html#cellfinder.reg.reg.registration_params.RegistrationParams.format_segmentation_params">[docs]</a>    <span class="k">def</span> <span class="nf">format_segmentation_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generate the string of formatted segmentation options</span>
+
+<span class="sd">        :return: The formatted string</span>
+<span class="sd">        :rtype: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">format_param_pairs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_segmentation_params</span><span class="p">())</span></div>
+
+    <span class="k">def</span> <span class="nf">__get_binary</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">program_type</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the path to the registration (from nifty_reg) program</span>
+<span class="sd">        based on the type</span>
+
+<span class="sd">        :param str program_type:</span>
+<span class="sd">        :return: The program path</span>
+<span class="sd">        :rtype: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">cellfinder.reg.config.config</span> <span class="kn">import</span> <span class="n">get_binary</span>
+
+        <span class="n">program_names</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;affine&quot;</span><span class="p">:</span> <span class="s2">&quot;reg_aladin&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;freeform&quot;</span><span class="p">:</span> <span class="s2">&quot;reg_f3d&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;segmentation&quot;</span><span class="p">:</span> <span class="s2">&quot;reg_resample&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;transform&quot;</span><span class="p">:</span> <span class="s2">&quot;reg_transform&quot;</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="n">program_name</span> <span class="o">=</span> <span class="n">program_names</span><span class="p">[</span><span class="n">program_type</span><span class="p">]</span>
+        <span class="n">nifty_reg_binaries_folder</span> <span class="o">=</span> <span class="n">source_files</span><span class="o">.</span><span class="n">get_niftyreg_binaries</span><span class="p">()</span>
+
+        <span class="n">program_path</span> <span class="o">=</span> <span class="n">get_binary</span><span class="p">(</span><span class="n">nifty_reg_binaries_folder</span><span class="p">,</span> <span class="n">program_name</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">program_path</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Sainsbury Wellcome Centre
+
+    </p>
+  </div> 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

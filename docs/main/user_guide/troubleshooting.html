@@ -1,0 +1,379 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Troubleshooting &mdash; Cellfinder 0.3.3a documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Two dimensional cell viewer" href="tools/cell_view_2D.html" />
+    <link rel="prev" title="Training" href="training.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> Cellfinder
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.3.3
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="run.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="training.html">Training</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Troubleshooting</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#error-messages">Error messages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#oserror-errno-24-too-many-open-files">OSError: [Errno 24] Too many open files</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#libcublas-so-9-0-cannot-open-shared-object-file-no-such-file-or-directory">libcublas.so.9.0: cannot open shared object file: No such file or directory</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#info-tensorflow-error-reported-to-coordinator-failed-to-get-convolution-algorithm">INFO:tensorflow:Error reported to Coordinator: Failed to get convolution algorithm</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#syntaxerror-invalid-syntax-logging">SyntaxError: invalid syntax (logging)</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#things-that-look-like-errors-but-aren-t">Things that look like errors, but aren’t:</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#can-t-find-opencv">Can’t find openCV</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#cpu-instruction-sets">CPU instruction sets</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="tools/cell_view_2D.html">Two dimensional cell viewer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tools/cell_view_3D.html">Three dimensional viewer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tools/cells_standard_space.html">Transforming cells into standard space</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tools/cells_to_brainrender.html">Converting cells to brainrender format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tools/count_summary.html">Organise cells into atlas regions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tools/cube_extract.html">Cube extraction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tools/figures.html">Generate figures</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tools/generate_region_volume.html">Region image generation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tools/region_summary.html">Summarise cell counts from multiple brains</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tools/roi_transform.html">ROI transformation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tools/xml_crop.html">XML file cropping</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tools/xml_scale.html">XML file rescaling</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../about/release_notes.html">Releases</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../about/roadmap.html">Future Plans</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../dev/development.html">Developer notes</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="misc/hpc.html">Cellfinder installation in a cluster computing environment.</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Cellfinder</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+      <li>Troubleshooting</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="troubleshooting">
+<h1>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permalink to this headline">¶</a></h1>
+<p>As cellfinder relies on a number of third party libraries (notably
+<a class="reference external" href="https://www.tensorflow.org/">TensorFlow</a>,
+<a class="reference external" href="https://developer.nvidia.com/cuda-zone">CUDA</a> and
+<a class="reference external" href="https://developer.nvidia.com/cudnn">cuDNN</a>) there may be issues while
+running the software.</p>
+<div class="section" id="error-messages">
+<h2>Error messages<a class="headerlink" href="#error-messages" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="oserror-errno-24-too-many-open-files">
+<h3>OSError: [Errno 24] Too many open files<a class="headerlink" href="#oserror-errno-24-too-many-open-files" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>OSError: <span class="o">[</span>Errno <span class="m">24</span><span class="o">]</span> Too many open files
+</pre></div>
+</div>
+<p>This is likely because your default limits are set too low (allthough this
+should probably be prevented from happening at all see
+<a class="reference external" href="https://github.com/adamltyson/cellfinder/issues/8">here</a>). To fix this,
+follow the instructions
+<a class="reference external" href="https://easyengine.io/tutorials/linux/increase-open-files-limit/">here</a>. If
+for any reason you don’t want to or can’t change the system-wide limits,
+running <code class="docutils literal notranslate"><span class="pre">ulimit</span> <span class="pre">-n</span> <span class="pre">60000</span></code> before running cellfinder should work. This setting
+will persist for the present shell session, but will have to repeated if you
+open a new terminal.</p>
+</div>
+<div class="section" id="libcublas-so-9-0-cannot-open-shared-object-file-no-such-file-or-directory">
+<h3>libcublas.so.9.0: cannot open shared object file: No such file or directory<a class="headerlink" href="#libcublas-so-9-0-cannot-open-shared-object-file-no-such-file-or-directory" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ImportError: libcublas.so.9.0: cannot open shared object file: No such file or directory
+Failed to load the native TensorFlow runtime.
+See https://www.tensorflow.org/install/errors
+<span class="k">for</span> some common reasons and solutions.  Include the entire stack trace
+above this error message when asking <span class="k">for</span> help.
+</pre></div>
+</div>
+<p>If you see an error like this, it is likely that you don’t have CUDA installed,
+or it isn’t added to your path (so tensorflow can’t find it). If you have a
+CUDA 10 version of tensorflow-gpu installed, you may instead see:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ImportError: libcublas.so.10.0: cannot open shared object file: No such file or directory
+</pre></div>
+</div>
+<p>If you’re not sure which version of CUDA you need, please see
+<a class="reference external" href="misc/CUDA10">here</a>. If you don’t have one of these newer GPUs, it is easier
+to use CUDA 9.</p>
+<p>If CUDA and cuDNN is definately installed (following instructions
+<a class="reference external" href="https://www.tensorflow.org/install/gpu">here</a>). Then please make sure that
+they are added to the path. If for example your version of CUDA is located at
+<code class="docutils literal notranslate"><span class="pre">/usr/local/cuda-10.0</span></code>, then run:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span> <span class="nv">PATH</span><span class="o">=</span>/usr/local/cuda-10.0/bin:<span class="nv">$PATH</span>
+<span class="nb">export</span> <span class="nv">LD_LIBRARY_PATH</span><span class="o">=</span>/usr/local/cuda-10.0/lib64:<span class="nv">$LD_LIBRARY_PATH</span>
+</pre></div>
+</div>
+<p>To save doing this each time you run cellfinder, you can add these lines to
+e.g. your <a class="reference external" href="https://www.maketecheasier.com/what-is-bashrc/"><code class="docutils literal notranslate"><span class="pre">~/.bashrc</span></code></a> file.
+If you have multiple versions of CUDA, or don’t want to edit your <code class="docutils literal notranslate"><span class="pre">.bashrc</span></code>
+file, see <a class="reference external" href="https://blog.kovalevskyi.com/multiple-version-of-cuda-libraries-on-the-same-machine-b9502d50ae77">here</a>
+for how to only add to the path for specific conda environments.</p>
+</div>
+<div class="section" id="info-tensorflow-error-reported-to-coordinator-failed-to-get-convolution-algorithm">
+<h3>INFO:tensorflow:Error reported to Coordinator: Failed to get convolution algorithm<a class="headerlink" href="#info-tensorflow-error-reported-to-coordinator-failed-to-get-convolution-algorithm" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>INFO:tensorflow:global_step/sec: <span class="m">0</span>
+<span class="m">2019</span>-05-17 <span class="m">13</span>:04:53.550306: E tensorflow/stream_executor/cuda/cuda_dnn.cc:334<span class="o">]</span> Could not create cudnn handle: CUDNN_STATUS_INTERNAL_ERROR
+<span class="m">2019</span>-05-17 <span class="m">13</span>:04:53.565467: E tensorflow/stream_executor/cuda/cuda_dnn.cc:334<span class="o">]</span> Could not create cudnn handle: CUDNN_STATUS_INTERNAL_ERROR
+INFO:tensorflow:Error reported to Coordinator: Failed to get convolution algorithm. This is probably because cuDNN failed to initialize, so try looking to see <span class="k">if</span> a warning log message was printed above.
+</pre></div>
+</div>
+<p>If you see an error like this, it’s likely to be one of two things, either
+your GPU memory is full, or an issue with your CUDA and cuDNN version.</p>
+<p>Your GPU memory may be full if it is still being used by
+another process. To test this, run <code class="docutils literal notranslate"><span class="pre">nvidia-smi</span></code>, and you will see something
+like this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+-----------------------------------------------------------------------------+</span>
+<span class="o">|</span> <span class="n">NVIDIA</span><span class="o">-</span><span class="n">SMI</span> <span class="mf">418.56</span>       <span class="n">Driver</span> <span class="n">Version</span><span class="p">:</span> <span class="mf">418.56</span>       <span class="n">CUDA</span> <span class="n">Version</span><span class="p">:</span> <span class="mf">10.1</span>     <span class="o">|</span>
+<span class="o">|-------------------------------+----------------------+----------------------+</span>
+<span class="o">|</span> <span class="n">GPU</span>  <span class="n">Name</span>        <span class="n">Persistence</span><span class="o">-</span><span class="n">M</span><span class="o">|</span> <span class="n">Bus</span><span class="o">-</span><span class="n">Id</span>        <span class="n">Disp</span><span class="o">.</span><span class="n">A</span> <span class="o">|</span> <span class="n">Volatile</span> <span class="n">Uncorr</span><span class="o">.</span> <span class="n">ECC</span> <span class="o">|</span>
+<span class="o">|</span> <span class="n">Fan</span>  <span class="n">Temp</span>  <span class="n">Perf</span>  <span class="n">Pwr</span><span class="p">:</span><span class="n">Usage</span><span class="o">/</span><span class="n">Cap</span><span class="o">|</span>         <span class="n">Memory</span><span class="o">-</span><span class="n">Usage</span> <span class="o">|</span> <span class="n">GPU</span><span class="o">-</span><span class="n">Util</span>  <span class="n">Compute</span> <span class="n">M</span><span class="o">.</span> <span class="o">|</span>
+<span class="o">|===============================+======================+======================|</span>
+<span class="o">|</span>   <span class="mi">0</span>  <span class="n">TITAN</span> <span class="n">RTX</span>           <span class="n">On</span>   <span class="o">|</span> <span class="mi">00000000</span><span class="p">:</span><span class="mi">2</span><span class="n">D</span><span class="p">:</span><span class="mf">00.0</span>  <span class="n">On</span> <span class="o">|</span>                  <span class="n">N</span><span class="o">/</span><span class="n">A</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">41</span><span class="o">%</span>   <span class="mi">38</span><span class="n">C</span>    <span class="n">P2</span>    <span class="mi">55</span><span class="n">W</span> <span class="o">/</span> <span class="mi">280</span><span class="n">W</span> <span class="o">|</span>  <span class="mi">23408</span><span class="n">MiB</span> <span class="o">/</span> <span class="mi">24187</span><span class="n">MiB</span> <span class="o">|</span>      <span class="mi">4</span><span class="o">%</span>      <span class="n">Default</span> <span class="o">|</span>
+<span class="o">+-------------------------------+----------------------+----------------------+</span>
+</pre></div>
+</div>
+<p>The bit to look for is the memory use (<code class="docutils literal notranslate"><span class="pre">23408MiB</span> <span class="pre">/</span> <span class="pre">24187MiB</span></code>), is this is
+nearly full (like the example) then find the culprit:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">+-----------------------------------------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Processes</span><span class="p">:</span>                                                       <span class="n">GPU</span> <span class="n">Memory</span> <span class="o">|</span>
+<span class="o">|</span>  <span class="n">GPU</span>       <span class="n">PID</span>   <span class="n">Type</span>   <span class="n">Process</span> <span class="n">name</span>                             <span class="n">Usage</span>      <span class="o">|</span>
+<span class="o">|=============================================================================|</span>
+<span class="o">|</span>    <span class="mi">0</span>     <span class="mi">37793</span>      <span class="n">C</span>   <span class="o">...</span><span class="n">miniconda3</span><span class="o">/</span><span class="n">envs</span><span class="o">/</span><span class="n">cellfinder</span><span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">python</span> <span class="mi">23408</span><span class="n">MiB</span>   <span class="o">|</span>
+<span class="o">+-----------------------------------------------------------------------------+</span>
+</pre></div>
+</div>
+<p>In this case, a previous run of cellfinder hasn’t completed. Either wait for
+it to run, or cancel it with CTRL+C (in the cellfinder terminal).</p>
+<p>Alternatively, your version of CUDA and cuDNN may be not compatible with
+tensorflow 2.0. You can update them by following the instructions
+<a class="reference external" href="https://www.tensorflow.org/install/gpu">here</a>or by installing them into your
+conda environment:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda install cudatoolkit cudnn
+</pre></div>
+</div>
+</div>
+<div class="section" id="syntaxerror-invalid-syntax-logging">
+<h3>SyntaxError: invalid syntax (logging)<a class="headerlink" href="#syntaxerror-invalid-syntax-logging" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>  File <span class="s2">&quot;/home/adam/projects/cellfinder/cellfinder/tools/tools.py&quot;</span>, line <span class="m">444</span>
+    logging.debug<span class="o">(</span>f<span class="s2">&quot;Free memory is: {free_mem} bytes.&quot;</span><span class="o">)</span>
+                                                     ^
+SyntaxError: invalid syntax
+</pre></div>
+</div>
+<p>If you see an error like this, with the second line starting with something
+like <code class="docutils literal notranslate"><span class="pre">logging.debug(f&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">logging.info(f&quot;</span></code> or <code class="docutils literal notranslate"><span class="pre">print(f&quot;</span></code>, then you likely
+have an unsupported (&lt;3.6) version of python. Use conda or pip to install
+python 3.6.</p>
+</div>
+</div>
+<div class="section" id="things-that-look-like-errors-but-aren-t">
+<h2>Things that look like errors, but aren’t:<a class="headerlink" href="#things-that-look-like-errors-but-aren-t" title="Permalink to this headline">¶</a></h2>
+<p>Most things that are actually errors will interrupt cellfinder, and the program
+won’t run. Other things will get logged with an <code class="docutils literal notranslate"><span class="pre">ERROR</span></code> or a <code class="docutils literal notranslate"><span class="pre">WARNING</span></code> flag
+and will get printed to the console in addition to the log file.</p>
+<p>A number of third party modules may raise their own errors. As long as you
+understand what they mean, they can usually be safely ignored.</p>
+<div class="section" id="can-t-find-opencv">
+<h3>Can’t find openCV<a class="headerlink" href="#can-t-find-opencv" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>CRITICAL:tensorflow:Optional Python module cv2 not found, please install cv2 and retry <span class="k">if</span> the application fails.
+</pre></div>
+</div>
+<p>Tensorflow thinks this is critical, it’s not.</p>
+</div>
+<div class="section" id="cpu-instruction-sets">
+<h3>CPU instruction sets<a class="headerlink" href="#cpu-instruction-sets" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>tensorflow/core/platform/cpu_feature_guard.cc:141<span class="o">]</span> Your CPU supports instructions that this TensorFlow binary was not compiled to use: SSE4.1 SSE4.2 AVX AVX2 FMA
+</pre></div>
+</div>
+<p>Unless you built tensorflow from source, something like this will come up.
+It’ll still work fine</p>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="tools/cell_view_2D.html" class="btn btn-neutral float-right" title="Two dimensional cell viewer" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="training.html" class="btn btn-neutral float-left" title="Training" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Sainsbury Wellcome Centre
+
+    </p>
+  </div> 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

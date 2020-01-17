@@ -1,0 +1,494 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>cellfinder.reg.reg.brain_registration &mdash; Cellfinder 0.3.3a documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../../index.html" class="icon icon-home"> Cellfinder
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.3.3
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../main/user_guide/install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../main/user_guide/run.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../main/user_guide/training.html">Training</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../main/user_guide/troubleshooting.html">Troubleshooting</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../main/user_guide/tools/cell_view_2D.html">Two dimensional cell viewer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../main/user_guide/tools/cell_view_3D.html">Three dimensional viewer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../main/user_guide/tools/cells_standard_space.html">Transforming cells into standard space</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../main/user_guide/tools/cells_to_brainrender.html">Converting cells to brainrender format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../main/user_guide/tools/count_summary.html">Organise cells into atlas regions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../main/user_guide/tools/cube_extract.html">Cube extraction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../main/user_guide/tools/figures.html">Generate figures</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../main/user_guide/tools/generate_region_volume.html">Region image generation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../main/user_guide/tools/region_summary.html">Summarise cell counts from multiple brains</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../main/user_guide/tools/roi_transform.html">ROI transformation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../main/user_guide/tools/xml_crop.html">XML file cropping</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../main/user_guide/tools/xml_scale.html">XML file rescaling</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../main/about/release_notes.html">Releases</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../main/about/roadmap.html">Future Plans</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../main/dev/development.html">Developer notes</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../main/user_guide/misc/hpc.html">Cellfinder installation in a cluster computing environment.</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">Cellfinder</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+        
+      <li>cellfinder.reg.reg.brain_registration</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for cellfinder.reg.reg.brain_registration</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">brain_registration</span>
+<span class="sd">==================</span>
+
+<span class="sd">The module to actually start the registration</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="kn">from</span> <span class="nn">brainio</span> <span class="kn">import</span> <span class="n">brainio</span>
+
+
+<span class="kn">from</span> <span class="nn">cellfinder.tools.system</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">safe_execute_command</span><span class="p">,</span>
+    <span class="n">SafeExecuteCommandError</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">cellfinder.tools.exceptions</span> <span class="kn">import</span> <span class="n">RegistrationError</span><span class="p">,</span> <span class="n">SegmentationError</span>
+
+
+<div class="viewcode-block" id="BrainRegistration"><a class="viewcode-back" href="../../../../main/api/registration.html#cellfinder.reg.reg.brain_registration.BrainRegistration">[docs]</a><span class="k">class</span> <span class="nc">BrainRegistration</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A class to register brains using the nifty_reg set of binaries</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="BrainRegistration.__init__"><a class="viewcode-back" href="../../../../main/api/registration.html#cellfinder.reg.reg.brain_registration.BrainRegistration.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">registration_config</span><span class="p">,</span>
+        <span class="n">paths</span><span class="p">,</span>
+        <span class="n">target_brain_path</span><span class="p">,</span>
+        <span class="n">registration_params</span><span class="p">,</span>
+        <span class="n">n_processes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">registration_config</span> <span class="o">=</span> <span class="n">registration_config</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">paths</span> <span class="o">=</span> <span class="n">paths</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reg_params</span> <span class="o">=</span> <span class="n">registration_params</span>
+        <span class="k">if</span> <span class="n">n_processes</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">n_processes</span> <span class="o">=</span> <span class="n">n_processes</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_prepare_openmp_thread_flag</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">n_processes</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">dataset_img_path</span> <span class="o">=</span> <span class="n">target_brain_path</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">brain_of_atlas_img_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reg_params</span><span class="o">.</span><span class="n">atlas_brain_path</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">atlas_img_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reg_params</span><span class="o">.</span><span class="n">atlas_path</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hemispheres_img_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reg_params</span><span class="o">.</span><span class="n">hemispheres_path</span></div>
+
+<div class="viewcode-block" id="BrainRegistration.sanitise_inputs"><a class="viewcode-back" href="../../../../main/api/registration.html#cellfinder.reg.reg.brain_registration.BrainRegistration.sanitise_inputs">[docs]</a>    <span class="k">def</span> <span class="nf">sanitise_inputs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Validates the inputs paths (dataset, atlas, brain of atlas) to</span>
+<span class="sd">        check that they are the correct image type and that they exist.</span>
+
+<span class="sd">        :return:</span>
+<span class="sd">        :raises RegistrationError: If the conditions are not met</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">img_paths_var_names</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s2">&quot;dataset_img_path&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;atlas_img_path&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;brain_of_atlas_img_path&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">for</span> <span class="n">img_path_var_name</span> <span class="ow">in</span> <span class="n">img_paths_var_names</span><span class="p">:</span>
+            <span class="n">img_path</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">img_path_var_name</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">img_path</span><span class="p">):</span>
+                <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span>
+                    <span class="s2">&quot;Cannot perform registration, image </span><span class="si">{}</span><span class="s2"> &quot;</span>
+                    <span class="s2">&quot;not found&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">img_path</span><span class="p">)</span>
+                <span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">img_path</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.nii&quot;</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">img_path</span><span class="o">.</span><span class="n">endswith</span><span class="p">((</span><span class="s2">&quot;.tiff&quot;</span><span class="p">,</span> <span class="s2">&quot;.tif&quot;</span><span class="p">)):</span>
+                    <span class="n">nii_path</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{}{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                        <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">img_path</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">&quot;.nii&quot;</span>
+                    <span class="p">)</span>
+                    <span class="n">brainio</span><span class="o">.</span><span class="n">tiff_to_nii</span><span class="p">(</span><span class="n">img_path</span><span class="p">,</span> <span class="n">nii_path</span><span class="p">)</span>
+                    <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">img_path_var_name</span><span class="p">,</span> <span class="n">nii_path</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">RegistrationError</span><span class="p">(</span>
+                        <span class="s2">&quot;Cannot perform registration, image </span><span class="si">{}</span><span class="s2"> &quot;</span>
+                        <span class="s2">&quot;not in supported format&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">img_path</span><span class="p">)</span>
+                    <span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_prepare_openmp_thread_flag</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">openmp_flag</span> <span class="o">=</span> <span class="s2">&quot;-omp </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_processes</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_prepare_affine_reg_cmd</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">cmd</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> -flo </span><span class="si">{}</span><span class="s2"> -ref </span><span class="si">{}</span><span class="s2"> -aff </span><span class="si">{}</span><span class="s2"> -res </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">reg_params</span><span class="o">.</span><span class="n">affine_reg_program_path</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">reg_params</span><span class="o">.</span><span class="n">format_affine_params</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">(),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">brain_of_atlas_img_path</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dataset_img_path</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">paths</span><span class="o">.</span><span class="n">affine_matrix_path</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">paths</span><span class="o">.</span><span class="n">tmp__affine_registered_atlas_brain_path</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_processes</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">cmd</span> <span class="o">+=</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">openmp_flag</span>
+        <span class="k">return</span> <span class="n">cmd</span>
+
+<div class="viewcode-block" id="BrainRegistration.register_affine"><a class="viewcode-back" href="../../../../main/api/registration.html#cellfinder.reg.reg.brain_registration.BrainRegistration.register_affine">[docs]</a>    <span class="k">def</span> <span class="nf">register_affine</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Performs affine registration of the average brain of the atlas to the</span>
+<span class="sd">        sample using nifty_reg reg_aladin</span>
+
+<span class="sd">        :return:</span>
+<span class="sd">        :raises RegistrationError: If any error was detected during</span>
+<span class="sd">            registration.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">safe_execute_command</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_prepare_affine_reg_cmd</span><span class="p">(),</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">paths</span><span class="o">.</span><span class="n">tmp__affine_log_file_path</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">paths</span><span class="o">.</span><span class="n">tmp__affine_error_path</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">except</span> <span class="n">SafeExecuteCommandError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">RegistrationError</span><span class="p">(</span>
+                <span class="s2">&quot;Affine registration failed; </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+            <span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_prepare_freeform_reg_cmd</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">cmd</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> -aff </span><span class="si">{}</span><span class="s2"> -flo </span><span class="si">{}</span><span class="s2"> -ref </span><span class="si">{}</span><span class="s2"> -cpp </span><span class="si">{}</span><span class="s2"> -res </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">reg_params</span><span class="o">.</span><span class="n">freeform_reg_program_path</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">reg_params</span><span class="o">.</span><span class="n">format_freeform_params</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">(),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">paths</span><span class="o">.</span><span class="n">affine_matrix_path</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">brain_of_atlas_img_path</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dataset_img_path</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">paths</span><span class="o">.</span><span class="n">control_point_file_path</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">paths</span><span class="o">.</span><span class="n">tmp__freeform_registered_atlas_brain_path</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_processes</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">cmd</span> <span class="o">+=</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">openmp_flag</span>
+        <span class="k">return</span> <span class="n">cmd</span>
+
+<div class="viewcode-block" id="BrainRegistration.register_freeform"><a class="viewcode-back" href="../../../../main/api/registration.html#cellfinder.reg.reg.brain_registration.BrainRegistration.register_freeform">[docs]</a>    <span class="k">def</span> <span class="nf">register_freeform</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Performs freeform (elastic) registration of the average brain of the</span>
+<span class="sd">        atlas to the sample brain using nifty_reg reg_f3d</span>
+
+<span class="sd">        :return:</span>
+<span class="sd">        :raises RegistrationError: If any error was detected during</span>
+<span class="sd">            registration.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">safe_execute_command</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_prepare_freeform_reg_cmd</span><span class="p">(),</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">paths</span><span class="o">.</span><span class="n">tmp__freeform_log_file_path</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">paths</span><span class="o">.</span><span class="n">tmp__freeform_error_file_path</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">except</span> <span class="n">SafeExecuteCommandError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">RegistrationError</span><span class="p">(</span>
+                <span class="s2">&quot;Freeform registration failed; </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+            <span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">generate_inverse_transforms</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">generate_inverse_affine</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_inverse_freeform</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_prepare_invert_affine_cmd</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">cmd</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> -invAff </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">reg_params</span><span class="o">.</span><span class="n">transform_program_path</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">paths</span><span class="o">.</span><span class="n">affine_matrix_path</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">paths</span><span class="o">.</span><span class="n">invert_affine_matrix_path</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">cmd</span>
+
+<div class="viewcode-block" id="BrainRegistration.generate_inverse_affine"><a class="viewcode-back" href="../../../../main/api/registration.html#cellfinder.reg.reg.brain_registration.BrainRegistration.generate_inverse_affine">[docs]</a>    <span class="k">def</span> <span class="nf">generate_inverse_affine</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Inverts the affine transform to allow for quick registration of the</span>
+<span class="sd">        sample onto the atlas</span>
+<span class="sd">        :return:</span>
+<span class="sd">        :raises RegistrationError: If any error was detected during</span>
+<span class="sd">            registration.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Generating inverse affine transform&quot;</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">safe_execute_command</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_prepare_invert_affine_cmd</span><span class="p">(),</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">paths</span><span class="o">.</span><span class="n">tmp__invert_affine_log_file</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">paths</span><span class="o">.</span><span class="n">tmp__invert_affine_error_file</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">except</span> <span class="n">SafeExecuteCommandError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">RegistrationError</span><span class="p">(</span>
+                <span class="s2">&quot;Generation of inverted affine transform failed; &quot;</span>
+                <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+            <span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_prepare_inverse_freeform_reg_cmd</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">cmd</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> -aff </span><span class="si">{}</span><span class="s2"> -flo </span><span class="si">{}</span><span class="s2"> -ref </span><span class="si">{}</span><span class="s2"> -cpp </span><span class="si">{}</span><span class="s2"> -res </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">reg_params</span><span class="o">.</span><span class="n">freeform_reg_program_path</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">reg_params</span><span class="o">.</span><span class="n">format_freeform_params</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">(),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">paths</span><span class="o">.</span><span class="n">invert_affine_matrix_path</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dataset_img_path</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">brain_of_atlas_img_path</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">paths</span><span class="o">.</span><span class="n">inverse_control_point_file_path</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">paths</span><span class="o">.</span><span class="n">tmp__inverse_freeform_registered_atlas_brain_path</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_processes</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">cmd</span> <span class="o">+=</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">openmp_flag</span>
+        <span class="k">return</span> <span class="n">cmd</span>
+
+<div class="viewcode-block" id="BrainRegistration.register_inverse_freeform"><a class="viewcode-back" href="../../../../main/api/registration.html#cellfinder.reg.reg.brain_registration.BrainRegistration.register_inverse_freeform">[docs]</a>    <span class="k">def</span> <span class="nf">register_inverse_freeform</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Performs freeform (elastic) registration of the sample to the</span>
+<span class="sd">        atlas using nifty_reg reg_f3d</span>
+
+<span class="sd">        :return:</span>
+<span class="sd">        :raises RegistrationError: If any error was detected during</span>
+<span class="sd">            registration.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Registering sample to atlas&quot;</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">safe_execute_command</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_prepare_inverse_freeform_reg_cmd</span><span class="p">(),</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">paths</span><span class="o">.</span><span class="n">tmp__inverse_freeform_log_file_path</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">paths</span><span class="o">.</span><span class="n">tmp__inverse_freeform_error_file_path</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">except</span> <span class="n">SafeExecuteCommandError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">RegistrationError</span><span class="p">(</span>
+                <span class="s2">&quot;Inverse freeform registration failed; </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+            <span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_prepare_segmentation_cmd</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">floating_image_path</span><span class="p">,</span> <span class="n">dest_img_path</span><span class="p">):</span>
+        <span class="n">cmd</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> -cpp </span><span class="si">{}</span><span class="s2"> -flo </span><span class="si">{}</span><span class="s2"> -ref </span><span class="si">{}</span><span class="s2"> -res </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">reg_params</span><span class="o">.</span><span class="n">segmentation_program_path</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">reg_params</span><span class="o">.</span><span class="n">format_segmentation_params</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">(),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">paths</span><span class="o">.</span><span class="n">control_point_file_path</span><span class="p">,</span>
+            <span class="n">floating_image_path</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dataset_img_path</span><span class="p">,</span>
+            <span class="n">dest_img_path</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">cmd</span>
+
+<div class="viewcode-block" id="BrainRegistration.segment"><a class="viewcode-back" href="../../../../main/api/registration.html#cellfinder.reg.reg.brain_registration.BrainRegistration.segment">[docs]</a>    <span class="k">def</span> <span class="nf">segment</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Registers the atlas to the sample (propagates the transformation</span>
+<span class="sd">        computed for the average brain of the atlas to the atlas itself).</span>
+
+
+<span class="sd">        :return:</span>
+<span class="sd">        :raises SegmentationError: If any error was detected during the</span>
+<span class="sd">            propagation.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">safe_execute_command</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_prepare_segmentation_cmd</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">atlas_img_path</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">paths</span><span class="o">.</span><span class="n">registered_atlas_img_path</span>
+                <span class="p">),</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">paths</span><span class="o">.</span><span class="n">tmp__segmentation_log_file</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">paths</span><span class="o">.</span><span class="n">tmp__segmentation_error_file</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">except</span> <span class="n">SafeExecuteCommandError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+            <span class="n">SegmentationError</span><span class="p">(</span><span class="s2">&quot;Segmentation failed; </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">err</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="BrainRegistration.register_hemispheres"><a class="viewcode-back" href="../../../../main/api/registration.html#cellfinder.reg.reg.brain_registration.BrainRegistration.register_hemispheres">[docs]</a>    <span class="k">def</span> <span class="nf">register_hemispheres</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Registers the hemispheres atlas to the sample (propagates the</span>
+<span class="sd">        transformation computed for the average brain of the atlas to the</span>
+<span class="sd">        hemispheres atlas itself).</span>
+
+<span class="sd">        :return:</span>
+<span class="sd">        :raises RegistrationError: If any error was detected during the</span>
+<span class="sd">            propagation.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">safe_execute_command</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_prepare_segmentation_cmd</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">hemispheres_img_path</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">paths</span><span class="o">.</span><span class="n">registered_hemispheres_img_path</span><span class="p">,</span>
+                <span class="p">),</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">paths</span><span class="o">.</span><span class="n">tmp__segmentation_log_file</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">paths</span><span class="o">.</span><span class="n">tmp__segmentation_error_file</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">except</span> <span class="n">SafeExecuteCommandError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+            <span class="n">SegmentationError</span><span class="p">(</span><span class="s2">&quot;Segmentation failed; </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">err</span><span class="p">))</span></div></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Sainsbury Wellcome Centre
+
+    </p>
+  </div> 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
