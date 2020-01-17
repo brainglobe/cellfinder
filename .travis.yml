@@ -29,7 +29,8 @@ install:
   - pip install tensorflow
   - $PIP_CMD
   - conda info -a
-
+after_success:
+- coveralls
 script:
   - travis_wait 40 bash $TEST_CMD
 
