@@ -1,0 +1,350 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Training &mdash; Cellfinder 0.3.3a documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Troubleshooting" href="troubleshooting.html" />
+    <link rel="prev" title="Usage" href="run.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> Cellfinder
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.3.3
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="run.html">Usage</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Training</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#prerequsites">Prerequsites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#generating-the-training-yaml-file">Generating the training YAML file</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#start-training">Start training</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#arguments">Arguments</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#positional">Positional</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#the-following-options-can-also-be-used">The following options can also be used:</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#further-help">Further help</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="troubleshooting.html">Troubleshooting</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="tools/cell_view_2D.html">Two dimensional cell viewer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tools/cell_view_3D.html">Three dimensional viewer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tools/cells_standard_space.html">Transforming cells into standard space</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tools/cells_to_brainrender.html">Converting cells to brainrender format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tools/count_summary.html">Organise cells into atlas regions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tools/cube_extract.html">Cube extraction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tools/figures.html">Generate figures</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tools/generate_region_volume.html">Region image generation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tools/region_summary.html">Summarise cell counts from multiple brains</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tools/roi_transform.html">ROI transformation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tools/xml_crop.html">XML file cropping</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tools/xml_scale.html">XML file rescaling</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../about/release_notes.html">Releases</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../about/roadmap.html">Future Plans</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../dev/development.html">Developer notes</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="misc/hpc.html">Cellfinder installation in a cluster computing environment.</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Cellfinder</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+      <li>Training</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="training">
+<h1>Training<a class="headerlink" href="#training" title="Permalink to this headline">¶</a></h1>
+<p>Cellfinder includes a pretrained network for cell candidate classification.
+This will likely need to be retrained for different applications. There are
+two choices:</p>
+<ul class="simple">
+<li><p>Continue training the existing network</p></li>
+<li><p>Start from scratch</p></li>
+</ul>
+<div class="section" id="prerequsites">
+<h2>Prerequsites<a class="headerlink" href="#prerequsites" title="Permalink to this headline">¶</a></h2>
+<p>To train the network, you will need:</p>
+<ul class="simple">
+<li><p>Tiff cubes generated by running cellfinder with the <code class="docutils literal notranslate"><span class="pre">--no-classification</span></code>
+option or by using <code class="docutils literal notranslate"><span class="pre">cellfinder_gen_cubes</span></code>.</p></li>
+<li><p>(Optionally) an .xml file (as per cellfinder output) or a directory
+as per <a class="reference external" href="https://github.com/SainsburyWellcomeCentre/Roi_sorter">ROI sorter</a>
+which defines which tiff cubes are <code class="docutils literal notranslate"><span class="pre">cell</span></code> or <code class="docutils literal notranslate"><span class="pre">no_cell</span></code></p></li>
+</ul>
+</div>
+<div class="section" id="generating-the-training-yaml-file">
+<h2>Generating the training YAML file<a class="headerlink" href="#generating-the-training-yaml-file" title="Permalink to this headline">¶</a></h2>
+<p>To specify the datasets used for training, a YAML file must be generated. This
+file will have a single list named <code class="docutils literal notranslate"><span class="pre">data</span></code>, and each entry will have the
+following parameters:</p>
+<ul class="simple">
+<li><p>cube_dir: The path to the directory containing the tiff cubes</p></li>
+<li><p>cell_def: A file that defines which of the cubes in cube_dir are relevant.
+Can either be an cell counter xml file, or a directory with rois -
+as output when manually sorting/correcting a previous run
+(using <a class="reference external" href="https://github.com/SainsburyWellcomeCentre/Roi_sorter">ROI sorter</a>)
+If all cubes should be used, set this parameter to empty string (“”)
+or null (without quote marks).</p></li>
+<li><p>type: If this entry describes cells, set it to “cell”, otherwise use
+“no_cell”. Each entry must contain either ONLY cells or ONLY non_cells.</p></li>
+<li><p>signal_channel: The index or number of the signal channel. Note This number should match the one in the cube tif files!</p></li>
+<li><p>bg_channel: The index or number of the background channel. Note This number should match the one in the cube tif files!
+Set to -1 if no background channel is present.</p></li>
+</ul>
+<p>e.g.:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">data</span><span class="p">:</span>
+<span class="p p-Indicator">-</span> <span class="p p-Indicator">{</span><span class="nt">cube_dir</span><span class="p">:</span> <span class="nv">/path/to/cubes1</span><span class="p p-Indicator">,</span>
+<span class="nt">   cell_def</span><span class="p">:</span> <span class="nv">/path/to/cubes1_cells.xml</span><span class="p p-Indicator">,</span>
+<span class="nt">   type</span><span class="p">:</span> <span class="s">&quot;cell&quot;</span><span class="p p-Indicator">,</span> 
+<span class="nt">   signal_channel</span><span class="p">:</span> <span class="nv">1</span><span class="p p-Indicator">,</span>
+<span class="nt">   bg_channel</span><span class="p">:</span> <span class="nv">2</span><span class="p p-Indicator">}</span>
+<span class="p p-Indicator">-</span> <span class="p p-Indicator">{</span><span class="nt">cube_dir</span><span class="p">:</span> <span class="nv">/path/to/cubes1</span><span class="p p-Indicator">,</span>
+<span class="nt">   cell_def</span><span class="p">:</span> <span class="nv">/path/to/cubes1_no_cells.xml</span><span class="p p-Indicator">,</span>
+<span class="nt">   type</span><span class="p">:</span> <span class="s">&quot;no_cell&quot;</span><span class="p p-Indicator">,</span> 
+<span class="nt">   signal_channel</span><span class="p">:</span> <span class="nv">1</span><span class="p p-Indicator">,</span>
+<span class="nt">   bg_channel</span><span class="p">:</span> <span class="nv">2</span><span class="p p-Indicator">}</span>
+<span class="p p-Indicator">-</span> <span class="p p-Indicator">{</span><span class="nt">cube_dir</span><span class="p">:</span> <span class="nv">/path/to/cubes2</span><span class="p p-Indicator">,</span>
+<span class="nt">   cell_def</span><span class="p">:</span> <span class="nv">/path/to/cubes2_cells_dir</span><span class="p p-Indicator">,</span>
+<span class="nt">   type</span><span class="p">:</span> <span class="s">&quot;cell&quot;</span><span class="p p-Indicator">,</span> 
+<span class="nt">   signal_channel</span><span class="p">:</span> <span class="nv">2</span><span class="p p-Indicator">,</span>
+<span class="nt">   bg_channel</span><span class="p">:</span> <span class="nv">0</span><span class="p p-Indicator">}</span>
+<span class="p p-Indicator">-</span> <span class="p p-Indicator">{</span><span class="nt">cube_dir</span><span class="p">:</span> <span class="nv">/path/to/cubes2</span><span class="p p-Indicator">,</span>
+<span class="nt">   cell_def</span><span class="p">:</span> <span class="nv">/path/to/cubes2_no_cells_dir</span><span class="p p-Indicator">,</span>
+<span class="nt">   type</span><span class="p">:</span> <span class="s">&quot;no_cell&quot;</span><span class="p p-Indicator">,</span> 
+<span class="nt">   signal_channel</span><span class="p">:</span> <span class="nv">2</span><span class="p p-Indicator">,</span>
+<span class="nt">   bg_channel</span><span class="p">:</span> <span class="nv">0</span><span class="p p-Indicator">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="start-training">
+<h2>Start training<a class="headerlink" href="#start-training" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>cellfinder_train -/path/to/training_yaml.yml  /path/to/output/directory/
+</pre></div>
+</div>
+</div>
+<div class="section" id="arguments">
+<h2>Arguments<a class="headerlink" href="#arguments" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="positional">
+<h3>Positional<a class="headerlink" href="#positional" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>The path to the yaml run file</p></li>
+<li><p>Output directory for the trained model (or model weights)
+results</p></li>
+</ul>
+</div>
+<div class="section" id="the-following-options-can-also-be-used">
+<h3>The following options can also be used:<a class="headerlink" href="#the-following-options-can-also-be-used" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">--continue-training</span></code> Continue training from an existing trained model.
+If no model or model weights are specified, this will continue from the
+included model.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--trained-model</span></code> Path to a trained model to continue training</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--model-weights</span></code> Path to existing model weights to continue training</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--network-depth</span></code> Resnet depth
+(based on <a class="reference external" href="https://arxiv.org/abs/1512.03385">He et al. (2015)</a>). Choose from
+(18, 34, 50, 101 or 152). In theory, a deeper network should classify better,
+at the expense of a larger model, and longer training time. Default: 50</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--batch-size</span></code> Batch size for training (how many cell candidates to process
+at once). Default: 16</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--epochs</span></code> How many times to use each sample for training. Default: 1000</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--test-fraction</span></code> What fraction of data to keep for validation. Default: 0.1</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--no-augment</span></code> Do not use data augmentation</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--save-weights</span></code> Only store the model weights, and not the full model.
+Useful to save storage space.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--tensorboard</span></code> Log to <code class="docutils literal notranslate"><span class="pre">output_directory/tensorboard</span></code>. Use
+<code class="docutils literal notranslate"><span class="pre">tensorboard</span> <span class="pre">--logdir</span> <span class="pre">outputdirectory/tensorboard</span></code> to view.</p></li>
+</ul>
+</div>
+<div class="section" id="further-help">
+<h3>Further help<a class="headerlink" href="#further-help" title="Permalink to this headline">¶</a></h3>
+<p>All cellfinder_train options can be found by using the <code class="docutils literal notranslate"><span class="pre">-h</span></code> flag</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>cellfinder_train -h
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="troubleshooting.html" class="btn btn-neutral float-right" title="Troubleshooting" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="run.html" class="btn btn-neutral float-left" title="Usage" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Sainsbury Wellcome Centre
+
+    </p>
+  </div> 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

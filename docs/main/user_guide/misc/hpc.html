@@ -1,0 +1,340 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Cellfinder installation in a cluster computing environment. &mdash; Cellfinder 0.3.3a documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="prev" title="Developer notes" href="../../dev/development.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> Cellfinder
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.3.3
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../run.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../training.html">Training</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../troubleshooting.html">Troubleshooting</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../tools/cell_view_2D.html">Two dimensional cell viewer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tools/cell_view_3D.html">Three dimensional viewer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tools/cells_standard_space.html">Transforming cells into standard space</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tools/cells_to_brainrender.html">Converting cells to brainrender format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tools/count_summary.html">Organise cells into atlas regions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tools/cube_extract.html">Cube extraction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tools/figures.html">Generate figures</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tools/generate_region_volume.html">Region image generation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tools/region_summary.html">Summarise cell counts from multiple brains</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tools/roi_transform.html">ROI transformation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tools/xml_crop.html">XML file cropping</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tools/xml_scale.html">XML file rescaling</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../about/release_notes.html">Releases</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../about/roadmap.html">Future Plans</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../dev/development.html">Developer notes</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Cellfinder installation in a cluster computing environment.</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#slurm">SLURM</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#prepare-the-environment">Prepare the environment</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#set-up-conda-environment-and-install-cellfinder">Set up conda environment and install cellfinder</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#run-cellfinder">Run cellfinder</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Cellfinder</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+      <li>Cellfinder installation in a cluster computing environment.</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="cellfinder-installation-in-a-cluster-computing-environment">
+<h1>Cellfinder installation in a cluster computing environment.<a class="headerlink" href="#cellfinder-installation-in-a-cluster-computing-environment" title="Permalink to this headline">¶</a></h1>
+<p>Currently cellfinder has only been written with
+<a class="reference external" href="https://slurm.schedmd.com/documentation.html">SLURM</a> in mind. In theory, it
+should be easy enough to allow the use of any other job scheduler.</p>
+<div class="section" id="slurm">
+<h2>SLURM<a class="headerlink" href="#slurm" title="Permalink to this headline">¶</a></h2>
+<p>Based on the
+<a class="reference external" href="https://www.sainsburywellcome.org/web/content/scientific-computing">SWC SLURM cluster</a>,
+and so most of the command syntax will likely vary. Specifically, you are
+unlikely to have modules configured in exactly the same way as us.</p>
+<div class="section" id="prepare-the-environment">
+<h3>Prepare the environment<a class="headerlink" href="#prepare-the-environment" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>On our cluster, <a class="reference external" href="http://modules.sourceforge.net/">modules</a> are only available
+on a compute node, so start an interactive job on a GPU node, and request a
+GPU for testing.</p></li>
+</ul>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>srun -p gpu --gres<span class="o">=</span>gpu:1 --pty bash
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Load miniconda</p></li>
+</ul>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>module load miniconda
+</pre></div>
+</div>
+</div>
+<div class="section" id="set-up-conda-environment-and-install-cellfinder">
+<h3>Set up conda environment and install cellfinder<a class="headerlink" href="#set-up-conda-environment-and-install-cellfinder" title="Permalink to this headline">¶</a></h3>
+<ul>
+<li><p>Now you can proceed as with a <a class="reference internal" href="../install.html"><span class="doc">local installation</span></a></p>
+<ul class="simple">
+<li><p>Create and activate new minimal conda environment</p></li>
+</ul>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>    conda create --name cellfinder <span class="nv">python</span><span class="o">=</span><span class="m">3</span>.7
+    conda activate cellfinder
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Install CUDA and cuDNN</p></li>
+</ul>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>    conda install <span class="nv">cudatoolkit</span><span class="o">=</span><span class="m">10</span>.1 cudnn
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Install cellfinder</p></li>
+</ul>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>    pip install git+https://github.com/adamltyson/cellfinder
+</pre></div>
+</div>
+</li>
+<li><p>Check that tensorflow and CUDA are configured properly:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>   <span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="nn">tf</span>
+   <span class="n">tf</span><span class="o">.</span><span class="n">test</span><span class="o">.</span><span class="n">is_gpu_available</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>If you see something like this, then all is well.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>    <span class="m">2019</span>-06-26 <span class="m">10</span>:51:34.697900: I tensorflow/core/platform/cpu_feature_guard.cc:141<span class="o">]</span> Your CPU supports instructions that this TensorFlow binary was not compiled to use: AVX512F
+    <span class="m">2019</span>-06-26 <span class="m">10</span>:51:34.881183: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1432<span class="o">]</span> Found device <span class="m">0</span> with properties: 
+    name: TITAN RTX major: <span class="m">7</span> minor: <span class="m">5</span> memoryClockRate<span class="o">(</span>GHz<span class="o">)</span>: <span class="m">1</span>.77
+    pciBusID: <span class="m">0000</span>:2d:00.0
+    totalMemory: <span class="m">23</span>.62GiB freeMemory: <span class="m">504</span>.25MiB
+    <span class="m">2019</span>-06-26 <span class="m">10</span>:51:34.881217: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1511<span class="o">]</span> Adding visible gpu devices: <span class="m">0</span>
+    <span class="m">2019</span>-06-26 <span class="m">10</span>:51:35.251465: I tensorflow/core/common_runtime/gpu/gpu_device.cc:982<span class="o">]</span> Device interconnect StreamExecutor with strength <span class="m">1</span> edge matrix:
+    <span class="m">2019</span>-06-26 <span class="m">10</span>:51:35.251505: I tensorflow/core/common_runtime/gpu/gpu_device.cc:988<span class="o">]</span>      <span class="m">0</span> 
+    <span class="m">2019</span>-06-26 <span class="m">10</span>:51:35.251511: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1001<span class="o">]</span> <span class="m">0</span>:   N 
+    <span class="m">2019</span>-06-26 <span class="m">10</span>:51:35.251729: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1115<span class="o">]</span> Created TensorFlow device <span class="o">(</span>/device:GPU:0 with <span class="m">195</span> MB memory<span class="o">)</span> -&gt; physical GPU <span class="o">(</span>device: <span class="m">0</span>, name: TITAN RTX, pci bus id: <span class="m">0000</span>:2d:00.0, compute capability: <span class="m">7</span>.5<span class="o">)</span>
+    True
+</pre></div>
+</div>
+</li>
+<li><p><strong>End your interactive job</strong></p></li>
+</ul>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">exit</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="run-cellfinder">
+<h3>Run cellfinder<a class="headerlink" href="#run-cellfinder" title="Permalink to this headline">¶</a></h3>
+<p>Allthough you can run cellfinder interactively, it is better to submit a batch
+job.</p>
+<ul class="simple">
+<li><p>Write the job submission script. An example can be found
+<a class="reference external" href="https://github.com/SainsburyWellcomeCentre/cellfinder/tree/master/doc_build/examples/cellfinder_sbatch.sh">here</a>.
+If possible, set the output directory to local, fast scratch storage.</p></li>
+<li><p>Submit the job to the job scheduler</p></li>
+</ul>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sbatch cellfinder_sbatch.sh
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>If you use the example script, you will recieve an email when the job is
+done. To watch the progress, log onto a node with the same storage drive
+mounted and run:</p></li>
+</ul>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>watch tail -n <span class="m">100</span> /path/to/cellfinder_log.log
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Copy the results from the storage platform.</p></li>
+</ul>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="../../dev/development.html" class="btn btn-neutral float-left" title="Developer notes" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Sainsbury Wellcome Centre
+
+    </p>
+  </div> 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

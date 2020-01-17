@@ -1,0 +1,41 @@
+[Metadata for file] D:/PROJECT/IMAGE.raw
+[z_stepsize] 10
+[z_planes] 852
+
+[CFG] 
+[Laser] 488 nm
+[Intensity (%)] 60
+[Zoom] 0.8x
+[Pixelsize in um] 8.23
+[Filter] 405-488-561-640-Quadrupleblock
+[Shutter] Right
+
+[POSITION] 
+[x_pos] 22421.73
+[y_pos] 58526.89
+[f_pos] 60420.1
+[z_start] 18330.15
+[z_end] 26852.46
+[z_stepsize] 10
+[z_planes] 852
+
+[ETL PARAMETERS] 
+[ETL CFG File] config/etl_parameters/ETL-parameters.csv
+[etl_l_offset] 1.492
+[etl_l_amplitude] 0.601
+[etl_r_offset] 1.36
+[etl_r_amplitude] 0.464
+
+[GALVO PARAMETERS] 
+[galvo_l_frequency] 199.0
+[galvo_l_amplitude] 5.0
+[galvo_l_offset] 0.0
+[galvo_r_amplitude] 6
+[galvo_r_offset] 0.0
+
+[CAMERA PARAMETERS] 
+[camera_type] HamamatsuOrcaFlash
+[camera_exposure] 0.005
+[camera_line_interval] 7.5e-05
+[x_pixels] 2048
+[y_pixels] 2048
