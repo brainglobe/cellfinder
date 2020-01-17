@@ -48,7 +48,7 @@ conda install cudatoolkit=10.1 cudnn
 
 
 ``` bash
-pip install git+https://github.com/adamltyson/cellfinder
+pip install cellfinder
 ```    
 
 **If you use a conda environment, remember to activate it
@@ -81,7 +81,7 @@ disk space)
 If you want to edit cellfinder, run tests and build the documentation etc,
 then use:
 ```bash
-git clone --branch dev https://github.com/adamltyson/cellfinder
+git clone --branch dev https://github.com/SainsburyWellcomeCentre/cellfinder
 cd cellfinder
 pip install -e .[dev]
 ```
