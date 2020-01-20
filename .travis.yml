@@ -9,11 +9,11 @@ matrix:
       python: 3.6
       dist: bionic
     - sudo: required
-    services:
-      - docker
-    os: linux
-    python: 3.7
-    dist: bionic
+      services:
+        - docker
+      os: linux
+      python: 3.7
+      dist: bionic
 
 before_install:
   - wget http://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
