@@ -7,7 +7,7 @@
 [![Coverage Status](https://coveralls.io/repos/github/SainsburyWellcomeCentre/cellfinder/badge.svg?branch=master)](https://coveralls.io/github/SainsburyWellcomeCentre/cellfinder?branch=master)
 [![Dependabot Status](https://api.dependabot.com/badges/status?host=github&repo=SainsburyWellcomeCentre/cellfinder)](https://dependabot.com)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/python/black)
-
+[![Gitter](https://badges.gitter.im/cellfinder/community.svg)](https://gitter.im/cellfinder/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 # Cellfinder
 Whole-brain cell detection, registration and analysis.
@@ -37,7 +37,8 @@ found [here](https://sainsburywellcomecentre.github.io/cellfinder).
 This software is at a very early stage, and was written with our data in mind. 
 Over time we hope to support other data types/formats. If you have any 
 questions or issues, please get in touch by 
-[email](mailto:adam.tyson@ucl.ac.uk?subject=cellfinder) or by 
+[email](mailto:adam.tyson@ucl.ac.uk?subject=cellfinder) 
+[gitter](https://gitter.im/cellfinder/community) or by 
 [raising an issue](https://github.com/SainsburyWellcomeCentre/cellfinder/issues/new/choose).
 
 
