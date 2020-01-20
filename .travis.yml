@@ -2,10 +2,16 @@ language: python
 
 matrix:
   include:
-  - os: linux
-    python: 3.6
-    dist: bionic
-  - os: linux
+    - sudo: required
+      services:
+        - docker
+      os: linux
+      python: 3.6
+      dist: bionic
+    - sudo: required
+    services:
+      - docker
+    os: linux
     python: 3.7
     dist: bionic
 
@@ -29,8 +35,8 @@ after_success:
 -
 script:
 #  - travis_wait 40 bash $TEST_CMD
-  - cibuildwheel --output-dir wheelhouse
-
+  - docker run --rm -v $(pwd):/io quay.io/pypa/manylinux2010_x86_64 /travis/build_wheels.sh
+  - ls wheelhouse/manylinux
 notifications:
   email:
     recipients:
