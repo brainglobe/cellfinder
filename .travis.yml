@@ -35,8 +35,8 @@ after_success:
 -
 script:
 #  - travis_wait 40 bash $TEST_CMD
-  - docker run --rm -v $(pwd):/io quay.io/pypa/manylinux2010_x86_64 /travis/build_wheels.sh
-  - ls wheelhouse/manylinux
+  - docker run --rm -v $(pwd):/io quay.io/pypa/manylinux2010_x86_64 ./travis/build_wheels.sh
+  - ls ./wheelhouse/manylinux
 notifications:
   email:
     recipients:
