@@ -44,6 +44,7 @@ stages:
 
 jobs:
   include:
+    - script: travis_wait 40 bash $TEST_CMD
     - stage: deploy
       sudo: required
       services:
