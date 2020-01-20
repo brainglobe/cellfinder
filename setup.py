@@ -103,7 +103,7 @@ setup(
             "pytest",
             "gitpython",
             "coveralls",
-            "coverage>=5.0.4",
+            "coverage>=5.0.3",
         ]
     },
     setup_requires=["cython"],
