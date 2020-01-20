@@ -30,6 +30,7 @@ requirements = [
     # "brainrender",
     "toolz>=0.7.3",
     "tensorflow>=2.1.0",
+    "six>=1.12.0"
 ]
 
 
