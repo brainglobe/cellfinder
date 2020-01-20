@@ -1,3 +1,3 @@
 cellfinder -h
-cellfinder_download
+#cellfinder_download
 pytest --cov=cellfinder
