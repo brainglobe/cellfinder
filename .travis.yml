@@ -27,7 +27,6 @@ install:
   - conda create -n test-environment python=$TRAVIS_PYTHON_VERSION
   - source activate test-environment
   - pip install -e .[dev]
-  - pip install twine cibuildwheel==1.0.0
   - conda info -a
 
 after_success:
@@ -35,7 +34,7 @@ after_success:
 -
 script:
 #  - travis_wait 40 bash $TEST_CMD
-  - docker run --rm -v $(pwd):/io quay.io/pypa/manylinux2010_x86_64 ./travis/build_wheels.sh
+  - docker run --rm -v $(pwd):/io quay.io/pypa/manylinux2010_x86_64 /io/travis/build_wheels.sh
   - ls ./wheelhouse/manylinux
 notifications:
   email:
