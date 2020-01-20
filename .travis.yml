@@ -28,8 +28,8 @@ after_success:
 - coveralls
 -
 script:
-  - travis_wait 40 bash $TEST_CMD
-  - python -m cibuildwheel --output-dir wheelhouse
+#  - travis_wait 40 bash $TEST_CMD
+  - cibuildwheel --output-dir wheelhouse
 
 notifications:
   email:
