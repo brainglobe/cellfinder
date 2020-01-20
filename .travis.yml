@@ -43,7 +43,8 @@ stages:
 
 jobs:
   include:
-    - sudo: required
+    - stage: deploy
+      sudo: required
       services:
         - docker
       script: docker run --rm -v $(pwd):/io quay.io/pypa/manylinux2010_x86_64 /io/travis/build_wheels.sh
