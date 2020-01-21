@@ -10,13 +10,17 @@ pip_paths=(
 for pip_path in "${pip_paths[@]}"; do
     	echo "$pip_path"
 	$pip_path wheel /io -w /io/wheelhouse/
-done
-
-
-
-for whl in io/wheelhouse/cellfinder*.whl; do
+	for whl in io/wheelhouse/cellfinder*.whl; do
     auditwheel repair "$whl" -w /io/wheelhouse/manylinux
 done
+
+done
+
+
+#
+#for whl in io/wheelhouse/cellfinder*.whl; do
+#    auditwheel repair "$whl" -w /io/wheelhouse/manylinux
+#done
 
 
 
