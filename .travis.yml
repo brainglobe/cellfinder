@@ -1,13 +1,13 @@
 language: python
 
-matrix:
-  include:
-    - os: linux
-      python: 3.6
-      dist: bionic
-    - os: linux
-      python: 3.7
-      dist: bionic
+#matrix:
+#  include:
+#    - os: linux
+#      python: 3.6
+#      dist: bionic
+#    - os: linux
+#      python: 3.7
+#      dist: bionic
 
 before_install:
   - wget http://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
@@ -44,7 +44,15 @@ script:
 
 jobs:
   include:
-    - script: travis_wait 40 bash $TEST_CMD
+    - stage: test
+      include:
+        - os: linux
+          python: 3.6
+          dist: bionic
+        - os: linux
+          python: 3.7
+          dist: bionic
+      script: travis_wait 40 bash $TEST_CMD
     - stage: deploy
       sudo: required
       services:
