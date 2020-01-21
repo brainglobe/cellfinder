@@ -4,12 +4,6 @@ python:
   - "3.6"
   - "3.7"
 
-os:
-  - linux
-
-dist:
-  - bionic
-
 #matrix:
 #  include:
 #    - os: linux
@@ -36,9 +30,9 @@ install:
 after_success:
 - coveralls
 
-#script:
+script:
 #  - ls
-#  - travis_wait 40 bash $TEST_CMD
+  - travis_wait 40 bash $TEST_CMD
 #  - docker run --rm -v $(pwd):/io quay.io/pypa/manylinux2010_x86_64 /io/travis/build_wheels.sh
 #  - ls ./wheelhouse/manylinux
 
@@ -54,8 +48,6 @@ after_success:
 
 jobs:
   include:
-    - stage: test
-      script: travis_wait 40 bash $TEST_CMD
     - stage: deploy
       sudo: required
       services:
