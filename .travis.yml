@@ -32,11 +32,8 @@ after_success:
 - coveralls
 
 script:
-#  - ls
   - black ./ -l 79 --check
-  - travis_wait 40 bash $TEST_CMD
-#  - docker run --rm -v $(pwd):/io quay.io/pypa/manylinux2010_x86_64 /io/travis/build_wheels.sh
-#  - ls ./wheelhouse/manylinux
+#  - travis_wait 40 bash $TEST_CMD
 
 #
 #stages:
@@ -54,7 +51,9 @@ jobs:
       sudo: required
       services:
         - docker
-      script: docker run --rm -v $(pwd):/io quay.io/pypa/manylinux2010_x86_64 /io/travis/build_wheels.sh
+      script:
+        - ls
+        - docker run --rm -v $(pwd):/io quay.io/pypa/manylinux2010_x86_64 /io/travis/build_wheels.sh
       after_success: ls ./wheelhouse/manylinux
 
 notifications:
