@@ -30,20 +30,10 @@ python:
 
 after_success:
 - coveralls
+#- # maybe add deployment here
 
 script:
-    - wget http://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
-    - bash miniconda.sh -b -p $HOME/miniconda
-    - export PATH="$HOME/miniconda/bin:$PATH"
-    - hash -r
-    - conda config --set always_yes yes --set changeps1 no
-    - conda info -a
-    - conda create -n test-environment python=$TRAVIS_PYTHON_VERSION
-    - source activate test-environment
-    - pip install -e .[dev]
-    - conda info -a
-    - black ./ -l 79 --check
-#  - travis_wait 40 bash $TEST_CMD
+  - travis_wait 40 bash $TEST_CMD
 
 #
 #stages:
@@ -77,5 +67,5 @@ notifications:
 env:
   global:
     - TWINE_USERNAME=__token__
-    - TEST_CMD='tests/travis/testing_download.sh'
+    - TEST_CMD='travis/install_test_linux.sh'
     # Note: TWINE_PASSWORD is set to a PyPI API token in Travis settings
