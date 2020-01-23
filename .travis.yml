@@ -49,7 +49,7 @@ stages:
   - test
   - name: deploy
     if:
-      - repo = adamltyson/cellfinder AND branch = master
+      - repo = SainsburyWellcomeCentre/cellfinder AND branch = deploy
 
 
 jobs:
