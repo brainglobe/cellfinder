@@ -103,7 +103,7 @@ setup(
             "pytest-cov",
             "pytest",
             "gitpython",
-            "coveralls",
+            "python-coveralls",
             "coverage>=5.0.3",
         ]
     },
