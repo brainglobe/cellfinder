@@ -24,7 +24,8 @@ stages:
   - test
   - name: deploy
     if:
-      - repo = adamltyson/cellfinder AND branch = deploy
+      - repo = adamltyson/cellfinder
+      - branch = deploy
 
 
 jobs:
