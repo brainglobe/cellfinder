@@ -1,7 +1,7 @@
 language: python
 
 after_success:
-- coveralls
+  - coveralls
 
 stages:
   - test
