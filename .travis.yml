@@ -34,7 +34,7 @@ jobs:
   include:
     - stage: deploy
       on:
-#        branch: deploy
+        branch: deploy
         tags: true
       services:
         - docker
