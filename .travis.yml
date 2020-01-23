@@ -35,7 +35,7 @@ after_success:
 script:
   - travis_wait 40 bash $TEST_CMD
 
-#
+##
 #stages:
 #  - test
 #  # Only execute deployment stage on tagged commits, and from your repository
@@ -44,6 +44,13 @@ script:
 ##  - name: deploy
 ##    if: tag IS PRESENT AND repo = joerick/cibuildwheel
 ##    if: repo = adamltyson/cellfinder
+
+stages:
+  - test
+  - name: deploy
+    if:
+      - repo = adamltyson/cellfinder AND branch = deploy
+
 
 jobs:
   include:
@@ -54,7 +61,7 @@ jobs:
       script:
         - ls
         - docker run --rm -v $(pwd):/io quay.io/pypa/manylinux2010_x86_64 /io/travis/build_wheels.sh
-      after_success: ls ./wheelhouse/manylinux
+      after_success:
 
 notifications:
   email:
