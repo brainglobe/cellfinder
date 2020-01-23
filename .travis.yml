@@ -20,14 +20,14 @@ script:
 ##    if: tag IS PRESENT AND repo = joerick/cibuildwheel
 ##    if: repo = adamltyson/cellfinder
 
-stages:
-  - test
-  - name: deploy
-    if:
-#      tag IS present AND repo = adamltyson/cellfinder
-      repo = adamltyson/cellfinder
-#      - branch = deploy
-#      - tag IS present
+#stages:
+#  - test
+#  - name: deploy
+#    if:
+##      tag IS present AND repo = adamltyson/cellfinder
+#      repo = adamltyson/cellfinder
+##      - branch = deploy
+##      - tag IS present
 
 
 jobs:
@@ -36,6 +36,7 @@ jobs:
       on:
         branch: deploy
         tags: true
+        repo: adamltyson/cellfinder
       services:
         - docker
       script:
