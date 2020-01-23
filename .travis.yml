@@ -30,7 +30,6 @@ script:
 jobs:
   include:
     - stage: deploy
-      sudo: required
       on:
         branch: deploy
         tags: true
