@@ -24,10 +24,10 @@ script:
 #  - test
 #  - name: deploy
 #    if:
-##      tag IS present AND repo = adamltyson/cellfinder
+#      tag IS present AND repo = adamltyson/cellfinder
 #      repo = adamltyson/cellfinder
-##      - branch = deploy
-##      - tag IS present
+#      - branch = deploy
+#      - tag IS present
 
 
 jobs:
@@ -36,7 +36,7 @@ jobs:
       on:
         branch: deploy
         tags: true
-        repo: adamltyson/cellfinder
+#        repo: adamltyson/cellfinder
       services:
         - docker
       script:
