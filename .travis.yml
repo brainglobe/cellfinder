@@ -1,14 +1,14 @@
 language: python
 
-python:
-  - "3.6"
-  - "3.7"
+#python:
+#  - "3.6"
+#  - "3.7"
 
 after_success:
 - coveralls
 
-script:
-  - travis_wait 40 bash travis/install_test_linux.sh
+#script:
+#  - travis_wait 40 bash travis/install_test_linux.sh
 
 
 stages:
@@ -21,6 +21,12 @@ stages:
 
 jobs:
   include:
+    - stage: test
+      python: 3.6
+      script: travis_wait 40 bash travis/install_test_linux.sh
+    -stage: test
+      python: 3.7
+      script: travis_wait 40 bash travis/install_test_linux.sh
     - stage: deploy
       services:
         - docker
