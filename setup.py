@@ -103,12 +103,7 @@ setup(
             "pytest-cov",
             "pytest",
             "gitpython",
-<<<<<<< HEAD
             "coverage>=5.0.3",
-=======
-            "coveralls",
-            "coverage<=4.5.4",
->>>>>>> upstream/master
         ]
     },
     setup_requires=["cython"],
