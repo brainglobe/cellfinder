@@ -68,7 +68,7 @@ jobs:
       after_success:
         - pip install twine
         - ls pypi_upload/*
-        - twine upload pypi_upload/ --skip-existing
+        - twine upload pypi_upload/* --skip-existing
 
 notifications:
   email:
