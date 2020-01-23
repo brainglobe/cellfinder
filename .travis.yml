@@ -4,33 +4,8 @@ python:
   - "3.6"
   - "3.7"
 
-#matrix:
-#  include:
-#    - os: linux
-#      python: 3.6
-#      dist: bionic
-#    - os: linux
-#      python: 3.7
-#      dist: bionic
-#
-#before_install:
-#  - wget http://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
-#  - bash miniconda.sh -b -p $HOME/miniconda
-#  - export PATH="$HOME/miniconda/bin:$PATH"
-#  - hash -r
-#  - conda config --set always_yes yes --set changeps1 no
-#  - conda info -a
-#  -
-#
-#install:
-#  - conda create -n test-environment python=$TRAVIS_PYTHON_VERSION
-#  - source activate test-environment
-#  - pip install -e .[dev]
-#  - conda info -a
-
 after_success:
 - coveralls
-#- # maybe add deployment here
 
 script:
   - travis_wait 40 bash travis/install_test_linux.sh
@@ -45,17 +20,20 @@ script:
 ##    if: tag IS PRESENT AND repo = joerick/cibuildwheel
 ##    if: repo = adamltyson/cellfinder
 
-stages:
-  - test
-  - name: deploy
-    if:
-      - repo = adamltyson/cellfinder AND branch = deploy AND tag IS PRESENT
+#stages:
+#  - test
+#  - name: deploy
+#    if:
+#      - repo = adamltyson/cellfinder AND branch = deploy AND tag IS PRESENT
 
 
 jobs:
   include:
     - stage: deploy
       sudo: required
+      on:
+        branch: deploy
+        tags: true
       services:
         - docker
       script:
