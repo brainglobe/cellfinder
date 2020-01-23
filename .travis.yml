@@ -49,7 +49,7 @@ stages:
   - test
   - name: deploy
     if:
-      - repo = SainsburyWellcomeCentre/cellfinder AND branch = deploy
+      - repo = adamltyson/cellfinder AND branch = deploy
 
 
 jobs:
@@ -61,7 +61,7 @@ jobs:
       script:
         - ls
         - docker run --rm -v $(pwd):/io quay.io/pypa/manylinux2010_x86_64 /io/travis/build_wheels.sh
-      after_success:
+      after_success: twine upload ./wheelhouse/manylinux/* --skip-existing
 
 notifications:
   email:
