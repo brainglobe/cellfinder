@@ -62,21 +62,20 @@ To build the documentation (assuming you installed cellfinder with
 ```bash
 cd doc_build
 make html
-make latexpdf
 ```
 
-Prior to commmiting to master, ensure that 
-`doc_build/_build/latex/cellfinder.pdf` is copied to `cellfinder/` and that 
-the contents of `doc_build/_build/html/` is copied to `cellfinder/docs` for 
+Prior to commmiting to master, ensure that contents of 
+`doc_build/_build/html/` is copied to `cellfinder/docs` for 
 hosting with [github pages](https://adamltyson.github.io/cellfinder/index.html).
 
 This can be done automatically with a 
 [pre-commit hook](https://www.atlassian.com/git/tutorials/git-hooks). An 
-example is [here](https://github.com/SainsburyWellcomeCentre/cellfinder/tree/master/doc_build/examples/pre-commit). 
+example is 
+[here](https://github.com/SainsburyWellcomeCentre/cellfinder/tree/master/doc_build/examples/pre-commit). 
 
 
 #### Dependencies
-Any dependencies in the `dev` branch will be checked by 
+Any dependencies in the `master` branch will be checked by 
 [dependabot](https://dependabot.com/), and a pull request will be generated to 
 update which are outdated. Please only merge these if all tests are passing, 
 and you are confident that there will be no issues.

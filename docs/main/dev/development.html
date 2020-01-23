@@ -251,20 +251,19 @@ of all arguments, and example syntax.</p></li>
 <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">-e</span> <span class="pre">.[dev]</span></code> to install the dependencies):</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> doc_build
 make html
-make latexpdf
 </pre></div>
 </div>
-<p>Prior to commmiting to master, ensure that
-<code class="docutils literal notranslate"><span class="pre">doc_build/_build/latex/cellfinder.pdf</span></code> is copied to <code class="docutils literal notranslate"><span class="pre">cellfinder/</span></code> and that
-the contents of <code class="docutils literal notranslate"><span class="pre">doc_build/_build/html/</span></code> is copied to <code class="docutils literal notranslate"><span class="pre">cellfinder/docs</span></code> for
+<p>Prior to commmiting to master, ensure that contents of
+<code class="docutils literal notranslate"><span class="pre">doc_build/_build/html/</span></code> is copied to <code class="docutils literal notranslate"><span class="pre">cellfinder/docs</span></code> for
 hosting with <a class="reference external" href="https://adamltyson.github.io/cellfinder/index.html">github pages</a>.</p>
 <p>This can be done automatically with a
 <a class="reference external" href="https://www.atlassian.com/git/tutorials/git-hooks">pre-commit hook</a>. An
-example is <a class="reference external" href="https://github.com/SainsburyWellcomeCentre/cellfinder/tree/master/doc_build/examples/pre-commit">here</a>.</p>
+example is
+<a class="reference external" href="https://github.com/SainsburyWellcomeCentre/cellfinder/tree/master/doc_build/examples/pre-commit">here</a>.</p>
 </div>
 <div class="section" id="dependencies">
 <h2>Dependencies<a class="headerlink" href="#dependencies" title="Permalink to this headline">¶</a></h2>
-<p>Any dependencies in the <code class="docutils literal notranslate"><span class="pre">dev</span></code> branch will be checked by
+<p>Any dependencies in the <code class="docutils literal notranslate"><span class="pre">master</span></code> branch will be checked by
 <a class="reference external" href="https://dependabot.com/">dependabot</a>, and a pull request will be generated to
 update which are outdated. Please only merge these if all tests are passing,
 and you are confident that there will be no issues.</p>
