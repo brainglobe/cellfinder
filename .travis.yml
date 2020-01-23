@@ -33,7 +33,7 @@ after_success:
 #- # maybe add deployment here
 
 script:
-  - travis_wait 40 bash $TEST_CMD
+  - travis_wait 40 bash travis/install_test_linux.sh
 
 ##
 #stages:
@@ -81,5 +81,4 @@ notifications:
 env:
   global:
     - TWINE_USERNAME=__token__
-    - TEST_CMD='travis/install_test_linux.sh'
     # Note: TWINE_PASSWORD is set to a PyPI API token in Travis settings
