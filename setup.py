@@ -30,6 +30,7 @@ requirements = [
     # "brainrender",
     "toolz>=0.7.3",
     "tensorflow>=2.1.0",
+    "six>=1.12.0",
 ]
 
 
@@ -89,7 +90,7 @@ else:
 
 setup(
     name="cellfinder",
-    version="0.3.3",
+    version="0.3.4rc3",
     description="Cell detection for whole-brain microscopy",
     install_requires=requirements,
     extras_require={
@@ -103,7 +104,7 @@ setup(
             "pytest",
             "gitpython",
             "coveralls",
-            "coverage<=4.5.4",
+            "coverage>=5.0.3",
         ]
     },
     setup_requires=["cython"],

@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Developer notes &mdash; Cellfinder 0.3.3a documentation</title>
+  <title>Developer notes &mdash; Cellfinder 0.3.4rc3 documentation</title>
   
 
   
@@ -60,7 +60,7 @@
             
             
               <div class="version">
-                0.3.3
+                0.3.4
               </div>
             
           
@@ -220,7 +220,7 @@ and run all of the tests: <code class="docutils literal notranslate"><span class
 take a long time (e.g. those requiring tensorflow if you don’t have a GPU).
 These tests should be marked with <code class="docutils literal notranslate"><span class="pre">&#64;pytest.mark.slow</span></code>, e.g.:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pytest</span>
-<span class="nd">@pytest.mark.slow</span>
+<span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">slow</span>
 <span class="k">def</span> <span class="nf">test_something_slow</span><span class="p">():</span>
     <span class="n">slow_result</span> <span class="o">=</span> <span class="n">run_slow_processes</span><span class="p">()</span>
     <span class="k">assert</span> <span class="n">slow_result</span> <span class="o">==</span> <span class="n">expected_slow_thing</span>

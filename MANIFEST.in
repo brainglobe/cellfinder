@@ -1,1 +1,2 @@
 include cellfinder/config/*
+global-include *.pxd
