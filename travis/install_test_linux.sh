@@ -9,6 +9,6 @@ source activate test-environment
 pip install -e .[dev]
 conda info -a
 black ./ -l 79 --check
-#cellfinder -h
-#cellfinder_download
-#pytest --cov=cellfinder
+cellfinder -h
+cellfinder_download
+pytest --cov=cellfinder
