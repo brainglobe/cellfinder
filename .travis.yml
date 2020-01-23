@@ -61,7 +61,7 @@ jobs:
       script:
         - pip install twine
         - mkdir pypi_upload
-        - python setup.py sdist --formats=gztar,zip
+        - python setup.py sdist
         - cp dist/* pypi_upload/
 #        - docker run --rm -v $(pwd):/io quay.io/pypa/manylinux2010_x86_64 /io/travis/build_wheels.sh
 #        - cp wheelhouse/manylinux/* pypi_upload/
