@@ -1,8 +1,5 @@
 language: python
 
-after_success:
-- coveralls
-
 stages:
   - test
   - name: deploy
@@ -16,6 +13,7 @@ jobs:
       dist: bionic
       python: 3.6
       script: travis_wait 40 bash travis/install_test_linux.sh
+      after_success: coveralls
     - stage: test
       os: linux
       dist: bionic
