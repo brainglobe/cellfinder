@@ -1,23 +1,13 @@
 language: python
 
-#python:
-#  - "3.6"
-#  - "3.7"
-
 after_success:
 - coveralls
-
-#script:
-#  - travis_wait 40 bash travis/install_test_linux.sh
-
 
 stages:
   - test
   - name: deploy
     if:
-      tag IS present AND repo = adamltyson/cellfinder
-
-
+      tag IS present AND repo = SainsburyWellcomeCentre/cellfinder
 
 jobs:
   include:
@@ -39,8 +29,8 @@ jobs:
         - mkdir pypi_upload
         - python setup.py sdist
         - cp dist/* pypi_upload/
-#        - docker run --rm -v $(pwd):/io quay.io/pypa/manylinux2010_x86_64 /io/travis/build_linux_wheels.sh
-#        - cp wheelhouse/manylinux/* pypi_upload/
+        - docker run --rm -v $(pwd):/io quay.io/pypa/manylinux2010_x86_64 /io/travis/build_linux_wheels.sh
+        - cp wheelhouse/manylinux/* pypi_upload/
       after_success:
         - pip install twine
         - ls pypi_upload/*
@@ -52,7 +42,6 @@ notifications:
     - adam.tyson@ucl.ac.uk
     on_success: change
     on_failure: always
-
 
 env:
   global:
