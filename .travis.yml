@@ -24,7 +24,7 @@ stages:
   - test
   - name: deploy
     if:
-      tag IS present
+      tag IS present AND repo = adamltyson/cellfinder
 #      repo = adamltyson/cellfinder AND branch = deploy AND tag IS present
 #      - branch = deploy
 #      - tag IS present
