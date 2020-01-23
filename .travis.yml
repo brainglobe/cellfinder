@@ -20,6 +20,19 @@ jobs:
       dist: bionic
       python: 3.7
       script: travis_wait 40 bash travis/install_test_linux.sh
+    - stage: test
+      os: windows
+      language: shell
+      before_install:
+        - choco install python --version 3.6.8
+        - python --version
+        - python -m pip install --upgrade pip
+        - pip install -e .[dev]
+      env: PATH=/c/Python36:/c/Python36/Scripts:$PATH
+      script:
+        - cellfinder -h
+        - cellfinder_download
+        - pytest--cov-cellfinder
     - stage: deploy
       services:
         - docker
