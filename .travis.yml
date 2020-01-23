@@ -26,6 +26,7 @@ stages:
     if:
       - repo = adamltyson/cellfinder
       - branch = deploy
+      - tag IS present
 
 
 jobs:
