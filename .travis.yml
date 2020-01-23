@@ -27,6 +27,7 @@ jobs:
         - choco install python --version 3.6.8
         - python --version
         - python -m pip install --upgrade pip
+        - pip install setuptools>=41.0.0
         - pip install -e .[dev]
       env: PATH=/c/Python36:/c/Python36/Scripts:$PATH
       script:
