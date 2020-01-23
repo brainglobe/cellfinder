@@ -6,15 +6,5 @@ very little ram.
 
 
 ``` bash
-    cellfinder_view_cells /path/to/xmlfile.xml /path/to/images.txt
+    cellfinder_view_cells /path/to/images /path/to/xmlfile.xml
 ```
-
-### Arguments
-#### Mandatory
-* `-i` or `--img-paths` Directory of images
-* `-x` or `--cells-xml` Path to the .xml cell file
- 
-A viewer will then open, showing one 2D slice at a time, with the cells
-overlaid as circles. A slider at the bottom can be used to navigate the stack,
-and the image can be zoomed in using the mouse scroll wheel.
-
