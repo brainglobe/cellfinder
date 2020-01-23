@@ -1,13 +1,12 @@
 language: python
 
-after_success:
-- coveralls
-
 stages:
   - test
   - name: deploy
     if:
       tag IS present AND repo = SainsburyWellcomeCentre/cellfinder
+
+after_success: coveralls
 
 jobs:
   include:
@@ -21,6 +20,20 @@ jobs:
       dist: bionic
       python: 3.7
       script: travis_wait 40 bash travis/install_test_linux.sh
+    - stage: test
+      os: windows
+      language: shell
+      before_install:
+        - choco install python --version 3.6.8
+        - python --version
+        - python -m pip install --upgrade pip
+        - pip install setuptools --upgrade
+        - pip install -e .[dev]
+      env: PATH=/c/Python36:/c/Python36/Scripts:$PATH
+      script:
+        - cellfinder -h
+        - cellfinder_download
+        - pytest--cov-cellfinder
     - stage: deploy
       services:
         - docker
@@ -32,8 +45,6 @@ jobs:
         - docker run --rm -v $(pwd):/io quay.io/pypa/manylinux2010_x86_64 /io/travis/build_linux_wheels.sh
         - cp wheelhouse/manylinux/* pypi_upload/
       after_success:
-        - pip install twine
-        - ls pypi_upload/*
         - twine upload pypi_upload/* --skip-existing
 
 notifications:
