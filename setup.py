@@ -90,7 +90,7 @@ else:
 
 setup(
     name="cellfinder",
-    version="0.3.4rc3",
+    version="0.3.4",
     description="Cell detection for whole-brain microscopy",
     install_requires=requirements,
     extras_require={
@@ -104,7 +104,7 @@ setup(
             "pytest",
             "gitpython",
             "coveralls",
-            "coverage<=4.5.4",
+            "coverage>=5.0.3",
         ]
     },
     setup_requires=["cython"],
