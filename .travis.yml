@@ -67,7 +67,7 @@ jobs:
         - cp wheelhouse/manylinux/* pypi_upload/
       after_success:
         - pip install twine
-        - ls pypi_upload/
+        - ls pypi_upload/*
         - twine upload pypi_upload/ --skip-existing
 
 notifications:
