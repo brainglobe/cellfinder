@@ -49,7 +49,7 @@ stages:
   - test
   - name: deploy
     if:
-      - repo = adamltyson/cellfinder AND branch = deploy
+      - repo = adamltyson/cellfinder AND branch = deploy AND tag IS PRESENT
 
 
 jobs:
@@ -81,4 +81,4 @@ notifications:
 env:
   global:
     - TWINE_USERNAME=__token__
-    # Note: TWINE_PASSWORD is set to a PyPI API token in Travis settings
+    # TWINE_PASSWORD is set to a PyPI API token in Travis settings
