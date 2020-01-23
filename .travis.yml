@@ -1,6 +1,7 @@
 language: python
 
 after_success:
+  - pip install coveralls
   - coveralls
 
 stages:
