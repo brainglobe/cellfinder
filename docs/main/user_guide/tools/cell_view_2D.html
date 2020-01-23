@@ -91,13 +91,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../troubleshooting.html">Troubleshooting</a></li>
 </ul>
 <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Two dimensional cell viewer</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#arguments">Arguments</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#mandatory">Mandatory</a></li>
-</ul>
-</li>
-</ul>
-</li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Two dimensional cell viewer</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cell_view_3D.html">Three dimensional viewer</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cells_standard_space.html">Transforming cells into standard space</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cells_to_brainrender.html">Converting cells to brainrender format</a></li>
@@ -186,21 +180,8 @@
 <p>To visualise cells (or cell candidates) from an XML file overlaid onto a
 full-resolution image. Planes are loaded only when needed, so uses
 very little ram.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>    cellfinder_view_cells /path/to/xmlfile.xml /path/to/images.txt
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>    cellfinder_view_cells /path/to/images /path/to/xmlfile.xml
 </pre></div>
-</div>
-<div class="section" id="arguments">
-<h2>Arguments<a class="headerlink" href="#arguments" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="mandatory">
-<h3>Mandatory<a class="headerlink" href="#mandatory" title="Permalink to this headline">¶</a></h3>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">-i</span></code> or <code class="docutils literal notranslate"><span class="pre">--img-paths</span></code> Directory of images</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">-x</span></code> or <code class="docutils literal notranslate"><span class="pre">--cells-xml</span></code> Path to the .xml cell file</p></li>
-</ul>
-<p>A viewer will then open, showing one 2D slice at a time, with the cells
-overlaid as circles. A slider at the bottom can be used to navigate the stack,
-and the image can be zoomed in using the mouse scroll wheel.</p>
-</div>
 </div>
 </div>
 

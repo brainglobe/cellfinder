@@ -22,7 +22,7 @@ from cellfinder.tools.misc import check_positive_int
 from cellfinder.tools.source_files import source_custom_config
 from amap.config.atlas import Atlas
 from amap.config.config import get_binary
-from cellfinder.tools import source_files
+from amap.tools.source_files import get_niftyreg_binaries
 import cellfinder.summarise.count_summary as cells_regions
 from cellfinder.tools.exceptions import RegistrationError
 from cellfinder.tools.system import (
@@ -181,7 +181,7 @@ def transform_rois(
     )
 
     print("Preparing ROI registration")
-    nifty_reg_binaries_folder = source_files.get_niftyreg_binaries()
+    nifty_reg_binaries_folder = get_niftyreg_binaries()
     program_path = get_binary(nifty_reg_binaries_folder, PROGRAM_NAME)
 
     reg_cmd = prepare_segmentation_cmd(
