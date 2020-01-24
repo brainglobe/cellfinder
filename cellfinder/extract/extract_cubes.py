@@ -10,6 +10,7 @@ from numpy.linalg.linalg import LinAlgError
 from math import floor
 from tifffile import tifffile
 from tqdm import tqdm
+from imlib.system import get_sorted_file_paths
 
 from cellfinder.IO.cells import get_cells
 import cellfinder.cells.tools as cell_tools
@@ -411,7 +412,7 @@ def main(args):
             # only extract those channels that are necessary for classification
             channel_list = [args.signal_channel, args.background_ch_id]
         if channel in channel_list:
-            planes_paths[channel] = system.get_sorted_file_paths(
+            planes_paths[channel] = get_sorted_file_paths(
                 planes_paths_file_path, file_extension="tif"
             )
 

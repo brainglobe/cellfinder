@@ -5,6 +5,7 @@ from multiprocessing import Queue as MultiprocessingQueue
 from multiprocessing import Lock
 
 from tqdm import tqdm
+from imlib.system import get_sorted_file_paths
 
 from cellfinder.detect.filters.plane_filters.multiprocessing import (
     MpTileProcessor,
@@ -65,7 +66,7 @@ def main(args):
     )
 
     # file extension only used if a directory is passed
-    img_paths = system.get_sorted_file_paths(
+    img_paths = get_sorted_file_paths(
         args.signal_planes_paths[0], file_extension="tif"
     )
 

@@ -6,9 +6,6 @@ from pathlib import Path
 
 import cellfinder.tools.tools as tools
 
-data_dir = Path("tests", "data")
-jabberwocky = data_dir / "general" / "jabberwocky.txt"
-
 
 a = [1, "a", 10, 30]
 b = [30, 10, "c", "d"]
@@ -130,19 +127,3 @@ def test_delete_tmp(tmpdir):
 def test_is_any_list_overlap():
     assert tools.is_any_list_overlap(a, b)
     assert not tools.is_any_list_overlap(a, [2, "b", (1, 2, 3)])
-
-
-def test_get_text_lines():
-    line_5 = "The jaws that bite, the claws that catch!"
-    first_line_alphabetically = "All mimsy were the borogoves,"
-    assert tools.get_text_lines(jabberwocky, return_lines=5) == line_5
-    assert (
-        tools.get_text_lines(
-            jabberwocky, return_lines=6, remove_empty_lines=False
-        )
-        == line_5
-    )
-    assert (
-        tools.get_text_lines(jabberwocky, sort=True)[0]
-        == first_line_alphabetically
-    )

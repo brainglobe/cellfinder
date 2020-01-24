@@ -1,8 +1,9 @@
 import logging
 import numpy as np
+from imlib.system import get_sorted_file_paths
+
 
 from cellfinder.IO.cells import save_cells
-
 from cellfinder.classify.tools import get_model
 from cellfinder.classify.cube_generator import CubeGeneratorFromFile
 from cellfinder.classify.train_yml import models
@@ -12,10 +13,10 @@ from cellfinder.tools import system
 def main(args, max_workers=3):
     signal_paths = args.signal_planes_paths[args.signal_channel]
     background_paths = args.background_planes_path[0]
-    signal_images = system.get_sorted_file_paths(
+    signal_images = get_sorted_file_paths(
         signal_paths, file_extension="tif"
     )
-    background_images = system.get_sorted_file_paths(
+    background_images = get_sorted_file_paths(
         background_paths, file_extension="tif"
     )
 

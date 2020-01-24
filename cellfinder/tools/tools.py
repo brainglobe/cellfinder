@@ -4,7 +4,8 @@ import numpy as np
 
 from natsort import natsorted
 from random import getrandbits, uniform
-
+from imlib.list import remove_empty_string
+from imlib.system import check_path_in_dir
 from cellfinder.tools import system
 
 
@@ -122,15 +123,6 @@ def scale_and_convert_to_16_bits(img):
     return img.astype(np.uint16, copy=False)
 
 
-def remove_empty_string_list(str_list):
-    """
-    Removes any empty strings from a list of strings
-    :param str_list: List of strings
-    :return: List of strings without the empty strings
-    """
-    return list(filter(None, str_list))
-
-
 def unique_elements_lists(list_in):
     """ return the unique elements in a list"""
     return list(dict.fromkeys(list_in))
@@ -218,7 +210,7 @@ def delete_temp(directory, paths, prefix="tmp__"):
     """
     for path_name, path in paths.__dict__.items():
         if path_name.startswith(prefix):
-            if system.check_path_in_dir(path, directory):
+            if check_path_in_dir(path, directory):
                 try:
                     os.remove(path)
                 except FileNotFoundError:
@@ -236,38 +228,6 @@ def is_any_list_overlap(list_a, list_b):
     :return: True if lists have shared elements
     """
     return any({*list_a} & {*list_b})
-
-
-def get_text_lines(
-    file,
-    return_lines=None,
-    rstrip=True,
-    sort=False,
-    remove_empty_lines=True,
-    encoding=None,
-):
-    """
-    Return only the nth line of a text file
-    :param file: Any text file
-    :param return_lines: Which specific line/lines to read
-    :param rstrip: Remove trailing characters
-    :param sort: If true, naturally sort the data
-    :param remove_empty_lines: If True, ignore empty lines
-    :param encoding: What encoding the text file has.
-    Default: None (platform dependent)
-    :return: The nth line
-    """
-    with open(file, encoding=encoding) as f:
-        lines = f.readlines()
-    if rstrip:
-        lines = [line.strip() for line in lines]
-    if remove_empty_lines:
-        lines = remove_empty_string_list(lines)
-    if sort:
-        lines = natsorted(lines)
-    if return_lines is not None:
-        lines = lines[return_lines]
-    return lines
 
 
 def random_bool(likelihood=None):

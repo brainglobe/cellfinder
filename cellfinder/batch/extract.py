@@ -8,13 +8,13 @@ from pathlib import Path
 from natsort import natsorted
 from imlib.misc import check_positive_int
 from imlib.system import ensure_directory_exists
+from imlib.string import get_text_lines
 
 import cellfinder.tools.tools as tools
 import cellfinder.tools.parser as cellfinder_parse
 import cellfinder.extract.extract_cubes as extract_cubes
 import cellfinder.tools.prep as prep
 from cellfinder.tools.system import get_subdirectories as subdirs
-from cellfinder.tools import system
 from cellfinder.tools.metadata import define_pixel_sizes
 
 # For compatiblity with ROI sorter
@@ -120,7 +120,7 @@ def main():
     if args.cells_file_path.is_dir():
         indv_cells_paths = natsorted(subdirs(args.cells_file_path))
     elif args.cells_file_path.is_file():
-        tmp_paths = tools.get_text_lines(args.cells_file_path)
+        tmp_paths = get_text_lines(args.cells_file_path)
         indv_cells_paths = natsorted([Path(path) for path in tmp_paths])
 
     if indv_cells_paths[0].is_dir():
@@ -139,7 +139,7 @@ def main():
             )
             for channel in range(num_channels):
                 args.all_planes_paths.append(
-                    tools.get_text_lines(
+                    get_text_lines(
                         args.raw_data_paths[channel],
                         return_lines=idx,
                         sort=True,

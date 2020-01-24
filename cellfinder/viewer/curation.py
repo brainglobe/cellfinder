@@ -1,12 +1,12 @@
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 import napari
+import numpy as np
 from napari.utils.io import magic_imread
 from pathlib import Path
+from imlib.system import get_sorted_file_paths
+
 from cellfinder.IO.cells import cells_xml_to_df, save_cells
 from cellfinder.cells.cells import Cell
-from cellfinder.tools.system import get_sorted_file_paths
-import numpy as np
-from cellfinder.tools.tools import unique_elements_lists
 
 OUTPUT_NAME = "curated_cells.xml"
 
