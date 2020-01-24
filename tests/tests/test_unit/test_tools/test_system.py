@@ -5,6 +5,7 @@ import os
 from pathlib import Path
 from math import isclose
 from random import shuffle
+from imlib.system import ensure_directory_exists
 
 import cellfinder.tools.tools as tools
 import cellfinder.tools.system as system
@@ -131,7 +132,7 @@ def test_catch_input_file_error(tmpdir):
 def test_ensure_directory_exists():
     home = os.path.expanduser("~")
     exist_dir = os.path.join(home, ".cellfinder_test_dir")
-    system.ensure_directory_exists(exist_dir)
+    ensure_directory_exists(exist_dir)
     assert os.path.exists(exist_dir)
     os.rmdir(exist_dir)
 

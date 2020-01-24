@@ -1,7 +1,7 @@
 import os
+from imlib.system import ensure_directory_exists
 
 from cellfinder.download.download import download
-from cellfinder.tools.system import ensure_directory_exists
 
 default_atlas_name = "brain.nii"
 

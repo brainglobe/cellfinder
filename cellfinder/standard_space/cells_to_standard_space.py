@@ -4,7 +4,9 @@ from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from datetime import datetime
 from os.path import join
 
-from cellfinder.tools import tools, system, prep
+from imlib.system import ensure_directory_exists
+
+from cellfinder.tools import tools, prep
 import cellfinder.tools.parser as cellfinder_parse
 from cellfinder.tools.metadata import define_pixel_sizes
 from amap.register.registration_params import RegistrationParams
@@ -207,8 +209,8 @@ def main():
 
     # TODO: implement a recursive function to remove the need to do this
     # (probably using pathlib)
-    system.ensure_directory_exists(args.paths.output_dir)
-    system.ensure_directory_exists(args.paths.standard_space_output_folder)
+    ensure_directory_exists(args.paths.output_dir)
+    ensure_directory_exists(args.paths.standard_space_output_folder)
     tools.start_logging(
         args.paths.output_dir,
         args=args,

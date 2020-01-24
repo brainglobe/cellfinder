@@ -21,6 +21,7 @@ from argparse import (
 )
 from sklearn.model_selection import train_test_split
 from imlib.misc import check_positive_float, check_positive_int
+from imlib.system import ensure_directory_exists
 
 tf_suppress_log_messages = [
     "sample_weight modes were coerced from",
@@ -207,7 +208,7 @@ def main(max_workers=3):
     start_time = datetime.now()
     args = training_parse()
     output_dir = Path(args.output_dir)
-    system.ensure_directory_exists(output_dir)
+    ensure_directory_exists(output_dir)
     args = prep_training(args)
     tiff_files = parse_yaml(args.yaml_file)
 
@@ -263,7 +264,7 @@ def main(max_workers=3):
 
     if args.tensorboard:
         logdir = output_dir / "tensorboard"
-        system.ensure_directory_exists(logdir)
+        ensure_directory_exists(logdir)
         tensorboard = TensorBoard(
             log_dir=logdir,
             histogram_freq=0,

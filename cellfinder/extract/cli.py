@@ -3,6 +3,7 @@ import logging
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from datetime import datetime
 from imlib.misc import check_positive_int
+from imlib.system import ensure_directory_exists
 
 from cellfinder.tools import tools, system, prep
 import cellfinder.tools.parser as cellfinder_parse
@@ -80,7 +81,7 @@ def main():
     args.paths = prep.Paths(args.cubes_output_dir)
     args.paths.tmp__cubes_output_dir = args.cubes_output_dir
     args.paths.cells_file_path = args.cells_file_path
-    system.ensure_directory_exists(args.paths.tmp__cubes_output_dir)
+    ensure_directory_exists(args.paths.tmp__cubes_output_dir)
 
     tools.start_logging(
         args.paths.tmp__cubes_output_dir,

@@ -7,6 +7,8 @@ from datetime import datetime
 from pathlib import Path
 from natsort import natsorted
 from imlib.misc import check_positive_int
+from imlib.system import ensure_directory_exists
+
 import cellfinder.tools.tools as tools
 import cellfinder.tools.parser as cellfinder_parse
 import cellfinder.extract.extract_cubes as extract_cubes
@@ -89,7 +91,7 @@ def prep_channel_ids(args):
 
 
 def extract_loop(args):
-    system.ensure_directory_exists(args.paths.tmp__cubes_output_dir)
+    ensure_directory_exists(args.paths.tmp__cubes_output_dir)
     extract_cubes.main(args)
 
 
@@ -104,7 +106,7 @@ def main():
     args.cells_file_path = Path(args.cells_file_path)
     args.cube_extract_cli = True
     args.paths = prep.Paths(args.output_dir)
-    system.ensure_directory_exists(args.output_dir)
+    ensure_directory_exists(args.output_dir)
     tools.start_logging(
         str(args.output_dir),
         args=args,
@@ -132,7 +134,7 @@ def main():
         for idx, sample_dir in enumerate(indv_cells_paths):
             logging.info("Extracting cubes from: {}".format(sample_dir.name))
             args.all_planes_paths = []
-            system.ensure_directory_exists(
+            ensure_directory_exists(
                 args.output_dir.joinpath(sample_dir.name)
             )
             for channel in range(num_channels):

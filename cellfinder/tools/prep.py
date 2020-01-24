@@ -9,6 +9,8 @@ import os
 import logging
 from fancylog import fancylog
 from pathlib import Path
+from imlib.system import ensure_directory_exists
+
 
 import cellfinder.tools.parser as parser
 import amap.download.atlas as atlas_download
@@ -415,7 +417,7 @@ def prep_registration(args, sample_name="amap"):
     args.target_brain_path = args.background_planes_path[0]
     args.sample_name = sample_name
     logging.debug("Making registration directory")
-    system.ensure_directory_exists(args.paths.registration_output_folder)
+    ensure_directory_exists(args.paths.registration_output_folder)
 
     additional_images_downsample = {}
     for idx, images in enumerate(args.signal_planes_paths):
@@ -528,7 +530,7 @@ def prep_candidate_detection(args):
         args.plane_directory = os.path.join(
             args.output_dir, "processed_planes"
         )
-        system.ensure_directory_exists(args.plane_directory)
+        ensure_directory_exists(args.plane_directory)
     else:
         args.plane_directory = None  # FIXME: remove this fudge
 
@@ -536,12 +538,12 @@ def prep_candidate_detection(args):
 
 
 def standard_space_prep(args):
-    system.ensure_directory_exists(args.paths.standard_space_output_folder)
+    ensure_directory_exists(args.paths.standard_space_output_folder)
     args.paths.make_invert_cell_position_paths()
     return args
 
 
 def figures_prep(args):
-    system.ensure_directory_exists(args.paths.figures_dir)
+    ensure_directory_exists(args.paths.figures_dir)
     args.paths.make_figures_paths()
     return args
