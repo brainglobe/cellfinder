@@ -134,19 +134,6 @@ def catch_input_file_error(path):
         raise CommandLineInputError(message)
 
 
-def ensure_directory_exists(directory):
-    """
-    If a dirctory doesn't exist, make it. Works for pathlib objects, and
-    strings.
-    :param directory:
-    """
-    if isinstance(directory, str):
-        if not os.path.exists(directory):
-            os.makedirs(directory)
-    elif isinstance(directory, PosixPath):
-        directory.mkdir(exist_ok=True)
-
-
 def memory_in_bytes(memory_amount, unit):
     """
     Converts an amount of memory (in given units) to bytes
