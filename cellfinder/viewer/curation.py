@@ -85,7 +85,7 @@ def main():
         face_color_cycle = ["lightskyblue", "lightgoldenrodyellow"]
         points_layer = viewer.add_points(
             cells,
-            annotations=annotations,
+            properties=annotations,
             symbol=args.symbol,
             n_dimensional=True,
             size=args.marker_size,
@@ -99,11 +99,11 @@ def main():
         def toggle_point_annotation(viewer):
             selected_points = viewer.layers[1].selected_data
             if selected_points:
-                selected_annotations = viewer.layers[1].annotations["cell"][
+                selected_annotations = viewer.layers[1].properties["cell"][
                     selected_points
                 ]
                 toggled_annotations = np.logical_not(selected_annotations)
-                viewer.layers[1].annotations["cell"][
+                viewer.layers[1].properties["cell"][
                     selected_points
                 ] = toggled_annotations
 
@@ -136,7 +136,7 @@ def main():
             else:
                 unique_cells = unique_elements_lists(CURATED_CELLS)
                 points = viewer.layers[1].data[unique_cells]
-                labels = viewer.layers[1].annotations["cell"][unique_cells]
+                labels = viewer.layers[1].properties["cell"][unique_cells]
                 labels = labels.astype("int")
                 labels = labels + 1
 
