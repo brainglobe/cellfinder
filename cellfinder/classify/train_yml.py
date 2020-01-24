@@ -20,8 +20,7 @@ from argparse import (
     ArgumentTypeError,
 )
 from sklearn.model_selection import train_test_split
-
-from cellfinder.tools.misc import check_positive_float, check_positive_int
+from imlib.misc import check_positive_float, check_positive_int
 
 tf_suppress_log_messages = [
     "sample_weight modes were coerced from",

@@ -25,6 +25,7 @@ requirements = [
     "brainio>=0.0.9",
     "fancylog",
     "micrometa",
+    "imlib",
     "amap>=0.0.11",
     "napari>=0.2.8",
     # "brainrender",

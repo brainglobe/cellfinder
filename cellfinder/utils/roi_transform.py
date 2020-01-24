@@ -16,9 +16,8 @@ from skimage import morphology
 from tqdm import tqdm
 from read_roi import read_roi_zip
 from scipy.ndimage import maximum_filter1d
+from imlib.misc import check_positive_int
 
-
-from cellfinder.tools.misc import check_positive_int
 from cellfinder.tools.source_files import source_custom_config
 from amap.config.atlas import Atlas
 from amap.config.config import get_binary

@@ -2,10 +2,10 @@ import argparse
 
 from pathlib import Path
 from datetime import datetime
+from imlib.misc import check_positive_float
 
 from cellfinder.tools.system import ensure_directory_exists
 from cellfinder.IO import cells as cio
-from cellfinder.tools.misc import check_positive_float
 from cellfinder.tools.exceptions import CommandLineInputError
 
 

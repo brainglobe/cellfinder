@@ -6,12 +6,11 @@ from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from datetime import datetime
 from pathlib import Path
 from natsort import natsorted
-
+from imlib.misc import check_positive_int
 import cellfinder.tools.tools as tools
 import cellfinder.tools.parser as cellfinder_parse
 import cellfinder.extract.extract_cubes as extract_cubes
 import cellfinder.tools.prep as prep
-from cellfinder.tools.misc import check_positive_int
 from cellfinder.tools.system import get_subdirectories as subdirs
 from cellfinder.tools import system
 from cellfinder.tools.metadata import define_pixel_sizes

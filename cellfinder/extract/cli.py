@@ -2,11 +2,11 @@ import logging
 
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from datetime import datetime
+from imlib.misc import check_positive_int
 
 from cellfinder.tools import tools, system, prep
 import cellfinder.tools.parser as cellfinder_parse
 import cellfinder.extract.extract_cubes as extract_cubes
-from cellfinder.tools.misc import check_positive_int
 from cellfinder.tools.metadata import define_pixel_sizes
 
 
