@@ -134,9 +134,7 @@ def main():
         for idx, sample_dir in enumerate(indv_cells_paths):
             logging.info("Extracting cubes from: {}".format(sample_dir.name))
             args.all_planes_paths = []
-            ensure_directory_exists(
-                args.output_dir.joinpath(sample_dir.name)
-            )
+            ensure_directory_exists(args.output_dir.joinpath(sample_dir.name))
             for channel in range(num_channels):
                 args.all_planes_paths.append(
                     get_text_lines(

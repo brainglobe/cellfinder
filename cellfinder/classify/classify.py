@@ -13,9 +13,7 @@ from cellfinder.tools import system
 def main(args, max_workers=3):
     signal_paths = args.signal_planes_paths[args.signal_channel]
     background_paths = args.background_planes_path[0]
-    signal_images = get_sorted_file_paths(
-        signal_paths, file_extension="tif"
-    )
+    signal_images = get_sorted_file_paths(signal_paths, file_extension="tif")
     background_images = get_sorted_file_paths(
         background_paths, file_extension="tif"
     )

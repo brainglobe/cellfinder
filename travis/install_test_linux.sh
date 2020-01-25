@@ -8,7 +8,7 @@ conda create -n test-environment python=$TRAVIS_PYTHON_VERSION
 source activate test-environment
 pip install -e .[dev]
 conda info -a
-black ./ -l 79 --check
+black ./ -l 79
 cellfinder -h
 cellfinder_download
 pytest --cov=cellfinder
