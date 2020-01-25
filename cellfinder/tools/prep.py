@@ -9,7 +9,7 @@ import os
 import logging
 from fancylog import fancylog
 from pathlib import Path
-from imlib.system import ensure_directory_exists
+from imlib.system import ensure_directory_exists, get_num_processes
 
 
 import cellfinder.tools.parser as parser
@@ -469,14 +469,14 @@ def prep_atlas_conf(args):
 
 
 def prep_classification(args):
-    n_processes = system.get_num_processes(min_free_cpu_cores=args.n_free_cpus)
+    n_processes = get_num_processes(min_free_cpu_cores=args.n_free_cpus)
     prep_tensorflow(n_processes)
     args = prep_models(args)
     return args
 
 
 def prep_training(args):
-    n_processes = system.get_num_processes(min_free_cpu_cores=args.n_free_cpus)
+    n_processes = get_num_processes(min_free_cpu_cores=args.n_free_cpus)
     prep_tensorflow(n_processes)
     args = prep_models(args)
     return args

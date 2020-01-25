@@ -10,7 +10,7 @@ from numpy.linalg.linalg import LinAlgError
 from math import floor
 from tifffile import tifffile
 from tqdm import tqdm
-from imlib.system import get_sorted_file_paths
+from imlib.system import get_sorted_file_paths, get_num_processes
 
 from cellfinder.IO.cells import get_cells
 import cellfinder.cells.tools as cell_tools
@@ -471,7 +471,7 @@ def main(args):
         num_planes_needed_for_cube,
         copies=2,
     )
-    n_processes = system.get_num_processes(
+    n_processes = get_num_processes(
         min_free_cpu_cores=args.n_free_cpus,
         ram_needed_per_process=ram_per_process,
         n_max_processes=len(planes_to_read),

@@ -1,17 +1,11 @@
-import logging
 import os
 import subprocess
-import glob
-import psutil
 
 from tempfile import gettempdir
-from natsort import natsorted
 from tqdm import tqdm
-from pathlib import Path, PosixPath
-from slurmio import slurmio
+from pathlib import Path
 
 from cellfinder.tools.exceptions import CommandLineInputError
-from cellfinder.tools import tools
 
 
 def delete_directory_contents(directory, progress=False):
@@ -134,130 +128,7 @@ def remove_leading_character(string, character):
     else:
         return string
 
-
-def get_num_processes(
-    min_free_cpu_cores=2,
-    ram_needed_per_process=None,
-    fraction_free_ram=0.1,
-    n_max_processes=None,
-    max_ram_usage=None,
-):
-    """
-    Determine how many CPU cores to use, based on a minimum number of cpu cores
-    to leave free, and an optional max number of processes.
-
-    Cluster computing aware for the SLURM job scheduler, and not yet
-    implemented for other environments.
-    :param int min_free_cpu_cores: How many cpu cores to leave free
-    :param float ram_needed_per_process: Memory requirements per process. Set
-    this to ensure that the number of processes isn't too high.
-    :param float fraction_free_ram: Fraction of the ram to ensure stays free
-    regardless of the current program.
-    :param int n_max_processes: Maximum number of processes
-    :param float max_ram_usage: Maximum amount of RAM (in bytes)
-    to use (allthough available may be lower)
-    :return: Number of processes to
-    """
-    logging.debug("Determining the maximum number of CPU cores to use")
-    try:
-        os.environ["SLURM_JOB_ID"]
-        n_cpu_cores = (
-            slurmio.SlurmJobParameters().allocated_cores - min_free_cpu_cores
-        )
-    except KeyError:
-        n_cpu_cores = psutil.cpu_count() - min_free_cpu_cores
-
-    logging.debug(f"Number of CPU cores available is: {n_cpu_cores}")
-
-    if ram_needed_per_process is not None:
-        cores_w_sufficient_ram = how_many_cores_with_sufficient_ram(
-            ram_needed_per_process,
-            fraction_free_ram=fraction_free_ram,
-            max_ram_usage=max_ram_usage,
-        )
-        n_processes = min(n_cpu_cores, cores_w_sufficient_ram)
-        logging.debug(
-            f"Based on memory requirements, up to {cores_w_sufficient_ram} "
-            f"cores could be used. Therefore setting the number of "
-            f"processes to {n_processes}."
-        )
-    else:
-        n_processes = n_cpu_cores
-
-    if n_max_processes is not None:
-        if n_max_processes < n_processes:
-            logging.debug(
-                f"Forcing the number of processes to {n_max_processes} based"
-                f" on other considerations."
-            )
-        n_processes = min(n_processes, n_max_processes)
-
-    logging.debug(f"Setting number of processes to: {n_processes}")
-    return int(n_processes)
-
-
-def how_many_cores_with_sufficient_ram(
-    ram_needed_per_cpu, fraction_free_ram=0.1, max_ram_usage=None
-):
-    """
-    Based on the amount of RAM needed per CPU core for a multiprocessing task,
-    work out how many CPU cores could theoretically be used based on the
-    amount of free RAM. N.B. this does not relate to how many CPU cores
-    are actually available.
-
-    :param float ram_needed_per_cpu: Memory requirements per process. Set
-    this to ensure that the number of processes isn't too high.
-    :param float fraction_free_ram: Fraction of the ram to ensure stays free
-    regardless of the current program.
-    :param float max_ram_usage: Maximum amount of RAM (in bytes)
-    to use (allthough available may be lower)
-    :return: How many CPU cores could be theoretically used based on
-    the amount of free RAM
-    """
-
-    try:
-        # if in slurm environment
-        os.environ["SLURM_JOB_ID"]
-        # Only allocated memory (not free). Assumes that nothing else will be
-        # running
-        free_mem = slurmio.SlurmJobParameters().allocated_memory
-    except KeyError:
-        free_mem = get_free_ram()
-
-    logging.debug(f"Free memory is: {free_mem} bytes.")
-
-    if max_ram_usage is not None:
-        free_mem = min(free_mem, max_ram_usage)
-        logging.debug(
-            f"Maximum memory has been set as: {max_ram_usage} "
-            f"bytes, so using: {free_mem} as the maximum "
-            f"available memory"
-        )
-
-    free_mem = free_mem * (1 - fraction_free_ram)
-    cores_w_sufficient_ram = free_mem / ram_needed_per_cpu
-    return int(cores_w_sufficient_ram // 1)
-
-
 # ------ UNTESTED --------------------------------------------------
-
-
-def disk_free_gb(file_path):
-    """
-    Return the free disk space, on a disk defined by a file path.
-    :param file_path: File path on the disk to be checked
-    :return: Free space in GB
-    """
-    stats = os.statvfs(file_path)
-    return (stats.f_frsize * stats.f_bavail) / 1024 ** 3
-
-
-def get_free_ram():
-    """
-    Returns the amount of free RAM in bytes
-    :return: Available RAM in bytes
-    """
-    return psutil.virtual_memory().available
 
 
 def safe_execute_command(cmd, log_file_path=None, error_file_path=None):

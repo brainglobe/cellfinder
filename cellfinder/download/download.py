@@ -6,7 +6,7 @@ import urllib.request
 from amap.config.config import get_config_ob
 from amap.download.download import write_atlas_to_cfg
 from cellfinder.tools import source_files
-from cellfinder.tools.system import disk_free_gb
+from imlib.system import disk_free_gb
 
 
 class DownloadError(Exception):

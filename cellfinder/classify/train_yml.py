@@ -21,7 +21,7 @@ from argparse import (
 )
 from sklearn.model_selection import train_test_split
 from imlib.misc import check_positive_float, check_positive_int
-from imlib.system import ensure_directory_exists
+from imlib.system import ensure_directory_exists, get_num_processes
 
 tf_suppress_log_messages = [
     "sample_weight modes were coerced from",
@@ -200,7 +200,6 @@ def main(max_workers=3):
 
     from tensorflow.keras.callbacks import TensorBoard, ModelCheckpoint
 
-    from cellfinder.tools import system
     from cellfinder.tools.prep import prep_training
     from cellfinder.classify.tools import make_lists, get_model
     from cellfinder.classify.cube_generator import CubeGeneratorFromDisk
@@ -213,7 +212,7 @@ def main(max_workers=3):
     tiff_files = parse_yaml(args.yaml_file)
 
     # Too many workers doesn't increase speed, and uses huge amounts of RAM
-    workers = system.get_num_processes(
+    workers = get_num_processes(
         min_free_cpu_cores=args.n_free_cpus, n_max_processes=max_workers
     )
 

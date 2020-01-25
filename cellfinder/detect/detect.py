@@ -5,14 +5,13 @@ from multiprocessing import Queue as MultiprocessingQueue
 from multiprocessing import Lock
 
 from tqdm import tqdm
-from imlib.system import get_sorted_file_paths
+from imlib.system import get_sorted_file_paths, get_num_processes
 
 from cellfinder.detect.filters.plane_filters.multiprocessing import (
     MpTileProcessor,
 )
 from cellfinder.detect.filters.setup_filters import setup
 from cellfinder.detect.filters.volume_filters.multiprocessing import Mp3DFilter
-from cellfinder.tools import system
 
 
 def calculate_parameters_in_pixels(
@@ -47,7 +46,7 @@ def calculate_parameters_in_pixels(
 
 
 def main(args):
-    n_processes = system.get_num_processes(min_free_cpu_cores=args.n_free_cpus)
+    n_processes = get_num_processes(min_free_cpu_cores=args.n_free_cpus)
     start_time = datetime.now()
 
     (

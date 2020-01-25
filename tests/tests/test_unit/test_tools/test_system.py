@@ -132,21 +132,3 @@ def test_remove_leading_character():
     assert ".ext" == system.remove_leading_character("..ext", ".")
 
 
-def check_get_num_processes():
-    assert len(os.sched_getaffinity(0)) == system.get_num_processes()
-
-
-def check_max_processes():
-    max_proc = 5
-    correct_n = min(len(os.sched_getaffinity(0)), max_proc)
-    assert correct_n == system.get_num_processes(n_max_processes=max_proc)
-
-
-def check_slurm_n_processes():
-    rand_n = random.randint(1, 100)
-    rand_min = random.randint(1, 30)
-    os.environ["SLURM_NPROCS"] = str(rand_n)
-    correct_n_procs = rand_n - rand_min
-    assert correct_n_procs == system.get_num_processes(
-        min_free_cpu_cores=rand_min
-    )

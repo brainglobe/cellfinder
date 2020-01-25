@@ -7,7 +7,7 @@ from cellfinder.IO.cells import save_cells
 from cellfinder.classify.tools import get_model
 from cellfinder.classify.cube_generator import CubeGeneratorFromFile
 from cellfinder.classify.train_yml import models
-from cellfinder.tools import system
+from imlib import system
 
 
 def main(args, max_workers=3):
