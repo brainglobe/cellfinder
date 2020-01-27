@@ -4,7 +4,7 @@ from pathlib import Path
 from math import isclose
 
 import cellfinder.tools.metadata as meta
-from cellfinder.tools.exceptions import CommandLineInputError
+from imlib.general.exceptions import CommandLineInputError
 
 data_dir = Path("tests", "data")
 metadata_dir = data_dir / "metadata"

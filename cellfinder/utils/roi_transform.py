@@ -21,13 +21,12 @@ from imlib.general.system import (
     safe_execute_command,
     SafeExecuteCommandError,
 )
-
+from imlib.general.exceptions import RegistrationError
 from cellfinder.tools.source_files import source_custom_config
 from amap.config.atlas import Atlas
 from amap.config.config import get_binary
 from amap.tools.source_files import get_niftyreg_binaries
 import cellfinder.summarise.count_summary as cells_regions
-from cellfinder.tools.exceptions import RegistrationError
 
 
 # TODO: get this from amap

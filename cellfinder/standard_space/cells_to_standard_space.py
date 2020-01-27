@@ -12,13 +12,13 @@ from imlib.general.system import (
 from imlib.IO.cells import get_cells, save_cells
 from imlib.cells.cells import transform_cell_positions
 from imlib.general.system import delete_temp
+from imlib.general.exceptions import TransformationError
 from brainio.brainio import load_any as load_any_image
 from amap.register.registration_params import RegistrationParams
 
 from cellfinder.tools import tools, prep
 import cellfinder.tools.parser as cellfinder_parse
 from cellfinder.tools.metadata import define_pixel_sizes
-from cellfinder.tools.exceptions import TransformationError
 from cellfinder.tools.source_files import source_custom_config
 
 

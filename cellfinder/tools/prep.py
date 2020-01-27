@@ -16,7 +16,7 @@ import cellfinder.tools.parser as parser
 import amap.download.atlas as atlas_download
 from cellfinder.tools.metadata import define_pixel_sizes
 from cellfinder.tools import tools, source_files, system
-from cellfinder.tools.exceptions import CommandLineInputError
+from imlib.general.exceptions import CommandLineInputError
 from amap.config.config import get_config_ob
 import cellfinder.tools.tf as tf_tools
 import cellfinder as program_for_log

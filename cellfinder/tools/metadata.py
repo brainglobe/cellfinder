@@ -6,7 +6,7 @@ Functions to read image acqusition metadata files.
 
 """
 
-from cellfinder.tools.exceptions import CommandLineInputError
+from imlib.general.exceptions import CommandLineInputError
 from argparse import ArgumentTypeError
 
 from micrometa.micrometa import get_acquisition_metadata

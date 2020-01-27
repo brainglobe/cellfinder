@@ -7,7 +7,7 @@ from math import isclose
 from imlib.general.system import ensure_directory_exists
 
 import cellfinder.tools.system as system
-from cellfinder.tools.exceptions import CommandLineInputError
+from imlib.general.exceptions import CommandLineInputError
 
 data_dir = Path("tests", "data")
 background_im_dir = os.path.join(data_dir, "background")

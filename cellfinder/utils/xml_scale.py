@@ -6,7 +6,7 @@ from imlib.general.misc import check_positive_float
 from imlib.general.system import ensure_directory_exists
 import imlib.IO.cells as cell_io
 
-from cellfinder.tools.exceptions import CommandLineInputError
+from imlib.general.exceptions import CommandLineInputError
 
 
 def xml_scale(

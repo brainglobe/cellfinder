@@ -3,7 +3,7 @@ import os
 from tqdm import tqdm
 from pathlib import Path
 
-from cellfinder.tools.exceptions import CommandLineInputError
+from imlib.general.exceptions import CommandLineInputError
 
 
 def delete_directory_contents(directory, progress=False):
