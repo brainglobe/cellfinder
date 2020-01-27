@@ -1,5 +1,4 @@
 import pytest
-import random
 import os
 
 from pathlib import Path
@@ -11,25 +10,6 @@ from imlib.general.exceptions import CommandLineInputError
 
 data_dir = Path("tests", "data")
 background_im_dir = os.path.join(data_dir, "background")
-
-
-def write_n_random_files(n, dir, min_size=32, max_size=2048):
-    sizes = random.sample(range(min_size, max_size), n)
-    for size in sizes:
-        with open(os.path.join(dir, str(size)), "wb") as fout:
-            fout.write(os.urandom(size))
-
-
-def test_delete_directory_contents(tmpdir):
-    delete_dir = os.path.join(str(tmpdir), "delete_dir")
-    os.mkdir(delete_dir)
-    write_n_random_files(10, delete_dir)
-
-    # check the directory isn't empty first
-    assert not os.listdir(delete_dir) == []
-
-    system.delete_directory_contents(delete_dir, progress=True)
-    assert os.listdir(delete_dir) == []
 
 
 def test_get_subdirectories():

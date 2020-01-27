@@ -1,23 +1,6 @@
-import os
-
-from tqdm import tqdm
 from pathlib import Path
 
 from imlib.general.exceptions import CommandLineInputError
-
-
-def delete_directory_contents(directory, progress=False):
-    """
-    Removes all contents of a directory
-    :param directory: Directory with files to be removed
-    """
-    files = os.listdir(directory)
-    if progress:
-        for f in tqdm(files):
-            os.remove(os.path.join(directory, f))
-    else:
-        for f in files:
-            os.remove(os.path.join(directory, f))
 
 
 def get_subdirectories(directory, names_only=False):
