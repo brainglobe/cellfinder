@@ -1,4 +1,4 @@
-### Developer notes
+### Contributing
 #### Code organisation
 
 ##### File paths
@@ -41,7 +41,7 @@ pytest -m "not slow"`.
 #### Formatting
 To ensure a consistent code style, please use
  [Black](https://github.com/python/black) before commiting changes. 
- Please use the syntax: `black ./ -l 79 --target-version py36`
+ Please use the syntax: `black ./ -l 79 --target-version py37`
  
 
 #### Documentation
