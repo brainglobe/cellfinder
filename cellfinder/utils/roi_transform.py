@@ -339,14 +339,6 @@ def main():
     print("Finished. Total time taken: {}".format(datetime.now() - start_time))
 
 
-def get_transformation_matrix(self):
-    atlas_pixel_sizes = cells_regions.get_atlas_pixel_sizes(self._atlas_config)
-    transformation_matrix = np.eye(4)
-    for i, axis in enumerate(("x", "y", "z")):
-        transformation_matrix[i, i] = atlas_pixel_sizes[axis]
-    self.transformation_matrix = transformation_matrix
-
-
 def prepare_segmentation_cmd(
     program_path,
     floating_image_path,

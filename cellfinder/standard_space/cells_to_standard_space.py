@@ -11,6 +11,7 @@ from imlib.system import (
 )
 from imlib.IO.cells import get_cells, save_cells
 from imlib.cells.cells import transform_cell_positions
+from imlib.system import delete_temp
 from brainio.brainio import load_any as load_any_image
 from amap.register.registration_params import RegistrationParams
 
@@ -65,7 +66,7 @@ def transform_cells_to_standard_space(args):
 
     if not args.debug:
         logging.info("Removing standard space transformation temp files")
-        tools.delete_temp(args.paths.standard_space_output_folder, args.paths)
+        delete_temp(args.paths.standard_space_output_folder, args.paths)
 
 
 def get_deformation_field_scales(reg_params):

@@ -1,9 +1,9 @@
 import logging
 
-from cellfinder.figures import heatmap
 from amap.config.atlas import Atlas
+from imlib import nii
+from cellfinder.figures import heatmap
 from cellfinder.tools.source_files import source_custom_config
-import cellfinder.tools.brain as brain_tools
 
 from brainio import brainio
 
@@ -166,6 +166,6 @@ class GetScales:
         self.get_transformation_matrix()
 
     def get_transformation_matrix(self):
-        self.transformation_matrix = brain_tools.get_transformation_matrix(
+        self.transformation_matrix = nii.get_transformation_matrix(
             self._atlas_config
         )

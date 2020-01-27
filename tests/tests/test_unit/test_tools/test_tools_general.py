@@ -91,27 +91,6 @@ def test_convert_shape_dict_to_array_shape():
         tools.convert_shape_dict_to_array_shape(shape_dict, type="new type")
 
 
-class Paths:
-    def __init__(self, directory):
-        self.one = directory / "one.aaa"
-        self.two = directory / "two.bbb"
-        self.tmp__three = directory / "three.ccc"
-        self.tmp__four = directory / "four.ddd"
-
-
-def test_delete_tmp(tmpdir):
-    tmpdir = Path(tmpdir)
-    paths = Paths(tmpdir)
-    for attr, path in paths.__dict__.items():
-        path.touch()
-        print(path)
-    assert len([child for child in tmpdir.iterdir()]) == 4
-    tools.delete_temp(tmpdir, paths)
-    assert len([child for child in tmpdir.iterdir()]) == 2
-
-    tools.delete_temp(tmpdir, paths)
-
-
 def test_is_any_list_overlap():
     assert tools.is_any_list_overlap(a, b)
     assert not tools.is_any_list_overlap(a, [2, "b", (1, 2, 3)])

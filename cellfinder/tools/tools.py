@@ -175,25 +175,6 @@ def convert_shape_dict_to_array_shape(shape_dict, type="numpy"):
     return tuple(shape)
 
 
-def delete_temp(directory, paths, prefix="tmp__"):
-    """
-    Removes all temp files (properties of an object starting with "tmp__")
-    :param directory: Directory to delete tmp files from
-    :param paths: cellfinder.prep.Paths object with temp paths.
-    :param prefix: String that temporary files (to be deleted) begin with.
-    """
-    for path_name, path in paths.__dict__.items():
-        if path_name.startswith(prefix):
-            if check_path_in_dir(path, directory):
-                try:
-                    os.remove(path)
-                except FileNotFoundError:
-                    logging.warning(
-                        f"File: {path} not found, not deleting. "
-                        f"Proceeding anyway."
-                    )
-
-
 def is_any_list_overlap(list_a, list_b):
     """
     Is there any overlap between two lists
@@ -247,13 +228,3 @@ def all_elements_equal(x):
     :return: True if all elements are equal, False otherwise.
     """
     return len(set(x)) <= 1
-
-
-def suppress_specific_logs(logger, message):
-    logger = logging.getLogger(logger)
-
-    class NoParsingFilter(logging.Filter):
-        def filter(self, record):
-            return not record.getMessage().startswith(message)
-
-    logger.addFilter(NoParsingFilter())

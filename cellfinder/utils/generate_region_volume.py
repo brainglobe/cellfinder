@@ -6,10 +6,11 @@ from skimage import segmentation as sk_segmentation
 
 from brainio import brainio
 from imlib.image.scale import scale_and_convert_to_16_bits
+from imlib import nii
+
 from cellfinder.tools.source_files import source_custom_config
 from cellfinder.tools.source_files import get_structures_path
 from cellfinder.analyse.group.region_summary import get_substructures
-import cellfinder.tools.brain as brain_tools
 
 
 def get_parser():
@@ -78,7 +79,7 @@ def generate_region_volume(
     atlas_scale = atlas.header.get_zooms()
     atlas = atlas.get_data()
 
-    transformation_matrix = brain_tools.get_transformation_matrix(atlas_config)
+    transformation_matrix = nii.get_transformation_matrix(atlas_config)
 
     if len(structure_names) > 1:
         # Initialise an image to add each subimage to.
