@@ -4,9 +4,8 @@ import numpy as np
 from skimage.filters import gaussian
 from skimage.transform import resize
 
-
 from brainio import brainio
-
+from imlib.image.scale import scale_and_convert_to_16_bits
 from cellfinder.tools import tools
 from cellfinder.tools import image_processing as img_tools
 import cellfinder.tools.figures as fig_tools
@@ -78,7 +77,7 @@ def heatmap(
 
     if convert_16bit:
         logging.debug("Converting to 16 bit")
-        heatmap_array = tools.scale_and_convert_to_16_bits(heatmap_array)
+        heatmap_array = scale_and_convert_to_16_bits(heatmap_array)
 
     logging.debug("Saving heatmap image")
     brainio.to_nii(

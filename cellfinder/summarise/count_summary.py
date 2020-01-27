@@ -8,7 +8,7 @@ from tqdm import tqdm
 
 from brainio import brainio
 
-from cellfinder.IO.cells import get_cells
+from imlib.IO.cells import get_cells
 from cellfinder.summarise.structures.structures_tree import (
     get_structures_tree,
     load_structures_as_df,

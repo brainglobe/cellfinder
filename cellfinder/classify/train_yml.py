@@ -156,7 +156,7 @@ def training_parse():
 
 def parse_yaml(yaml_file):
     from cellfinder.tools.tiff import TiffList, TiffDir
-    from cellfinder.IO.cells import find_relevant_tiffs
+    from imlib.IO.cells import find_relevant_tiffs
 
     yaml_contents = read_yaml_arg_file(yaml_file)
     data = yaml_contents["data"]

@@ -50,18 +50,6 @@ def test_is_even():
     assert not tools.is_even(odd_number)
 
 
-def test_scale_to_16_bits():
-    assert (validate_2d_img == tools.scale_to_16_bits(test_2d_img)).all()
-
-
-def test_scale_to_16_bits():
-    validate_2d_img_uint16 = validate_2d_img.astype(np.uint16, copy=False)
-    assert (
-        validate_2d_img_uint16
-        == tools.scale_and_convert_to_16_bits(test_2d_img)
-    ).all()
-
-
 def test_unique_elements_list():
     list_in = [1, 2, 2, "a", "b", 1, "a", "dog"]
     unique_list = [1, 2, "a", "b", "dog"]

@@ -4,8 +4,8 @@ from pathlib import Path
 from datetime import datetime
 from imlib.misc import check_positive_float
 from imlib.system import ensure_directory_exists
+import imlib.IO.cells as cell_io
 
-from cellfinder.IO import cells as cio
 from cellfinder.tools.exceptions import CommandLineInputError
 
 
@@ -38,7 +38,7 @@ def xml_scale(
     else:
         input_file = Path(xml_file)
         start_time = datetime.now()
-        cells = cio.get_cells(xml_file)
+        cells = cell_io.get_cells(xml_file)
 
         for cell in cells:
             cell.transform(
@@ -57,7 +57,7 @@ def xml_scale(
         output_filename = output_directory / (input_file.stem + "_rescaled")
         output_filename = output_filename.with_suffix(input_file.suffix)
 
-        cio.save_cells(cells, output_filename)
+        cell_io.save_cells(cells, output_filename)
 
         print(
             "Finished. Total time taken: {}".format(

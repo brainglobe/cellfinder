@@ -1,8 +1,8 @@
 import logging
 import numpy as np
 
-import cellfinder.IO.cells as cell_io
-from cellfinder.cells.cells import Cell
+import imlib.IO.cells as cell_io
+from imlib.cells.cells import Cell
 
 
 def get_bins(image_size, bin_sizes):

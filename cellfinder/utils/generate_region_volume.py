@@ -4,11 +4,9 @@ import pandas as pd
 from datetime import datetime
 from skimage import segmentation as sk_segmentation
 
-
 from brainio import brainio
-
+from imlib.image.scale import scale_and_convert_to_16_bits
 from cellfinder.tools.source_files import source_custom_config
-from cellfinder.tools import tools
 from cellfinder.tools.source_files import get_structures_path
 from cellfinder.analyse.group.region_summary import get_substructures
 import cellfinder.tools.brain as brain_tools
@@ -113,7 +111,7 @@ def generate_region_volume(
             final_image = sub_image
 
     print("Converting image to 16 bit")
-    final_image = tools.scale_and_convert_to_16_bits(final_image)
+    final_image = scale_and_convert_to_16_bits(final_image)
 
     print("Saving image")
     brainio.to_nii(

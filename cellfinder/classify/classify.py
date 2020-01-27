@@ -3,7 +3,7 @@ import numpy as np
 from imlib.system import get_sorted_file_paths
 
 
-from cellfinder.IO.cells import save_cells
+from imlib.IO.cells import save_cells
 from cellfinder.classify.tools import get_model
 from cellfinder.classify.cube_generator import CubeGeneratorFromFile
 from cellfinder.classify.train_yml import models

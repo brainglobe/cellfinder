@@ -5,8 +5,8 @@ from napari.utils.io import magic_imread
 from pathlib import Path
 from imlib.system import get_sorted_file_paths
 
-from cellfinder.IO.cells import cells_xml_to_df, save_cells
-from cellfinder.cells.cells import Cell
+from imlib.IO.cells import cells_xml_to_df, save_cells
+from imlib.cells.cells import Cell
 
 OUTPUT_NAME = "curated_cells.xml"
 

@@ -34,14 +34,14 @@ def test_delete_directory_contents(tmpdir):
 
 def test_get_subdirectories():
     subdirs = system.get_subdirectories(data_dir)
-    assert len(subdirs) == 10
+    assert len(subdirs) == 9
     assert Path(data_dir / "metadata") in subdirs
-    assert Path(data_dir / "IO") in subdirs
+    assert Path(data_dir / "nii") in subdirs
 
     subdir_names = system.get_subdirectories(data_dir, names_only=True)
-    assert len(subdir_names) == 10
+    assert len(subdir_names) == 9
     assert "metadata" in subdir_names
-    assert "IO" in subdir_names
+    assert "nii" in subdir_names
 
 
 def test_get_number_of_files_in_dir():
@@ -119,14 +119,3 @@ def test_memory_in_bytes():
         system.memory_in_bytes(1000, "ab")
 
 
-def test_replace_extension():
-    test_file = "test_file.sh"
-    test_ext = "txt"
-    test_ext_w_dot = ".txt"
-    validate_file = "test_file.txt"
-    assert validate_file == system.replace_extension(test_file, test_ext)
-    assert validate_file == system.replace_extension(test_file, test_ext_w_dot)
-
-
-def test_remove_leading_character():
-    assert ".ext" == system.remove_leading_character("..ext", ".")

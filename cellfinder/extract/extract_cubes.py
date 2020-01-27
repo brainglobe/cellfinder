@@ -11,9 +11,9 @@ from math import floor
 from tifffile import tifffile
 from tqdm import tqdm
 from imlib.system import get_sorted_file_paths, get_num_processes
+from imlib.cells.cells import group_cells_by_z
+from imlib.IO.cells import get_cells
 
-from cellfinder.IO.cells import get_cells
-import cellfinder.cells.tools as cell_tools
 from cellfinder.tools import image_processing as img_tools
 from cellfinder.tools import tools, system
 
@@ -462,7 +462,7 @@ def main(args):
             f"Brain z dimension is {brain_depth}."
         )
     # TODO: check if needs to flip args.cube_width and args.cube_height
-    cells_groups = cell_tools.group_cells_by_z(cells)
+    cells_groups = group_cells_by_z(cells)
 
     # copies=2 is set because at all times there is a plane queue (deque)
     # and an array passed to `Cube`

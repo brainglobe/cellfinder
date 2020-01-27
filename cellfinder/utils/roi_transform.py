@@ -17,6 +17,10 @@ from tqdm import tqdm
 from read_roi import read_roi_zip
 from scipy.ndimage import maximum_filter1d
 from imlib.misc import check_positive_int
+from imlib.system import (
+    safe_execute_command,
+    SafeExecuteCommandError,
+)
 
 from cellfinder.tools.source_files import source_custom_config
 from amap.config.atlas import Atlas
@@ -24,10 +28,7 @@ from amap.config.config import get_binary
 from amap.tools.source_files import get_niftyreg_binaries
 import cellfinder.summarise.count_summary as cells_regions
 from cellfinder.tools.exceptions import RegistrationError
-from cellfinder.tools.system import (
-    safe_execute_command,
-    SafeExecuteCommandError,
-)
+
 
 # TODO: get this from amap
 SOURCE_IMAGE_NAME = "downsampled.nii"

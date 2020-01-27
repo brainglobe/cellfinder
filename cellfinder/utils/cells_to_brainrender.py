@@ -1,6 +1,5 @@
 import argparse
-from cellfinder.IO import cells as cells_io
-
+import imlib.IO.cells as cells_io
 from imlib.misc import check_positive_float, check_positive_int
 
 # Temporary utility until cellfinder -> brainrender data flow is finalised

@@ -4,23 +4,18 @@ from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from datetime import datetime
 from os.path import join
 
-from imlib.system import ensure_directory_exists
+from imlib.system import (ensure_directory_exists,
+                          safe_execute_command,
+                          SafeExecuteCommandError)
+from imlib.IO.cells import get_cells, save_cells
+from imlib.cells.cells import transform_cell_positions
+from brainio.brainio import load_any as load_any_image
+from amap.register.registration_params import RegistrationParams
 
 from cellfinder.tools import tools, prep
 import cellfinder.tools.parser as cellfinder_parse
 from cellfinder.tools.metadata import define_pixel_sizes
-from amap.register.registration_params import RegistrationParams
 from cellfinder.tools.exceptions import TransformationError
-from cellfinder.IO.cells import get_cells, save_cells
-from cellfinder.tools.system import (
-    safe_execute_command,
-    SafeExecuteCommandError,
-)
-
-
-from brainio.brainio import load_any as load_any_image
-
-from cellfinder.cells.cells import transform_cell_positions
 from cellfinder.tools.source_files import source_custom_config
 
 

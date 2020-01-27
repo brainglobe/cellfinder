@@ -2,8 +2,8 @@ import math
 import os
 import logging
 
-from cellfinder.cells.cells import Cell
-from cellfinder.IO.cells import save_cells
+from imlib.cells.cells import Cell
+from imlib.IO.cells import save_cells
 from tifffile import tifffile
 
 from cellfinder.detect.filters.volume_filters.structure_detection import (

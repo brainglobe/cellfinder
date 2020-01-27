@@ -6,7 +6,7 @@ import numpy as np
 from tifffile import tifffile
 from brainio import brainio
 
-from cellfinder.cells.cells import Cell
+from imlib.cells.cells import Cell
 import cellfinder.extract.extract_cubes as extract_cubes
 import cellfinder.tools.tools as tools
 import cellfinder.tools.system as system
