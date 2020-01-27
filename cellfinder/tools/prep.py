@@ -9,21 +9,20 @@ import os
 import logging
 from fancylog import fancylog
 from pathlib import Path
+
 from imlib.general.system import ensure_directory_exists, get_num_processes
-
-
-import cellfinder.tools.parser as parser
-import amap.download.atlas as atlas_download
-from cellfinder.tools.metadata import define_pixel_sizes
-from cellfinder.tools import tools, source_files, system
+from imlib.image.metadata import define_pixel_sizes
 from imlib.general.exceptions import CommandLineInputError
-from amap.config.config import get_config_ob
+from imlib.general.config import get_config_obj
+import amap.download.atlas as atlas_download
+
 import cellfinder.tools.tf as tf_tools
 import cellfinder as program_for_log
-
+import cellfinder.tools.parser as parser
 from cellfinder.download import models as model_download
 from cellfinder.download.download import amend_cfg
 from cellfinder.download.cli import temp_dir_path
+from cellfinder.tools import tools, source_files, system
 
 
 def check_input_arg_existance(args):
@@ -512,7 +511,7 @@ def prep_models(args):
 
 def get_model_weights(config_file):
     logging.debug(f"Reading config file: {config_file}")
-    config_obj = get_config_ob(config_file)
+    config_obj = get_config_obj(config_file)
     model_conf = config_obj["model"]
     model_weights = model_conf["model_path"]
     return model_weights

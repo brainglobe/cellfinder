@@ -4,11 +4,11 @@ from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from datetime import datetime
 from imlib.general.misc import check_positive_int
 from imlib.general.system import ensure_directory_exists
+from imlib.image.metadata import define_pixel_sizes
 
-from cellfinder.tools import tools, system, prep
+from cellfinder.tools import tools, prep
 import cellfinder.tools.parser as cellfinder_parse
 import cellfinder.extract.extract_cubes as extract_cubes
-from cellfinder.tools.metadata import define_pixel_sizes
 
 
 def cube_extract_cli_parser():

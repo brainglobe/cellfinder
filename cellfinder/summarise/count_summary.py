@@ -10,16 +10,17 @@ from brainio import brainio
 
 from imlib.IO.cells import get_cells
 from imlib.pandas.misc import sanitise_df
+from imlib.image.metadata import define_pixel_sizes
+from imlib.general.config import get_config_obj
+
 from cellfinder.summarise.structures.structures_tree import (
     get_structures_tree,
     load_structures_as_df,
 )
 import cellfinder.tools.parser as cellfinder_parse
-from amap.config.config import get_config_ob
 from cellfinder.tools.prep import prep_atlas_conf, Paths
 from cellfinder.tools.source_files import get_structures_path
 import cellfinder.summarise.tools as summary_tools
-from cellfinder.tools.metadata import define_pixel_sizes
 
 LEFT_HEMISPHERE = 2
 RIGHT_HEMISPHERE = 1

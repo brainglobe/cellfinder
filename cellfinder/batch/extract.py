@@ -9,13 +9,13 @@ from natsort import natsorted
 from imlib.general.misc import check_positive_int
 from imlib.general.system import ensure_directory_exists
 from imlib.general.string import get_text_lines
+from imlib.image.metadata import define_pixel_sizes
 
 import cellfinder.tools.tools as tools
 import cellfinder.tools.parser as cellfinder_parse
 import cellfinder.extract.extract_cubes as extract_cubes
 import cellfinder.tools.prep as prep
 from cellfinder.tools.system import get_subdirectories as subdirs
-from cellfinder.tools.metadata import define_pixel_sizes
 
 # For compatiblity with ROI sorter
 CELLS_DIR_NAME = "Cells"

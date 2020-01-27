@@ -34,13 +34,13 @@ def test_delete_directory_contents(tmpdir):
 
 def test_get_subdirectories():
     subdirs = system.get_subdirectories(data_dir)
-    assert len(subdirs) == 9
-    assert Path(data_dir / "metadata") in subdirs
+    assert len(subdirs) == 8
+    assert Path(data_dir / "cells") in subdirs
     assert Path(data_dir / "nii") in subdirs
 
     subdir_names = system.get_subdirectories(data_dir, names_only=True)
-    assert len(subdir_names) == 9
-    assert "metadata" in subdir_names
+    assert len(subdir_names) == 8
+    assert "cells" in subdir_names
     assert "nii" in subdir_names
 
 
