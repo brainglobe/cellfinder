@@ -97,4 +97,3 @@ def memory_in_bytes(memory_amount, unit):
         )
     else:
         return memory_amount * 10 ** supported_units[unit]
-

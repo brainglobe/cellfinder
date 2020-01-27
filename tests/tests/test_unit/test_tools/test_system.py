@@ -117,5 +117,3 @@ def test_memory_in_bytes():
 
     with pytest.raises(NotImplementedError):
         system.memory_in_bytes(1000, "ab")
-
-
