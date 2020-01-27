@@ -4,8 +4,8 @@ import numpy as np
 
 from natsort import natsorted
 from random import getrandbits, uniform
-from imlib.list import remove_empty_string
-from imlib.system import check_path_in_dir
+from imlib.general.list import remove_empty_string
+from imlib.general.system import check_path_in_dir
 from cellfinder.tools import system
 
 

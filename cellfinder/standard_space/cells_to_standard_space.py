@@ -4,14 +4,14 @@ from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from datetime import datetime
 from os.path import join
 
-from imlib.system import (
+from imlib.general.system import (
     ensure_directory_exists,
     safe_execute_command,
     SafeExecuteCommandError,
 )
 from imlib.IO.cells import get_cells, save_cells
 from imlib.cells.cells import transform_cell_positions
-from imlib.system import delete_temp
+from imlib.general.system import delete_temp
 from brainio.brainio import load_any as load_any_image
 from amap.register.registration_params import RegistrationParams
 

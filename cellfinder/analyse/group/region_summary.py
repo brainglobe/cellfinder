@@ -2,7 +2,7 @@ import os
 import argparse
 
 import pandas as pd
-from imlib.list import remove_empty_string
+from imlib.general.list import remove_empty_string
 
 from cellfinder.tools import tools
 from cellfinder.tools.source_files import get_structures_path

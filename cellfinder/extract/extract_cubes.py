@@ -10,7 +10,7 @@ from numpy.linalg.linalg import LinAlgError
 from math import floor
 from tifffile import tifffile
 from tqdm import tqdm
-from imlib.system import get_sorted_file_paths, get_num_processes
+from imlib.general.system import get_sorted_file_paths, get_num_processes
 from imlib.cells.cells import group_cells_by_z
 from imlib.IO.cells import get_cells
 

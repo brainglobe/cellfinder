@@ -1,13 +1,12 @@
 import logging
 import numpy as np
-from imlib.system import get_sorted_file_paths
+from imlib.general.system import get_sorted_file_paths, get_num_processes
 
 
 from imlib.IO.cells import save_cells
 from cellfinder.classify.tools import get_model
 from cellfinder.classify.cube_generator import CubeGeneratorFromFile
 from cellfinder.classify.train_yml import models
-from imlib import system
 
 
 def main(args, max_workers=3):
@@ -19,7 +18,7 @@ def main(args, max_workers=3):
     )
 
     # Too many workers doesn't increase speed, and uses huge amounts of RAM
-    workers = system.get_num_processes(
+    workers = get_num_processes(
         min_free_cpu_cores=args.n_free_cpus, n_max_processes=max_workers
     )
 

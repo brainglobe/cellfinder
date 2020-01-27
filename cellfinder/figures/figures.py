@@ -1,7 +1,7 @@
 import logging
 
 from amap.config.atlas import Atlas
-from imlib import nii
+from imlib.image import nii
 from cellfinder.figures import heatmap
 from cellfinder.tools.source_files import source_custom_config
 

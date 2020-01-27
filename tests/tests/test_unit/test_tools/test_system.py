@@ -4,7 +4,7 @@ import os
 
 from pathlib import Path
 from math import isclose
-from imlib.system import ensure_directory_exists
+from imlib.general.system import ensure_directory_exists
 
 import cellfinder.tools.system as system
 from cellfinder.tools.exceptions import CommandLineInputError

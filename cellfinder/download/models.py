@@ -1,5 +1,5 @@
 import os
-from imlib.system import ensure_directory_exists
+from imlib.general.system import ensure_directory_exists
 
 from cellfinder.download.download import download
 

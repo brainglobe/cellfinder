@@ -6,7 +6,7 @@ from skimage import segmentation as sk_segmentation
 
 from brainio import brainio
 from imlib.image.scale import scale_and_convert_to_16_bits
-from imlib import nii
+from imlib.image import nii
 
 from cellfinder.tools.source_files import source_custom_config
 from cellfinder.tools.source_files import get_structures_path

@@ -2,8 +2,8 @@ import logging
 
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from datetime import datetime
-from imlib.misc import check_positive_int
-from imlib.system import ensure_directory_exists
+from imlib.general.misc import check_positive_int
+from imlib.general.system import ensure_directory_exists
 
 from cellfinder.tools import tools, system, prep
 import cellfinder.tools.parser as cellfinder_parse

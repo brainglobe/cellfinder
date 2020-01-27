@@ -1,7 +1,7 @@
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 import napari
 from napari.utils.io import magic_imread
-from imlib.system import get_sorted_file_paths
+from imlib.general.system import get_sorted_file_paths
 
 from imlib.IO.cells import cells_xml_to_df
 from imlib.cells.cells import Cell

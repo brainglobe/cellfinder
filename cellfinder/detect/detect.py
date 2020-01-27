@@ -5,7 +5,7 @@ from multiprocessing import Queue as MultiprocessingQueue
 from multiprocessing import Lock
 
 from tqdm import tqdm
-from imlib.system import get_sorted_file_paths, get_num_processes
+from imlib.general.system import get_sorted_file_paths, get_num_processes
 
 from cellfinder.detect.filters.plane_filters.multiprocessing import (
     MpTileProcessor,

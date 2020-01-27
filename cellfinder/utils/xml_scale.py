@@ -2,8 +2,8 @@ import argparse
 
 from pathlib import Path
 from datetime import datetime
-from imlib.misc import check_positive_float
-from imlib.system import ensure_directory_exists
+from imlib.general.misc import check_positive_float
+from imlib.general.system import ensure_directory_exists
 import imlib.IO.cells as cell_io
 
 from cellfinder.tools.exceptions import CommandLineInputError

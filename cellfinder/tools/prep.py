@@ -9,7 +9,7 @@ import os
 import logging
 from fancylog import fancylog
 from pathlib import Path
-from imlib.system import ensure_directory_exists, get_num_processes
+from imlib.general.system import ensure_directory_exists, get_num_processes
 
 
 import cellfinder.tools.parser as parser

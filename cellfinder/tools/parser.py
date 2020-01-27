@@ -12,7 +12,7 @@ from argparse import (
     ArgumentTypeError,
 )
 from pathlib import Path
-from imlib.misc import check_positive_float, check_positive_int
+from imlib.general.misc import check_positive_float, check_positive_int
 
 from amap.download.cli import atlas_parser as amap_parser
 from amap.cli import registration_parse, geometry_parser

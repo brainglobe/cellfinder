@@ -6,9 +6,9 @@ from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from datetime import datetime
 from pathlib import Path
 from natsort import natsorted
-from imlib.misc import check_positive_int
-from imlib.system import ensure_directory_exists
-from imlib.string import get_text_lines
+from imlib.general.misc import check_positive_int
+from imlib.general.system import ensure_directory_exists
+from imlib.general.string import get_text_lines
 
 import cellfinder.tools.tools as tools
 import cellfinder.tools.parser as cellfinder_parse
