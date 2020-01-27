@@ -128,6 +128,7 @@ def remove_leading_character(string, character):
     else:
         return string
 
+
 # ------ UNTESTED --------------------------------------------------
 
 

@@ -130,5 +130,3 @@ def test_replace_extension():
 
 def test_remove_leading_character():
     assert ".ext" == system.remove_leading_character("..ext", ".")
-
-
