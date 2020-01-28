@@ -70,20 +70,6 @@ def test_swap_elements_list():
     assert tools.swap_elements_list(list_in, 1, 2) == [1, 3, 2, 4]
 
 
-def test_convert_shape_dict_to_array_shape():
-    shape_dict = {"x": "100", "y": "30"}
-    assert tools.convert_shape_dict_to_array_shape(shape_dict) == (30, 100)
-    assert tools.convert_shape_dict_to_array_shape(
-        shape_dict, type="fiji"
-    ) == (100, 30)
-
-    shape_dict["z"] = 10
-    assert tools.convert_shape_dict_to_array_shape(shape_dict) == (30, 100, 10)
-
-    with pytest.raises(NotImplementedError):
-        tools.convert_shape_dict_to_array_shape(shape_dict, type="new type")
-
-
 def test_is_any_list_overlap():
     assert tools.is_any_list_overlap(a, b)
     assert not tools.is_any_list_overlap(a, [2, "b", (1, 2, 3)])
