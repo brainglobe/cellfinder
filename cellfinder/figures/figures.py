@@ -13,7 +13,8 @@ def figures(args):
     if args.heatmap:
         logging.info("Generating heatmap")
         heatmap.heatmap(
-            args,
+            args.paths.classification_out_file,
+            args.paths.heatmap,
             scales.figure_image_shape,
             scales.raw_image_shape,
             scales.bin_size_raw_voxels,

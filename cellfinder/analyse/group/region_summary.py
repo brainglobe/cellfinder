@@ -2,9 +2,8 @@ import os
 import argparse
 
 import pandas as pd
-from imlib.general.list import remove_empty_string
+from imlib.general.list import remove_empty_string, unique_elements_lists
 
-from cellfinder.tools import tools
 from cellfinder.tools.source_files import get_structures_path
 
 
@@ -89,7 +88,7 @@ def summary_run(args):
             regions = regions + list(pd.read_csv(args.regions_list)["name"])
 
     regions = remove_empty_string(regions)
-    regions = tools.unique_elements_lists(regions)
+    regions = unique_elements_lists(regions)
     csvs_folder = args.csv_dir
     destination_folder = os.path.join(args.csv_dir, "summary")
 

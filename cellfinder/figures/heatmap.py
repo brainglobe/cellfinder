@@ -14,7 +14,8 @@ from cellfinder.tools import image_processing as img_tools
 
 
 def heatmap(
-    args,
+    cells_file,
+    output_file,
     target_size,
     raw_image_shape,
     raw_image_bin_sizes,
@@ -29,6 +30,8 @@ def heatmap(
     """
 
     :param args:
+    :param cells_file: Cellfinder output cells file.
+    :param output_file: File to save heatmap into
     :param target_size: Size of the final heatmap
     :param raw_image_shape: Size of the raw data (coordinate space of the
     cells)
@@ -53,7 +56,7 @@ def heatmap(
         raw_image_shape, type="fiji"
     )
     cells_array = get_cell_location_array(
-        args.paths.classification_out_file, cells_only=cells_only
+        cells_file, cells_only=cells_only
     )
     bins = get_bins(raw_image_shape, raw_image_bin_sizes)
 
@@ -84,7 +87,7 @@ def heatmap(
     logging.debug("Saving heatmap image")
     brainio.to_nii(
         heatmap_array,
-        args.paths.heatmap,
+        output_file,
         scale=atlas_scale,
         affine_transform=transformation_matrix,
     )

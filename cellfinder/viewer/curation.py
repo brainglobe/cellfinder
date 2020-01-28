@@ -4,6 +4,7 @@ import numpy as np
 from napari.utils.io import magic_imread
 from pathlib import Path
 from imlib.general.system import get_sorted_file_paths
+from imlib.general.list import unique_elements_lists
 
 from imlib.IO.cells import cells_xml_to_df, save_cells
 from imlib.cells.cells import Cell

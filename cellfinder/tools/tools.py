@@ -97,11 +97,6 @@ def is_even(num):
         return True
 
 
-def unique_elements_lists(list_in):
-    """ return the unique elements in a list"""
-    return list(dict.fromkeys(list_in))
-
-
 def get_number_of_bins_nd(array_size, binning):
     """
     Generate the number of bins needed in three dimensions, based on the size

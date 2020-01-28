@@ -2,7 +2,6 @@ import pytest
 import random
 
 import numpy as np
-from pathlib import Path
 
 import cellfinder.tools.tools as tools
 
@@ -48,12 +47,6 @@ def test_is_even():
         assert tools.is_even(0)
     assert tools.is_even(even_number)
     assert not tools.is_even(odd_number)
-
-
-def test_unique_elements_list():
-    list_in = [1, 2, 2, "a", "b", 1, "a", "dog"]
-    unique_list = [1, 2, "a", "b", "dog"]
-    assert tools.unique_elements_lists(list_in) == unique_list
 
 
 def test_get_number_of_bins_nd():
