@@ -6,9 +6,11 @@ from skimage.transform import resize
 
 from brainio import brainio
 from imlib.image.scale import scale_and_convert_to_16_bits
+from imlib.image.binning import get_bins
+from imlib.cells.utils import get_cell_location_array
+
 from cellfinder.tools import tools
 from cellfinder.tools import image_processing as img_tools
-import cellfinder.tools.figures as fig_tools
 
 
 def heatmap(
@@ -50,10 +52,10 @@ def heatmap(
     raw_image_shape = tools.convert_shape_dict_to_array_shape(
         raw_image_shape, type="fiji"
     )
-    cells_array = fig_tools.get_cell_location_array(
+    cells_array = get_cell_location_array(
         args.paths.classification_out_file, cells_only=cells_only
     )
-    bins = fig_tools.get_bins(raw_image_shape, raw_image_bin_sizes)
+    bins = get_bins(raw_image_shape, raw_image_bin_sizes)
 
     logging.debug("Generating heatmap (3D histogram)")
     heatmap_array, _ = np.histogramdd(cells_array, bins=bins)
