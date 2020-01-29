@@ -12,7 +12,6 @@ from tifffile import tifffile
 from tqdm import tqdm
 from imlib.general.system import get_sorted_file_paths, get_num_processes
 from imlib.cells.cells import group_cells_by_z
-from imlib.IO.cells import get_cells
 
 from cellfinder.tools import image_processing as img_tools
 from cellfinder.tools import tools, system
@@ -369,8 +368,9 @@ def get_ram_requirement_per_process(
 
 
 def main(
-    args,
-    cells_file_path,
+    cells,
+    cubes_output_dir,
+    planes_paths,
     cube_depth,
     cube_width,
     cube_height,
@@ -380,47 +380,18 @@ def main(
     x_pixel_um_network,
     y_pixel_um_network,
     z_pixel_um_network,
+    max_ram,
+    n_free_cpus=4,
+    save_empty_cubes=False,
 ):
 
     start_time = datetime.now()
-
-    cells = get_cells(cells_file_path)
-    if not cells:
-        logging.error(
-            "No cells found, exiting. Please check your "
-            "cell xml file path: {}"
-            " or verify your cell types "
-            "(maybe use cells-only option to disable)".format(cells_file_path)
-        )
-        raise ValueError(
-            "No cells found, exiting. Please check your "
-            "cell xml file path: {}"
-            " or verify your cell types "
-            "(maybe use cells-only option to disable)".format(cells_file_path)
-        )
 
     if z_pixel_um != z_pixel_um_network:
         plane_scaling_factor = z_pixel_um_network / z_pixel_um
         num_planes_needed_for_cube = round(cube_depth * plane_scaling_factor)
     else:
         num_planes_needed_for_cube = cube_depth
-
-    planes_paths = {}
-    # Use args.paths for this
-    all_channel_ids = args.signal_ch_ids + [args.background_ch_id]
-    for idx, planes_paths_file_path in enumerate(args.all_planes_paths):
-        channel = all_channel_ids[idx]
-
-        if args.cube_extract_cli:
-            channel_list = all_channel_ids
-            args.signal_channel = all_channel_ids[0]
-        else:
-            # only extract those channels that are necessary for classification
-            channel_list = [args.signal_channel, args.background_ch_id]
-        if channel in channel_list:
-            planes_paths[channel] = get_sorted_file_paths(
-                planes_paths_file_path, file_extension="tif"
-            )
 
     if num_planes_needed_for_cube > len(planes_paths[0]):
         raise StackSizeError(
@@ -473,16 +444,14 @@ def main(
     # copies=2 is set because at all times there is a plane queue (deque)
     # and an array passed to `Cube`
     ram_per_process = get_ram_requirement_per_process(
-        planes_paths[args.signal_channel][0],
-        num_planes_needed_for_cube,
-        copies=2,
+        planes_paths[0][0], num_planes_needed_for_cube, copies=2,
     )
     n_processes = get_num_processes(
-        min_free_cpu_cores=args.n_free_cpus,
+        min_free_cpu_cores=n_free_cpus,
         ram_needed_per_process=ram_per_process,
         n_max_processes=len(planes_to_read),
         fraction_free_ram=0.2,
-        max_ram_usage=system.memory_in_bytes(args.max_ram, "GB"),
+        max_ram_usage=system.memory_in_bytes(max_ram, "GB"),
     )
     # TODO: don't need to extract cubes from all channels if
     #  n_signal_channels>1
@@ -512,13 +481,11 @@ def main(
                 cube_height=cube_height,
                 cube_depth=cube_depth,
                 thread_id=i,
-                output_dir=args.paths.tmp__cubes_output_dir,
-                save_empty_cubes=args.save_empty_cubes,
+                output_dir=cubes_output_dir,
+                save_empty_cubes=save_empty_cubes,
             )
 
-    total_cubes = system.get_number_of_files_in_dir(
-        args.paths.tmp__cubes_output_dir
-    )
+    total_cubes = system.get_number_of_files_in_dir(cubes_output_dir)
     time_taken = datetime.now() - start_time
     logging.info(
         "All cubes ({}) extracted in: {}".format(total_cubes, time_taken)

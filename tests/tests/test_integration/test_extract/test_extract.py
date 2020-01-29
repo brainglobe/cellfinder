@@ -9,10 +9,7 @@ from brainio import brainio
 from imlib.cells.cells import Cell
 from imlib.IO.cells import get_cells
 
-from imlib.general.system import (
-    delete_directory_contents,
-    get_sorted_file_paths,
-)
+from imlib.general.system import delete_directory_contents, get_sorted_file_paths
 import cellfinder.extract.extract_cubes as extract_cubes
 
 data_dir = os.path.join("tests", "data")
@@ -75,12 +72,8 @@ def test_cube_extraction(tmpdir, depth=20):
     args = CubeExtractArgs(tmpdir)
 
     planes_paths = {}
-    planes_paths[0] = get_sorted_file_paths(
-        signal_data_dir, file_extension="tif"
-    )
-    planes_paths[1] = get_sorted_file_paths(
-        background_data_dir, file_extension="tif"
-    )
+    planes_paths[0] = get_sorted_file_paths(signal_data_dir, file_extension="tif")
+    planes_paths[1] = get_sorted_file_paths(background_data_dir, file_extension="tif")
 
     extract_cubes.main(
         get_cells(args.paths.cells_file_path),
