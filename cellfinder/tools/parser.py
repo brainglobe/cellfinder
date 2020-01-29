@@ -12,11 +12,12 @@ from argparse import (
     ArgumentTypeError,
 )
 from pathlib import Path
+from imlib.general.misc import check_positive_float, check_positive_int
+
 from amap.download.cli import atlas_parser as amap_parser
 from amap.cli import registration_parse, geometry_parser
 from amap.cli import visualisation_parser as amap_vis_parser
 from cellfinder.download.cli import model_parser, download_directory_parser
-from cellfinder.tools.misc import check_positive_float, check_positive_int
 from micrometa.micrometa import SUPPORTED_METADATA_TYPES
 
 # TODO: Gradually move all paths as strings to Path objects

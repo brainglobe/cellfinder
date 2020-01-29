@@ -5,7 +5,7 @@ import pytest
 from math import isclose
 
 from cellfinder.main import main as cellfinder_run
-import cellfinder.IO.cells as cell_io
+import imlib.IO.cells as cell_io
 
 data_dir = os.path.join(
     os.getcwd(), "tests", "data", "integration", "detection"

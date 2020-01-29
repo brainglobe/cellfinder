@@ -7,12 +7,12 @@ from tifffile import tifffile
 from skimage.io import imread
 from scipy.ndimage import zoom
 from tensorflow.python.keras.utils.data_utils import Sequence
+from imlib.IO.cells import get_cells
+from imlib.cells.cells import group_cells_by_z
 
 from cellfinder.tools.tools import is_even
 
 from cellfinder.extract.extract_cubes import StackSizeError
-from cellfinder.IO.cells import get_cells
-import cellfinder.cells.tools as cell_tools
 from cellfinder.classify.augment import AugmentationParameters, augment
 
 
@@ -185,7 +185,7 @@ class CubeGeneratorFromFile(Sequence):
         return x0, x1, y0, y1, z0, z1
 
     def __get_batches(self):
-        self.cells_groups = cell_tools.group_cells_by_z(self.cells)
+        self.cells_groups = group_cells_by_z(self.cells)
         # TODO: add optional shuffling of each group here
         self.batches = []
         for centre_plane in self.cells_groups.keys():

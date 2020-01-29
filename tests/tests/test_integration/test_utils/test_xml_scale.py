@@ -1,7 +1,7 @@
 import os
 import sys
 
-from cellfinder.IO.cells import get_cells
+from imlib.IO.cells import get_cells
 from cellfinder.utils.xml_scale import main as cellfinder_xml_scale_run
 
 cells_dir = os.path.join("tests", "data", "cells")

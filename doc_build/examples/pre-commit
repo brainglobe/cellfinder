@@ -1,23 +1,22 @@
 #!/bin/sh
-# Builds HTML and PDF documentation and adds to the commit.
-# Runs before every commit
+# Runs black, and documentation building
 echo "Running pre-commit hooks"
 echo
-
+## Formatting ##############################################
+echo "Running black"
+black ./ -l 79 --target-version py37 --check || exit 1
+echo
 ## Docs #####################################################
 echo "Building HTML docs"
 make -C doc_build/ html
-echo "Building PDF docs"
-make -C doc_build/ latexpdf
 echo "Build complete"
 echo
 echo "Copying docs to final location"
-cp doc_build/_build/latex/cellfinder.pdf ./cellfinder.pdf
 cp -rfT doc_build/_build/html docs
 echo
 echo "Adding docs to commit"
 echo
-git add doc_build docs/* cellfinder.pdf
+git add doc_build docs/*
 git add -u doc_build docs
 echo "Have a nice day!"
 echo

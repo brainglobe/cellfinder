@@ -10,18 +10,19 @@ import logging
 from fancylog import fancylog
 from pathlib import Path
 
-import cellfinder.tools.parser as parser
+from imlib.general.system import ensure_directory_exists, get_num_processes
+from imlib.image.metadata import define_pixel_sizes
+from imlib.general.exceptions import CommandLineInputError
+from imlib.general.config import get_config_obj
 import amap.download.atlas as atlas_download
-from cellfinder.tools.metadata import define_pixel_sizes
-from cellfinder.tools import tools, source_files, system
-from cellfinder.tools.exceptions import CommandLineInputError
-from amap.config.config import get_config_ob
+
 import cellfinder.tools.tf as tf_tools
 import cellfinder as program_for_log
-
+import cellfinder.tools.parser as parser
 from cellfinder.download import models as model_download
 from cellfinder.download.download import amend_cfg
 from cellfinder.download.cli import temp_dir_path
+from cellfinder.tools import tools, source_files, system
 
 
 def check_input_arg_existance(args):
@@ -415,7 +416,7 @@ def prep_registration(args, sample_name="amap"):
     args.target_brain_path = args.background_planes_path[0]
     args.sample_name = sample_name
     logging.debug("Making registration directory")
-    system.ensure_directory_exists(args.paths.registration_output_folder)
+    ensure_directory_exists(args.paths.registration_output_folder)
 
     additional_images_downsample = {}
     for idx, images in enumerate(args.signal_planes_paths):
@@ -467,14 +468,14 @@ def prep_atlas_conf(args):
 
 
 def prep_classification(args):
-    n_processes = system.get_num_processes(min_free_cpu_cores=args.n_free_cpus)
+    n_processes = get_num_processes(min_free_cpu_cores=args.n_free_cpus)
     prep_tensorflow(n_processes)
     args = prep_models(args)
     return args
 
 
 def prep_training(args):
-    n_processes = system.get_num_processes(min_free_cpu_cores=args.n_free_cpus)
+    n_processes = get_num_processes(min_free_cpu_cores=args.n_free_cpus)
     prep_tensorflow(n_processes)
     args = prep_models(args)
     return args
@@ -510,7 +511,7 @@ def prep_models(args):
 
 def get_model_weights(config_file):
     logging.debug(f"Reading config file: {config_file}")
-    config_obj = get_config_ob(config_file)
+    config_obj = get_config_obj(config_file)
     model_conf = config_obj["model"]
     model_weights = model_conf["model_path"]
     return model_weights
@@ -528,7 +529,7 @@ def prep_candidate_detection(args):
         args.plane_directory = os.path.join(
             args.output_dir, "processed_planes"
         )
-        system.ensure_directory_exists(args.plane_directory)
+        ensure_directory_exists(args.plane_directory)
     else:
         args.plane_directory = None  # FIXME: remove this fudge
 
@@ -536,12 +537,12 @@ def prep_candidate_detection(args):
 
 
 def standard_space_prep(args):
-    system.ensure_directory_exists(args.paths.standard_space_output_folder)
+    ensure_directory_exists(args.paths.standard_space_output_folder)
     args.paths.make_invert_cell_position_paths()
     return args
 
 
 def figures_prep(args):
-    system.ensure_directory_exists(args.paths.figures_dir)
+    ensure_directory_exists(args.paths.figures_dir)
     args.paths.make_figures_paths()
     return args

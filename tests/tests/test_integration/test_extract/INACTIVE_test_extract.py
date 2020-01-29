@@ -6,9 +6,9 @@ import numpy as np
 from tifffile import tifffile
 from brainio import brainio
 
-from cellfinder.cells.cells import Cell
+from imlib.cells.cells import Cell
+from imlib.general.system import delete_directory_contents
 import cellfinder.extract.extract_cubes as extract_cubes
-import cellfinder.tools.tools as tools
 import cellfinder.tools.system as system
 
 data_dir = os.path.join("tests", "data")
@@ -85,7 +85,7 @@ def test_cube_extraction(tmpdir, depth=20):
     for idx, test_cube in enumerate(test_cubes):
         assert (validation_cubes[idx] == test_cube).all()
 
-    system.delete_directory_contents(tmpdir)
+    delete_directory_contents(tmpdir)
 
     # test cube scaling
     args.x_pixel_um = 2
@@ -127,7 +127,7 @@ def test_cube_extraction(tmpdir, depth=20):
     assert (cube.data == 0).all()
 
     # test insufficient z-planes for any cube to be extracted at all.
-    system.delete_directory_contents(tmpdir)
+    delete_directory_contents(tmpdir)
     args.z_pixel_um = 0.1
 
     with pytest.raises(extract_cubes.StackSizeError):

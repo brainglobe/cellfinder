@@ -10,9 +10,10 @@ from numpy.linalg.linalg import LinAlgError
 from math import floor
 from tifffile import tifffile
 from tqdm import tqdm
+from imlib.general.system import get_sorted_file_paths, get_num_processes
+from imlib.cells.cells import group_cells_by_z
+from imlib.IO.cells import get_cells
 
-from cellfinder.IO.cells import get_cells
-import cellfinder.cells.tools as cell_tools
 from cellfinder.tools import image_processing as img_tools
 from cellfinder.tools import tools, system
 
@@ -411,7 +412,7 @@ def main(args):
             # only extract those channels that are necessary for classification
             channel_list = [args.signal_channel, args.background_ch_id]
         if channel in channel_list:
-            planes_paths[channel] = system.get_sorted_file_paths(
+            planes_paths[channel] = get_sorted_file_paths(
                 planes_paths_file_path, file_extension="tif"
             )
 
@@ -461,7 +462,7 @@ def main(args):
             f"Brain z dimension is {brain_depth}."
         )
     # TODO: check if needs to flip args.cube_width and args.cube_height
-    cells_groups = cell_tools.group_cells_by_z(cells)
+    cells_groups = group_cells_by_z(cells)
 
     # copies=2 is set because at all times there is a plane queue (deque)
     # and an array passed to `Cube`
@@ -470,7 +471,7 @@ def main(args):
         num_planes_needed_for_cube,
         copies=2,
     )
-    n_processes = system.get_num_processes(
+    n_processes = get_num_processes(
         min_free_cpu_cores=args.n_free_cpus,
         ram_needed_per_process=ram_per_process,
         n_max_processes=len(planes_to_read),

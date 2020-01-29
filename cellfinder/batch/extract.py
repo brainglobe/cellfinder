@@ -6,15 +6,16 @@ from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from datetime import datetime
 from pathlib import Path
 from natsort import natsorted
+from imlib.general.misc import check_positive_int
+from imlib.general.system import ensure_directory_exists
+from imlib.general.string import get_text_lines
+from imlib.image.metadata import define_pixel_sizes
 
 import cellfinder.tools.tools as tools
 import cellfinder.tools.parser as cellfinder_parse
 import cellfinder.extract.extract_cubes as extract_cubes
 import cellfinder.tools.prep as prep
-from cellfinder.tools.misc import check_positive_int
 from cellfinder.tools.system import get_subdirectories as subdirs
-from cellfinder.tools import system
-from cellfinder.tools.metadata import define_pixel_sizes
 
 # For compatiblity with ROI sorter
 CELLS_DIR_NAME = "Cells"
@@ -90,7 +91,7 @@ def prep_channel_ids(args):
 
 
 def extract_loop(args):
-    system.ensure_directory_exists(args.paths.tmp__cubes_output_dir)
+    ensure_directory_exists(args.paths.tmp__cubes_output_dir)
     extract_cubes.main(args)
 
 
@@ -105,7 +106,7 @@ def main():
     args.cells_file_path = Path(args.cells_file_path)
     args.cube_extract_cli = True
     args.paths = prep.Paths(args.output_dir)
-    system.ensure_directory_exists(args.output_dir)
+    ensure_directory_exists(args.output_dir)
     tools.start_logging(
         str(args.output_dir),
         args=args,
@@ -119,7 +120,7 @@ def main():
     if args.cells_file_path.is_dir():
         indv_cells_paths = natsorted(subdirs(args.cells_file_path))
     elif args.cells_file_path.is_file():
-        tmp_paths = tools.get_text_lines(args.cells_file_path)
+        tmp_paths = get_text_lines(args.cells_file_path)
         indv_cells_paths = natsorted([Path(path) for path in tmp_paths])
 
     if indv_cells_paths[0].is_dir():
@@ -133,12 +134,10 @@ def main():
         for idx, sample_dir in enumerate(indv_cells_paths):
             logging.info("Extracting cubes from: {}".format(sample_dir.name))
             args.all_planes_paths = []
-            system.ensure_directory_exists(
-                args.output_dir.joinpath(sample_dir.name)
-            )
+            ensure_directory_exists(args.output_dir.joinpath(sample_dir.name))
             for channel in range(num_channels):
                 args.all_planes_paths.append(
-                    tools.get_text_lines(
+                    get_text_lines(
                         args.raw_data_paths[channel],
                         return_lines=idx,
                         sort=True,

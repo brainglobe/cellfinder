@@ -1,12 +1,13 @@
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 import napari
+import numpy as np
 from napari.utils.io import magic_imread
 from pathlib import Path
-from cellfinder.IO.cells import cells_xml_to_df, save_cells
-from cellfinder.cells.cells import Cell
-from cellfinder.tools.system import get_sorted_file_paths
-import numpy as np
-from cellfinder.tools.tools import unique_elements_lists
+from imlib.general.system import get_sorted_file_paths
+from imlib.general.list import unique_elements_lists
+
+from imlib.IO.cells import cells_xml_to_df, save_cells
+from imlib.cells.cells import Cell
 
 OUTPUT_NAME = "curated_cells.xml"
 
@@ -85,7 +86,7 @@ def main():
         face_color_cycle = ["lightskyblue", "lightgoldenrodyellow"]
         points_layer = viewer.add_points(
             cells,
-            annotations=annotations,
+            properties=annotations,
             symbol=args.symbol,
             n_dimensional=True,
             size=args.marker_size,
@@ -99,11 +100,11 @@ def main():
         def toggle_point_annotation(viewer):
             selected_points = viewer.layers[1].selected_data
             if selected_points:
-                selected_annotations = viewer.layers[1].annotations["cell"][
+                selected_annotations = viewer.layers[1].properties["cell"][
                     selected_points
                 ]
                 toggled_annotations = np.logical_not(selected_annotations)
-                viewer.layers[1].annotations["cell"][
+                viewer.layers[1].properties["cell"][
                     selected_points
                 ] = toggled_annotations
 
@@ -136,7 +137,7 @@ def main():
             else:
                 unique_cells = unique_elements_lists(CURATED_CELLS)
                 points = viewer.layers[1].data[unique_cells]
-                labels = viewer.layers[1].annotations["cell"][unique_cells]
+                labels = viewer.layers[1].properties["cell"][unique_cells]
                 labels = labels.astype("int")
                 labels = labels + 1
 

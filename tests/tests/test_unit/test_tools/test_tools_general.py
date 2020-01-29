@@ -2,12 +2,8 @@ import pytest
 import random
 
 import numpy as np
-from pathlib import Path
 
 import cellfinder.tools.tools as tools
-
-data_dir = Path("tests", "data")
-jabberwocky = data_dir / "general" / "jabberwocky.txt"
 
 
 a = [1, "a", 10, 30]
@@ -53,24 +49,6 @@ def test_is_even():
     assert not tools.is_even(odd_number)
 
 
-def test_scale_to_16_bits():
-    assert (validate_2d_img == tools.scale_to_16_bits(test_2d_img)).all()
-
-
-def test_scale_to_16_bits():
-    validate_2d_img_uint16 = validate_2d_img.astype(np.uint16, copy=False)
-    assert (
-        validate_2d_img_uint16
-        == tools.scale_and_convert_to_16_bits(test_2d_img)
-    ).all()
-
-
-def test_unique_elements_list():
-    list_in = [1, 2, 2, "a", "b", 1, "a", "dog"]
-    unique_list = [1, 2, "a", "b", "dog"]
-    assert tools.unique_elements_lists(list_in) == unique_list
-
-
 def test_get_number_of_bins_nd():
     array_tuple = (100, 1000, 5000)
     assert tools.get_number_of_bins_nd(array_tuple, 12) == (8, 83, 416)
@@ -92,57 +70,6 @@ def test_swap_elements_list():
     assert tools.swap_elements_list(list_in, 1, 2) == [1, 3, 2, 4]
 
 
-def test_convert_shape_dict_to_array_shape():
-    shape_dict = {"x": "100", "y": "30"}
-    assert tools.convert_shape_dict_to_array_shape(shape_dict) == (30, 100)
-    assert tools.convert_shape_dict_to_array_shape(
-        shape_dict, type="fiji"
-    ) == (100, 30)
-
-    shape_dict["z"] = 10
-    assert tools.convert_shape_dict_to_array_shape(shape_dict) == (30, 100, 10)
-
-    with pytest.raises(NotImplementedError):
-        tools.convert_shape_dict_to_array_shape(shape_dict, type="new type")
-
-
-class Paths:
-    def __init__(self, directory):
-        self.one = directory / "one.aaa"
-        self.two = directory / "two.bbb"
-        self.tmp__three = directory / "three.ccc"
-        self.tmp__four = directory / "four.ddd"
-
-
-def test_delete_tmp(tmpdir):
-    tmpdir = Path(tmpdir)
-    paths = Paths(tmpdir)
-    for attr, path in paths.__dict__.items():
-        path.touch()
-        print(path)
-    assert len([child for child in tmpdir.iterdir()]) == 4
-    tools.delete_temp(tmpdir, paths)
-    assert len([child for child in tmpdir.iterdir()]) == 2
-
-    tools.delete_temp(tmpdir, paths)
-
-
 def test_is_any_list_overlap():
     assert tools.is_any_list_overlap(a, b)
     assert not tools.is_any_list_overlap(a, [2, "b", (1, 2, 3)])
-
-
-def test_get_text_lines():
-    line_5 = "The jaws that bite, the claws that catch!"
-    first_line_alphabetically = "All mimsy were the borogoves,"
-    assert tools.get_text_lines(jabberwocky, return_lines=5) == line_5
-    assert (
-        tools.get_text_lines(
-            jabberwocky, return_lines=6, remove_empty_lines=False
-        )
-        == line_5
-    )
-    assert (
-        tools.get_text_lines(jabberwocky, sort=True)[0]
-        == first_line_alphabetically
-    )

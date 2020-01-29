@@ -11,7 +11,7 @@ it's warnings are silenced
 import os
 import logging
 from datetime import datetime
-from cellfinder.tools.tools import suppress_specific_logs
+from imlib.general.logging import suppress_specific_logs
 
 tf_suppress_log_messages = [
     "multiprocessing can interact badly with TensorFlow"

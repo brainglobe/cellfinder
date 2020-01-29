@@ -25,6 +25,8 @@ requirements = [
     "brainio>=0.0.9",
     "fancylog",
     "micrometa",
+    "imlib",
+    "neuro",
     "amap>=0.0.11",
     "napari>=0.2.8",
     # "brainrender",
@@ -137,7 +139,7 @@ setup(
             "cellfinder_gen_region_vol = "
             "cellfinder.utils.generate_region_volume:main",
             "cellfinder_cells_to_brainrender = "
-            "cellfinder.utils.cells_to_brainrender:main",
+            "neuro.points.points_to_brainrender:main",
         ]
     },
     url="https://github.com/SainsburyWellcomeCentre/cellfinder",

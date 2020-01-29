@@ -14,7 +14,7 @@ import numpy as np
 
 from cellfinder.detect.filters.typedefs cimport ull, uint, Point
 
-from cellfinder.cells.cells import Cell
+from imlib.cells.cells import Cell
 
 
 
