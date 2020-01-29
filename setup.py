@@ -138,6 +138,7 @@ setup(
             "cellfinder.utils.generate_region_volume:main",
             "cellfinder_cells_to_brainrender = "
             "neuro.points.points_to_brainrender:main",
+            "cellfinder_curate = cellfinder.train.curation:main",
         ]
     },
     url="https://github.com/SainsburyWellcomeCentre/cellfinder",

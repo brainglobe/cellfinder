@@ -27,6 +27,7 @@ def parser():
     parser = curation_parser(parser)
     parser = cellfinder_parse.cube_extract_parse(parser)
 
+
 def curation_parser(parser):
     parser.add_argument(dest="img_paths", type=str, help="Directory of images")
     parser.add_argument(
@@ -87,8 +88,6 @@ def main():
     cells, labels = get_cell_labels_arrays(args.cells_xml)
 
     annotations = {"cell": labels}
-
-
 
     with napari.gui_qt():
         viewer = napari.Viewer(title="Cellfinder cell curation")
@@ -168,8 +167,10 @@ def main():
             """Extract cubes for training"""
 
             if not output_filename.exists():
-                print("No curation results have been saved. "
-                      "Please save before extracting cubes")
+                print(
+                    "No curation results have been saved. "
+                    "Please save before extracting cubes"
+                )
             else:
                 run_extraction(output_filename, output_directory)
 

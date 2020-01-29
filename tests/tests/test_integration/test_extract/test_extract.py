@@ -7,13 +7,18 @@ from tifffile import tifffile
 from brainio import brainio
 
 from imlib.cells.cells import Cell
-from imlib.general.system import delete_directory_contents
+from imlib.IO.cells import get_cells
+
+from imlib.general.system import (
+    delete_directory_contents,
+    get_sorted_file_paths,
+)
 import cellfinder.extract.extract_cubes as extract_cubes
 
 data_dir = os.path.join("tests", "data")
 
-signal_data_dir = [os.path.join(data_dir, "signal")]
-background_data_dir = [os.path.join(data_dir, "background")]
+signal_data_dir = os.path.join(data_dir, "signal")
+background_data_dir = os.path.join(data_dir, "background")
 xml_path = os.path.join(data_dir, "cube_extract", "cells.xml")
 validate_cubes_dir = os.path.join(data_dir, "cube_extract", "cubes")
 validate_cubes_scale_dir = os.path.join(
@@ -24,12 +29,6 @@ validate_cubes_scale_dir = os.path.join(
 class CubeExtractArgs:
     def __init__(self, tmpdir):
         self.cells_file_path = xml_path
-        self.all_planes_paths = self.get_plane_paths()
-
-        self.signal_ch_ids = [0]
-        self.background_ch_id = 1
-        self.signal_channel = 0
-        self.background_channel = 1
 
         self.cube_width = 50
         self.cube_height = 50
@@ -48,8 +47,6 @@ class CubeExtractArgs:
         self.n_free_cpus = 0
         self.n_max_threads = 10
         self.max_ram = None
-
-        self.cube_extract_cli = True
 
         self.paths = Paths(cells_file_path=xml_path, cubes_output_dir=tmpdir)
 
@@ -76,9 +73,19 @@ def load_cubes_in_dir(directory):
 def test_cube_extraction(tmpdir, depth=20):
     tmpdir = str(tmpdir)
     args = CubeExtractArgs(tmpdir)
+
+    planes_paths = {}
+    planes_paths[0] = get_sorted_file_paths(
+        signal_data_dir, file_extension="tif"
+    )
+    planes_paths[1] = get_sorted_file_paths(
+        background_data_dir, file_extension="tif"
+    )
+
     extract_cubes.main(
-        args,
-        args.paths.cells_file_path,
+        get_cells(args.paths.cells_file_path),
+        args.paths.tmp__cubes_output_dir,
+        planes_paths,
         args.cube_depth,
         args.cube_width,
         args.cube_height,
@@ -88,6 +95,9 @@ def test_cube_extraction(tmpdir, depth=20):
         args.x_pixel_um_network,
         args.y_pixel_um_network,
         args.z_pixel_um_network,
+        args.max_ram,
+        args.n_free_cpus,
+        args.save_empty_cubes,
     )
 
     validation_cubes = load_cubes_in_dir(validate_cubes_dir)
@@ -104,8 +114,9 @@ def test_cube_extraction(tmpdir, depth=20):
     args.z_pixel_um = 7.25
 
     extract_cubes.main(
-        args,
-        args.paths.cells_file_path,
+        get_cells(args.paths.cells_file_path),
+        args.paths.tmp__cubes_output_dir,
+        planes_paths,
         args.cube_depth,
         args.cube_width,
         args.cube_height,
@@ -115,6 +126,9 @@ def test_cube_extraction(tmpdir, depth=20):
         args.x_pixel_um_network,
         args.y_pixel_um_network,
         args.z_pixel_um_network,
+        args.max_ram,
+        args.n_free_cpus,
+        args.save_empty_cubes,
     )
 
     validation_cubes_scale = load_cubes_in_dir(validate_cubes_scale_dir)
@@ -124,9 +138,9 @@ def test_cube_extraction(tmpdir, depth=20):
 
     #  test edge of data errors
     cell = Cell("x0y0z10", 2)
-    plane_paths = os.listdir(signal_data_dir[0])
+    plane_paths = os.listdir(signal_data_dir)
     first_plane = tifffile.imread(
-        os.path.join(signal_data_dir[0], plane_paths[0])
+        os.path.join(signal_data_dir, plane_paths[0])
     )
     stack_shape = first_plane.shape + (depth,)
     stacks = {}
@@ -134,7 +148,7 @@ def test_cube_extraction(tmpdir, depth=20):
     stacks[0][:, :, 0] = first_plane
 
     for plane in range(1, depth):
-        im_path = os.path.join(signal_data_dir[0], plane_paths[plane])
+        im_path = os.path.join(signal_data_dir, plane_paths[plane])
         stacks[0][:, :, plane] = tifffile.imread(im_path)
 
     cube = extract_cubes.Cube(cell, 0, stacks)
@@ -154,9 +168,11 @@ def test_cube_extraction(tmpdir, depth=20):
     args.z_pixel_um = 0.1
 
     with pytest.raises(extract_cubes.StackSizeError):
+
         extract_cubes.main(
-            args,
-            args.paths.cells_file_path,
+            get_cells(args.paths.cells_file_path),
+            args.paths.tmp__cubes_output_dir,
+            planes_paths,
             args.cube_depth,
             args.cube_width,
             args.cube_height,
@@ -166,4 +182,7 @@ def test_cube_extraction(tmpdir, depth=20):
             args.x_pixel_um_network,
             args.y_pixel_um_network,
             args.z_pixel_um_network,
+            args.max_ram,
+            args.n_free_cpus,
+            args.save_empty_cubes,
         )
