@@ -121,7 +121,7 @@ setup(
         "console_scripts": [
             "cellfinder = cellfinder.main:main",
             "cellfinder_download = cellfinder.download.cli:main",
-            "cellfinder_train = cellfinder.classify.train_yml:main",
+            "cellfinder_train = cellfinder.train.train_yml:main",
             "cellfinder_view_cells = cellfinder.viewer.two_dimensional:main",
             "cellfinder_view_3D = cellfinder.viewer.three_dimensional:main",
             "cellfinder_gen_cubes = cellfinder.extract.cli:main",
