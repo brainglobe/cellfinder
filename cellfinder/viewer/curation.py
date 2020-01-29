@@ -79,7 +79,7 @@ def main():
     CURATED_CELLS = []
 
     with napari.gui_qt():
-        viewer = napari.Viewer(title="Cellfinder cell viewer")
+        viewer = napari.Viewer(title="Cellfinder cell curation")
         images = magic_imread(img_paths, use_dask=True, stack=True)
 
         viewer.add_image(images)
@@ -98,6 +98,7 @@ def main():
         # selected points
         @viewer.bind_key("t")
         def toggle_point_annotation(viewer):
+            """Toggle point type"""
             selected_points = viewer.layers[1].selected_data
             if selected_points:
                 selected_annotations = viewer.layers[1].properties["cell"][
@@ -121,6 +122,7 @@ def main():
 
         @viewer.bind_key("c")
         def confirm_point_annotation(viewer):
+            """Confirm point type"""
             selected_points = viewer.layers[1].selected_data
             if selected_points:
                 # Add curated cells to list
@@ -132,6 +134,7 @@ def main():
 
         @viewer.bind_key("Control-S")
         def save_curation(viewer):
+            """Save file"""
             if CURATED_CELLS == []:
                 print("No cells have been confirmed or toggled, not saving")
             else:
