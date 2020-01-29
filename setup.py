@@ -124,7 +124,6 @@ setup(
             "cellfinder_train = cellfinder.train.train_yml:main",
             "cellfinder_view_cells = cellfinder.viewer.two_dimensional:main",
             "cellfinder_view_3D = cellfinder.viewer.three_dimensional:main",
-            "cellfinder_gen_cubes = cellfinder.extract.cli:main",
             "cellfinder_count_summary = "
             "cellfinder.summarise.count_summary:main",
             "cellfinder_region_summary = "
