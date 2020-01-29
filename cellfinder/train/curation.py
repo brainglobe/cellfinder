@@ -5,6 +5,7 @@ from napari.utils.io import magic_imread
 from pathlib import Path
 from imlib.general.system import get_sorted_file_paths, ensure_directory_exists
 from imlib.general.list import unique_elements_lists
+from imlib.image.metadata import define_pixel_sizes
 
 from imlib.IO.cells import cells_xml_to_df, save_cells, get_cells
 from imlib.cells.cells import Cell
@@ -18,18 +19,28 @@ CURATED_POINTS_AS_CELLS = []
 
 # based on:
 # https://github.com/kevinyamauchi/napari/blob/points_data_refactor/
-# examples/add_points_with_annotations.py
 ## only in napari feature branch currently
 
 
 def parser():
     parser = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter)
     parser = curation_parser(parser)
+    parser = cellfinder_parse.pixel_parser(parser)
+    parser = cellfinder_parse.misc_parse(parser)
     parser = cellfinder_parse.cube_extract_parse(parser)
+    return parser
 
 
 def curation_parser(parser):
-    parser.add_argument(dest="img_paths", type=str, help="Directory of images")
+    parser.add_argument(
+        dest="signal_image_paths", type=str, help="Directory of signal images"
+    )
+    parser.add_argument(
+        dest="background_image_paths",
+        type=str,
+        help="Directory of background images",
+    )
+
     parser.add_argument(
         dest="cells_xml", type=str, help="Path to the .xml cell file"
     )
@@ -70,6 +81,7 @@ def get_cell_labels_arrays(
 
 def main():
     args = parser().parse_args()
+    args = define_pixel_sizes(args)
 
     if args.output is None:
         output = Path(args.cells_xml)
@@ -84,20 +96,21 @@ def main():
     ensure_directory_exists(output_directory)
     output_filename = output_directory / OUTPUT_NAME
 
-    img_paths = get_sorted_file_paths(args.img_paths, file_extension=".tif")
+    img_paths = get_sorted_file_paths(
+        args.signal_image_paths, file_extension=".tif"
+    )
     cells, labels = get_cell_labels_arrays(args.cells_xml)
 
-    annotations = {"cell": labels}
+    properties = {"cell": labels}
 
     with napari.gui_qt():
         viewer = napari.Viewer(title="Cellfinder cell curation")
         images = magic_imread(img_paths, use_dask=True, stack=True)
-
         viewer.add_image(images)
         face_color_cycle = ["lightskyblue", "lightgoldenrodyellow"]
         points_layer = viewer.add_points(
             cells,
-            properties=annotations,
+            properties=properties,
             symbol=args.symbol,
             n_dimensional=True,
             size=args.marker_size,
@@ -105,20 +118,18 @@ def main():
             face_color_cycle=face_color_cycle,
         )
 
-        # bind a function to toggle the good_point annotation of the
-        # selected points
         @viewer.bind_key("t")
-        def toggle_point_annotation(viewer):
+        def toggle_point_property(viewer):
             """Toggle point type"""
             selected_points = viewer.layers[1].selected_data
             if selected_points:
-                selected_annotations = viewer.layers[1].properties["cell"][
+                selected_properties = viewer.layers[1].properties["cell"][
                     selected_points
                 ]
-                toggled_annotations = np.logical_not(selected_annotations)
+                toggled_properties = np.logical_not(selected_properties)
                 viewer.layers[1].properties["cell"][
                     selected_points
-                ] = toggled_annotations
+                ] = toggled_properties
 
                 # Add curated cells to list
                 CURATED_POINTS.extend(selected_points)
@@ -131,7 +142,7 @@ def main():
                 viewer.layers[1].refresh_face_color()
 
         @viewer.bind_key("c")
-        def confirm_point_annotation(viewer):
+        def confirm_point_property(viewer):
             """Confirm point type"""
             selected_points = viewer.layers[1].selected_data
             if selected_points:
@@ -172,20 +183,86 @@ def main():
                     "Please save before extracting cubes"
                 )
             else:
-                run_extraction(output_filename, output_directory)
+
+                run_extraction(
+                    output_filename,
+                    output_directory,
+                    args.signal_image_paths,
+                    args.background_image_paths,
+                    args.cube_depth,
+                    args.cube_width,
+                    args.cube_height,
+                    args.x_pixel_um,
+                    args.y_pixel_um,
+                    args.z_pixel_um,
+                    args.x_pixel_um_network,
+                    args.y_pixel_um_network,
+                    args.z_pixel_um_network,
+                    args.max_ram,
+                    args.n_free_cpus,
+                    args.save_empty_cubes,
+                )
 
 
-def run_extraction(output_filename, output_directory):
+def run_extraction(
+    output_filename,
+    output_directory,
+    signal_paths,
+    background_paths,
+    cube_depth,
+    cube_width,
+    cube_height,
+    x_pixel_um,
+    y_pixel_um,
+    z_pixel_um,
+    x_pixel_um_network,
+    y_pixel_um_network,
+    z_pixel_um_network,
+    max_ram,
+    n_free_cpus,
+    save_empty_cubes,
+):
     print(f"Saving cubes to: {output_directory}")
+    planes_paths = {}
+    planes_paths[0] = get_sorted_file_paths(signal_paths, file_extension="tif")
+    planes_paths[1] = get_sorted_file_paths(
+        background_paths, file_extension="tif"
+    )
+
     all_candidates = get_cells(str(output_filename))
 
     cells = [c for c in all_candidates if c.is_cell()]
     non_cells = [c for c in all_candidates if not c.is_cell()]
 
-    for cell_list in [cells, non_cells]:
-        print(f"Extracting type: {cell_list[0].type}")
+    to_extract = {"cells": cells, "non_cells": non_cells}
 
-        extract_cubes_main(cell_list)
+    for cell_type, cell_list in to_extract.items():
+        print(f"Extracting type: {cell_type}")
+        cell_type_output_directory = output_directory / cell_type
+        print(f"Saving to: {cell_type_output_directory}")
+        ensure_directory_exists(cell_type_output_directory)
+        extract_cubes_main(
+            cell_list,
+            cell_type_output_directory,
+            planes_paths,
+            cube_depth,
+            cube_width,
+            cube_height,
+            x_pixel_um,
+            y_pixel_um,
+            z_pixel_um,
+            x_pixel_um_network,
+            y_pixel_um_network,
+            z_pixel_um_network,
+            max_ram,
+            n_free_cpus,
+            save_empty_cubes,
+        )
+
+        print(
+            "Finished! You may now close the viewer, and annotate more "
+            "datasets, or go straight to training"
+        )
 
 
 if __name__ == "__main__":
