@@ -5,8 +5,8 @@ import shutil
 import pytest
 
 from cellfinder.classify import classify
-import cellfinder.IO.cells as cell_io
-from cellfinder.cells.cells import Cell
+import imlib.IO.cells as cell_io
+from imlib.cells.cells import Cell
 from cellfinder.tools.prep import prep_classification
 
 data_dir = os.path.join(os.getcwd(), "tests", "data")

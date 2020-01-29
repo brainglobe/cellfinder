@@ -8,18 +8,19 @@ from tqdm import tqdm
 
 from brainio import brainio
 
-from cellfinder.IO.cells import get_cells
+from imlib.IO.cells import get_cells
+from imlib.pandas.misc import sanitise_df
+from imlib.image.metadata import define_pixel_sizes
+from imlib.general.config import get_config_obj
+
 from cellfinder.summarise.structures.structures_tree import (
     get_structures_tree,
     load_structures_as_df,
 )
 import cellfinder.tools.parser as cellfinder_parse
-from amap.config.config import get_config_ob
 from cellfinder.tools.prep import prep_atlas_conf, Paths
 from cellfinder.tools.source_files import get_structures_path
 import cellfinder.summarise.tools as summary_tools
-from cellfinder.tools import df as df_tools
-from cellfinder.tools.metadata import define_pixel_sizes
 
 LEFT_HEMISPHERE = 2
 RIGHT_HEMISPHERE = 1
@@ -275,7 +276,7 @@ def analysis_run(args, file_name="summary_cell_counts.csv"):
 
     combined_hemispheres = combine_df_hemispheres(sorted_cell_numbers)
     df = calculate_densities(combined_hemispheres, args.paths.volume_csv_path)
-    df = df_tools.sanitise_df(df)
+    df = sanitise_df(df)
     if not os.path.exists(args.output_dir):
         os.makedirs(args.output_dir)
     output_file = os.path.join(args.output_dir, file_name)

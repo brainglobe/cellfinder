@@ -20,8 +20,8 @@ from argparse import (
     ArgumentTypeError,
 )
 from sklearn.model_selection import train_test_split
-
-from cellfinder.tools.misc import check_positive_float, check_positive_int
+from imlib.general.misc import check_positive_float, check_positive_int
+from imlib.general.system import ensure_directory_exists, get_num_processes
 
 tf_suppress_log_messages = [
     "sample_weight modes were coerced from",
@@ -156,7 +156,7 @@ def training_parse():
 
 def parse_yaml(yaml_file):
     from cellfinder.tools.tiff import TiffList, TiffDir
-    from cellfinder.IO.cells import find_relevant_tiffs
+    from imlib.IO.cells import find_relevant_tiffs
 
     yaml_contents = read_yaml_arg_file(yaml_file)
     data = yaml_contents["data"]
@@ -200,7 +200,6 @@ def main(max_workers=3):
 
     from tensorflow.keras.callbacks import TensorBoard, ModelCheckpoint
 
-    from cellfinder.tools import system
     from cellfinder.tools.prep import prep_training
     from cellfinder.classify.tools import make_lists, get_model
     from cellfinder.classify.cube_generator import CubeGeneratorFromDisk
@@ -208,12 +207,12 @@ def main(max_workers=3):
     start_time = datetime.now()
     args = training_parse()
     output_dir = Path(args.output_dir)
-    system.ensure_directory_exists(output_dir)
+    ensure_directory_exists(output_dir)
     args = prep_training(args)
     tiff_files = parse_yaml(args.yaml_file)
 
     # Too many workers doesn't increase speed, and uses huge amounts of RAM
-    workers = system.get_num_processes(
+    workers = get_num_processes(
         min_free_cpu_cores=args.n_free_cpus, n_max_processes=max_workers
     )
 
@@ -264,7 +263,7 @@ def main(max_workers=3):
 
     if args.tensorboard:
         logdir = output_dir / "tensorboard"
-        system.ensure_directory_exists(logdir)
+        ensure_directory_exists(logdir)
         tensorboard = TensorBoard(
             log_dir=logdir,
             histogram_freq=0,

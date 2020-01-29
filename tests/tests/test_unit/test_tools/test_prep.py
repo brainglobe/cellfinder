@@ -5,7 +5,7 @@ import shutil
 from pathlib import Path
 
 from cellfinder.tools import prep
-from cellfinder.tools.exceptions import CommandLineInputError
+from imlib.general.exceptions import CommandLineInputError
 
 
 data_dir = os.path.join("tests", "data")

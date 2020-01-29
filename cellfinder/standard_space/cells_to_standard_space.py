@@ -4,21 +4,21 @@ from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from datetime import datetime
 from os.path import join
 
-from cellfinder.tools import tools, system, prep
-import cellfinder.tools.parser as cellfinder_parse
-from cellfinder.tools.metadata import define_pixel_sizes
-from amap.register.registration_params import RegistrationParams
-from cellfinder.tools.exceptions import TransformationError
-from cellfinder.IO.cells import get_cells, save_cells
-from cellfinder.tools.system import (
+from imlib.general.system import (
+    ensure_directory_exists,
     safe_execute_command,
     SafeExecuteCommandError,
 )
-
-
+from imlib.IO.cells import get_cells, save_cells
+from imlib.cells.cells import transform_cell_positions
+from imlib.general.system import delete_temp
+from imlib.general.exceptions import TransformationError
+from imlib.image.metadata import define_pixel_sizes
 from brainio.brainio import load_any as load_any_image
+from amap.register.registration_params import RegistrationParams
 
-from cellfinder.cells.cells import transform_cell_positions
+from cellfinder.tools import tools, prep
+import cellfinder.tools.parser as cellfinder_parse
 from cellfinder.tools.source_files import source_custom_config
 
 
@@ -66,7 +66,7 @@ def transform_cells_to_standard_space(args):
 
     if not args.debug:
         logging.info("Removing standard space transformation temp files")
-        tools.delete_temp(args.paths.standard_space_output_folder, args.paths)
+        delete_temp(args.paths.standard_space_output_folder, args.paths)
 
 
 def get_deformation_field_scales(reg_params):
@@ -207,8 +207,8 @@ def main():
 
     # TODO: implement a recursive function to remove the need to do this
     # (probably using pathlib)
-    system.ensure_directory_exists(args.paths.output_dir)
-    system.ensure_directory_exists(args.paths.standard_space_output_folder)
+    ensure_directory_exists(args.paths.output_dir)
+    ensure_directory_exists(args.paths.standard_space_output_folder)
     tools.start_logging(
         args.paths.output_dir,
         args=args,

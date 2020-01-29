@@ -2,12 +2,13 @@ import logging
 
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from datetime import datetime
+from imlib.general.misc import check_positive_int
+from imlib.general.system import ensure_directory_exists
+from imlib.image.metadata import define_pixel_sizes
 
-from cellfinder.tools import tools, system, prep
+from cellfinder.tools import tools, prep
 import cellfinder.tools.parser as cellfinder_parse
 import cellfinder.extract.extract_cubes as extract_cubes
-from cellfinder.tools.misc import check_positive_int
-from cellfinder.tools.metadata import define_pixel_sizes
 
 
 def cube_extract_cli_parser():
@@ -80,7 +81,7 @@ def main():
     args.paths = prep.Paths(args.cubes_output_dir)
     args.paths.tmp__cubes_output_dir = args.cubes_output_dir
     args.paths.cells_file_path = args.cells_file_path
-    system.ensure_directory_exists(args.paths.tmp__cubes_output_dir)
+    ensure_directory_exists(args.paths.tmp__cubes_output_dir)
 
     tools.start_logging(
         args.paths.tmp__cubes_output_dir,

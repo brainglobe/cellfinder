@@ -16,19 +16,18 @@ from skimage import morphology
 from tqdm import tqdm
 from read_roi import read_roi_zip
 from scipy.ndimage import maximum_filter1d
-
-
-from cellfinder.tools.misc import check_positive_int
+from imlib.general.misc import check_positive_int
+from imlib.general.system import (
+    safe_execute_command,
+    SafeExecuteCommandError,
+)
+from imlib.general.exceptions import RegistrationError
 from cellfinder.tools.source_files import source_custom_config
 from amap.config.atlas import Atlas
 from amap.config.config import get_binary
 from amap.tools.source_files import get_niftyreg_binaries
 import cellfinder.summarise.count_summary as cells_regions
-from cellfinder.tools.exceptions import RegistrationError
-from cellfinder.tools.system import (
-    safe_execute_command,
-    SafeExecuteCommandError,
-)
+
 
 # TODO: get this from amap
 SOURCE_IMAGE_NAME = "downsampled.nii"
@@ -337,14 +336,6 @@ def main():
         z_filter_padding=args.z_filter_padding,
     )
     print("Finished. Total time taken: {}".format(datetime.now() - start_time))
-
-
-def get_transformation_matrix(self):
-    atlas_pixel_sizes = cells_regions.get_atlas_pixel_sizes(self._atlas_config)
-    transformation_matrix = np.eye(4)
-    for i, axis in enumerate(("x", "y", "z")):
-        transformation_matrix[i, i] = atlas_pixel_sizes[axis]
-    self.transformation_matrix = transformation_matrix
 
 
 def prepare_segmentation_cmd(

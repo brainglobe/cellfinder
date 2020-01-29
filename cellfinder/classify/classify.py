@@ -1,26 +1,24 @@
 import logging
 import numpy as np
+from imlib.general.system import get_sorted_file_paths, get_num_processes
 
-from cellfinder.IO.cells import save_cells
 
+from imlib.IO.cells import save_cells
 from cellfinder.classify.tools import get_model
 from cellfinder.classify.cube_generator import CubeGeneratorFromFile
 from cellfinder.classify.train_yml import models
-from cellfinder.tools import system
 
 
 def main(args, max_workers=3):
     signal_paths = args.signal_planes_paths[args.signal_channel]
     background_paths = args.background_planes_path[0]
-    signal_images = system.get_sorted_file_paths(
-        signal_paths, file_extension="tif"
-    )
-    background_images = system.get_sorted_file_paths(
+    signal_images = get_sorted_file_paths(signal_paths, file_extension="tif")
+    background_images = get_sorted_file_paths(
         background_paths, file_extension="tif"
     )
 
     # Too many workers doesn't increase speed, and uses huge amounts of RAM
-    workers = system.get_num_processes(
+    workers = get_num_processes(
         min_free_cpu_cores=args.n_free_cpus, n_max_processes=max_workers
     )
 
