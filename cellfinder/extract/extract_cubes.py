@@ -368,36 +368,42 @@ def get_ram_requirement_per_process(
     return total_mem_need
 
 
-def main(args):
+def main(
+    args,
+    cells_file_path,
+    cube_depth,
+    cube_width,
+    cube_height,
+    x_pixel_um,
+    y_pixel_um,
+    z_pixel_um,
+    x_pixel_um_network,
+    y_pixel_um_network,
+    z_pixel_um_network,
+):
 
     start_time = datetime.now()
 
-    cells = get_cells(args.paths.cells_file_path)
+    cells = get_cells(cells_file_path)
     if not cells:
         logging.error(
             "No cells found, exiting. Please check your "
             "cell xml file path: {}"
             " or verify your cell types "
-            "(maybe use cells-only option to disable)".format(
-                args.paths.cells_file_path
-            )
+            "(maybe use cells-only option to disable)".format(cells_file_path)
         )
         raise ValueError(
             "No cells found, exiting. Please check your "
             "cell xml file path: {}"
             " or verify your cell types "
-            "(maybe use cells-only option to disable)".format(
-                args.paths.cells_file_path
-            )
+            "(maybe use cells-only option to disable)".format(cells_file_path)
         )
 
-    if args.z_pixel_um != args.z_pixel_um_network:
-        plane_scaling_factor = args.z_pixel_um_network / args.z_pixel_um
-        num_planes_needed_for_cube = round(
-            args.cube_depth * plane_scaling_factor
-        )
+    if z_pixel_um != z_pixel_um_network:
+        plane_scaling_factor = z_pixel_um_network / z_pixel_um
+        num_planes_needed_for_cube = round(cube_depth * plane_scaling_factor)
     else:
-        num_planes_needed_for_cube = args.cube_depth
+        num_planes_needed_for_cube = cube_depth
 
     planes_paths = {}
     # Use args.paths for this
@@ -497,14 +503,14 @@ def main(args):
                 planes_paths,
                 sub_planes_to_read,
                 planes_shape,
-                args.x_pixel_um,
-                args.y_pixel_um,
-                args.x_pixel_um_network,
-                args.y_pixel_um_network,
+                x_pixel_um,
+                y_pixel_um,
+                x_pixel_um_network,
+                y_pixel_um_network,
                 num_planes_for_cube=num_planes_needed_for_cube,
-                cube_width=args.cube_width,
-                cube_height=args.cube_height,
-                cube_depth=args.cube_depth,
+                cube_width=cube_width,
+                cube_height=cube_height,
+                cube_depth=cube_depth,
                 thread_id=i,
                 output_dir=args.paths.tmp__cubes_output_dir,
                 save_empty_cubes=args.save_empty_cubes,

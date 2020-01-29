@@ -9,7 +9,6 @@ from brainio import brainio
 from imlib.cells.cells import Cell
 from imlib.general.system import delete_directory_contents
 import cellfinder.extract.extract_cubes as extract_cubes
-import cellfinder.tools.system as system
 
 data_dir = os.path.join("tests", "data")
 
@@ -77,7 +76,19 @@ def load_cubes_in_dir(directory):
 def test_cube_extraction(tmpdir, depth=20):
     tmpdir = str(tmpdir)
     args = CubeExtractArgs(tmpdir)
-    extract_cubes.main(args)
+    extract_cubes.main(
+        args,
+        args.paths.cells_file_path,
+        args.cube_depth,
+        args.cube_width,
+        args.cube_height,
+        args.x_pixel_um,
+        args.y_pixel_um,
+        args.z_pixel_um,
+        args.x_pixel_um_network,
+        args.y_pixel_um_network,
+        args.z_pixel_um_network,
+    )
 
     validation_cubes = load_cubes_in_dir(validate_cubes_dir)
     test_cubes = load_cubes_in_dir(tmpdir)
@@ -92,7 +103,19 @@ def test_cube_extraction(tmpdir, depth=20):
     args.y_pixel_um = 2
     args.z_pixel_um = 7.25
 
-    extract_cubes.main(args)
+    extract_cubes.main(
+        args,
+        args.paths.cells_file_path,
+        args.cube_depth,
+        args.cube_width,
+        args.cube_height,
+        args.x_pixel_um,
+        args.y_pixel_um,
+        args.z_pixel_um,
+        args.x_pixel_um_network,
+        args.y_pixel_um_network,
+        args.z_pixel_um_network,
+    )
 
     validation_cubes_scale = load_cubes_in_dir(validate_cubes_scale_dir)
     test_cubes = load_cubes_in_dir(tmpdir)
@@ -131,4 +154,16 @@ def test_cube_extraction(tmpdir, depth=20):
     args.z_pixel_um = 0.1
 
     with pytest.raises(extract_cubes.StackSizeError):
-        extract_cubes.main(args)
+        extract_cubes.main(
+            args,
+            args.paths.cells_file_path,
+            args.cube_depth,
+            args.cube_width,
+            args.cube_height,
+            args.x_pixel_um,
+            args.y_pixel_um,
+            args.z_pixel_um,
+            args.x_pixel_um_network,
+            args.y_pixel_um_network,
+            args.z_pixel_um_network,
+        )

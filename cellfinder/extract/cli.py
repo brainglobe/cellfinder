@@ -92,7 +92,19 @@ def main():
     )
     logging.info("Starting cube extraction")
 
-    extract_cubes.main(args)
+    extract_cubes.main(
+        args,
+        args.paths.cells_file_path,
+        args.cube_depth,
+        args.cube_width,
+        args.cube_height,
+        args.x_pixel_um,
+        args.y_pixel_um,
+        args.z_pixel_um,
+        args.x_pixel_um_network,
+        args.y_pixel_um_network,
+        args.z_pixel_um_network,
+    )
     logging.info("Finished. Total time taken: %s", datetime.now() - start_time)
 
 
