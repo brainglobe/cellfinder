@@ -19,7 +19,7 @@ from argparse import (
     ArgumentTypeError,
 )
 from sklearn.model_selection import train_test_split
-from imlib.general.misc import check_positive_float, check_positive_int
+from imlib.general.numerical import check_positive_float, check_positive_int
 from imlib.general.system import ensure_directory_exists, get_num_processes
 from imlib.IO.cells import find_relevant_tiffs
 from imlib.IO.yaml import read_yaml_section
