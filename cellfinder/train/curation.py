@@ -11,6 +11,7 @@ from imlib.general.list import unique_elements_lists
 from imlib.image.metadata import define_pixel_sizes
 from imlib.IO.cells import cells_xml_to_df, save_cells, get_cells
 from imlib.cells.cells import Cell
+from imlib.IO.yaml import save_yaml
 
 from cellfinder.extract.extract_cubes import main as extract_cubes_main
 import cellfinder.tools.parser as cellfinder_parse
@@ -267,6 +268,32 @@ def run_extraction(
             n_free_cpus,
             save_empty_cubes,
         )
+        print("Saving yaml file to use for training")
+
+        save_yaml_file(output_directory)
+
+
+def save_yaml_file(output_directory):
+    yaml_filename = output_directory / "training.yml"
+    yaml_section = [
+        {
+            "cube_dir": str(output_directory / "cells"),
+            "cell_def": "",
+            "type": "cell",
+            "signal_channel": 0,
+            "bg_channel": 1,
+        },
+        {
+            "cube_dir": str(output_directory / "non_cells"),
+            "cell_def": "",
+            "type": "no_cell",
+            "signal_channel": 0,
+            "bg_channel": 1,
+        },
+    ]
+
+    yaml_contents = {"data": yaml_section}
+    save_yaml(yaml_contents, yaml_filename)
 
 
 if __name__ == "__main__":

@@ -14,7 +14,6 @@ requirements = [
     "tqdm",
     "anytree",
     "h5py",
-    "PyYAML",
     "multiprocessing-logging",
     "psutil",
     "nibabel",

@@ -10,7 +10,6 @@ it's warnings are silenced
 
 
 import os
-import yaml
 
 from datetime import datetime
 from pathlib import Path
@@ -23,6 +22,7 @@ from sklearn.model_selection import train_test_split
 from imlib.general.misc import check_positive_float, check_positive_int
 from imlib.general.system import ensure_directory_exists, get_num_processes
 from imlib.IO.cells import find_relevant_tiffs
+from imlib.IO.yaml import read_yaml_section
 
 tf_suppress_log_messages = [
     "sample_weight modes were coerced from",
@@ -164,17 +164,11 @@ def training_parse():
     return args
 
 
-def parse_yaml(yaml_files):
+def parse_yaml(yaml_files, section="data"):
     data = []
     for yaml_file in yaml_files:
-        data.extend(read_yaml(yaml_file))
+        data.extend(read_yaml_section(yaml_file, section))
     return data
-
-
-def read_yaml(yaml_file):
-    yaml_contents = read_yaml_arg_file(yaml_file)
-    contents = yaml_contents["data"]
-    return contents
 
 
 def get_tiff_files(yaml_contents):
@@ -204,12 +198,6 @@ def get_tiff_files(yaml_contents):
 
     tiff_files = [tiff_dir.make_tifffile_list() for tiff_dir in tiff_lists]
     return tiff_files
-
-
-def read_yaml_arg_file(arg_file):
-    with open(arg_file) as af:
-        yaml_args = yaml.load(af, Loader=yaml.FullLoader)
-    return yaml_args
 
 
 def main(max_workers=3):
