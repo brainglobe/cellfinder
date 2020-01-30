@@ -1,6 +1,6 @@
 import numpy as np
 
-from cellfinder.tools import tools
+from imlib.general.numerical import is_even
 
 
 def crop_center_2d(img, crop_x=None, crop_y=None):
@@ -68,7 +68,7 @@ def pad_center_2d(img, x_size=None, y_size=None, pad_mode="edge"):
         y_pad = y_size - y
 
     if x_pad > 0:
-        if tools.is_even(x_pad):
+        if is_even(x_pad):
             x_front = x_back = int(x_pad / 2)
         else:
             x_front = int(x_pad // 2)
@@ -77,7 +77,7 @@ def pad_center_2d(img, x_size=None, y_size=None, pad_mode="edge"):
         x_front = x_back = 0
 
     if y_pad > 0:
-        if tools.is_even(y_pad):
+        if is_even(y_pad):
             y_front = y_back = int(y_pad / 2)
         else:
             y_front = int(y_pad // 2)
