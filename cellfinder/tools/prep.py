@@ -436,7 +436,7 @@ def check_atlas_install():
     files_exist = False
     cfg_file_path = source_files.source_custom_config()
     if os.path.exists(cfg_file_path):
-        config_obj = get_config_ob(cfg_file_path)
+        config_obj = get_config_obj(cfg_file_path)
         atlas_conf = config_obj["atlas"]
         atlas_directory = atlas_conf["base_folder"]
         if os.path.exists(atlas_directory):

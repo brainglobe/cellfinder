@@ -10,7 +10,6 @@ it's warnings are silenced
 
 
 import os
-import yaml
 
 from datetime import datetime
 from pathlib import Path
@@ -22,6 +21,8 @@ from argparse import (
 from sklearn.model_selection import train_test_split
 from imlib.general.misc import check_positive_float, check_positive_int
 from imlib.general.system import ensure_directory_exists, get_num_processes
+from imlib.IO.cells import find_relevant_tiffs
+from imlib.IO.yaml import read_yaml_section
 
 tf_suppress_log_messages = [
     "sample_weight modes were coerced from",
@@ -61,10 +62,19 @@ def training_parse():
         formatter_class=ArgumentDefaultsHelpFormatter
     )
     training_parser.add_argument(
-        dest="yaml_file", type=str, help="The path to the yaml run file."
+        "-y",
+        "--yaml",
+        dest="yaml_file",
+        nargs="+",
+        required=True,
+        type=str,
+        help="The path to the yaml run file.",
     )
     training_parser.add_argument(
+        "-o",
+        "--output-dir",
         dest="output_dir",
+        required=True,
         type=str,
         help="Output directory for the final model.",
     )
@@ -154,15 +164,18 @@ def training_parse():
     return args
 
 
-def parse_yaml(yaml_file):
-    from cellfinder.tools.tiff import TiffList, TiffDir
-    from imlib.IO.cells import find_relevant_tiffs
+def parse_yaml(yaml_files, section="data"):
+    data = []
+    for yaml_file in yaml_files:
+        data.extend(read_yaml_section(yaml_file, section))
+    return data
 
-    yaml_contents = read_yaml_arg_file(yaml_file)
-    data = yaml_contents["data"]
+
+def get_tiff_files(yaml_contents):
+    from cellfinder.tools.tiff import TiffList, TiffDir
 
     tiff_lists = []
-    for d in data:
+    for d in yaml_contents:
         if d["bg_channel"] < 0:
             channels = [d["signal_channel"]]
         else:
@@ -187,12 +200,6 @@ def parse_yaml(yaml_file):
     return tiff_files
 
 
-def read_yaml_arg_file(arg_file):
-    with open(arg_file) as af:
-        yaml_args = yaml.load(af, Loader=yaml.FullLoader)
-    return yaml_args
-
-
 def main(max_workers=3):
     from cellfinder.main import suppress_tf_logging
 
@@ -209,7 +216,8 @@ def main(max_workers=3):
     output_dir = Path(args.output_dir)
     ensure_directory_exists(output_dir)
     args = prep_training(args)
-    tiff_files = parse_yaml(args.yaml_file)
+    yaml_contents = parse_yaml(args.yaml_file)
+    tiff_files = get_tiff_files(yaml_contents)
 
     # Too many workers doesn't increase speed, and uses huge amounts of RAM
     workers = get_num_processes(

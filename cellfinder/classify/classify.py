@@ -6,7 +6,7 @@ from imlib.general.system import get_sorted_file_paths, get_num_processes
 from imlib.IO.cells import save_cells
 from cellfinder.classify.tools import get_model
 from cellfinder.classify.cube_generator import CubeGeneratorFromFile
-from cellfinder.classify.train_yml import models
+from cellfinder.train.train_yml import models
 
 
 def main(args, max_workers=3):
