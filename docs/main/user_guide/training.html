@@ -191,7 +191,7 @@
 <p>Cellfinder includes a pretrained network for cell candidate classification.
 This will likely need to be retrained for different applications. Rather than
 generate training data blindly, the aim is to reduce the amount of hands-on
-time, by only generating training data where cellfinder classified a cell
+time by only generating training data where cellfinder classified a cell
 candidiate incorrectly.</p>
 <div class="section" id="generate-training-data">
 <h2>Generate training data<a class="headerlink" href="#generate-training-data" title="Permalink to this headline">¶</a></h2>
@@ -229,7 +229,7 @@ visualise cells</p></li>
 candidates previously classified as cells are shown in yellow, and artifacts
 in blue.</p></li>
 </ul>
-<p>By selecting the <code class="docutils literal notranslate"><span class="pre">Cell</span> <span class="pre">candidates</span> <span class="pre">tab</span></code> and then the cell selecting tool
+<p>By selecting the <code class="docutils literal notranslate"><span class="pre">Cell</span> <span class="pre">candidates</span></code> tab and then the cell selecting tool
 (arrow at the top), cell candidates can be selected (either individually,
 or many by dragging the cursor). There are then four keyboard commands:</p>
 <ul class="simple">
@@ -256,7 +256,7 @@ is likely useful to generate yaml files from additional datasets.</p>
 <p>You can then use these yaml files for training</p>
 <p><em>N.B. If you have any yaml files from previous versions of cellfinder, they
 will continue to work, but are not documented here. Just use them as
-you would the files from <code class="docutils literal notranslate"><span class="pre">cellfinder_curate</span></code></em></p>
+you would the files from <code class="docutils literal notranslate"><span class="pre">cellfinder_curate</span></code>.</em></p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>cellfinder_train -y yaml_1.yml  yaml_2.yml -o /path/to/output/directory/
 </pre></div>
 </div>

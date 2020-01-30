@@ -3,7 +3,7 @@
 Cellfinder includes a pretrained network for cell candidate classification. 
 This will likely need to be retrained for different applications. Rather than
 generate training data blindly, the aim is to reduce the amount of hands-on 
-time, by only generating training data where cellfinder classified a cell 
+time by only generating training data where cellfinder classified a cell 
 candidiate incorrectly.
 
 
@@ -39,7 +39,7 @@ left hand side:
  candidates previously classified as cells are shown in yellow, and artifacts 
  in blue. 
  
- By selecting the `Cell candidates tab` and then the cell selecting tool 
+ By selecting the `Cell candidates` tab and then the cell selecting tool 
  (arrow at the top), cell candidates can be selected (either individually, 
  or many by dragging the cursor). There are then four keyboard commands:
  * `C` Confirm the classification result, and add this to the training set
@@ -61,7 +61,7 @@ You can then use these yaml files for training
 
 *N.B. If you have any yaml files from previous versions of cellfinder, they 
 will continue to work, but are not documented here. Just use them as 
-you would the files from `cellfinder_curate`*
+you would the files from `cellfinder_curate`.*
 
 ```bash
 cellfinder_train -y yaml_1.yml  yaml_2.yml -o /path/to/output/directory/
