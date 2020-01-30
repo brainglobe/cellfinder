@@ -20,10 +20,6 @@ OUTPUT_NAME = "curated_cells.xml"
 CURATED_POINTS = []
 CURATED_POINTS_AS_CELLS = []
 
-# based on:
-# https://github.com/kevinyamauchi/napari/blob/points_data_refactor/
-## only in napari feature branch currently
-
 
 def parser():
     parser = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter)
@@ -141,7 +137,7 @@ def main():
                 )
 
                 # refresh the properties colour
-                viewer.layers[1].refresh_face_color()
+                viewer.layers[1].refresh_colors(update_color_mapping=False)
 
         @viewer.bind_key("c")
         def confirm_point_property(viewer):
@@ -185,7 +181,7 @@ def main():
                     "Please save before extracting cubes"
                 )
             else:
-
+                print(f"Saving cubes to: {output_directory}")
                 run_extraction(
                     output_filename,
                     output_directory,
@@ -205,8 +201,11 @@ def main():
                     args.save_empty_cubes,
                 )
 
-                QApplication.closeAllWindows()
+                print("Saving yaml file to use for training")
+                save_yaml_file(output_directory)
 
+                print("Closing window")
+                QApplication.closeAllWindows()
                 print(
                     "Finished! You may now annotate more "
                     "datasets, or go straight to training"
@@ -231,7 +230,6 @@ def run_extraction(
     n_free_cpus,
     save_empty_cubes,
 ):
-    print(f"Saving cubes to: {output_directory}")
     planes_paths = {}
     planes_paths[0] = get_sorted_file_paths(signal_paths, file_extension="tif")
     planes_paths[1] = get_sorted_file_paths(
@@ -267,9 +265,6 @@ def run_extraction(
             n_free_cpus,
             save_empty_cubes,
         )
-        print("Saving yaml file to use for training")
-
-        save_yaml_file(output_directory)
 
 
 def save_yaml_file(output_directory):
