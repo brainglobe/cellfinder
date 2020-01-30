@@ -91,7 +91,7 @@ else:
 
 setup(
     name="cellfinder",
-    version="0.3.4",
+    version="0.3.5",
     description="Cell detection for whole-brain microscopy",
     install_requires=requirements,
     extras_require={
