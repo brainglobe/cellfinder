@@ -18,7 +18,6 @@ import cellfinder.tools.parser as cellfinder_parse
 
 OUTPUT_NAME = "curated_cells.xml"
 CURATED_POINTS = []
-CURATED_POINTS_AS_CELLS = []
 
 
 def parser():
