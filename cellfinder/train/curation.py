@@ -213,7 +213,6 @@ def main():
                 )
 
 
-
 def run_extraction(
     output_filename,
     output_directory,
@@ -268,7 +267,6 @@ def run_extraction(
             n_free_cpus,
             save_empty_cubes,
         )
-
 
 
 if __name__ == "__main__":
