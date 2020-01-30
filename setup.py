@@ -14,7 +14,6 @@ requirements = [
     "tqdm",
     "anytree",
     "h5py",
-    "PyYAML",
     "multiprocessing-logging",
     "psutil",
     "nibabel",
@@ -92,7 +91,7 @@ else:
 
 setup(
     name="cellfinder",
-    version="0.3.4",
+    version="0.3.5",
     description="Cell detection for whole-brain microscopy",
     install_requires=requirements,
     extras_require={
@@ -121,12 +120,9 @@ setup(
         "console_scripts": [
             "cellfinder = cellfinder.main:main",
             "cellfinder_download = cellfinder.download.cli:main",
-            "cellfinder_train = cellfinder.classify.train_yml:main",
+            "cellfinder_train = cellfinder.train.train_yml:main",
             "cellfinder_view_cells = cellfinder.viewer.two_dimensional:main",
             "cellfinder_view_3D = cellfinder.viewer.three_dimensional:main",
-            "cellfinder_gen_cubes = cellfinder.extract.cli:main",
-            "cellfinder_batch_extract = cellfinder.batch.extract:main",
-            "cellfinder_cells_combine = cellfinder.batch.cells_combine:main",
             "cellfinder_count_summary = "
             "cellfinder.summarise.count_summary:main",
             "cellfinder_region_summary = "
@@ -140,6 +136,7 @@ setup(
             "cellfinder.utils.generate_region_volume:main",
             "cellfinder_cells_to_brainrender = "
             "neuro.points.points_to_brainrender:main",
+            "cellfinder_curate = cellfinder.train.curation:main",
         ]
     },
     url="https://github.com/SainsburyWellcomeCentre/cellfinder",
