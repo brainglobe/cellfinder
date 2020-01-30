@@ -36,12 +36,10 @@ def parser():
 
 def curation_parser(parser):
     parser.add_argument(
-        dest="signal_image_paths", type=str, help="Directory of signal images"
+        dest="signal_image_paths", type=str, help="Signal images"
     )
     parser.add_argument(
-        dest="background_image_paths",
-        type=str,
-        help="Directory of background images",
+        dest="background_image_paths", type=str, help="Background images",
     )
 
     parser.add_argument(
@@ -119,6 +117,7 @@ def main():
             size=args.marker_size,
             face_color="cell",
             face_color_cycle=face_color_cycle,
+            name="Cell candidates",
         )
 
         @viewer.bind_key("t")
