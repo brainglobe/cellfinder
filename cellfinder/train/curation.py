@@ -3,10 +3,12 @@ import napari
 import numpy as np
 from napari.utils.io import magic_imread
 from pathlib import Path
+
+from PySide2.QtWidgets import QApplication
+
 from imlib.general.system import get_sorted_file_paths, ensure_directory_exists
 from imlib.general.list import unique_elements_lists
 from imlib.image.metadata import define_pixel_sizes
-
 from imlib.IO.cells import cells_xml_to_df, save_cells, get_cells
 from imlib.cells.cells import Cell
 
@@ -203,6 +205,14 @@ def main():
                     args.save_empty_cubes,
                 )
 
+                QApplication.closeAllWindows()
+
+                print(
+                    "Finished! You may now annotate more "
+                    "datasets, or go straight to training"
+                )
+
+
 
 def run_extraction(
     output_filename,
@@ -259,10 +269,6 @@ def run_extraction(
             save_empty_cubes,
         )
 
-        print(
-            "Finished! You may now close the viewer, and annotate more "
-            "datasets, or go straight to training"
-        )
 
 
 if __name__ == "__main__":
