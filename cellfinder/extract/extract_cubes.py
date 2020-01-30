@@ -15,7 +15,7 @@ from imlib.cells.cells import group_cells_by_z
 from imlib.general.numerical import is_even
 
 from cellfinder.tools import image_processing as img_tools
-from cellfinder.tools import tools, system
+from cellfinder.tools import system
 
 
 class StackSizeError(Exception):

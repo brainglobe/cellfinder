@@ -2,10 +2,6 @@ class CellCountMissingCellsException(Exception):
     pass
 
 
-class CellOutOfBrainError(IndexError):
-    pass
-
-
 class UnknownAtlasValue(Exception):
     pass
 
