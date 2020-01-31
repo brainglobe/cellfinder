@@ -12,15 +12,14 @@ from imlib.IO.cells import get_cells
 from imlib.pandas.misc import sanitise_df
 from imlib.image.metadata import define_pixel_sizes
 from imlib.general.config import get_config_obj
-
-from cellfinder.summarise.structures.structures_tree import (
+from imlib.anatomy.structures.structures_tree import (
     get_structures_tree,
     load_structures_as_df,
 )
+from imlib.anatomy.structures import misc as summary_tools
 import cellfinder.tools.parser as cellfinder_parse
 from cellfinder.tools.prep import prep_atlas_conf, Paths
 from cellfinder.tools.source_files import get_structures_path
-import cellfinder.summarise.tools as summary_tools
 
 LEFT_HEMISPHERE = 2
 RIGHT_HEMISPHERE = 1
@@ -116,7 +115,7 @@ def get_scales(sample_pixel_sizes, atlas_pixel_sizes, scale=True):
 
 
 def get_atlas_pixel_sizes(atlas_config_path):
-    config_obj = get_config_ob(atlas_config_path)
+    config_obj = get_config_obj(atlas_config_path)
     atlas_conf = config_obj["atlas"]
     atlas_pixel_sizes = atlas_conf["pixel_size"]
     return atlas_pixel_sizes
