@@ -25,7 +25,7 @@ Cellfinder is a collection of tools from the
  The aim is to provide a single solution for:
  
  * Cell detection (initial cell candidate detection and refinement using 
- deep learning.
+ deep learning).
  * Atlas registration (using [amap](https://github.com/SainsburyWellcomeCentre/amap-python))
  * Analysis of cell positions in a common space
  
