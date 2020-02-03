@@ -40,15 +40,6 @@ def test_common_member():
     assert (True, [10, 30]) == tools.common_member(a, b)
 
 
-def test_is_even():
-    even_number = random.randrange(2, 1000, 2)
-    odd_number = random.randrange(1, 1001, 2)
-    with pytest.raises(NotImplementedError):
-        assert tools.is_even(0)
-    assert tools.is_even(even_number)
-    assert not tools.is_even(odd_number)
-
-
 def test_get_number_of_bins_nd():
     array_tuple = (100, 1000, 5000)
     assert tools.get_number_of_bins_nd(array_tuple, 12) == (8, 83, 416)

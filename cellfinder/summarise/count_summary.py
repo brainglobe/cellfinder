@@ -12,15 +12,18 @@ from imlib.IO.cells import get_cells
 from imlib.pandas.misc import sanitise_df
 from imlib.image.metadata import define_pixel_sizes
 from imlib.general.config import get_config_obj
+from imlib.IO.structures import load_structures_as_df
 
-from cellfinder.summarise.structures.structures_tree import (
+from imlib.anatomy.structures.structures_tree import (
     get_structures_tree,
-    load_structures_as_df,
+    atlas_value_to_structure_id,
+    CellCountMissingCellsException,
+    UnknownAtlasValue,
 )
+
 import cellfinder.tools.parser as cellfinder_parse
 from cellfinder.tools.prep import prep_atlas_conf, Paths
 from cellfinder.tools.source_files import get_structures_path
-import cellfinder.summarise.tools as summary_tools
 
 LEFT_HEMISPHERE = 2
 RIGHT_HEMISPHERE = 1
@@ -92,7 +95,7 @@ def cli_parse(parser):
 def get_cells_data(xml_file_path, structures_file_path, cells_only=True):
     cells = get_cells(xml_file_path, cells_only=cells_only)
     if not cells:
-        raise summary_tools.CellCountMissingCellsException(
+        raise CellCountMissingCellsException(
             "No cells found in file: {}".format(xml_file_path)
         )
     structures = get_structures_tree(structures_file_path)
@@ -116,7 +119,7 @@ def get_scales(sample_pixel_sizes, atlas_pixel_sizes, scale=True):
 
 
 def get_atlas_pixel_sizes(atlas_config_path):
-    config_obj = get_config_ob(atlas_config_path)
+    config_obj = get_config_obj(atlas_config_path)
     atlas_conf = config_obj["atlas"]
     atlas_pixel_sizes = atlas_conf["pixel_size"]
     return atlas_pixel_sizes
@@ -210,10 +213,10 @@ def get_structure_from_coordinates(
         return atlas_value
     else:
         try:
-            structure_id = summary_tools.atlas_value_to_structure_id(
+            structure_id = atlas_value_to_structure_id(
                 atlas_value, structures_reference_df
             )
-        except summary_tools.UnknownAtlasValue as err:
+        except UnknownAtlasValue as err:
             print(
                 "Skipping cell {} (scaled: {}), missing value {}".format(
                     cell, transformed_coords, err
