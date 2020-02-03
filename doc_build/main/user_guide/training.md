@@ -25,12 +25,12 @@ cellfinder_curate signal_images background_images cell_classification.xml
 * `cell_classification.xml` file
 
 **Either**
-* `-x` or `--x-pixel-mm` Pixel spacing of the data in the first dimension, 
-specified in mm.
-* `-y` or `--y-pixel-mm` Pixel spacing of the data in the second dimension, 
-specified in mm.
-* `-z` or `--z-pixel-mm` Pixel spacing of the data in the third dimension, 
-specified in mm.
+* `-x` or `--x-pixel-um` Pixel spacing of the data in the first dimension, 
+specified in um.
+* `-y` or `--y-pixel-um` Pixel spacing of the data in the second dimension, 
+specified in um.
+* `-z` or `--z-pixel-um` Pixel spacing of the data in the third dimension, 
+specified in um.
 
 **Or**
 * `--metadata` Metadata file containing pixel sizes (any format supported 
