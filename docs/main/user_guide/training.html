@@ -206,6 +206,22 @@ can also work).</p></li>
 <li><p>Background images</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">cell_classification.xml</span></code> file</p></li>
 </ul>
+<p><strong>Either</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">-x</span></code> or <code class="docutils literal notranslate"><span class="pre">--x-pixel-mm</span></code> Pixel spacing of the data in the first dimension,
+specified in mm.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">-y</span></code> or <code class="docutils literal notranslate"><span class="pre">--y-pixel-mm</span></code> Pixel spacing of the data in the second dimension,
+specified in mm.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">-z</span></code> or <code class="docutils literal notranslate"><span class="pre">--z-pixel-mm</span></code> Pixel spacing of the data in the third dimension,
+specified in mm.</p></li>
+</ul>
+<p><strong>Or</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">--metadata</span></code> Metadata file containing pixel sizes (any format supported
+by <a class="reference external" href="https://github.com/adamltyson/micrometa">micrometa</a> can be used).
+If both pixel sizes and metadata are provided, the command line arguments
+will take priority.</p></li>
+</ul>
 <p><strong>Optional</strong></p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">-o</span></code> or <code class="docutils literal notranslate"><span class="pre">--output</span></code> Output directory for curation results. If this is not
