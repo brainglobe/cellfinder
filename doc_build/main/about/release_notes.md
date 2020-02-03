@@ -1,6 +1,6 @@
 # Releases 
 
-## Version 0.3.3 (TBC)
+## Version 0.3.5 (2020-02-03)
 
 
 ## Version 0.3.2a (2020-01-10)

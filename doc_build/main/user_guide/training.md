@@ -16,7 +16,7 @@ can also work).
 To generate training data for a single brain, use `cellfinder_curate`:
 
 ```bash
-cellfinder_curate signal_images cell_classification.xml
+cellfinder_curate signal_images background_images cell_classification.xml
 ```
 
 #### Arguments
