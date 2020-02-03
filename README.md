@@ -1,4 +1,4 @@
-[![Python Version](https://img.shields.io/pypi/pyversions/cellfinder.svg)](https://python.org)
+[![Python Version](https://img.shields.io/pypi/pyversions/cellfinder.svg)](https://pypi.org/project/cellfinder)
 [![PyPI](https://img.shields.io/pypi/v/cellfinder.svg)](https://pypi.org/project/cellfinder)
 [![Wheel](https://img.shields.io/pypi/wheel/cellfinder.svg)](https://pypi.org/project/cellfinder)
 [![Development Status](https://img.shields.io/pypi/status/cellfinder.svg)](https://github.com/SainsburyWellcomeCentre/cellfinder)
