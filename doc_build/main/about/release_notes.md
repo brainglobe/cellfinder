@@ -1,7 +1,16 @@
 # Releases 
 
-## Version 0.3.3 (TBC)
+## Version 0.3.5 (2020-02-03)
+### Main updates
+* New all python training data generation interface, `cellfinder_curate`. 
+Details [here](https://sainsburywellcomecentre.github.io/cellfinder/main/user_guide/training.html)
 
+
+#### Developers
+* Heatmap and converting cells to brainrender format moved to 
+[neuro](https://github.com/SainsburyWellcomeCentre/neuro)
+* Lots of utility functions moved to [imlib](https://github.com/adamltyson/imlib)
+* Automatic deployment with Travis
 
 ## Version 0.3.2a (2020-01-10)
 ### Main updates
