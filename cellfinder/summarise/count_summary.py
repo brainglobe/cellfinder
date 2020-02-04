@@ -15,7 +15,6 @@ from imlib.general.config import get_config_obj
 from imlib.IO.structures import load_structures_as_df
 
 from imlib.anatomy.structures.structures_tree import (
-    get_structures_tree,
     atlas_value_to_structure_id,
     CellCountMissingCellsException,
     UnknownAtlasValue,
@@ -27,25 +26,6 @@ from cellfinder.tools.source_files import get_structures_path
 
 LEFT_HEMISPHERE = 2
 RIGHT_HEMISPHERE = 1
-
-
-def point_coordinates(point_as_str):
-    """
-    from  https://stackoverflow.com/questions/9978880/
-
-    :param str point_as_str: a string with coma separated x, y
-    coordinates e.g. 10,2
-    :return: x, y
-    :rtype: (int, int)
-    """
-    try:
-        point_as_str = point_as_str.strip()
-        x, y = map(int, point_as_str.split(","))
-        return x, y
-    except Exception as err:  # REFACTOR: too broad
-        raise argparse.ArgumentTypeError(
-            "Coordinates must be x,y; {}".format(err)
-        )
 
 
 def region_summary_cli_parser():
@@ -92,15 +72,13 @@ def cli_parse(parser):
     return parser
 
 
-def get_cells_data(xml_file_path, structures_file_path, cells_only=True):
+def get_cells_data(xml_file_path, cells_only=True):
     cells = get_cells(xml_file_path, cells_only=cells_only)
     if not cells:
         raise CellCountMissingCellsException(
             "No cells found in file: {}".format(xml_file_path)
         )
-    structures = get_structures_tree(structures_file_path)
-    root = structures[0]
-    return root, cells
+    return cells
 
 
 def get_scales(sample_pixel_sizes, atlas_pixel_sizes, scale=True):
@@ -236,10 +214,8 @@ def analysis_run(args, file_name="summary_cell_counts.csv"):
     atlas = brainio.load_any(args.paths.registered_atlas_path)
     hemisphere = brainio.load_any(args.paths.hemispheres_atlas_path)
 
-    root, cells = get_cells_data(
-        args.paths.classification_out_file,
-        args.structures_file_path,
-        cells_only=args.cells_only,
+    cells = get_cells_data(
+        args.paths.classification_out_file, cells_only=args.cells_only,
     )
     max_coords = get_max_coords(cells)  # Useful for debugging dimensions
     structures_reference_df = load_structures_as_df(args.structures_file_path)
