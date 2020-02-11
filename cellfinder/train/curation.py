@@ -88,9 +88,9 @@ def main():
             f"directory to: {output_directory}"
         )
     else:
-        output_directory = args.output
+        output_directory = Path(args.output)
 
-    ensure_directory_exists(output_directory)
+    ensure_directory_exists(str(output_directory))
     output_filename = output_directory / OUTPUT_NAME
 
     img_paths = get_sorted_file_paths(
