@@ -248,7 +248,7 @@ def run_extraction(
         print(f"Extracting type: {cell_type}")
         cell_type_output_directory = output_directory / cell_type
         print(f"Saving to: {cell_type_output_directory}")
-        ensure_directory_exists(cell_type_output_directory)
+        ensure_directory_exists(str(cell_type_output_directory))
         extract_cubes_main(
             cell_list,
             cell_type_output_directory,
