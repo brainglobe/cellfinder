@@ -57,6 +57,7 @@ def valid_model_depth(depth):
 
 def training_parse():
     from cellfinder.tools.parser import misc_parse
+    from cellfinder.download.cli import model_parser, download_directory_parser
 
     training_parser = ArgumentParser(
         formatter_class=ArgumentDefaultsHelpFormatter
@@ -159,6 +160,8 @@ def training_parse():
     )
 
     training_parser = misc_parse(training_parser)
+    training_parser = model_parser(training_parser)
+    training_parser = download_directory_parser(training_parser)
     args = training_parser.parse_args()
 
     return args
