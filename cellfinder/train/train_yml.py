@@ -19,7 +19,7 @@ from argparse import (
     ArgumentTypeError,
 )
 from sklearn.model_selection import train_test_split
-from imlib.general.misc import check_positive_float, check_positive_int
+from imlib.general.numerical import check_positive_float, check_positive_int
 from imlib.general.system import ensure_directory_exists, get_num_processes
 from imlib.IO.cells import find_relevant_tiffs
 from imlib.IO.yaml import read_yaml_section
@@ -57,6 +57,7 @@ def valid_model_depth(depth):
 
 def training_parse():
     from cellfinder.tools.parser import misc_parse
+    from cellfinder.download.cli import model_parser, download_directory_parser
 
     training_parser = ArgumentParser(
         formatter_class=ArgumentDefaultsHelpFormatter
@@ -159,6 +160,8 @@ def training_parse():
     )
 
     training_parser = misc_parse(training_parser)
+    training_parser = model_parser(training_parser)
+    training_parser = download_directory_parser(training_parser)
     args = training_parser.parse_args()
 
     return args

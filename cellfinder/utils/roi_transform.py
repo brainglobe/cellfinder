@@ -16,7 +16,7 @@ from skimage import morphology
 from tqdm import tqdm
 from read_roi import read_roi_zip
 from scipy.ndimage import maximum_filter1d
-from imlib.general.misc import check_positive_int
+from imlib.general.numerical import check_positive_int
 from imlib.general.system import (
     safe_execute_command,
     SafeExecuteCommandError,

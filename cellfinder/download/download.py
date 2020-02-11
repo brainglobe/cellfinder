@@ -3,10 +3,10 @@ import shutil
 import tarfile
 import urllib.request
 
-from amap.config.config import get_config_ob
+from imlib.general.system import disk_free_gb
+from imlib.general.config import get_config_obj
 from amap.download.download import write_atlas_to_cfg
 from cellfinder.tools import source_files
-from imlib.general.system import disk_free_gb
 
 
 class DownloadError(Exception):
@@ -97,7 +97,7 @@ def amend_cfg(new_atlas_folder=None, new_model_path=None, atlas=None):
 
 
 def write_model_to_cfg(new_model_path, orig_config, custom_config):
-    config_obj = get_config_ob(orig_config)
+    config_obj = get_config_obj(orig_config)
     model_conf = config_obj["model"]
     orig_path = model_conf["model_path"]
 

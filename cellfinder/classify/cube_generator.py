@@ -9,8 +9,7 @@ from scipy.ndimage import zoom
 from tensorflow.python.keras.utils.data_utils import Sequence
 from imlib.IO.cells import get_cells
 from imlib.cells.cells import group_cells_by_z
-
-from cellfinder.tools.tools import is_even
+from imlib.general.numerical import is_even
 
 from cellfinder.extract.extract_cubes import StackSizeError
 from cellfinder.classify.augment import AugmentationParameters, augment

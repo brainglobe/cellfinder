@@ -3,7 +3,7 @@ import argparse
 
 import pandas as pd
 from brainio import brainio
-from imlib.general.misc import check_positive_float, check_positive_int
+from imlib.general.numerical import check_positive_float, check_positive_int
 
 import cellfinder.summarise.count_summary as cells_regions
 from imlib.IO.cells import cells_to_xml
@@ -52,10 +52,8 @@ def xml_crop(args, df_query="name"):
 
     for idx, xml_path in enumerate(xml_paths):
         print("Curating file: {}".format(xml_names[idx]))
-        root, cells = cells_regions.get_cells_data(
-            xml_path,
-            args.reference_structures_file_path,
-            cells_only=args.cells_only,
+        cells = cells_regions.get_cells_data(
+            xml_path, cells_only=args.cells_only,
         )
         max_coords = cells_regions.get_max_coords(cells)
 

@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Troubleshooting &mdash; Cellfinder 0.3.5 documentation</title>
+  <title>Troubleshooting &mdash; Cellfinder  documentation</title>
   
 
   
@@ -59,10 +59,6 @@
           
             
             
-              <div class="version">
-                0.3.5
-              </div>
-            
           
 
           
@@ -91,7 +87,6 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Troubleshooting</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#error-messages">Error messages</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#oserror-errno-24-too-many-open-files">OSError: [Errno 24] Too many open files</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#libcublas-so-9-0-cannot-open-shared-object-file-no-such-file-or-directory">libcublas.so.9.0: cannot open shared object file: No such file or directory</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#info-tensorflow-error-reported-to-coordinator-failed-to-get-convolution-algorithm">INFO:tensorflow:Error reported to Coordinator: Failed to get convolution algorithm</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#syntaxerror-invalid-syntax-logging">SyntaxError: invalid syntax (logging)</a></li>
 </ul>
@@ -108,10 +103,8 @@
 <li class="toctree-l1"><a class="reference internal" href="tools/cell_view_2D.html">Two dimensional cell viewer</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tools/cell_view_3D.html">Three dimensional viewer</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tools/cells_standard_space.html">Transforming cells into standard space</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tools/cells_to_brainrender.html">Converting cells to brainrender format</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tools/count_summary.html">Organise cells into atlas regions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tools/cube_extract.html">Cube extraction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tools/figures.html">Generate figures</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tools/generate_region_volume.html">Region image generation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tools/region_summary.html">Summarise cell counts from multiple brains</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tools/roi_transform.html">ROI transformation</a></li>
@@ -213,38 +206,6 @@ running <code class="docutils literal notranslate"><span class="pre">ulimit</spa
 will persist for the present shell session, but will have to repeated if you
 open a new terminal.</p>
 </div>
-<div class="section" id="libcublas-so-9-0-cannot-open-shared-object-file-no-such-file-or-directory">
-<h3>libcublas.so.9.0: cannot open shared object file: No such file or directory<a class="headerlink" href="#libcublas-so-9-0-cannot-open-shared-object-file-no-such-file-or-directory" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ImportError: libcublas.so.9.0: cannot open shared object file: No such file or directory
-Failed to load the native TensorFlow runtime.
-See https://www.tensorflow.org/install/errors
-<span class="k">for</span> some common reasons and solutions.  Include the entire stack trace
-above this error message when asking <span class="k">for</span> help.
-</pre></div>
-</div>
-<p>If you see an error like this, it is likely that you don’t have CUDA installed,
-or it isn’t added to your path (so tensorflow can’t find it). If you have a
-CUDA 10 version of tensorflow-gpu installed, you may instead see:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ImportError: libcublas.so.10.0: cannot open shared object file: No such file or directory
-</pre></div>
-</div>
-<p>If you’re not sure which version of CUDA you need, please see
-<a class="reference external" href="misc/CUDA10">here</a>. If you don’t have one of these newer GPUs, it is easier
-to use CUDA 9.</p>
-<p>If CUDA and cuDNN is definately installed (following instructions
-<a class="reference external" href="https://www.tensorflow.org/install/gpu">here</a>). Then please make sure that
-they are added to the path. If for example your version of CUDA is located at
-<code class="docutils literal notranslate"><span class="pre">/usr/local/cuda-10.0</span></code>, then run:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span> <span class="nv">PATH</span><span class="o">=</span>/usr/local/cuda-10.0/bin:<span class="nv">$PATH</span>
-<span class="nb">export</span> <span class="nv">LD_LIBRARY_PATH</span><span class="o">=</span>/usr/local/cuda-10.0/lib64:<span class="nv">$LD_LIBRARY_PATH</span>
-</pre></div>
-</div>
-<p>To save doing this each time you run cellfinder, you can add these lines to
-e.g. your <a class="reference external" href="https://www.maketecheasier.com/what-is-bashrc/"><code class="docutils literal notranslate"><span class="pre">~/.bashrc</span></code></a> file.
-If you have multiple versions of CUDA, or don’t want to edit your <code class="docutils literal notranslate"><span class="pre">.bashrc</span></code>
-file, see <a class="reference external" href="https://blog.kovalevskyi.com/multiple-version-of-cuda-libraries-on-the-same-machine-b9502d50ae77">here</a>
-for how to only add to the path for specific conda environments.</p>
-</div>
 <div class="section" id="info-tensorflow-error-reported-to-coordinator-failed-to-get-convolution-algorithm">
 <h3>INFO:tensorflow:Error reported to Coordinator: Failed to get convolution algorithm<a class="headerlink" href="#info-tensorflow-error-reported-to-coordinator-failed-to-get-convolution-algorithm" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>INFO:tensorflow:global_step/sec: <span class="m">0</span>
@@ -282,7 +243,7 @@ nearly full (like the example) then find the culprit:</p>
 <p>In this case, a previous run of cellfinder hasn’t completed. Either wait for
 it to run, or cancel it with CTRL+C (in the cellfinder terminal).</p>
 <p>Alternatively, your version of CUDA and cuDNN may be not compatible with
-tensorflow 2.0. You can update them by following the instructions
+tensorflow 2.1. You can update them by following the instructions
 <a class="reference external" href="https://www.tensorflow.org/install/gpu">here</a>or by installing them into your
 conda environment:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda install cudatoolkit cudnn

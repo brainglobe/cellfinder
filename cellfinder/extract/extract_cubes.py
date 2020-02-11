@@ -10,15 +10,12 @@ from numpy.linalg.linalg import LinAlgError
 from math import floor
 from tifffile import tifffile
 from tqdm import tqdm
-from imlib.general.system import get_sorted_file_paths, get_num_processes
+from imlib.general.system import get_num_processes
 from imlib.cells.cells import group_cells_by_z
+from imlib.general.numerical import is_even
 
 from cellfinder.tools import image_processing as img_tools
-from cellfinder.tools import tools, system
-
-
-class ParamError(Exception):
-    pass
+from cellfinder.tools import system
 
 
 class StackSizeError(Exception):
@@ -292,7 +289,7 @@ def save_cubes(
             plane_path = planes_paths[ch][plane_idx]
             planes_queues[ch].append(tifffile.imread(plane_path))
             if len(planes_queues[ch]) == num_planes_for_cube:
-                if tools.is_even(num_planes_for_cube):
+                if is_even(num_planes_for_cube):
                     cell_z = int(plane_idx - num_planes_for_cube / 2 + 1)
                 else:
                     cell_z = int(
@@ -411,7 +408,7 @@ def main(
     # REFACTOR: rename (clashes with different meaning of planes_to_read below)
     planes_to_read = np.zeros(brain_depth, dtype=np.bool)
 
-    if tools.is_even(num_planes_needed_for_cube):
+    if is_even(num_planes_needed_for_cube):
         half_nz = num_planes_needed_for_cube // 2
         # WARNING: not centered because even
         for p in center_planes:
