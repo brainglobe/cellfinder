@@ -16,7 +16,7 @@ can also work).
 To generate training data for a single brain, use `cellfinder_curate`:
 
 ```bash
-cellfinder_curate signal_images cell_classification.xml
+cellfinder_curate signal_images background_images cell_classification.xml
 ```
 
 #### Arguments
@@ -24,6 +24,20 @@ cellfinder_curate signal_images cell_classification.xml
 * Background images
 * `cell_classification.xml` file
 
+**Either**
+* `-x` or `--x-pixel-um` Pixel spacing of the data in the first dimension, 
+specified in um.
+* `-y` or `--y-pixel-um` Pixel spacing of the data in the second dimension, 
+specified in um.
+* `-z` or `--z-pixel-um` Pixel spacing of the data in the third dimension, 
+specified in um.
+
+**Or**
+* `--metadata` Metadata file containing pixel sizes (any format supported 
+by [micrometa](https://github.com/adamltyson/micrometa) can be used).
+  If both pixel sizes and metadata are provided, the command line arguments 
+  will take priority.
+  
 **Optional**
 * `-o` or `--output` Output directory for curation results. If this is not 
 given, then the directory containing `cell_classification.xml` will be used.

@@ -1,5 +1,6 @@
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 import napari
+from skimage.io import imread
 from napari.utils.io import magic_imread
 from imlib.general.system import get_sorted_file_paths
 
@@ -43,6 +44,12 @@ def get_cell_arrays(cells_file):
     return cells, non_cells
 
 
+def estimate_image_max(image_paths, multiplier=2):
+    centre_plane = int(len(image_paths) / 2)
+    max_value = imread(image_paths[centre_plane]).max()
+    return int(multiplier * max_value)
+
+
 def main():
     args = parser().parse_args()
     img_paths = get_sorted_file_paths(args.img_paths, file_extension=".tif")
@@ -51,8 +58,8 @@ def main():
     with napari.gui_qt():
         v = napari.Viewer(title="Cellfinder cell viewer")
         images = magic_imread(img_paths, use_dask=True, stack=True)
-
-        v.add_image(images)
+        max_value = estimate_image_max(img_paths)
+        v.add_image(images, contrast_limits=[0, max_value])
         v.add_points(
             non_cells,
             size=args.marker_size,

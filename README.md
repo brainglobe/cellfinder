@@ -1,4 +1,4 @@
-[![Python Version](https://img.shields.io/pypi/pyversions/cellfinder.svg)](https://python.org)
+[![Python Version](https://img.shields.io/pypi/pyversions/cellfinder.svg)](https://pypi.org/project/cellfinder)
 [![PyPI](https://img.shields.io/pypi/v/cellfinder.svg)](https://pypi.org/project/cellfinder)
 [![Wheel](https://img.shields.io/pypi/wheel/cellfinder.svg)](https://pypi.org/project/cellfinder)
 [![Development Status](https://img.shields.io/pypi/status/cellfinder.svg)](https://github.com/SainsburyWellcomeCentre/cellfinder)
@@ -25,7 +25,7 @@ Cellfinder is a collection of tools from the
  The aim is to provide a single solution for:
  
  * Cell detection (initial cell candidate detection and refinement using 
- deep learning.
+ deep learning).
  * Atlas registration (using [amap](https://github.com/SainsburyWellcomeCentre/amap-python))
  * Analysis of cell positions in a common space
  

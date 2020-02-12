@@ -80,23 +80,6 @@ def common_member(a, b, natural_sort=True):
     return result, intersection
 
 
-def is_even(num):
-    """
-    Returns True if a number is even
-    :param num:
-    :return:
-    """
-    if num == 0:
-        raise NotImplementedError(
-            "Input number is 0. Evenness of 0 is not defined by this "
-            "function."
-        )
-    if num % 2:
-        return False
-    else:
-        return True
-
-
 def get_number_of_bins_nd(array_size, binning):
     """
     Generate the number of bins needed in three dimensions, based on the size
