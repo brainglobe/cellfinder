@@ -8,6 +8,8 @@
 [![Dependabot Status](https://api.dependabot.com/badges/status?host=github&repo=SainsburyWellcomeCentre/cellfinder)](https://dependabot.com)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/python/black)
 [![Gitter](https://badges.gitter.im/cellfinder/community.svg)](https://gitter.im/cellfinder/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3665329.svg)](https://doi.org/10.5281/zenodo.3665329)
+
 
 # Cellfinder
 Whole-brain cell detection, registration and analysis.
@@ -55,3 +57,11 @@ with RSP.
 ![brainrender](resources/brainrender.png)
 
 Data courtesy of Sepiedeh Keshavarzi and Chryssanthi Tsitoura. [Details here](https://www.youtube.com/watch?v=pMHP0o-KsoQ)
+
+## Citing cellfinder
+
+If you find cellfinder useful, and use it in your research, please cite this repository:
+
+> Adam L. Tyson, Charly V. Rousseau, Christian J. Niedworok and Troy W. Margrie (2020). cellfinder: automated 3D cell detection and registration of whole-brain images. [doi:10.5281/zenodo.3665329](hhttp://doi.org/10.5281/zenodo.3665329)
+
+If you use any of the image registration functions in cellfinder, please also cite [amap](https://github.com/SainsburyWellcomeCentre/amap-python#citing-amap).
