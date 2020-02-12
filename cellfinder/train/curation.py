@@ -232,7 +232,9 @@ def run_extraction(
     save_empty_cubes,
 ):
     planes_paths = {}
-    planes_paths[0] = get_sorted_file_paths(signal_paths, file_extension=".tif")
+    planes_paths[0] = get_sorted_file_paths(
+        signal_paths, file_extension=".tif"
+    )
     planes_paths[1] = get_sorted_file_paths(
         background_paths, file_extension=".tif"
     )
