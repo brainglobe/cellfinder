@@ -88,9 +88,9 @@ def main():
             f"directory to: {output_directory}"
         )
     else:
-        output_directory = args.output
+        output_directory = Path(args.output)
 
-    ensure_directory_exists(output_directory)
+    ensure_directory_exists(str(output_directory))
     output_filename = output_directory / OUTPUT_NAME
 
     img_paths = get_sorted_file_paths(
@@ -232,9 +232,11 @@ def run_extraction(
     save_empty_cubes,
 ):
     planes_paths = {}
-    planes_paths[0] = get_sorted_file_paths(signal_paths, file_extension="tif")
+    planes_paths[0] = get_sorted_file_paths(
+        signal_paths, file_extension=".tif"
+    )
     planes_paths[1] = get_sorted_file_paths(
-        background_paths, file_extension="tif"
+        background_paths, file_extension=".tif"
     )
 
     all_candidates = get_cells(str(output_filename))

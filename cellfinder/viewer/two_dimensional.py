@@ -45,7 +45,7 @@ def get_cell_arrays(cells_file):
 
 
 def estimate_image_max(image_paths, multiplier=2):
-    centre_plane = int(len(image_paths)/2)
+    centre_plane = int(len(image_paths) / 2)
     max_value = imread(image_paths[centre_plane]).max()
     return int(multiplier * max_value)
 
