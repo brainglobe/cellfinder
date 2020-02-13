@@ -20,7 +20,7 @@ from argparse import (
 )
 from sklearn.model_selection import train_test_split
 from imlib.general.numerical import check_positive_float, check_positive_int
-from imlib.general.system import ensure_directory_exists, get_num_processes
+from imlib.general.system import ensure_directory_exists
 from imlib.IO.cells import find_relevant_tiffs
 from imlib.IO.yaml import read_yaml_section
 
@@ -203,7 +203,7 @@ def get_tiff_files(yaml_contents):
     return tiff_files
 
 
-def main(max_workers=3):
+def main():
     from cellfinder.main import suppress_tf_logging
 
     suppress_tf_logging(tf_suppress_log_messages)
@@ -221,11 +221,6 @@ def main(max_workers=3):
     args = prep_training(args)
     yaml_contents = parse_yaml(args.yaml_file)
     tiff_files = get_tiff_files(yaml_contents)
-
-    # Too many workers doesn't increase speed, and uses huge amounts of RAM
-    workers = get_num_processes(
-        min_free_cpu_cores=args.n_free_cpus, n_max_processes=max_workers
-    )
 
     model = get_model(
         existing_model=args.trained_model,
@@ -299,8 +294,7 @@ def main(max_workers=3):
     model.fit(
         training_generator,
         validation_data=validation_generator,
-        use_multiprocessing=True,
-        workers=workers,
+        use_multiprocessing=False,
         epochs=args.epochs,
         callbacks=callbacks,
     )
