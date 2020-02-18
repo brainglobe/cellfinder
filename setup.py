@@ -1,8 +1,9 @@
 import platform
 from setuptools import setup, find_namespace_packages, Extension
 from os import path
+
 this_directory = path.abspath(path.dirname(__file__))
-with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
+with open(path.join(this_directory, "README.md"), encoding="utf-8") as f:
     long_description = f.read()
 
 requirements = [
@@ -95,7 +96,7 @@ setup(
     version="0.3.8",
     description="Automated 3D cell detection and registration of whole-brain images",
     long_description=long_description,
-    long_description_content_type='text/markdown',
+    long_description_content_type="text/markdown",
     install_requires=requirements,
     extras_require={
         "dev": [
