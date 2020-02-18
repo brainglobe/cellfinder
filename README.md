@@ -101,6 +101,16 @@ with RSP.
 
 Data courtesy of Sepiedeh Keshavarzi and Chryssanthi Tsitoura. [Details here](https://www.youtube.com/watch?v=pMHP0o-KsoQ)
 
+
+## Additional tools
+cellfinder is packaged with 
+[neuro](https://github.com/sainsburywellcomecentre/neuro) which provides 
+additional tools for the analysis of visualisation of whole-brain imaging data
+such as
+* Heatmaps of detected cells:
+![brainrender](resources/heatmap.png)
+
+
 ## Citing cellfinder
 
 If you find cellfinder useful, and use it in your research, please cite this repository:
