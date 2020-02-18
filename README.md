@@ -32,8 +32,13 @@ Cellfinder is a collection of tools from the
  * Analysis of cell positions in a common space
  
 Installation is with 
-`pip install cellfinder`, 
-but full documentation can be 
+`pip install cellfinder`.
+
+Basic usage:
+```bash
+cellfinder -s signal_images -b background_images -o output_dir --metadata metadata
+```
+Full documentation can be 
 found [here](https://sainsburywellcomecentre.github.io/cellfinder).
  
 This software is at a very early stage, and was written with our data in mind. 
@@ -45,11 +50,53 @@ questions or issues, please get in touch by
 
 
 ---
+## Illustration
+
+### Introduction
+cellfinder takes a stitched, but otherwise raw whole-brain dataset with at least 
+two channels:
+ * Background channel (i.e. autofluorescence)
+ * Signal channel, the one with the cells to be detected:
+ 
+![raw](resources/raw.png)
+**Raw coronal serial two-photon mouse brain image showing labelled cells**
+
+
+### Cell candidate detection
+Classical image analysis (e.g. filters, thresholding) is used to find 
+cell-like objects (with false positives):
+
+![raw](resources/detect.png)
+**Candidate cells (including many artefacts)**
+
+
+### Cell candidate classification
+A deep-learning network (ResNet) is used to classify cell candidates as true 
+cells or artefacts:
+
+![raw](resources/classify.png)
+**Cassified cell candidates. Yellow - cells, Blue - artefacts**
+
+### Registration and segmentation (amap)
+Using [amap](https://github.com/SainsburyWellcomeCentre/amap-python), 
+cellfinder aligns a template brain and atlas annotations (e.g. 
+the Allen Reference Atlas, ARA) to the sample allowing detected cells to be assigned 
+a brain region.
+
+This transformation can be inverted, allowing detected cells to be
+transformed to a standard anatomical space.
+
+![raw](resources/register.png)
+**ARA overlaid on sample image**
+
+### Analysis of cell positions in a common anatomical space
+Registration to a template allows for powerful group-level analysis of cellular
+disributions. *(Example to come)*
+
 ## Examples
-*more to come*
+*(more to come)*
 
-
-##### Tracing of inputs to retrosplenial cortex (RSP)
+### Tracing of inputs to retrosplenial cortex (RSP)
 Input cell somas detected by cellfinder, aligned to the Allen Reference Atlas, 
 and visualised in [brainrender](https://github.com/brancolab/brainrender) along 
 with RSP.
@@ -57,6 +104,21 @@ with RSP.
 ![brainrender](resources/brainrender.png)
 
 Data courtesy of Sepiedeh Keshavarzi and Chryssanthi Tsitoura. [Details here](https://www.youtube.com/watch?v=pMHP0o-KsoQ)
+
+
+## Additional tools
+cellfinder is packaged with 
+[neuro](https://github.com/sainsburywellcomecentre/neuro) which provides 
+additional tools for the analysis of visualisation of whole-brain imaging data.
+
+#### Heatmaps of detected cells:
+![heatmap](resources/heatmap.png)
+
+#### Mapping non-cellular volumes in standard space:
+![injection](resources/injection.png)
+**Virus injection site within the superior colliculus.**
+*(Data courtesy of [@FedeClaudi](https://github.com/fedeclaudi) and 
+[brainrender](https://github.com/brancolab/brainrender))*
 
 ## Citing cellfinder
 
