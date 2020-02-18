@@ -97,7 +97,7 @@ example is
 [here](https://github.com/SainsburyWellcomeCentre/cellfinder/tree/master/doc_build/examples/pre-commit). 
 
 
-##### Dependencies
+#### Dependencies
 The code in the cellfinder repo should be primarily for cell detection. Any 
 changes to the registration should be added to 
 [amap](https://github.com/sainsburywellcomecentre/amap-python), any 
@@ -106,13 +106,13 @@ visualisation should be added to
 tools to [imlib](https://github.com/adamltyson/imlib).
 
 
-##### File paths
+#### File paths
 All file paths should be defined in `cellfinder.tools.prep.Paths`. Any 
 intermediate file paths, (i.e. those which are not of interest to the typical 
 end user) should be prefixed with `tmp__`. These should then be cleaned up as 
 soon as possible after generation. 
 
-##### Conventions
+#### Conventions
 Cellfinder has recently (2019-08-02) dropped support for Python 3.5. Following 
 this, a number of new python features will be adopted throughout.
 

@@ -110,12 +110,10 @@
 <li class="toctree-l2"><a class="reference internal" href="#testing">Testing</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#travis">Travis</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#releases">Releases</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#documentation">Documentation</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#dependencies">Dependencies</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#file-paths">File paths</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#conventions">Conventions</a></li>
-</ul>
-</li>
+<li class="toctree-l2"><a class="reference internal" href="#documentation">Documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dependencies">Dependencies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#file-paths">File paths</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#conventions">Conventions</a></li>
 </ul>
 </li>
 </ul>
@@ -278,8 +276,9 @@ hosting with <a class="reference external" href="https://adamltyson.github.io/ce
 <a class="reference external" href="https://www.atlassian.com/git/tutorials/git-hooks">pre-commit hook</a>. An
 example is
 <a class="reference external" href="https://github.com/SainsburyWellcomeCentre/cellfinder/tree/master/doc_build/examples/pre-commit">here</a>.</p>
+</div>
 <div class="section" id="dependencies">
-<h3>Dependencies<a class="headerlink" href="#dependencies" title="Permalink to this headline">¶</a></h3>
+<h2>Dependencies<a class="headerlink" href="#dependencies" title="Permalink to this headline">¶</a></h2>
 <p>The code in the cellfinder repo should be primarily for cell detection. Any
 changes to the registration should be added to
 <a class="reference external" href="https://github.com/sainsburywellcomecentre/amap-python">amap</a>, any
@@ -288,14 +287,14 @@ visualisation should be added to
 tools to <a class="reference external" href="https://github.com/adamltyson/imlib">imlib</a>.</p>
 </div>
 <div class="section" id="file-paths">
-<h3>File paths<a class="headerlink" href="#file-paths" title="Permalink to this headline">¶</a></h3>
+<h2>File paths<a class="headerlink" href="#file-paths" title="Permalink to this headline">¶</a></h2>
 <p>All file paths should be defined in <code class="docutils literal notranslate"><span class="pre">cellfinder.tools.prep.Paths</span></code>. Any
 intermediate file paths, (i.e. those which are not of interest to the typical
 end user) should be prefixed with <code class="docutils literal notranslate"><span class="pre">tmp__</span></code>. These should then be cleaned up as
 soon as possible after generation.</p>
 </div>
 <div class="section" id="conventions">
-<h3>Conventions<a class="headerlink" href="#conventions" title="Permalink to this headline">¶</a></h3>
+<h2>Conventions<a class="headerlink" href="#conventions" title="Permalink to this headline">¶</a></h2>
 <p>Cellfinder has recently (2019-08-02) dropped support for Python 3.5. Following
 this, a number of new python features will be adopted throughout.</p>
 <ul class="simple">
@@ -306,7 +305,6 @@ this, a number of new python features will be adopted throughout.</p>
 </ul>
 <p>In all cases, please aim to replace old calls to <code class="docutils literal notranslate"><span class="pre">os.path</span></code> or <code class="docutils literal notranslate"><span class="pre">.format()</span></code>
 with pathlib object methods and f-strings.</p>
-</div>
 </div>
 </div>
 
