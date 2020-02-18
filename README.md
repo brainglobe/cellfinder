@@ -89,6 +89,10 @@ transformed to a standard anatomical space.
 ![raw](resources/register.png)
 **ARA overlaid on sample image**
 
+### Analysis of cell positions in a common anatomical space
+Registration to a template allows for powerful group-level analysis of cellular
+disributions. *(Example to come)*
+
 ## Examples
 *(more to come)*
 
@@ -107,7 +111,7 @@ cellfinder is packaged with
 [neuro](https://github.com/sainsburywellcomecentre/neuro) which provides 
 additional tools for the analysis of visualisation of whole-brain imaging data.
 
-####Heatmaps of detected cells:
+#### Heatmaps of detected cells:
 ![heatmap](resources/heatmap.png)
 
 #### Mapping non-cellular volumes in standard space:
