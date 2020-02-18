@@ -104,16 +104,18 @@
 </ul>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Contributing</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#code-organisation">Code organisation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#setup">Setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pull-requests">Pull requests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#formatting">Formatting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#testing">Testing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#travis">Travis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#releases">Releases</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#documentation">Documentation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#dependencies">Dependencies</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#file-paths">File paths</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#conventions">Conventions</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#travis">Travis</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#formatting">Formatting</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#documentation">Documentation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#dependencies">Dependencies</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#misc">Misc</a></li>
 </ul>
 </li>
 </ul>
@@ -183,38 +185,54 @@
             
   <div class="section" id="contributing">
 <h1>Contributing<a class="headerlink" href="#contributing" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="code-organisation">
-<h2>Code organisation<a class="headerlink" href="#code-organisation" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="file-paths">
-<h3>File paths<a class="headerlink" href="#file-paths" title="Permalink to this headline">¶</a></h3>
-<p>All file paths should be defined in <code class="docutils literal notranslate"><span class="pre">cellfinder.tools.prep.Paths</span></code>. Any
-intermediate file paths, (i.e. those which are not of interest to the typical
-end user) should be prefixed with <code class="docutils literal notranslate"><span class="pre">tmp__</span></code>. These should then be cleaned up as
-soon as possible after generation.</p>
-</div>
-<div class="section" id="conventions">
-<h3>Conventions<a class="headerlink" href="#conventions" title="Permalink to this headline">¶</a></h3>
-<p>Cellfinder has recently (2019-08-02) dropped support for Python 3.5. Following
-this, a number of new python features will be adopted throughout.</p>
-<ul class="simple">
-<li><p><a class="reference external" href="https://realpython.com/python-pathlib/">pathlib</a> conventions
-(rather then <code class="docutils literal notranslate"><span class="pre">os.path</span></code>).</p></li>
-<li><p><a class="reference external" href="https://realpython.com/python-f-strings/">f-strings</a>
-(rather than <code class="docutils literal notranslate"><span class="pre">.format()</span></code> or using the old <code class="docutils literal notranslate"><span class="pre">%</span></code> operator).</p></li>
+<div class="section" id="setup">
+<h2>Setup<a class="headerlink" href="#setup" title="Permalink to this headline">¶</a></h2>
+<p>To set up a development install, please:</p>
+<ul>
+<li><p>Fork this repository</p></li>
+<li><p>Clone your fork</p>
+<p><code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">clone</span> <span class="pre">https://github.com/YOUR_USERNAME/cellfinder</span></code></p>
+<p><code class="docutils literal notranslate"><span class="pre">cd</span> <span class="pre">cellfinder</span></code></p>
+</li>
+<li><p>Add this repository as the upstream</p>
+<p><code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">remote</span> <span class="pre">add</span> <span class="pre">upstream</span> <span class="pre">https://github.com/SainsburyWellcomeCentre/cellfinder</span></code></p>
+</li>
+<li><p>Install an editable, development version of <code class="docutils literal notranslate"><span class="pre">cellfinder</span></code></p>
+<p><code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">-e</span> <span class="pre">.[dev]</span></code></p>
+</li>
+<li><p>To keep your fork up to date:</p>
+<p><code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">fetch</span> <span class="pre">upstream</span></code></p>
+<p><code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">merge</span> <span class="pre">upstream/master</span></code></p>
+</li>
 </ul>
-<p>In all cases, please aim to replace old calls to <code class="docutils literal notranslate"><span class="pre">os.path</span></code> or <code class="docutils literal notranslate"><span class="pre">.format()</span></code>
-with pathlib object methods and f-strings.</p>
+</div>
+<div class="section" id="pull-requests">
+<h2>Pull requests<a class="headerlink" href="#pull-requests" title="Permalink to this headline">¶</a></h2>
+<p>In all cases, please submit code to the main repository via a pull request.
+Upon approval, please merge via “Squash and Merge” on Github to maintain a
+clean commit history.</p>
+</div>
+<div class="section" id="formatting">
+<h2>Formatting<a class="headerlink" href="#formatting" title="Permalink to this headline">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">cellfinder</span></code> uses <a class="reference external" href="https://github.com/python/black">Black</a> to ensure a consistent
+code style. Please run <code class="docutils literal notranslate"><span class="pre">black</span> <span class="pre">./</span> <span class="pre">-l</span> <span class="pre">79</span> <span class="pre">--target-version</span> <span class="pre">py37</span></code> before making
+any commits. To prevent any errors, it is easier to add a formatting check
+as a <a class="reference external" href="https://www.atlassian.com/git/tutorials/git-hooks">pre-commit hook</a>.
+E.g. on linux by adding this to your <code class="docutils literal notranslate"><span class="pre">.git/hooks/pre-commit</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">black</span> <span class="o">./</span> <span class="o">-</span><span class="n">l</span> <span class="mi">79</span> <span class="o">--</span><span class="n">target</span><span class="o">-</span><span class="n">version</span> <span class="n">py37</span> <span class="o">--</span><span class="n">check</span> <span class="o">||</span> <span class="n">exit</span> <span class="mi">1</span>
+</pre></div>
 </div>
 </div>
-<div class="section" id="travis">
-<h2>Travis<a class="headerlink" href="#travis" title="Permalink to this headline">¶</a></h2>
-<p>All commits &amp; pull requests will be build by <a class="reference external" href="https://travis-ci.com">Travis</a>.
-To ensure there are no issues, please check that it builds: <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">.</span></code>
-and run all of the tests: <code class="docutils literal notranslate"><span class="pre">pytest</span></code> before commiting changes. Some tests may
+<div class="section" id="testing">
+<h2>Testing<a class="headerlink" href="#testing" title="Permalink to this headline">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">cellfinder</span></code> uses <a class="reference external" href="https://docs.pytest.org/en/latest/">pytest</a> for testing. Please
+try to ensure that all functions are tested in <code class="docutils literal notranslate"><span class="pre">tests/tests/test_unit</span></code> and
+all workflows/command-line tools are tested in <code class="docutils literal notranslate"><span class="pre">tests/tests/test_integration</span></code>.</p>
+<p>Some tests may
 take a long time (e.g. those requiring tensorflow if you don’t have a GPU).
 These tests should be marked with <code class="docutils literal notranslate"><span class="pre">&#64;pytest.mark.slow</span></code>, e.g.:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pytest</span>
-<span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">slow</span>
+<span class="nd">@pytest.mark.slow</span>
 <span class="k">def</span> <span class="nf">test_something_slow</span><span class="p">():</span>
     <span class="n">slow_result</span> <span class="o">=</span> <span class="n">run_slow_processes</span><span class="p">()</span>
     <span class="k">assert</span> <span class="n">slow_result</span> <span class="o">==</span> <span class="n">expected_slow_thing</span>
@@ -222,11 +240,17 @@ These tests should be marked with <code class="docutils literal notranslate"><sp
 </div>
 <p>During development, these “slow” tests can be skipped by running <code class="docutils literal notranslate"> <span class="pre">pytest</span> <span class="pre">-m</span> <span class="pre">&quot;not</span> <span class="pre">slow&quot;</span></code>.</p>
 </div>
-<div class="section" id="formatting">
-<h2>Formatting<a class="headerlink" href="#formatting" title="Permalink to this headline">¶</a></h2>
-<p>To ensure a consistent code style, please use
-<a class="reference external" href="https://github.com/python/black">Black</a> before commiting changes.
-Please use the syntax: <code class="docutils literal notranslate"><span class="pre">black</span> <span class="pre">./</span> <span class="pre">-l</span> <span class="pre">79</span> <span class="pre">--target-version</span> <span class="pre">py37</span></code></p>
+<div class="section" id="travis">
+<h2>Travis<a class="headerlink" href="#travis" title="Permalink to this headline">¶</a></h2>
+<p>All commits &amp; pull requests will be build by <a class="reference external" href="https://travis-ci.com">Travis</a>.
+To ensure there are no issues, please check that it builds: <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">.</span></code>
+and run all of the tests: <code class="docutils literal notranslate"><span class="pre">pytest</span></code> before commiting changes.</p>
+</div>
+<div class="section" id="releases">
+<h2>Releases<a class="headerlink" href="#releases" title="Permalink to this headline">¶</a></h2>
+<p>Travis will automatically release any tagged commit on the master branch.
+Hence to release a new version of cellfinder, use either GitHub, or the git
+CLI to tag the relevant commit and push to master.</p>
 </div>
 <div class="section" id="documentation">
 <h2>Documentation<a class="headerlink" href="#documentation" title="Permalink to this headline">¶</a></h2>
@@ -254,20 +278,35 @@ hosting with <a class="reference external" href="https://adamltyson.github.io/ce
 <a class="reference external" href="https://www.atlassian.com/git/tutorials/git-hooks">pre-commit hook</a>. An
 example is
 <a class="reference external" href="https://github.com/SainsburyWellcomeCentre/cellfinder/tree/master/doc_build/examples/pre-commit">here</a>.</p>
-</div>
 <div class="section" id="dependencies">
-<h2>Dependencies<a class="headerlink" href="#dependencies" title="Permalink to this headline">¶</a></h2>
-<p>Any dependencies in the <code class="docutils literal notranslate"><span class="pre">master</span></code> branch will be checked by
-<a class="reference external" href="https://dependabot.com/">dependabot</a>, and a pull request will be generated to
-update which are outdated. Please only merge these if all tests are passing,
-and you are confident that there will be no issues.</p>
+<h3>Dependencies<a class="headerlink" href="#dependencies" title="Permalink to this headline">¶</a></h3>
+<p>The code in the cellfinder repo should be primarily for cell detection. Any
+changes to the registration should be added to
+<a class="reference external" href="https://github.com/sainsburywellcomecentre/amap-python">amap</a>, any
+visualisation should be added to
+<a class="reference external" href="https://github.com/sainsburywellcomecentre/neuro">neuro</a> and any general
+tools to <a class="reference external" href="https://github.com/adamltyson/imlib">imlib</a>.</p>
 </div>
-<div class="section" id="misc">
-<h2>Misc<a class="headerlink" href="#misc" title="Permalink to this headline">¶</a></h2>
-<p><strong>Configuration files</strong></p>
-<p>Any configuration files that cellfinder edits with local information (e.g.
-atlas installation location) should be in the <code class="docutils literal notranslate"><span class="pre">.gitignore</span></code> file. Please ensure
-that any custom files are not commited to the repository.</p>
+<div class="section" id="file-paths">
+<h3>File paths<a class="headerlink" href="#file-paths" title="Permalink to this headline">¶</a></h3>
+<p>All file paths should be defined in <code class="docutils literal notranslate"><span class="pre">cellfinder.tools.prep.Paths</span></code>. Any
+intermediate file paths, (i.e. those which are not of interest to the typical
+end user) should be prefixed with <code class="docutils literal notranslate"><span class="pre">tmp__</span></code>. These should then be cleaned up as
+soon as possible after generation.</p>
+</div>
+<div class="section" id="conventions">
+<h3>Conventions<a class="headerlink" href="#conventions" title="Permalink to this headline">¶</a></h3>
+<p>Cellfinder has recently (2019-08-02) dropped support for Python 3.5. Following
+this, a number of new python features will be adopted throughout.</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://realpython.com/python-pathlib/">pathlib</a> conventions
+(rather then <code class="docutils literal notranslate"><span class="pre">os.path</span></code>).</p></li>
+<li><p><a class="reference external" href="https://realpython.com/python-f-strings/">f-strings</a>
+(rather than <code class="docutils literal notranslate"><span class="pre">.format()</span></code> or using the old <code class="docutils literal notranslate"><span class="pre">%</span></code> operator).</p></li>
+</ul>
+<p>In all cases, please aim to replace old calls to <code class="docutils literal notranslate"><span class="pre">os.path</span></code> or <code class="docutils literal notranslate"><span class="pre">.format()</span></code>
+with pathlib object methods and f-strings.</p>
+</div>
 </div>
 </div>
 

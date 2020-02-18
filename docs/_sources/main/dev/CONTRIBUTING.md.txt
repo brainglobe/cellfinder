@@ -1,29 +1,46 @@
 ### Contributing
-#### Code organisation
+#### Setup
+To set up a development install, please:
+* Fork this repository
+* Clone your fork
 
-##### File paths
-All file paths should be defined in `cellfinder.tools.prep.Paths`. Any 
-intermediate file paths, (i.e. those which are not of interest to the typical 
-end user) should be prefixed with `tmp__`. These should then be cleaned up as 
-soon as possible after generation. 
+    `git clone https://github.com/YOUR_USERNAME/cellfinder`
+    
+    `cd cellfinder`
+* Add this repository as the upstream
 
-##### Conventions
-Cellfinder has recently (2019-08-02) dropped support for Python 3.5. Following 
-this, a number of new python features will be adopted throughout.
+    `git remote add upstream https://github.com/SainsburyWellcomeCentre/cellfinder`
+    
+* Install an editable, development version of `cellfinder` 
 
-* [pathlib](https://realpython.com/python-pathlib/) conventions 
-(rather then `os.path`).
-* [f-strings](https://realpython.com/python-f-strings/) 
-(rather than `.format()` or using the old `%` operator). 
+    `pip install -e .[dev]`
 
-In all cases, please aim to replace old calls to `os.path` or `.format()` 
-with pathlib object methods and f-strings.
- 
+* To keep your fork up to date:
 
-#### Travis
-All commits & pull requests will be build by [Travis](https://travis-ci.com). 
-To ensure there are no issues, please check that it builds: `pip install .` 
-and run all of the tests: `pytest` before commiting changes. Some tests may 
+    `git fetch upstream`
+    
+    `git merge upstream/master`
+    
+#### Pull requests
+In all cases, please submit code to the main repository via a pull request. 
+Upon approval, please merge via "Squash and Merge" on Github to maintain a 
+clean commit history.
+
+#### Formatting
+`cellfinder` uses [Black](https://github.com/python/black) to ensure a consistent 
+code style. Please run `black ./ -l 79 --target-version py37` before making 
+any commits. To prevent any errors, it is easier to add a formatting check 
+as a [pre-commit hook](https://www.atlassian.com/git/tutorials/git-hooks). 
+E.g. on linux by adding this to your `.git/hooks/pre-commit`:
+
+    black ./ -l 79 --target-version py37 --check || exit 1
+    
+#### Testing
+`cellfinder` uses [pytest](https://docs.pytest.org/en/latest/) for testing. Please 
+try to ensure that all functions are tested in `tests/tests/test_unit` and 
+all workflows/command-line tools are tested in `tests/tests/test_integration`.
+
+Some tests may 
 take a long time (e.g. those requiring tensorflow if you don't have a GPU). 
 These tests should be marked with `@pytest.mark.slow`, e.g.:
 
@@ -38,11 +55,17 @@ def test_something_slow():
 During development, these "slow" tests can be skipped by running `
 pytest -m "not slow"`.
 
-#### Formatting
-To ensure a consistent code style, please use
- [Black](https://github.com/python/black) before commiting changes. 
- Please use the syntax: `black ./ -l 79 --target-version py37`
- 
+#### Travis
+All commits & pull requests will be build by [Travis](https://travis-ci.com). 
+To ensure there are no issues, please check that it builds: `pip install .` 
+and run all of the tests: `pytest` before commiting changes. 
+
+
+#### Releases
+Travis will automatically release any tagged commit on the master branch. 
+Hence to release a new version of cellfinder, use either GitHub, or the git 
+CLI to tag the relevant commit and push to master.
+
 
 #### Documentation
 Documentation is built using Sphinx with Markdown (rather than 
@@ -74,15 +97,29 @@ example is
 [here](https://github.com/SainsburyWellcomeCentre/cellfinder/tree/master/doc_build/examples/pre-commit). 
 
 
-#### Dependencies
-Any dependencies in the `master` branch will be checked by 
-[dependabot](https://dependabot.com/), and a pull request will be generated to 
-update which are outdated. Please only merge these if all tests are passing, 
-and you are confident that there will be no issues.
+##### Dependencies
+The code in the cellfinder repo should be primarily for cell detection. Any 
+changes to the registration should be added to 
+[amap](https://github.com/sainsburywellcomecentre/amap-python), any 
+visualisation should be added to 
+[neuro](https://github.com/sainsburywellcomecentre/neuro) and any general 
+tools to [imlib](https://github.com/adamltyson/imlib).
 
-#### Misc
-**Configuration files**
 
-Any configuration files that cellfinder edits with local information (e.g. 
-atlas installation location) should be in the `.gitignore` file. Please ensure 
-that any custom files are not commited to the repository.
+##### File paths
+All file paths should be defined in `cellfinder.tools.prep.Paths`. Any 
+intermediate file paths, (i.e. those which are not of interest to the typical 
+end user) should be prefixed with `tmp__`. These should then be cleaned up as 
+soon as possible after generation. 
+
+##### Conventions
+Cellfinder has recently (2019-08-02) dropped support for Python 3.5. Following 
+this, a number of new python features will be adopted throughout.
+
+* [pathlib](https://realpython.com/python-pathlib/) conventions 
+(rather then `os.path`).
+* [f-strings](https://realpython.com/python-f-strings/) 
+(rather than `.format()` or using the old `%` operator). 
+
+In all cases, please aim to replace old calls to `os.path` or `.format()` 
+with pathlib object methods and f-strings.
