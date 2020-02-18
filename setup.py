@@ -1,5 +1,9 @@
 import platform
 from setuptools import setup, find_namespace_packages, Extension
+from os import path
+this_directory = path.abspath(path.dirname(__file__))
+with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
+    long_description = f.read()
 
 requirements = [
     "numpy",
@@ -88,8 +92,10 @@ else:
 
 setup(
     name="cellfinder",
-    version="0.3.8rc0",
-    description="Cell detection for whole-brain microscopy",
+    version="0.3.8",
+    description="Automated 3D cell detection and registration of whole-brain images",
+    long_description=long_description,
+    long_description_content_type='text/markdown',
     install_requires=requirements,
     extras_require={
         "dev": [
@@ -136,7 +142,11 @@ setup(
             "cellfinder_curate = cellfinder.train.curation:main",
         ]
     },
-    url="https://github.com/SainsburyWellcomeCentre/cellfinder",
+    project_urls={
+        "Source Code": "https://github.com/SainsburyWellcomeCentre/cellfinder",
+        "Bug Tracker": "https://github.com/SainsburyWellcomeCentre/cellfinder/issues",
+        "Documentation": "https://sainsburywellcomecentre.github.io/cellfinder",
+    },
     author="Adam Tyson, Christian Niedworok, Charly Rousseau",
     author_email="adam.tyson@ucl.ac.uk",
     classifiers=[
