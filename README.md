@@ -52,7 +52,7 @@ questions or issues, please get in touch by
 ---
 ## Illustration
 
-#### Introduction
+### Introduction
 cellfinder takes a stitched, but otherwise raw whole-brain dataset with at least 
 two channels:
  * Background channel (i.e. autofluorescence)
@@ -62,7 +62,7 @@ two channels:
 **Raw coronal serial two-photon mouse brain image showing labelled cells**
 
 
-#### Cell candidate detection
+### Cell candidate detection
 Classical image analysis (e.g. filters, thresholding) is used to find 
 cell-like objects (with false positives):
 
@@ -70,14 +70,14 @@ cell-like objects (with false positives):
 **Candidate cells (including many artefacts)**
 
 
-#### Cell candidate classification
+### Cell candidate classification
 A deep-learning network (ResNet) is used to classify cell candidates as true 
 cells or artefacts:
 
 ![raw](resources/classify.png)
 **Cassified cell candidates. Yellow - cells, Blue - artefacts**
 
-#### Registration and segmentation (amap)
+### Registration and segmentation (amap)
 Using [amap](https://github.com/SainsburyWellcomeCentre/amap-python), 
 cellfinder aligns a template brain and atlas annotations (e.g. 
 the Allen Reference Atlas, ARA) to the sample allowing detected cells to be assigned 
