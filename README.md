@@ -105,11 +105,16 @@ Data courtesy of Sepiedeh Keshavarzi and Chryssanthi Tsitoura. [Details here](ht
 ## Additional tools
 cellfinder is packaged with 
 [neuro](https://github.com/sainsburywellcomecentre/neuro) which provides 
-additional tools for the analysis of visualisation of whole-brain imaging data
-such as
-* Heatmaps of detected cells:
-![brainrender](resources/heatmap.png)
+additional tools for the analysis of visualisation of whole-brain imaging data.
 
+####Heatmaps of detected cells:
+![heatmap](resources/heatmap.png)
+
+#### Mapping non-cellular volumes in standard space:
+![injection](resources/injection.png)
+**Virus injection site within the superior colliculus.**
+*(Data courtesy of [@FedeClaudi](https://github.com/fedeclaudi) and 
+[brainrender](https://github.com/brancolab/brainrender))*
 
 ## Citing cellfinder
 
