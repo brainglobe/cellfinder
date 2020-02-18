@@ -1,5 +1,13 @@
 # Releases 
 
+## Version 0.3.8 (2020-02-18)
+### Fixed
+Fix memory leak in training
+
+## Version 0.3.7 (2020-02-02)
+### Changed
+Update curation interface
+
 ## Version 0.3.5 (2020-02-03)
 ### Main updates
 * New all python training data generation interface, `cellfinder_curate`. 
