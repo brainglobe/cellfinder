@@ -6,7 +6,7 @@ To set up a development install, please:
 
     `git clone https://github.com/YOUR_USERNAME/cellfinder`
     
-    `cd neuro`
+    `cd cellfinder`
 * Add this repository as the upstream
 
     `git remote add upstream https://github.com/SainsburyWellcomeCentre/cellfinder`
@@ -27,7 +27,7 @@ Upon approval, please merge via "Squash and Merge" on Github to maintain a
 clean commit history.
 
 #### Formatting
-`neuro` uses [Black](https://github.com/python/black) o ensure a consistent 
+`cellfinder` uses [Black](https://github.com/python/black) to ensure a consistent 
 code style. Please run `black ./ -l 79 --target-version py37` before making 
 any commits. To prevent any errors, it is easier to add a formatting check 
 as a [pre-commit hook](https://www.atlassian.com/git/tutorials/git-hooks). 
