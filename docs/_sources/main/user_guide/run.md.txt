@@ -1,7 +1,7 @@
 # Usage
 
 ``` bash
-    cellfinder -s signal_channel_images  optional_signal_channel_images -b background_channel_images -o /path/to/output_directory -x 0.001 -y 0.001 -z 0.005
+    cellfinder -s signal_channel_images  optional_signal_channel_images -b background_channel_images -o /path/to/output_directory -x 2 -y 2 -z 5
 ```
 
 ### Arguments
