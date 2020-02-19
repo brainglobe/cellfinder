@@ -7,7 +7,7 @@
 [![Coverage Status](https://coveralls.io/repos/github/SainsburyWellcomeCentre/cellfinder/badge.svg?branch=master)](https://coveralls.io/github/SainsburyWellcomeCentre/cellfinder?branch=master)
 [![Dependabot Status](https://api.dependabot.com/badges/status?host=github&repo=SainsburyWellcomeCentre/cellfinder)](https://dependabot.com)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/python/black)
-[![Gitter](https://badges.gitter.im/cellfinder/community.svg)](https://gitter.im/cellfinder/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+[![Gitter](https://badges.gitter.im/cellfinder.svg)](https://gitter.im/cellfinder/?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3665329.svg)](https://doi.org/10.5281/zenodo.3665329)
 [![Generic badge](https://img.shields.io/badge/Contributions-Welcome-brightgreen.svg)](https://sainsburywellcomecentre.github.io/cellfinder/main/dev/CONTRIBUTING.html)
 
