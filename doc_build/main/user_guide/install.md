@@ -76,13 +76,3 @@ existing atlas is, to save it being downloaded twice. (Requires 20GB
 disk space)
 * `--atlas download path` The path to download the atlas into. 
 (Requires 1.2GB disk space). Defaults to `/tmp`.
-
-
-#### For developers
-If you want to edit cellfinder, run tests and build the documentation etc,
-then use:
-```bash
-git clone --branch dev https://github.com/SainsburyWellcomeCentre/cellfinder
-cd cellfinder
-pip install -e .[dev]
-```
