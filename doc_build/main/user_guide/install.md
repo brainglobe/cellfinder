@@ -15,6 +15,7 @@ versions of CUDA (for other work), please see [here](https://blog.kovalevskyi.co
 Alternatively, CUDA can be installed into your conda environment (see below).
 
 #### Set up conda environment and install dependencies
+
 **Recommended, allthough not necessary**
 Conda environments are used to isolate python versions and packages.
 
