@@ -70,7 +70,7 @@ which is downloaded.
 
 If you want to modify the cellfinder download, use:
 * `--atlas-install-path` Supply a path to download the atlas elsewhere. This 
-should also update the default `registration.conf` file so that the correct 
+should also update the default `cellfinder.conf` file so that the correct 
 atlas is sourced. Alternatively, use this command to tell cellfinder where an 
 existing atlas is, to save it being downloaded twice. (Requires 20GB 
 disk space)
