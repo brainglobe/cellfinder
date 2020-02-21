@@ -32,7 +32,7 @@ bash ~/Downloads/Miniconda3-latest-Linux-x86_64.sh
 * Create and activate new minimal conda environment
 
 ``` bash
-conda create --name cellfinder python
+conda create --name cellfinder python=3.7
 conda activate cellfinder
 ```    
 
