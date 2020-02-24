@@ -247,8 +247,8 @@ Will default to ‘0, 1, 2’ etc, but maybe useful to specify.</p></li>
 <p>Figures cannot yet be customised much, but the current options are here:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">--no-heatmap</span></code> Don’t generate a heatmap of cell locations</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--heatmap-bin</span></code> Heatmap bin size (mm of each edge of histogram cube)</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--heatmap-smoothing</span></code> Gaussian smoothing sigma, in mm.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--heatmap-bin</span></code> Heatmap bin size (um of each edge of histogram cube)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--heatmap-smoothing</span></code> Gaussian smoothing sigma, in um.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">--no-outlines</span></code> Don’t generate outlines of segmentation regions (for overlay)</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">--no-mask-figs</span></code> Don’t mask the figures (removing any areas outside the
 brain, from e.g. smoothing)</p></li>
@@ -277,10 +277,10 @@ clusters</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">--artifact-keep</span></code> Save artifacts into the initial xml file</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">--max-cluster-size</span></code> Largest putative cell cluster where
 splitting should be attempted</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--soma-diameter</span></code> The expected soma size in pixels in the x/y dimensions</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--ball-xy-size</span></code> The size in pixels of the ball used
+<li><p><code class="docutils literal notranslate"><span class="pre">--soma-diameter</span></code> The expected soma size in um in the x/y dimensions</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--ball-xy-size</span></code> The size in um of the ball used
 for the morphological filter in the x/y dimensions</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--ball-z-size</span></code> The size in pixels of the ball used
+<li><p><code class="docutils literal notranslate"><span class="pre">--ball-z-size</span></code> The size in um of the ball used
 for the morphological filter in the z dimension</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">--ball-overlap-fraction</span></code> The fraction of the ball that has to cover
 thresholded pixels for the centre pixel to be considered a nucleus pixel</p></li>
@@ -293,14 +293,6 @@ supplied with cellfinder) specify the model file.</p></li>
 matches the <code class="docutils literal notranslate"><span class="pre">--network-depth</span></code> parameter.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">--batch-size</span></code> Batch size for classification. Can be adjusted depending on
 GPU memory</p></li>
-</ul>
-<p>If the pixel sizes of the cubes used to train your network are different to
-that of the network supplied with cellfinder (0.001 x 0.001 x 0.005 mm), this
-can be set:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">--x-pixel-network</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--y-pixel-network</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--z-pixel-network</span></code></p></li>
 </ul>
 <p><strong>Registration to atlas</strong></p>
 <ul class="simple">
@@ -322,10 +314,10 @@ atlas registration</p></li>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">--orientation</span></code> The orientation of the sample brain <code class="docutils literal notranslate"><span class="pre">coronal</span></code>, <code class="docutils literal notranslate"><span class="pre">saggital</span></code>
 or <code class="docutils literal notranslate"><span class="pre">horizontal</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--x-pixel-mm-network</span></code> The pixel size (in the first dimension) that the
+<li><p><code class="docutils literal notranslate"><span class="pre">--x-pixel-um-network</span></code> The pixel size (in the first dimension) that the
 machine learning network was trained on.  Set this to adjust the
 pixel sizes of the extracted cubes.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--y-pixel-mm-network</span></code> The pixel size (in the second dimension) that the
+<li><p><code class="docutils literal notranslate"><span class="pre">--y-pixel-um-network</span></code> The pixel size (in the second dimension) that the
 machine learning network was trained on.  Set this to adjust the
 pixel sizes of the extracted cubes.</p></li>
 </ul>
