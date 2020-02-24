@@ -67,8 +67,8 @@ Will default to '0, 1, 2' etc, but maybe useful to specify.
 Figures cannot yet be customised much, but the current options are here:
 
 * `--no-heatmap` Don't generate a heatmap of cell locations
-* `--heatmap-bin` Heatmap bin size (mm of each edge of histogram cube)
-* `--heatmap-smoothing` Gaussian smoothing sigma, in mm.
+* `--heatmap-bin` Heatmap bin size (um of each edge of histogram cube)
+* `--heatmap-smoothing` Gaussian smoothing sigma, in um.
 * `--no-outlines` Don't generate outlines of segmentation regions (for overlay)
 * `--no-mask-figs` Don't mask the figures (removing any areas outside the 
 brain, from e.g. smoothing)
@@ -97,10 +97,10 @@ clusters
 * `--artifact-keep` Save artifacts into the initial xml file
 * `--max-cluster-size` Largest putative cell cluster where 
 splitting should be attempted
-* `--soma-diameter` The expected soma size in pixels in the x/y dimensions
-* `--ball-xy-size` The size in pixels of the ball used 
+* `--soma-diameter` The expected soma size in um in the x/y dimensions
+* `--ball-xy-size` The size in um of the ball used 
 for the morphological filter in the x/y dimensions
-* `--ball-z-size` The size in pixels of the ball used 
+* `--ball-z-size` The size in um of the ball used 
 for the morphological filter in the z dimension
 * `--ball-overlap-fraction` The fraction of the ball that has to cover 
 thresholded pixels for the centre pixel to be considered a nucleus pixel
@@ -114,13 +114,6 @@ supplied with cellfinder) specify the model file.
 matches the `--network-depth` parameter.
 * `--batch-size` Batch size for classification. Can be adjusted depending on 
 GPU memory
-
-If the pixel sizes of the cubes used to train your network are different to 
-that of the network supplied with cellfinder (0.001 x 0.001 x 0.005 mm), this 
-can be set:
-* `--x-pixel-network`
-* `--y-pixel-network`
-* `--z-pixel-network`
 
 
 **Registration to atlas**
@@ -140,10 +133,10 @@ can be set:
 **Input data definitions**
  * `--orientation` The orientation of the sample brain `coronal`, `saggital`
  or `horizontal`
-* `--x-pixel-mm-network` The pixel size (in the first dimension) that the 
+* `--x-pixel-um-network` The pixel size (in the first dimension) that the 
 machine learning network was trained on.  Set this to adjust the 
 pixel sizes of the extracted cubes.
-* `--y-pixel-mm-network` The pixel size (in the second dimension) that the 
+* `--y-pixel-um-network` The pixel size (in the second dimension) that the 
 machine learning network was trained on.  Set this to adjust the 
 pixel sizes of the extracted cubes.
 
