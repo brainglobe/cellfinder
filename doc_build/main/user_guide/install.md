@@ -15,6 +15,7 @@ versions of CUDA (for other work), please see [here](https://blog.kovalevskyi.co
 Alternatively, CUDA can be installed into your conda environment (see below).
 
 #### Set up conda environment and install dependencies
+
 **Recommended, allthough not necessary**
 Conda environments are used to isolate python versions and packages.
 
@@ -32,7 +33,7 @@ bash ~/Downloads/Miniconda3-latest-Linux-x86_64.sh
 * Create and activate new minimal conda environment
 
 ``` bash
-conda create --name cellfinder python
+conda create --name cellfinder python=3.7
 conda activate cellfinder
 ```    
 
@@ -70,19 +71,9 @@ which is downloaded.
 
 If you want to modify the cellfinder download, use:
 * `--atlas-install-path` Supply a path to download the atlas elsewhere. This 
-should also update the default `registration.conf` file so that the correct 
+should also update the default `cellfinder.conf` file so that the correct 
 atlas is sourced. Alternatively, use this command to tell cellfinder where an 
 existing atlas is, to save it being downloaded twice. (Requires 20GB 
 disk space)
 * `--atlas download path` The path to download the atlas into. 
 (Requires 1.2GB disk space). Defaults to `/tmp`.
-
-
-#### For developers
-If you want to edit cellfinder, run tests and build the documentation etc,
-then use:
-```bash
-git clone --branch dev https://github.com/SainsburyWellcomeCentre/cellfinder
-cd cellfinder
-pip install -e .[dev]
-```

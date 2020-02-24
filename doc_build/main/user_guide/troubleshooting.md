@@ -85,6 +85,24 @@ have an unsupported (<3.6) version of python. Use conda or pip to install
 python 3.6.
 
 
+#### FileNotFoundError [Errno 2] File structures.csv does not exist
+``bash
+FileNotFoundError: [Errno 2] File /path/to/output/directory/structures.csv does not exist: 
+``
+
+This usually happens when you have previously used an old version of cellfinder that is 
+incompatible with newer versions. To fix it, delete your cellfinder hidden directory 
+(usually in your home directory), e.g.:
+```bash
+rm -r ~/.cellfinder
+```
+
+Then re-download the files:
+```bash
+cellfinder_download
+```
+
+Then retry the cellfinder command (it should carry on from where it left off)
 
 ## Things that look like errors, but aren't:
 Most things that are actually errors will interrupt cellfinder, and the program
