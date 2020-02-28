@@ -9,9 +9,7 @@ import cellfinder.summarise.count_summary as cells_regions
 from imlib.IO.cells import cells_to_xml
 from cellfinder.tools.prep import prep_atlas_conf
 from cellfinder.tools.source_files import get_structures_path
-from cellfinder.summarise.structures.structures_tree import (
-    load_structures_as_df,
-)
+from imlib.IO.structures import load_structures_as_df
 
 
 def xml_crop(args, df_query="name"):
