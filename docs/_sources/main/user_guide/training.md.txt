@@ -100,9 +100,11 @@ at the expense of a larger model, and longer training time. Default: 50
 at once). Default: 16
 * `--epochs` How many times to use each sample for training. Default: 1000
 * `--test-fraction` What fraction of data to keep for validation. Default: 0.1
+* `--learning-rate` Learning rate for training the model
 * `--no-augment` Do not use data augmentation
 * `--save-weights` Only store the model weights, and not the full model. 
 Useful to save storage space.
+* `--save-checkpoints` Store the model after each epoch
 * `--tensorboard` Log to `output_directory/tensorboard`. Use 
 `tensorboard --logdir outputdirectory/tensorboard` to view.
 
