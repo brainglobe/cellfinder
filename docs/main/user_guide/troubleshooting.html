@@ -89,6 +89,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#oserror-errno-24-too-many-open-files">OSError: [Errno 24] Too many open files</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#info-tensorflow-error-reported-to-coordinator-failed-to-get-convolution-algorithm">INFO:tensorflow:Error reported to Coordinator: Failed to get convolution algorithm</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#syntaxerror-invalid-syntax-logging">SyntaxError: invalid syntax (logging)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#filenotfounderror-errno-2-file-structures-csv-does-not-exist">FileNotFoundError [Errno 2] File structures.csv does not exist</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#things-that-look-like-errors-but-aren-t">Things that look like errors, but aren’t:</a><ul>
@@ -262,6 +263,21 @@ SyntaxError: invalid syntax
 like <code class="docutils literal notranslate"><span class="pre">logging.debug(f&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">logging.info(f&quot;</span></code> or <code class="docutils literal notranslate"><span class="pre">print(f&quot;</span></code>, then you likely
 have an unsupported (&lt;3.6) version of python. Use conda or pip to install
 python 3.6.</p>
+</div>
+<div class="section" id="filenotfounderror-errno-2-file-structures-csv-does-not-exist">
+<h3>FileNotFoundError [Errno 2] File structures.csv does not exist<a class="headerlink" href="#filenotfounderror-errno-2-file-structures-csv-does-not-exist" title="Permalink to this headline">¶</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">bash</span> <span class="pre">FileNotFoundError:</span> <span class="pre">[Errno</span> <span class="pre">2]</span> <span class="pre">File</span> <span class="pre">/path/to/output/directory/structures.csv</span> <span class="pre">does</span> <span class="pre">not</span> <span class="pre">exist:</span>&#160; </code></p>
+<p>This usually happens when you have previously used an old version of cellfinder that is
+incompatible with newer versions. To fix it, delete your cellfinder hidden directory
+(usually in your home directory), e.g.:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>rm -r ~/.cellfinder
+</pre></div>
+</div>
+<p>Then re-download the files:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>cellfinder_download
+</pre></div>
+</div>
+<p>Then retry the cellfinder command (it should carry on from where it left off)</p>
 </div>
 </div>
 <div class="section" id="things-that-look-like-errors-but-aren-t">

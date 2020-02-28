@@ -87,7 +87,6 @@
 <li class="toctree-l2"><a class="reference internal" href="#optional-install-cuda-and-cudnn-into-the-conda-environment">Optional: Install CUDA and cuDNN into the conda environment:</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#install-cellfinder">Install cellfinder</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#download-atlas-and-trained-classification-models-optional">Download atlas and trained classification models (optional)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#for-developers">For developers</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="run.html">Usage</a></li>
@@ -207,7 +206,7 @@ in this environment</strong></p>
 <ul class="simple">
 <li><p>Create and activate new minimal conda environment</p></li>
 </ul>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda create --name cellfinder python
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda create --name cellfinder <span class="nv">python</span><span class="o">=</span><span class="m">3</span>.7
 conda activate cellfinder
 </pre></div>
 </div>
@@ -242,23 +241,13 @@ which is downloaded.</p>
 <p>If you want to modify the cellfinder download, use:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">--atlas-install-path</span></code> Supply a path to download the atlas elsewhere. This
-should also update the default <code class="docutils literal notranslate"><span class="pre">registration.conf</span></code> file so that the correct
+should also update the default <code class="docutils literal notranslate"><span class="pre">cellfinder.conf</span></code> file so that the correct
 atlas is sourced. Alternatively, use this command to tell cellfinder where an
 existing atlas is, to save it being downloaded twice. (Requires 20GB
 disk space)</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">--atlas</span> <span class="pre">download</span> <span class="pre">path</span></code> The path to download the atlas into.
 (Requires 1.2GB disk space). Defaults to <code class="docutils literal notranslate"><span class="pre">/tmp</span></code>.</p></li>
 </ul>
-</div>
-<div class="section" id="for-developers">
-<h2>For developers<a class="headerlink" href="#for-developers" title="Permalink to this headline">¶</a></h2>
-<p>If you want to edit cellfinder, run tests and build the documentation etc,
-then use:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git clone --branch dev https://github.com/SainsburyWellcomeCentre/cellfinder
-<span class="nb">cd</span> cellfinder
-pip install -e .<span class="o">[</span>dev<span class="o">]</span>
-</pre></div>
-</div>
 </div>
 </div>
 
