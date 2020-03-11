@@ -1,12 +1,19 @@
 # Releases 
 
+## Version 0.3.9 (2020-03-11)
+### Added
+Training can now be saved every N epochs using `--checkpoint-interval`
+### Fixed
+* Bug fixed in `cellfinder_xml_crop`
+* Pandas dependencies updated thanks to [@amedyukhina](https://github.com/amedyukhina)
+
 ## Version 0.3.8 (2020-02-18)
 ### Fixed
-Fix memory leak in training
+* Fix memory leak in training
 
 ## Version 0.3.7 (2020-02-02)
 ### Changed
-Update curation interface
+* Update curation interface
 
 ## Version 0.3.5 (2020-02-03)
 ### Main updates
