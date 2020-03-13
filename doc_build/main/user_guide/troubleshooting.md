@@ -22,43 +22,6 @@ running `ulimit -n 60000` before running cellfinder should work. This setting
 will persist for the present shell session, but will have to repeated if you 
 open a new terminal.
 
-#### libcublas.so.9.0: cannot open shared object file: No such file or directory
-```bash
-ImportError: libcublas.so.9.0: cannot open shared object file: No such file or directory
-Failed to load the native TensorFlow runtime.
-See https://www.tensorflow.org/install/errors
-for some common reasons and solutions.  Include the entire stack trace
-above this error message when asking for help.
-```
-
-If you see an error like this, it is likely that you don't have CUDA installed, 
-or it isn't added to your path (so tensorflow can't find it). If you have a 
-CUDA 10 version of tensorflow-gpu installed, you may instead see:
-```bash
-ImportError: libcublas.so.10.0: cannot open shared object file: No such file or directory
-```
-
-If you're not sure which version of CUDA you need, please see 
-[here](misc/CUDA10.md). If you don't have one of these newer GPUs, it is easier
-to use CUDA 9.
-
-If CUDA and cuDNN is definately installed (following instructions 
-[here](https://www.tensorflow.org/install/gpu)). Then please make sure that 
-they are added to the path. If for example your version of CUDA is located at 
-`/usr/local/cuda-10.0`, then run:
-
-```bash
-export PATH=/usr/local/cuda-10.0/bin:$PATH
-export LD_LIBRARY_PATH=/usr/local/cuda-10.0/lib64:$LD_LIBRARY_PATH
-```
-
-To save doing this each time you run cellfinder, you can add these lines to 
-e.g. your [`~/.bashrc`](https://www.maketecheasier.com/what-is-bashrc/) file. 
-If you have multiple versions of CUDA, or don't want to edit your `.bashrc` 
-file, see [here](https://blog.kovalevskyi.com/multiple-version-of-cuda-libraries-on-the-same-machine-b9502d50ae77) 
-for how to only add to the path for specific conda environments.
-
-
 
 #### INFO:tensorflow:Error reported to Coordinator: Failed to get convolution algorithm
 ```bash
@@ -101,7 +64,7 @@ it to run, or cancel it with CTRL+C (in the cellfinder terminal).
 
 
 Alternatively, your version of CUDA and cuDNN may be not compatible with 
-tensorflow 2.0. You can update them by following the instructions 
+tensorflow 2.1. You can update them by following the instructions 
 [here](https://www.tensorflow.org/install/gpu)or by installing them into your 
 conda environment:
 ```bash
@@ -122,6 +85,24 @@ have an unsupported (<3.6) version of python. Use conda or pip to install
 python 3.6.
 
 
+#### FileNotFoundError [Errno 2] File structures.csv does not exist
+``bash
+FileNotFoundError: [Errno 2] File /path/to/output/directory/structures.csv does not exist: 
+``
+
+This usually happens when you have previously used an old version of cellfinder that is 
+incompatible with newer versions. To fix it, delete your cellfinder hidden directory 
+(usually in your home directory), e.g.:
+```bash
+rm -r ~/.cellfinder
+```
+
+Then re-download the files:
+```bash
+cellfinder_download
+```
+
+Then retry the cellfinder command (it should carry on from where it left off)
 
 ## Things that look like errors, but aren't:
 Most things that are actually errors will interrupt cellfinder, and the program

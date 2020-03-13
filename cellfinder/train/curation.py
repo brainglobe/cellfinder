@@ -15,10 +15,10 @@ from imlib.IO.yaml import save_yaml
 
 from cellfinder.extract.extract_cubes import main as extract_cubes_main
 import cellfinder.tools.parser as cellfinder_parse
+from cellfinder.viewer.two_dimensional import estimate_image_max
 
 OUTPUT_NAME = "curated_cells.xml"
 CURATED_POINTS = []
-CURATED_POINTS_AS_CELLS = []
 
 
 def parser():
@@ -88,9 +88,9 @@ def main():
             f"directory to: {output_directory}"
         )
     else:
-        output_directory = args.output
+        output_directory = Path(args.output)
 
-    ensure_directory_exists(output_directory)
+    ensure_directory_exists(str(output_directory))
     output_filename = output_directory / OUTPUT_NAME
 
     img_paths = get_sorted_file_paths(
@@ -103,7 +103,8 @@ def main():
     with napari.gui_qt():
         viewer = napari.Viewer(title="Cellfinder cell curation")
         images = magic_imread(img_paths, use_dask=True, stack=True)
-        viewer.add_image(images)
+        max_value = estimate_image_max(img_paths)
+        viewer.add_image(images, contrast_limits=[0, max_value])
         face_color_cycle = ["lightskyblue", "lightgoldenrodyellow"]
         points_layer = viewer.add_points(
             cells,
@@ -231,9 +232,11 @@ def run_extraction(
     save_empty_cubes,
 ):
     planes_paths = {}
-    planes_paths[0] = get_sorted_file_paths(signal_paths, file_extension="tif")
+    planes_paths[0] = get_sorted_file_paths(
+        signal_paths, file_extension=".tif"
+    )
     planes_paths[1] = get_sorted_file_paths(
-        background_paths, file_extension="tif"
+        background_paths, file_extension=".tif"
     )
 
     all_candidates = get_cells(str(output_filename))
@@ -247,7 +250,7 @@ def run_extraction(
         print(f"Extracting type: {cell_type}")
         cell_type_output_directory = output_directory / cell_type
         print(f"Saving to: {cell_type_output_directory}")
-        ensure_directory_exists(cell_type_output_directory)
+        ensure_directory_exists(str(cell_type_output_directory))
         extract_cubes_main(
             cell_list,
             cell_type_output_directory,

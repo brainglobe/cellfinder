@@ -4,4 +4,4 @@ dependencies:
   - cudatoolkit=10.1
   - cudnn
   - pip:
-      - git+https://github.com/adamltyson/cellfinder
+      - cellfinder

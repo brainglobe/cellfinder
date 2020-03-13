@@ -1,10 +1,14 @@
 import platform
 from setuptools import setup, find_namespace_packages, Extension
+from os import path
+
+this_directory = path.abspath(path.dirname(__file__))
+with open(path.join(this_directory, "README.md"), encoding="utf-8") as f:
+    long_description = f.read()
 
 requirements = [
     "numpy",
     "scikit-learn",
-    "scipy >= 0.18",
     "configparser",
     "pandas",
     "packaging",
@@ -19,19 +23,17 @@ requirements = [
     "nibabel",
     "configobj",
     "read-roi",
-    "tables",
-    "slurmio",
-    "brainio>=0.0.9",
-    "fancylog",
-    "micrometa",
-    "imlib",
-    "neuro",
-    "amap>=0.0.11",
-    "napari>=0.2.8",
-    # "brainrender",
+    "scipy>=0.18",
     "toolz>=0.7.3",
     "tensorflow>=2.1.0",
-    "six>=1.12.0",
+    "napari>=0.2.12",
+    "slurmio>=0.0.4",
+    "brainio>=0.0.11",
+    "fancylog>=0.0.7",
+    "micrometa>=0.0.11",
+    "imlib>=0.0.14",
+    "neuro>=0.0.6",
+    "amap>=0.0.13",
 ]
 
 
@@ -91,8 +93,10 @@ else:
 
 setup(
     name="cellfinder",
-    version="0.3.5",
-    description="Cell detection for whole-brain microscopy",
+    version="0.3.9rc0",
+    description="Automated 3D cell detection and registration of whole-brain images",
+    long_description=long_description,
+    long_description_content_type="text/markdown",
     install_requires=requirements,
     extras_require={
         "dev": [
@@ -139,7 +143,11 @@ setup(
             "cellfinder_curate = cellfinder.train.curation:main",
         ]
     },
-    url="https://github.com/SainsburyWellcomeCentre/cellfinder",
+    project_urls={
+        "Source Code": "https://github.com/SainsburyWellcomeCentre/cellfinder",
+        "Bug Tracker": "https://github.com/SainsburyWellcomeCentre/cellfinder/issues",
+        "Documentation": "https://sainsburywellcomecentre.github.io/cellfinder",
+    },
     author="Adam Tyson, Christian Niedworok, Charly Rousseau",
     author_email="adam.tyson@ucl.ac.uk",
     classifiers=[
