@@ -151,7 +151,14 @@ def training_parse():
         "--save-checkpoints",
         dest="save_checkpoints",
         action="store_true",
-        help="Store the model after each epoch",
+        help="Store the model at intermediate points during training",
+    )
+    training_parser.add_argument(
+        "--checkpoint-interval",
+        dest="checkpoint_interval",
+        type=check_positive_int,
+        default=1,
+        help="Number of epochs between checkpoints",
     )
     training_parser.add_argument(
         "--tensorboard",
@@ -287,7 +294,9 @@ def main():
             filepath = str(output_dir / "model.{epoch:02d}-{val_loss:.3f}.h5")
 
         checkpoints = ModelCheckpoint(
-            filepath, save_weights_only=args.save_weights
+            filepath,
+            save_weights_only=args.save_weights,
+            period=args.checkpoint_interval,
         )
         callbacks.append(checkpoints)
 

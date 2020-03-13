@@ -104,7 +104,8 @@ at once). Default: 16
 * `--no-augment` Do not use data augmentation
 * `--save-weights` Only store the model weights, and not the full model. 
 Useful to save storage space.
-* `--save-checkpoints` Store the model after each epoch
+* `--save-checkpoints` Store the model at intermediate points during training
+* `--checkpoint-interval` Number of epochs between checkpoints
 * `--tensorboard` Log to `output_directory/tensorboard`. Use 
 `tensorboard --logdir outputdirectory/tensorboard` to view.
 
