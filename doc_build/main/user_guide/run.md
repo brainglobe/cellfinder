@@ -69,7 +69,6 @@ Figures cannot yet be customised much, but the current options are here:
 * `--no-heatmap` Don't generate a heatmap of cell locations
 * `--heatmap-bin` Heatmap bin size (um of each edge of histogram cube)
 * `--heatmap-smoothing` Gaussian smoothing sigma, in um.
-* `--no-outlines` Don't generate outlines of segmentation regions (for overlay)
 * `--no-mask-figs` Don't mask the figures (removing any areas outside the 
 brain, from e.g. smoothing)
 
