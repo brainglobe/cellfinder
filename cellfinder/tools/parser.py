@@ -481,16 +481,16 @@ def figures_parse(parser):
     return parser
 
 
-def atlas_parse(parser):
-    atlas_parser = parser.add_argument_group("Atlas specific parameters")
-    atlas_parser.add_argument(
-        "--structures-file",
-        dest="structures_file_path",
-        type=str,
-        help="The csv file containing the structures "
-        "definition for the atlas.",
-    )
-    return parser
+# def atlas_parse(parser):
+#     atlas_parser = parser.add_argument_group("Atlas specific parameters")
+#     atlas_parser.add_argument(
+#         "--structures-file",
+#         dest="structures_file_path",
+#         type=str,
+#         help="The csv file containing the structures "
+#         "definition for the atlas.",
+#     )
+#     return parser
 
 
 def standard_space_parse(parser):
