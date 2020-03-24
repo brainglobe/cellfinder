@@ -70,16 +70,19 @@ def make_summary_df_for_brain(
 
 
 def summary_run(args):
-    if args.structures_file_path is None:
-        args.structures_file_path = get_structures_path()
-        reference_structures_table = pd.read_csv(args.structures_file_path)
-    else:
-        raise NotImplementedError(
-            "Only the Allen adult mouse atlas is " "currently supported."
-        )
+    # if args.structures_file_path is None:
+    #     args.structures_file_path = get_structures_path()
+    #     reference_structures_table = pd.read_csv(args.structures_file_path)
+    # else:
+    #     raise NotImplementedError(
+    #         "Only the Allen adult mouse atlas is " "currently supported."
+    #     )
+    reference_structures_table = pd.read_csv(get_structures_path())
 
     if not args.regions and not args.regions_list:
-        regions = list(pd.read_csv(args.structures_file_path)["name"])
+        # regions = list(pd.read_csv(args.structures_file_path)["name"])
+        regions = list(pd.read_csv(get_structures_path())["name"])
+
     else:
         regions = []
         if args.regions:
@@ -142,14 +145,14 @@ def get_parser():
         nargs="+",
         help="A list of additional regions to include",
     )
-    parser.add_argument(
-        "--structures-file",
-        dest="structures_file_path",
-        type=str,
-        help="The csv file containing the structures "
-        "definition (if not using the default "
-        "Allen brain atlas).",
-    )
+    # parser.add_argument(
+    #     "--structures-file",
+    #     dest="structures_file_path",
+    #     type=str,
+    #     help="The csv file containing the structures "
+    #     "definition (if not using the default "
+    #     "Allen brain atlas).",
+    # )
     parser.add_argument(
         "--sum-regions",
         dest="sum_regions",

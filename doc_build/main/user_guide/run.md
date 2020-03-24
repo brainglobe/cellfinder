@@ -55,12 +55,6 @@ directory) and not run them again if appropriate.
 * `--no-standard_space` Dont convert cell positions to standard space. 
 Otherwise will run automatically if registration and classification has run.
 
-**If you have channel numbers that you'd like to carry over into cellfinder**
-* `--signal-channel-ids`. Channel ID numbers, in the same order as 'signal-planes-paths.
-Will default to '0, 1, 2' etc, but maybe useful to specify.
-* `--background-channel-id` Channel ID number, corresponding to 
-'background-planes-path'
-
 
 **Figures options**
 
@@ -81,8 +75,6 @@ unused by the program to spare resources.
 * `--max-ram` Maximum amount of RAM to use (in GB) - **not currently fully 
 implemented for all parts of cellfinder**
 
-**Input/output options**
-
 Useful for testing or if you know your cells are only in a specific region
 * `--start-plane` The first plane to process in the Z dimension
 * `--end-plane` The last plane to process in the Z dimension
@@ -94,16 +86,24 @@ processing and thresholding. Useful for debugging.
 * `--outlier-keep` Dont remove putative cells that fall outside initial
 clusters
 * `--artifact-keep` Save artifacts into the initial xml file
-* `--max-cluster-size` Largest putative cell cluster where 
-splitting should be attempted
-* `--soma-diameter` The expected soma size in um in the x/y dimensions
-* `--ball-xy-size` The size in um of the ball used 
-for the morphological filter in the x/y dimensions
+* `--max-cluster-size` Largest putative cell cluster (in cubic um) where 
+splitting should be attempted.  **Default: 100000**
+* `--soma-diameter` The expected soma size in um in the x/y dimensions. 
+ **Default: 16**
+* `--ball-xy-size` The size in um of the ball used
+for the morphological filter in the x/y dimensions. **Default: 6**
 * `--ball-z-size` The size in um of the ball used 
-for the morphological filter in the z dimension
+for the morphological filter in the z dimension.  **Default: 15**
 * `--ball-overlap-fraction` The fraction of the ball that has to cover 
-thresholded pixels for the centre pixel to be considered a nucleus pixel
-
+thresholded pixels for the centre pixel to be considered a nucleus pixel. 
+ **Default: 0.6**
+* `--log-sigma-size` The filter size used in the Laplacian of Gaussian filter 
+to enhance the cell intensities. Given as a fraction of the soma-diameter.
+**Default: 0.2**
+* `--threshold` The cell threshold, in multiples of the standard deviation 
+above the mean. **Default: 10**
+* `--soma-spread-factor` Soma size spread factor (for splitting up 
+cell clusters). **Default: 1.4**
 
 **Cell candidate classification**
 
@@ -111,8 +111,30 @@ thresholded pixels for the centre pixel to be considered a nucleus pixel
 supplied with cellfinder) specify the model file.
 * `--model-weights` To use pretrained model weights. Ensure that this model 
 matches the `--network-depth` parameter.
+* `--network-depth`. Resnet depth (based on 
+[He et al. (2015)](https://arxiv.org/abs/1512.03385) **Default: 50**
 * `--batch-size` Batch size for classification. Can be adjusted depending on 
-GPU memory
+GPU memory. **Default: 32**
+
+*You shouldn't need to change these:*
+* `--x-pixel-um-network` The pixel size (in microns, in the first dimension) 
+that the machine learning network was trained on.  Set this to adjust the 
+pixel sizes of the extracted cubes. **Default 1**
+* `--y-pixel-um-network` The pixel size (in microns, in the second dimension) 
+that the machine learning network was trained on.  Set this to adjust the 
+pixel sizes of the extracted cubes. **Default 1**
+* `--z-pixel-um-network` The pixel size (in microns, in the third dimension) 
+that the machine learning network was trained on.  Set this to adjust the 
+pixel sizes of the extracted cubes. **Default 5**
+* `--cube-width` The width of the cubes to extract in pixels (must be even). 
+**Default 50**
+* `--cube-height` The height of the cubes to extract in pixels (must be even). 
+**Default 50**
+* `--cube-depth` The depth (z)) of the cubes to extract in pixels
+ (must be even). **Default 20**
+* `--save-empty-cubes` If a cube cannot be extracted (e.g. to close to the 
+edge of the image), save an empty cube instead. Useful to keep track of all 
+cell candidates.
 
 
 **Registration to atlas**
@@ -128,16 +150,10 @@ GPU memory
  atlas registration
  * `--flip-z` Flip the sample brain along the third dimension for 
  atlas registration
- 
-**Input data definitions**
- * `--orientation` The orientation of the sample brain `coronal`, `saggital`
+  * `--orientation` The orientation of the sample brain `coronal`, `saggital`
  or `horizontal`
-* `--x-pixel-um-network` The pixel size (in the first dimension) that the 
-machine learning network was trained on.  Set this to adjust the 
-pixel sizes of the extracted cubes.
-* `--y-pixel-um-network` The pixel size (in the second dimension) that the 
-machine learning network was trained on.  Set this to adjust the 
-pixel sizes of the extracted cubes.
+ 
+
 
 **Standard space options**
 * `--transform-all` Transform all cell positions (including artifacts).
@@ -164,6 +180,18 @@ existing atlas is, to save it being downloaded twice. (Requires 20GB
 disk space)
 * `--atlas download path` The path to download the atlas into. 
 (Requires 1.2GB disk space). Defaults to `/tmp`.
+
+**Historical options**
+
+*If you are a new cellfinder user, it is unlikely you want to use these 
+options. They are intended for those migrating from earlier versions of the 
+software*
+
+If you have channel numbers that you'd like to carry over into cellfinder
+* `--signal-channel-ids`. Channel ID numbers, in the same order as 'signal-planes-paths.
+Will default to '0, 1, 2' etc, but maybe useful to specify.
+* `--background-channel-id` Channel ID number, corresponding to 
+'background-planes-path'
 
 ------------------------------------------------------------------
 

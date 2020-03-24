@@ -52,7 +52,7 @@ def cellfinder_parser():
     parser = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter)
     parser = main_parse(parser)
     parser = registration_parse(parser)
-    parser = atlas_parse(parser)
+    # parser = atlas_parse(parser)
     parser = pixel_parser(parser)
     parser = geometry_parser(parser)
     parser = cellfinder_opt_parse(parser)
@@ -481,16 +481,16 @@ def figures_parse(parser):
     return parser
 
 
-def atlas_parse(parser):
-    atlas_parser = parser.add_argument_group("Atlas specific parameters")
-    atlas_parser.add_argument(
-        "--structures-file",
-        dest="structures_file_path",
-        type=str,
-        help="The csv file containing the structures "
-        "definition for the atlas.",
-    )
-    return parser
+# def atlas_parse(parser):
+#     atlas_parser = parser.add_argument_group("Atlas specific parameters")
+#     atlas_parser.add_argument(
+#         "--structures-file",
+#         dest="structures_file_path",
+#         type=str,
+#         help="The csv file containing the structures "
+#         "definition for the atlas.",
+#     )
+#     return parser
 
 
 def standard_space_parse(parser):

@@ -15,12 +15,14 @@ from imlib.IO.structures import load_structures_as_df
 def xml_crop(args, df_query="name"):
     args = prep_atlas_conf(args)
 
-    if args.reference_structures_file_path is None:
-        args.reference_structures_file_path = get_structures_path()
+    # if args.reference_structures_file_path is None:
+    #     args.reference_structures_file_path = get_structures_path()
     if args.structures_file_path is None:
         args.structures_file_path = get_structures_path()
 
-    reference_struct_df = pd.read_csv(args.reference_structures_file_path)
+    # reference_struct_df = pd.read_csv(args.reference_structures_file_path)
+    reference_struct_df = pd.read_csv(get_structures_path())
+
     curate_struct_df = pd.read_csv(args.structures_file_path)
 
     curate_struct_df = reference_struct_df[
@@ -32,9 +34,10 @@ def xml_crop(args, df_query="name"):
     atlas = brainio.load_any(args.registered_atlas_path)
     hemisphere = brainio.load_any(args.hemispheres_atlas_path)
 
-    structures_reference_df = load_structures_as_df(
-        args.reference_structures_file_path
-    )
+    # structures_reference_df = load_structures_as_df(
+    #     args.reference_structures_file_path
+    # )
+    structures_reference_df = load_structures_as_df(get_structures_path())
 
     atlas_pixel_sizes = cells_regions.get_atlas_pixel_sizes(args.atlas_config)
     sample_pixel_sizes = args.x_pixel_um, args.y_pixel_um, args.z_pixel_um
@@ -104,14 +107,14 @@ def get_parser():
         type=str,
         help="Curated csv structure list (as per the allen brain atlas csv",
     )
-    parser.add_argument(
-        "--ref-structures-file",
-        dest="reference_structures_file_path",
-        type=str,
-        help="The csv file containing the structures "
-        "definition (if not using the default "
-        "Allen brain atlas).",
-    )
+    # parser.add_argument(
+    #     "--ref-structures-file",
+    #     dest="reference_structures_file_path",
+    #     type=str,
+    #     help="The csv file containing the structures "
+    #     "definition (if not using the default "
+    #     "Allen brain atlas).",
+    # )
     parser.add_argument(
         "--hemisphere-query",
         dest="hemisphere_query",
