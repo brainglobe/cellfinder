@@ -55,12 +55,6 @@ directory) and not run them again if appropriate.
 * `--no-standard_space` Dont convert cell positions to standard space. 
 Otherwise will run automatically if registration and classification has run.
 
-**If you have channel numbers that you'd like to carry over into cellfinder**
-* `--signal-channel-ids`. Channel ID numbers, in the same order as 'signal-planes-paths.
-Will default to '0, 1, 2' etc, but maybe useful to specify.
-* `--background-channel-id` Channel ID number, corresponding to 
-'background-planes-path'
-
 
 **Figures options**
 
@@ -80,8 +74,6 @@ intermediate files.
 unused by the program to spare resources.
 * `--max-ram` Maximum amount of RAM to use (in GB) - **not currently fully 
 implemented for all parts of cellfinder**
-
-**Input/output options**
 
 Useful for testing or if you know your cells are only in a specific region
 * `--start-plane` The first plane to process in the Z dimension
@@ -188,6 +180,18 @@ existing atlas is, to save it being downloaded twice. (Requires 20GB
 disk space)
 * `--atlas download path` The path to download the atlas into. 
 (Requires 1.2GB disk space). Defaults to `/tmp`.
+
+**Historical options**
+
+*If you are a new cellfinder user, it is unlikely you want to use these 
+options. They are intended for those migrating from earlier versions of the 
+software*
+
+If you have channel numbers that you'd like to carry over into cellfinder
+* `--signal-channel-ids`. Channel ID numbers, in the same order as 'signal-planes-paths.
+Will default to '0, 1, 2' etc, but maybe useful to specify.
+* `--background-channel-id` Channel ID number, corresponding to 
+'background-planes-path'
 
 ------------------------------------------------------------------
 
