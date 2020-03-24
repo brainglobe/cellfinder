@@ -52,7 +52,7 @@ def cellfinder_parser():
     parser = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter)
     parser = main_parse(parser)
     parser = registration_parse(parser)
-    parser = atlas_parse(parser)
+    # parser = atlas_parse(parser)
     parser = pixel_parser(parser)
     parser = geometry_parser(parser)
     parser = cellfinder_opt_parse(parser)
