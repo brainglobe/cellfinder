@@ -48,7 +48,7 @@ def main():
             freeform_n_steps=args.freeform_n_steps,
             freeform_use_n_steps=args.freeform_use_n_steps,
             bending_energy_weight=args.bending_energy_weight,
-            grid_spacing_x=args.grid_spacing_x,
+            grid_spacing=args.grid_spacing,
             smoothing_sigma_reference=args.smoothing_sigma_reference,
             smoothing_sigma_floating=args.smoothing_sigma_floating,
             histogram_n_bins_floating=args.histogram_n_bins_floating,
