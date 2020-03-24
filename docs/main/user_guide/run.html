@@ -275,23 +275,23 @@ processing and thresholding. Useful for debugging.</p></li>
 clusters</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">--artifact-keep</span></code> Save artifacts into the initial xml file</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">--max-cluster-size</span></code> Largest putative cell cluster (in cubic um) where
-splitting should be attempted.  Default: 100000</p></li>
+splitting should be attempted.  <strong>Default: 100000</strong></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">--soma-diameter</span></code> The expected soma size in um in the x/y dimensions.
-Default: 16</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--ball-xy-size</span></code> The size in um of the ball used.  Default: 6
-for the morphological filter in the x/y dimensions</p></li>
+<strong>Default: 16</strong></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--ball-xy-size</span></code> The size in um of the ball used
+for the morphological filter in the x/y dimensions. <strong>Default: 6</strong></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">--ball-z-size</span></code> The size in um of the ball used
-for the morphological filter in the z dimension.  Default: 15</p></li>
+for the morphological filter in the z dimension.  <strong>Default: 15</strong></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">--ball-overlap-fraction</span></code> The fraction of the ball that has to cover
 thresholded pixels for the centre pixel to be considered a nucleus pixel.
-Default: 0.6</p></li>
+<strong>Default: 0.6</strong></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">--log-sigma-size</span></code> The filter size used in the Laplacian of Gaussian filter
 to enhance the cell intensities. Given as a fraction of the soma-diameter.
-Default: 0.2</p></li>
+<strong>Default: 0.2</strong></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">--threshold</span></code> The cell threshold, in multiples of the standard deviation
-above the mean. Default: 10</p></li>
+above the mean. <strong>Default: 10</strong></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">--soma-spread-factor</span></code> Soma size spread factor (for splitting up
-cell clusters). Default: 1.4</p></li>
+cell clusters). <strong>Default: 1.4</strong></p></li>
 </ul>
 <p><strong>Cell candidate classification</strong></p>
 <ul class="simple">
@@ -299,8 +299,10 @@ cell clusters). Default: 1.4</p></li>
 supplied with cellfinder) specify the model file.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">--model-weights</span></code> To use pretrained model weights. Ensure that this model
 matches the <code class="docutils literal notranslate"><span class="pre">--network-depth</span></code> parameter.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--network-depth</span></code>. Resnet depth (based on
+<a class="reference external" href="https://arxiv.org/abs/1512.03385">He et al. (2015)</a> <strong>Default: 50</strong></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">--batch-size</span></code> Batch size for classification. Can be adjusted depending on
-GPU memory</p></li>
+GPU memory. <strong>Default: 32</strong></p></li>
 </ul>
 <p><strong>Registration to atlas</strong></p>
 <ul class="simple">
