@@ -274,15 +274,24 @@ processing and thresholding. Useful for debugging.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">--outlier-keep</span></code> Dont remove putative cells that fall outside initial
 clusters</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">--artifact-keep</span></code> Save artifacts into the initial xml file</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--max-cluster-size</span></code> Largest putative cell cluster where
-splitting should be attempted</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--soma-diameter</span></code> The expected soma size in um in the x/y dimensions</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--ball-xy-size</span></code> The size in um of the ball used
+<li><p><code class="docutils literal notranslate"><span class="pre">--max-cluster-size</span></code> Largest putative cell cluster (in cubic um) where
+splitting should be attempted.  Default: 100000</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--soma-diameter</span></code> The expected soma size in um in the x/y dimensions.
+Default: 16</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--ball-xy-size</span></code> The size in um of the ball used.  Default: 6
 for the morphological filter in the x/y dimensions</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">--ball-z-size</span></code> The size in um of the ball used
-for the morphological filter in the z dimension</p></li>
+for the morphological filter in the z dimension.  Default: 15</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">--ball-overlap-fraction</span></code> The fraction of the ball that has to cover
-thresholded pixels for the centre pixel to be considered a nucleus pixel</p></li>
+thresholded pixels for the centre pixel to be considered a nucleus pixel.
+Default: 0.6</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--log-sigma-size</span></code> The filter size used in the Laplacian of Gaussian filter
+to enhance the cell intensities. Given as a fraction of the soma-diameter.
+Default: 0.2</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--threshold</span></code> The cell threshold, in multiples of the standard deviation
+above the mean. Default: 10</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--soma-spread-factor</span></code> Soma size spread factor (for splitting up
+cell clusters). Default: 1.4</p></li>
 </ul>
 <p><strong>Cell candidate classification</strong></p>
 <ul class="simple">
