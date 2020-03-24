@@ -124,6 +124,26 @@ matches the `--network-depth` parameter.
 * `--batch-size` Batch size for classification. Can be adjusted depending on 
 GPU memory. **Default: 32**
 
+*You shouldn't need to change these:*
+* `--x-pixel-um-network` The pixel size (in microns, in the first dimension) 
+that the machine learning network was trained on.  Set this to adjust the 
+pixel sizes of the extracted cubes. **Default 1**
+* `--y-pixel-um-network` The pixel size (in microns, in the second dimension) 
+that the machine learning network was trained on.  Set this to adjust the 
+pixel sizes of the extracted cubes. **Default 1**
+* `--z-pixel-um-network` The pixel size (in microns, in the third dimension) 
+that the machine learning network was trained on.  Set this to adjust the 
+pixel sizes of the extracted cubes. **Default 5**
+* `--cube-width` The width of the cubes to extract in pixels (must be even). 
+**Default 50**
+* `--cube-height` The height of the cubes to extract in pixels (must be even). 
+**Default 50**
+* `--cube-depth` The depth (z)) of the cubes to extract in pixels
+ (must be even). **Default 20**
+* `--save-empty-cubes` If a cube cannot be extracted (e.g. to close to the 
+edge of the image), save an empty cube instead. Useful to keep track of all 
+cell candidates.
+
 
 **Registration to atlas**
  * `--registration-config` To supply your own, custom registration
@@ -138,16 +158,10 @@ GPU memory. **Default: 32**
  atlas registration
  * `--flip-z` Flip the sample brain along the third dimension for 
  atlas registration
- 
-**Input data definitions**
- * `--orientation` The orientation of the sample brain `coronal`, `saggital`
+  * `--orientation` The orientation of the sample brain `coronal`, `saggital`
  or `horizontal`
-* `--x-pixel-um-network` The pixel size (in the first dimension) that the 
-machine learning network was trained on.  Set this to adjust the 
-pixel sizes of the extracted cubes.
-* `--y-pixel-um-network` The pixel size (in the second dimension) that the 
-machine learning network was trained on.  Set this to adjust the 
-pixel sizes of the extracted cubes.
+ 
+
 
 **Standard space options**
 * `--transform-all` Transform all cell positions (including artifacts).

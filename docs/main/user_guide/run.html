@@ -304,6 +304,27 @@ matches the <code class="docutils literal notranslate"><span class="pre">--netwo
 <li><p><code class="docutils literal notranslate"><span class="pre">--batch-size</span></code> Batch size for classification. Can be adjusted depending on
 GPU memory. <strong>Default: 32</strong></p></li>
 </ul>
+<p><em>You shouldn’t need to change these:</em></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">--x-pixel-um-network</span></code> The pixel size (in microns, in the first dimension)
+that the machine learning network was trained on.  Set this to adjust the
+pixel sizes of the extracted cubes. <strong>Default 1</strong></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--y-pixel-um-network</span></code> The pixel size (in microns, in the second dimension)
+that the machine learning network was trained on.  Set this to adjust the
+pixel sizes of the extracted cubes. <strong>Default 1</strong></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--z-pixel-um-network</span></code> The pixel size (in microns, in the third dimension)
+that the machine learning network was trained on.  Set this to adjust the
+pixel sizes of the extracted cubes. <strong>Default 5</strong></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--cube-width</span></code> The width of the cubes to extract in pixels (must be even).
+<strong>Default 50</strong></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--cube-height</span></code> The height of the cubes to extract in pixels (must be even).
+<strong>Default 50</strong></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--cube-depth</span></code> The depth (z)) of the cubes to extract in pixels
+(must be even). <strong>Default 20</strong></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--save-empty-cubes</span></code> If a cube cannot be extracted (e.g. to close to the
+edge of the image), save an empty cube instead. Useful to keep track of all
+cell candidates.</p></li>
+</ul>
 <p><strong>Registration to atlas</strong></p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">--registration-config</span></code> To supply your own, custom registration
@@ -319,17 +340,8 @@ atlas registration</p></li>
 atlas registration</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">--flip-z</span></code> Flip the sample brain along the third dimension for
 atlas registration</p></li>
-</ul>
-<p><strong>Input data definitions</strong></p>
-<ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">--orientation</span></code> The orientation of the sample brain <code class="docutils literal notranslate"><span class="pre">coronal</span></code>, <code class="docutils literal notranslate"><span class="pre">saggital</span></code>
 or <code class="docutils literal notranslate"><span class="pre">horizontal</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--x-pixel-um-network</span></code> The pixel size (in the first dimension) that the
-machine learning network was trained on.  Set this to adjust the
-pixel sizes of the extracted cubes.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--y-pixel-um-network</span></code> The pixel size (in the second dimension) that the
-machine learning network was trained on.  Set this to adjust the
-pixel sizes of the extracted cubes.</p></li>
 </ul>
 <p><strong>Standard space options</strong></p>
 <ul class="simple">
