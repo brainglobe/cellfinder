@@ -8,7 +8,7 @@ from imlib.general.numerical import check_positive_float, check_positive_int
 import cellfinder.summarise.count_summary as cells_regions
 from imlib.IO.cells import cells_to_xml
 from cellfinder.tools.prep import prep_atlas_conf
-from cellfinder.tools.source_files import get_structures_path
+from imlib.source.source_files import get_structures_path
 from imlib.IO.structures import load_structures_as_df
 
 
