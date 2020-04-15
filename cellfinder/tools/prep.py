@@ -14,6 +14,8 @@ from imlib.general.system import ensure_directory_exists, get_num_processes
 from imlib.image.metadata import define_pixel_sizes
 from imlib.general.exceptions import CommandLineInputError
 from imlib.general.config import get_config_obj
+from imlib.source import source_files
+
 import amap.download.atlas as atlas_download
 
 import cellfinder.tools.tf as tf_tools
@@ -22,7 +24,7 @@ import cellfinder.tools.parser as parser
 from cellfinder.download import models as model_download
 from cellfinder.download.download import amend_cfg
 from cellfinder.download.cli import temp_dir_path
-from cellfinder.tools import tools, source_files, system
+from cellfinder.tools import tools, system
 
 
 def check_input_arg_existance(args):
@@ -412,7 +414,9 @@ def prep_registration(args, sample_name="amap"):
         amend_cfg(new_atlas_folder=atlas_dir, atlas=args.atlas)
 
     if args.registration_config is None:
-        args.registration_config = source_files.source_custom_config()
+        args.registration_config = (
+            source_files.source_custom_config_cellfinder()
+        )
     args.target_brain_path = args.background_planes_path[0]
     args.sample_name = sample_name
     logging.debug("Making registration directory")
@@ -434,7 +438,7 @@ def check_atlas_install():
     # TODO: make more sophisticated, check for all files that might be needed
     dir_exists = False
     files_exist = False
-    cfg_file_path = source_files.source_custom_config()
+    cfg_file_path = source_files.source_custom_config_cellfinder()
     if os.path.exists(cfg_file_path):
         config_obj = get_config_obj(cfg_file_path)
         atlas_conf = config_obj["atlas"]
@@ -463,7 +467,7 @@ def prep_atlas_conf(args):
             args.atlas_config = args.registration_config
         else:
             # can get atlas pixel sizes from registration config
-            args.atlas_config = source_files.source_custom_config()
+            args.atlas_config = source_files.source_custom_config_cellfinder()
     return args
 
 
@@ -491,7 +495,7 @@ def prep_models(args):
     if args.trained_model is None and args.model_weights is None:
         logging.debug("No model or weights supplied, so using the default")
 
-        config_file = source_files.source_custom_config()
+        config_file = source_files.source_custom_config_cellfinder()
         if not Path(config_file).exists():
             logging.debug("Custom config does not exist, downloading models")
             model_path = model_download.main(args.model, args.install_path)

@@ -5,8 +5,8 @@ import urllib.request
 
 from imlib.general.system import disk_free_gb
 from imlib.general.config import get_config_obj
+from imlib.source import source_files
 from amap.download.download import write_atlas_to_cfg
-from cellfinder.tools import source_files
 
 
 class DownloadError(Exception):
@@ -84,8 +84,8 @@ def amend_cfg(new_atlas_folder=None, new_model_path=None, atlas=None):
     """
     print("Ensuring custom config file is correct")
 
-    original_config = source_files.source_config()
-    new_config = source_files.source_custom_config()
+    original_config = source_files.source_config_cellfinder()
+    new_config = source_files.source_custom_config_cellfinder()
     if new_atlas_folder is not None:
         write_atlas_to_cfg(
             new_atlas_folder, atlas, original_config, new_config
