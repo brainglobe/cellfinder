@@ -22,7 +22,7 @@ from imlib.anatomy.structures.structures_tree import (
 
 import cellfinder.tools.parser as cellfinder_parse
 from cellfinder.tools.prep import prep_atlas_conf, Paths
-from cellfinder.tools.source_files import get_structures_path
+from imlib.source.source_files import get_structures_path
 
 LEFT_HEMISPHERE = 2
 RIGHT_HEMISPHERE = 1
