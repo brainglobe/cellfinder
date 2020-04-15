@@ -4,7 +4,7 @@ import argparse
 import pandas as pd
 from imlib.general.list import remove_empty_string, unique_elements_lists
 
-from cellfinder.tools.source_files import get_structures_path
+from imlib.source.source_files import get_structures_path
 
 
 def structure_name_to_id(structure_name, reference_structures_table):

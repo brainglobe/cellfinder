@@ -8,8 +8,8 @@ from brainio import brainio
 from imlib.image.scale import scale_and_convert_to_16_bits
 from imlib.image import nii
 
-from cellfinder.tools.source_files import source_custom_config
-from cellfinder.tools.source_files import get_structures_path
+from imlib.source.source_files import source_custom_config_cellfinder
+from imlib.source.source_files import get_structures_path
 from cellfinder.analyse.group.region_summary import get_substructures
 
 
