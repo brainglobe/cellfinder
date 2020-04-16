@@ -22,7 +22,7 @@ from imlib.general.system import (
     SafeExecuteCommandError,
 )
 from imlib.general.exceptions import RegistrationError
-from cellfinder.tools.source_files import source_custom_config
+from imlib.source.source_files import source_custom_config_cellfinder
 from amap.config.atlas import Atlas
 from amap.config.config import get_binary
 from amap.tools.source_files import get_niftyreg_binaries
@@ -278,7 +278,7 @@ def main():
     print(f"ROI file is: {rois}")
 
     if args.registration_config is None:
-        args.registration_config = source_custom_config()
+        args.registration_config = source_custom_config_cellfinder()
     atlas = Atlas(args.registration_config)
     source_image = args.reg_dir / SOURCE_IMAGE_NAME
     print(f"Source image is: {source_image}")
