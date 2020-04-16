@@ -35,7 +35,6 @@ def region_summary_cli_parser():
     )
     parser = cli_parse(parser)
     parser = cellfinder_parse.count_summary_parse(parser)
-    # parser = cellfinder_parse.atlas_parse(parser)
     parser = cellfinder_parse.pixel_parser(parser)
     return parser
 
@@ -209,9 +208,6 @@ def get_structure_from_coordinates(
 def analysis_run(args, file_name="summary_cell_counts.csv"):
     args = prep_atlas_conf(args)
 
-    # if args.structures_file_path is None:
-    #     args.structures_file_path = get_structures_path()
-
     atlas = brainio.load_any(args.paths.registered_atlas_path)
     hemisphere = brainio.load_any(args.paths.hemispheres_atlas_path)
 
@@ -219,7 +215,6 @@ def analysis_run(args, file_name="summary_cell_counts.csv"):
         args.paths.classification_out_file, cells_only=args.cells_only,
     )
     max_coords = get_max_coords(cells)  # Useful for debugging dimensions
-    # structures_reference_df = load_structures_as_df(args.structures_file_path)
     structures_reference_df = load_structures_as_df(get_structures_path())
 
     atlas_pixel_sizes = get_atlas_pixel_sizes(args.atlas_config)
