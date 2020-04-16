@@ -23,10 +23,11 @@ from imlib.general.system import (
 )
 from imlib.general.exceptions import RegistrationError
 from imlib.source.source_files import source_custom_config_cellfinder
+from imlib.source.niftyreg_binaries import get_niftyreg_binaries, get_binary
+from neuro.atlas_tools.misc import get_atlas_pixel_sizes
 from amap.config.atlas import Atlas
-from amap.config.config import get_binary
-from amap.tools.source_files import get_niftyreg_binaries
-import cellfinder.summarise.count_summary as cells_regions
+
+from imlib.source.niftyreg_binaries import get_binary
 
 
 # TODO: get this from amap
@@ -311,9 +312,7 @@ def main():
     atlas = brainio.load_nii(str(destination_image), as_array=False)
     atlas_scale = atlas.header.get_zooms()
 
-    atlas_pixel_sizes = cells_regions.get_atlas_pixel_sizes(
-        args.registration_config
-    )
+    atlas_pixel_sizes = get_atlas_pixel_sizes(args.registration_config)
 
     transformation_matrix = np.eye(4)
     for i, axis in enumerate(("x", "y", "z")):

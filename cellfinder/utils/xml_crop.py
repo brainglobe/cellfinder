@@ -5,11 +5,13 @@ import pandas as pd
 from brainio import brainio
 from imlib.general.numerical import check_positive_float, check_positive_int
 
-import cellfinder.summarise.count_summary as cells_regions
 from imlib.IO.cells import cells_to_xml
-from cellfinder.tools.prep import prep_atlas_conf
 from imlib.source.source_files import get_structures_path
 from imlib.IO.structures import load_structures_as_df
+from neuro.atlas_tools.misc import get_atlas_pixel_sizes
+
+from cellfinder.tools.prep import prep_atlas_conf
+import cellfinder.summarise.count_summary as cells_regions
 
 
 def xml_crop(args, df_query="name"):
@@ -39,7 +41,7 @@ def xml_crop(args, df_query="name"):
     # )
     structures_reference_df = load_structures_as_df(get_structures_path())
 
-    atlas_pixel_sizes = cells_regions.get_atlas_pixel_sizes(args.atlas_config)
+    atlas_pixel_sizes = get_atlas_pixel_sizes(args.atlas_config)
     sample_pixel_sizes = args.x_pixel_um, args.y_pixel_um, args.z_pixel_um
 
     scales = cells_regions.get_scales(sample_pixel_sizes, atlas_pixel_sizes)
