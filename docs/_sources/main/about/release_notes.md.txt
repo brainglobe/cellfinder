@@ -1,5 +1,8 @@
 # Releases 
 
+## Version 0.3.10 (2020-04-16)
+Minor refactoring
+
 ## Version 0.3.9 (2020-03-11)
 ### Added
 Training can now be saved every N epochs using `--checkpoint-interval`
