@@ -13,16 +13,17 @@ from imlib.pandas.misc import sanitise_df
 from imlib.image.metadata import define_pixel_sizes
 from imlib.general.config import get_config_obj
 from imlib.IO.structures import load_structures_as_df
-
+from imlib.source.source_files import get_structures_path
 from imlib.anatomy.structures.structures_tree import (
     atlas_value_to_structure_id,
     CellCountMissingCellsException,
     UnknownAtlasValue,
 )
 
+from neuro.atlas_tools.misc import get_atlas_pixel_sizes
+
 import cellfinder.tools.parser as cellfinder_parse
 from cellfinder.tools.prep import prep_atlas_conf, Paths
-from imlib.source.source_files import get_structures_path
 
 LEFT_HEMISPHERE = 2
 RIGHT_HEMISPHERE = 1
@@ -34,7 +35,6 @@ def region_summary_cli_parser():
     )
     parser = cli_parse(parser)
     parser = cellfinder_parse.count_summary_parse(parser)
-    # parser = cellfinder_parse.atlas_parse(parser)
     parser = cellfinder_parse.pixel_parser(parser)
     return parser
 
@@ -208,9 +208,6 @@ def get_structure_from_coordinates(
 def analysis_run(args, file_name="summary_cell_counts.csv"):
     args = prep_atlas_conf(args)
 
-    # if args.structures_file_path is None:
-    #     args.structures_file_path = get_structures_path()
-
     atlas = brainio.load_any(args.paths.registered_atlas_path)
     hemisphere = brainio.load_any(args.paths.hemispheres_atlas_path)
 
@@ -218,7 +215,6 @@ def analysis_run(args, file_name="summary_cell_counts.csv"):
         args.paths.classification_out_file, cells_only=args.cells_only,
     )
     max_coords = get_max_coords(cells)  # Useful for debugging dimensions
-    # structures_reference_df = load_structures_as_df(args.structures_file_path)
     structures_reference_df = load_structures_as_df(get_structures_path())
 
     atlas_pixel_sizes = get_atlas_pixel_sizes(args.atlas_config)
