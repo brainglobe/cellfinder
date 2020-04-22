@@ -22,7 +22,6 @@ requirements = [
     "psutil",
     "nibabel",
     "configobj",
-    "read-roi",
     "scipy>=0.18",
     "toolz>=0.7.3",
     "tensorflow>=2.1.0",
@@ -135,7 +134,6 @@ setup(
             "cellfinder_xml_scale = cellfinder.utils.xml_scale:main",
             "cellfinder_cell_standard = "
             "cellfinder.standard_space.cells_to_standard_space:main",
-            "cellfinder_roi_transform = cellfinder.utils.roi_transform:main",
             "cellfinder_gen_region_vol = "
             "cellfinder.utils.generate_region_volume:main",
             "cellfinder_cells_to_brainrender = "
