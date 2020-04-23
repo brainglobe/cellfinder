@@ -12,7 +12,7 @@ from imlib.IO.cells import get_cells
 from imlib.pandas.misc import sanitise_df
 from imlib.image.metadata import define_pixel_sizes
 from imlib.general.config import get_config_obj
-from imlib.IO.structures import load_structures_as_df
+from neuro.atlas_tools.structures import load_structures_as_df
 from imlib.source.source_files import get_structures_path
 from imlib.anatomy.structures.structures_tree import (
     atlas_value_to_structure_id,

@@ -7,7 +7,7 @@ from imlib.general.numerical import check_positive_float, check_positive_int
 
 from imlib.IO.cells import cells_to_xml
 from imlib.source.source_files import get_structures_path
-from imlib.IO.structures import load_structures_as_df
+from neuro.atlas_tools.structures import load_structures_as_df
 from neuro.atlas_tools.misc import get_atlas_pixel_sizes
 
 from cellfinder.tools.prep import prep_atlas_conf
