@@ -12,15 +12,15 @@ from imlib.IO.cells import get_cells
 from imlib.pandas.misc import sanitise_df
 from imlib.image.metadata import define_pixel_sizes
 from imlib.general.config import get_config_obj
-from neuro.atlas_tools.structures import load_structures_as_df
 from imlib.source.source_files import get_structures_path
-from imlib.anatomy.structures.structures_tree import (
+
+from neuro.structures.structures_tree import (
     atlas_value_to_structure_id,
     CellCountMissingCellsException,
     UnknownAtlasValue,
 )
-
 from neuro.atlas_tools.misc import get_atlas_pixel_sizes
+from neuro.structures.IO import load_structures_as_df
 
 import cellfinder.tools.parser as cellfinder_parse
 from cellfinder.tools.prep import prep_atlas_conf, Paths
