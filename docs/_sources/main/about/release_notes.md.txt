@@ -1,5 +1,8 @@
 # Releases 
 
+## Version 0.3.10 (2020-04-24)
+Update depedencies
+
 ## Version 0.3.10 (2020-04-16)
 Minor refactoring
 
