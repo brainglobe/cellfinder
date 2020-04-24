@@ -27,11 +27,11 @@ requirements = [
     "tensorflow>=2.1.0",
     "napari>=0.2.12",
     "slurmio>=0.0.4",
-    "brainio>=0.0.11",
+    "brainio>=0.0.13",
     "fancylog>=0.0.7",
     "micrometa>=0.0.11",
-    "imlib>=0.0.14",
-    "neuro>=0.0.6",
+    "imlib>=0.0.21",
+    "neuro>=0.0.10",
     "amap>=0.0.13",
 ]
 
