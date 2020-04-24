@@ -32,7 +32,7 @@ requirements = [
     "micrometa>=0.0.11",
     "imlib>=0.0.21",
     "neuro>=0.0.10",
-    "amap>=0.0.13",
+    "amap>=0.0.18",
 ]
 
 
