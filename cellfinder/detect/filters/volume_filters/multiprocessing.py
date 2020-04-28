@@ -1,3 +1,8 @@
+import os
+import logging
+
+from tqdm import tqdm
+
 from imlib.cells.cells import Cell
 from imlib.IO.cells import save_cells
 from tifffile import tifffile
@@ -11,8 +16,6 @@ from cellfinder.detect.filters.volume_filters.structure_splitting import (
     StructureSplitException,
 )
 from cellfinder.detect.filters.setup_filters import setup
-from tqdm import tqdm
-
 
 class Mp3DFilter(object):
     def __init__(
