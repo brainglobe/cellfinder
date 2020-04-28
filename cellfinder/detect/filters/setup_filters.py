@@ -42,4 +42,17 @@ def setup(
     start_z = z_offset + int(math.floor(ball_z_size / 2))
     cell_detector = CellDetector(layer_width, layer_height, start_z=start_z)
 
-    return clipping_value, thrsh_val, ball_filter, cell_detector
+    return ball_filter, cell_detector
+
+
+def setup_tile_filtering(
+    first_img_path
+):
+    plane = tifffile.imread(first_img_path)
+    plane = plane.T
+
+    max_value = get_max_value(plane)
+    clipping_value = max_value - 2
+    thrsh_val = max_value - 1
+
+    return clipping_value, thrsh_val
