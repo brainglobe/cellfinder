@@ -1,6 +1,8 @@
-import math
 import os
+import math
 import logging
+
+from tqdm import tqdm
 
 from imlib.cells.cells import Cell
 from imlib.IO.cells import save_cells
@@ -14,18 +16,18 @@ from cellfinder.detect.filters.volume_filters.structure_splitting import (
     split_cells,
     StructureSplitException,
 )
+from cellfinder.detect.filters.setup_filters import setup
 
 
 class Mp3DFilter(object):
     def __init__(
         self,
         data_queue,
-        simple_ball_filter,
-        cell_detector,
         soma_diameter,
         output_folder,
         soma_size_spread_factor=1.4,
-        progress_bar=None,
+        setup_params=None,
+        planes_paths_range=None,
         save_planes=False,
         plane_directory=None,
         start_plane=0,
@@ -35,12 +37,11 @@ class Mp3DFilter(object):
         save_csv=False,
     ):
         self.data_queue = data_queue
-        self.simple_ball_filter = simple_ball_filter
-        self.cell_detector = cell_detector
         self.soma_diameter = soma_diameter
         self.output_folder = output_folder
         self.soma_size_spread_factor = soma_size_spread_factor
-        self.progress_bar = progress_bar
+        self.progress_bar = None
+        self.planes_paths_range = planes_paths_range
         self.z = start_plane
         self.save_planes = save_planes
         self.plane_directory = plane_directory
@@ -52,7 +53,26 @@ class Mp3DFilter(object):
         self.output_file = "cells"
         self.save_csv = save_csv
 
+        self.clipping_val = None
+        self.threshold_value = None
+        self.ball_filter = None
+        self.cell_detector = None
+        self.setup_params = setup_params
+
     def process(self):
+        self.progress_bar = tqdm(
+            total=len(self.planes_paths_range), desc="Processing planes"
+        )
+
+        self.ball_filter, self.cell_detector = setup(
+            self.setup_params[0],
+            self.setup_params[1],
+            self.setup_params[2],
+            self.setup_params[3],
+            ball_overlap_fraction=self.setup_params[4],
+            z_offset=self.setup_params[5],
+        )
+
         while True:
             plane_id, plane, mask = self.data_queue.get()
             logging.debug(f"Plane {plane_id} received for 3D filtering")
@@ -64,13 +84,13 @@ class Mp3DFilter(object):
                 break
 
             logging.debug(f"Adding plane {plane_id} for 3D filtering")
-            self.simple_ball_filter.append(plane, mask)
+            self.ball_filter.append(plane, mask)
 
-            if self.simple_ball_filter.ready:
+            if self.ball_filter.ready:
                 logging.debug(f"Ball filtering plane {plane_id}")
-                self.simple_ball_filter.walk()
+                self.ball_filter.walk()
 
-                middle_plane = self.simple_ball_filter.get_middle_plane()
+                middle_plane = self.ball_filter.get_middle_plane()
                 if self.save_planes:
                     self.save_plane(middle_plane)
 
@@ -78,8 +98,6 @@ class Mp3DFilter(object):
                 self.cell_detector.process(middle_plane)
 
                 logging.debug(f"Structures done for plane {plane_id}")
-
-            else:
                 logging.debug(
                     f"Skipping plane {plane_id} for 3D filter"
                     " (out of bounds)"
