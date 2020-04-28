@@ -14,13 +14,13 @@ from cellfinder.detect.filters.volume_filters.multiprocessing import Mp3DFilter
 
 
 def calculate_parameters_in_pixels(
-        x_pixel_um,
-        y_pixel_um,
-        z_pixel_um,
-        soma_diameter_um,
-        max_cluster_size_um3,
-        ball_xy_size_um,
-        ball_z_size_um,
+    x_pixel_um,
+    y_pixel_um,
+    z_pixel_um,
+    soma_diameter_um,
+    max_cluster_size_um3,
+    ball_xy_size_um,
+    ball_z_size_um,
 ):
     """
     Convert the command-line arguments from real (um) units to pixels
@@ -70,7 +70,7 @@ def main(args):
 
     if args.end_plane == -1:
         args.end_plane = len(img_paths)
-    planes_paths_range = img_paths[args.start_plane: args.end_plane]
+    planes_paths_range = img_paths[args.start_plane : args.end_plane]
 
     workers_queue = MultiprocessingQueue(maxsize=n_processes)
     # WARNING: needs to be AT LEAST ball_z_size
@@ -79,12 +79,14 @@ def main(args):
         # place holder for the queue to have the right size on first run
         workers_queue.put(None)
 
-    setup_params = [img_paths[0],
-                    soma_diameter,
-                    ball_xy_size,
-                    ball_z_size,
-                    args.ball_overlap_fraction,
-                    args.start_plane]
+    setup_params = [
+        img_paths[0],
+        soma_diameter,
+        ball_xy_size,
+        ball_z_size,
+        args.ball_overlap_fraction,
+        args.start_plane,
+    ]
 
     mp_3d_filter = Mp3DFilter(
         mp_3d_filter_queue,
@@ -99,7 +101,8 @@ def main(args):
         max_cluster_size=max_cluster_size,
         outlier_keep=args.outlier_keep,
         artifact_keep=args.artifact_keep,
-        save_csv=args.save_csv)
+        save_csv=args.save_csv,
+    )
 
     # fake = Mp3DFilter_fake(setup_params
     #                        )

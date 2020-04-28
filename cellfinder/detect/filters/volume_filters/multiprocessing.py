@@ -17,22 +17,23 @@ from cellfinder.detect.filters.volume_filters.structure_splitting import (
 )
 from cellfinder.detect.filters.setup_filters import setup
 
+
 class Mp3DFilter(object):
     def __init__(
-            self,
-            data_queue,
-            soma_diameter,
-            output_folder,
-            soma_size_spread_factor=1.4,
-            setup_params=None,
-            planes_paths_range=None,
-            save_planes=False,
-            plane_directory=None,
-            start_plane=0,
-            max_cluster_size=5000,
-            outlier_keep=False,
-            artifact_keep=True,
-            save_csv=False,
+        self,
+        data_queue,
+        soma_diameter,
+        output_folder,
+        soma_size_spread_factor=1.4,
+        setup_params=None,
+        planes_paths_range=None,
+        save_planes=False,
+        plane_directory=None,
+        start_plane=0,
+        max_cluster_size=5000,
+        outlier_keep=False,
+        artifact_keep=True,
+        save_csv=False,
     ):
         self.data_queue = data_queue
         self.soma_diameter = soma_diameter
@@ -119,8 +120,8 @@ class Mp3DFilter(object):
 
         cells = []
         for (
-                cell_id,
-                cell_points,
+            cell_id,
+            cell_points,
         ) in self.cell_detector.get_coords_list().items():
             cell_volume = len(cell_points)
 

@@ -45,9 +45,7 @@ def setup(
     return ball_filter, cell_detector
 
 
-def setup_tile_filtering(
-    first_img_path
-):
+def setup_tile_filtering(first_img_path):
     plane = tifffile.imread(first_img_path)
     plane = plane.T
 
