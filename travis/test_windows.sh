@@ -1,5 +1,3 @@
-#pip install --upgrade pip
-#pip install setuptools --upgrade
 pip install -e .[dev]
 black .\ -l 79 --target-version py37 --check
 cellfinder -h

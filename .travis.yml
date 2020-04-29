@@ -28,7 +28,7 @@ jobs:
       before_install:
         - source travis/before_install_nix_win.sh
       install:
-        - source travis/install_nix_win.sh
+        - source travis/install_windows.sh
         - conda create -n test-environment python=3.6
         - source activate test-environment
       script: travis_wait 40 bash travis/test_windows.sh
@@ -38,7 +38,7 @@ jobs:
       before_install:
         - source travis/before_install_nix_win.sh
       install:
-        - source travis/install_nix_win.sh
+        - source travis/install_windows.sh
         - conda create -n test-environment python=3.7
         - source activate test-environment
       script: travis_wait 40 bash travis/test_windows.sh
