@@ -400,17 +400,12 @@ class CalcWhatToRun:
 def prep_registration(args, sample_name="amap"):
     logging.info("Checking whether the atlas exists")
     _, atlas_files_exist = check_atlas_install()
-    atlas_dir = os.path.join(args.install_path, "atlas")
+    atlas_dir = args.install_path / "atlas"
     if not atlas_files_exist:
-        if args.download_path is None:
-            atlas_download_path = os.path.join(temp_dir_path, "atlas.tar.gz")
-        else:
-            atlas_download_path = os.path.join(
-                args.download_path, "atlas.tar.gz"
-            )
-        if not args.no_atlas:
-            logging.warning("Atlas does not exist, downloading.")
-            atlas_download.main(args.atlas, atlas_dir, atlas_download_path)
+        logging.warning("Atlas does not exist, downloading.")
+        atlas_download.atlas_download(
+            args.atlas, atlas_dir, args.download_path
+        )
         amend_cfg(new_atlas_folder=atlas_dir, atlas=args.atlas)
 
     if args.registration_config is None:
