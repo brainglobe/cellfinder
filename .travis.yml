@@ -27,8 +27,8 @@ jobs:
       os: windows
       before_install:
         - choco install python --version 3.6.0
+        - python -m pip install --upgrade pip
       env: PATH=/c/Python36:/c/Python36/Scripts:$PATH
-      install: pip install --upgrade pip
       script: travis_wait 40 bash travis/install_test_windows.sh
     - stage: deploy
       services:
