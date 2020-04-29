@@ -5,7 +5,7 @@
 * Windows bug fix thanks to [@EmanPaoli](https://github.com/EmanPaoli)
 
 ### Developers
-* Update dependencies
+* Update dependencies & refactor usage of amap api
 
 ## Version 0.3.11 (2020-04-24)
 Update dependencies
