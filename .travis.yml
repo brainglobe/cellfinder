@@ -54,6 +54,14 @@ jobs:
         - pip install twine
         - ls pypi_upload/*
         - twine upload pypi_upload/* --skip-existing
+    - stage: deploy
+      language: shell # 'language: python' is an error on Travis CI Windows
+      os: windows
+      script:
+        - python setup.py bdist_wheel
+      after_success:
+        - pip install twine
+        - twine upload dist\* --skip-existing
 
 notifications:
   email:
