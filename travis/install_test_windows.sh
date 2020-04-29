@@ -1,6 +1,6 @@
-pip3 install --upgrade pip
-pip3 install setuptools
-pip3 install -e .[dev]
+pip install --upgrade pip
+pip install setuptools
+pip install -e .[dev]
 conda info -a
 black .\ -l 79 --target-version py37 --check
 cellfinder -h
