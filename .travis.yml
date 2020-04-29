@@ -11,12 +11,14 @@ stages:
 jobs:
   include:
     - stage: test
+      name: "Ubuntu bionic python 3.6"
       language: python
       os: linux
       dist: bionic
       python: 3.6
       script: travis_wait 40 bash travis/install_test_linux.sh
     - stage: test
+      name: "Ubuntu bionic python 3.7"
       language: python
       os: linux
       dist: bionic
