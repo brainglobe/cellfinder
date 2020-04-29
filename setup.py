@@ -151,6 +151,7 @@ setup(
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Operating System :: POSIX :: Linux",
+        "Operating System :: Microsoft :: Windows :: Windows 10",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
