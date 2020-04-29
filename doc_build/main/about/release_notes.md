@@ -1,7 +1,11 @@
 # Releases 
 
 ## Version 0.3.12 (2020-04-29)
-Update dependencies
+### Main updates
+* Windows bug fix thanks to [@EmanPaoli](https://github.com/EmanPaoli)
+
+### Developers
+* Update dependencies
 
 ## Version 0.3.11 (2020-04-24)
 Update dependencies

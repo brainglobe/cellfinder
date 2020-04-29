@@ -30,9 +30,9 @@ requirements = [
     "brainio>=0.0.13",
     "fancylog>=0.0.7",
     "micrometa>=0.0.11",
-    "imlib>=0.0.21",
-    "neuro>=0.0.9",
-    "amap>=0.0.18",
+    "imlib>=0.0.22",
+    "neuro>=0.0.11",
+    "amap>=0.0.19",
 ]
 
 
