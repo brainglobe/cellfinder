@@ -1,5 +1,3 @@
-language: python
-
 after_success:
   - pip install coveralls
   - coveralls
@@ -13,11 +11,13 @@ stages:
 jobs:
   include:
     - stage: test
+      language: python
       os: linux
       dist: bionic
       python: 3.6
       script: travis_wait 40 bash travis/install_test_linux.sh
     - stage: test
+      language: python
       os: linux
       dist: bionic
       python: 3.7
