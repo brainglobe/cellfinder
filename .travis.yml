@@ -23,6 +23,7 @@ jobs:
       python: 3.7
       script: travis_wait 40 bash travis/install_test_linux.sh
     - stage: test
+      name: "Windows python 3.6"
       language: shell # 'language: python' is an error on Travis CI Windows
       os: windows
       before_install:
@@ -33,6 +34,7 @@ jobs:
         - source activate test-environment
       script: travis_wait 40 bash travis/test_windows.sh
     - stage: test
+      name: "Windows python 3.7"
       language: shell # 'language: python' is an error on Travis CI Windows
       os: windows
       before_install:
