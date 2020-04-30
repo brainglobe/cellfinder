@@ -75,7 +75,7 @@ jobs:
       before_install:
         - source travis/install_windows.sh
       script:
-        - source travis/build_linux_wheels.sh
+        - source travis/build_windows_wheels.sh
       after_success:
         - pip install twine
         - twine upload dist/* --skip-existing
