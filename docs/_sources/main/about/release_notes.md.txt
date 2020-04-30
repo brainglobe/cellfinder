@@ -1,6 +1,6 @@
 # Releases 
 
-## Version 0.3.12 (2020-04-29)
+## Version 0.3.12 (TBC)
 ### Main updates
 * Windows bug fix thanks to [@EmanPaoli](https://github.com/EmanPaoli)
 

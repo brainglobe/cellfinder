@@ -1,5 +1,3 @@
-language: python
-
 after_success:
   - pip install coveralls
   - coveralls
@@ -13,20 +11,55 @@ stages:
 jobs:
   include:
     - stage: test
+      name: "Ubuntu Bionic python 3.6"
+      language: python
       os: linux
       dist: bionic
       python: 3.6
       script: travis_wait 40 bash travis/install_test_linux.sh
     - stage: test
+      name: "Ubuntu Bionic python 3.7"
+      language: python
       os: linux
       dist: bionic
       python: 3.7
       script: travis_wait 40 bash travis/install_test_linux.sh
+    - stage: test
+      name: "Windows Python 3.6"
+      language: shell
+      env: TRAVIS_PYTHON_VERSION=3.6
+      os: windows
+      before_install:
+        - source travis/install_windows.sh
+      script: travis_wait 40 bash travis/test_windows.sh
+    - stage: test
+      name: "Windows Python 3.7"
+      language: shell
+      env: TRAVIS_PYTHON_VERSION=3.7
+      os: windows
+      before_install:
+        - source travis/install_windows.sh
+      script: travis_wait 40 bash travis/test_windows.sh
+    - stage: test
+      name: "macOS Python 3.6"
+      os: osx
+      osx_image: xcode9.2   #macOS 10.12
+      language: shell
+      env: TRAVIS_PYTHON_VERSION=3.6
+      script: travis_wait 40 bash travis/install_test_osx.sh
+    - stage: test
+      name: "macOS Python 3.7"
+      os: osx
+      osx_image: xcode9.2   #macOS 10.12
+      language: shell
+      env: TRAVIS_PYTHON_VERSION=3.7
+      script: travis_wait 40 bash travis/install_test_osx.sh
     - stage: deploy
+      name: "Deploy Linux (py36 & py37)"
+      language: python
       services:
         - docker
       script:
-        - pip install twine
         - mkdir pypi_upload
         - python setup.py sdist
         - cp dist/* pypi_upload/
@@ -36,7 +69,44 @@ jobs:
         - pip install twine
         - ls pypi_upload/*
         - twine upload pypi_upload/* --skip-existing
-
+    - stage: deploy
+      name: "Deploy Windows (py36)"
+      language: shell
+      env: TRAVIS_PYTHON_VERSION=3.6
+      os: windows
+      before_install:
+        - source travis/install_windows.sh
+      script:
+        - source travis/build_windows_wheels.sh
+      after_success:
+        - pip install twine
+        - twine upload dist/* --skip-existing
+    - stage: deploy
+      name: "Deploy Windows (py37)"
+      language: shell
+      env: TRAVIS_PYTHON_VERSION=3.7
+      os: windows
+      before_install:
+        - source travis/install_windows.sh
+      script:
+        - source travis/build_windows_wheels.sh
+      after_success:
+        - pip install twine
+        - twine upload dist/* --skip-existing
+    - stage: deploy
+      name: "Deploy macOS (py36)"
+      language: shell
+      env: TRAVIS_PYTHON_VERSION=3.6
+      os: osx
+      osx_image: xcode9.2   #macOS 10.12
+      script: bash travis/install_build_wheels_osx.sh
+    - stage: deploy
+      name: "Deploy macOS (py37)"
+      language: shell
+      env: TRAVIS_PYTHON_VERSION=3.7
+      os: osx
+      osx_image: xcode9.2   #macOS 10.12
+      script: bash travis/install_build_wheels_osx.sh
 notifications:
   email:
     recipients:

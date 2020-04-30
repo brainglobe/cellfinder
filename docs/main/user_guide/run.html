@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Usage &mdash; Cellfinder  documentation</title>
+  <title>&lt;no title&gt; &mdash; Cellfinder  documentation</title>
   
 
   
@@ -21,10 +21,10 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
-        <script type="text/javascript" src="../../_static/jquery.js"></script>
-        <script type="text/javascript" src="../../_static/underscore.js"></script>
-        <script type="text/javascript" src="../../_static/doctools.js"></script>
-        <script type="text/javascript" src="../../_static/language_data.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/language_data.js"></script>
     
     <script type="text/javascript" src="../../_static/js/theme.js"></script>
 
@@ -35,8 +35,8 @@
   <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="Training" href="training.html" />
-    <link rel="prev" title="Installation" href="install.html" /> 
+    <link rel="next" title="&lt;no title&gt;" href="training.html" />
+    <link rel="prev" title="&lt;no title&gt;" href="install.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -80,41 +80,10 @@
               
             
             
-              <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Usage</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#arguments">Arguments</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#mandatory">Mandatory</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#the-following-options-can-also-be-used">The following options can also be used:</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#further-help">Further help</a></li>
+              <!-- Local TOC -->
+              <div class="local-toc"><ul class="simple">
 </ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="training.html">Training</a></li>
-<li class="toctree-l1"><a class="reference internal" href="troubleshooting.html">Troubleshooting</a></li>
-</ul>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="tools/cell_view_2D.html">Two dimensional cell viewer</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tools/cell_view_3D.html">Three dimensional viewer</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tools/cells_standard_space.html">Transforming cells into standard space</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tools/count_summary.html">Organise cells into atlas regions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tools/cube_extract.html">Cube extraction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tools/region_summary.html">Summarise cell counts from multiple brains</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tools/xml_crop.html">XML file cropping</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tools/xml_scale.html">XML file rescaling</a></li>
-</ul>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../about/release_notes.html">Releases</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../about/roadmap.html">Future Plans</a></li>
-</ul>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../dev/CONTRIBUTING.html">Contributing</a></li>
-</ul>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="misc/hpc.html">Cellfinder installation in a cluster computing environment.</a></li>
-</ul>
-
+</div>
             
           
         </div>
@@ -158,7 +127,7 @@
     
       <li><a href="../../index.html">Docs</a> &raquo;</li>
         
-      <li>Usage</li>
+      <li>&lt;no title&gt;</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -175,214 +144,208 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="usage">
-<h1>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h1>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>    cellfinder -s signal_channel_images  optional_signal_channel_images -b background_channel_images -o /path/to/output_directory -x <span class="m">2</span> -y <span class="m">2</span> -z <span class="m">5</span>
-</pre></div>
-</div>
-<div class="section" id="arguments">
-<h2>Arguments<a class="headerlink" href="#arguments" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="mandatory">
-<h3>Mandatory<a class="headerlink" href="#mandatory" title="Permalink to this headline">¶</a></h3>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">-s</span></code> or <code class="docutils literal notranslate"><span class="pre">--signal-planes-paths</span></code> Path to the directory of the signal files.
+  <p># Usage</p>
+<dl class="simple">
+<dt><a href="#id1"><span class="problematic" id="id2">``</span></a>` bash</dt><dd><p>cellfinder -s signal_channel_images  optional_signal_channel_images -b background_channel_images -o /path/to/output_directory -x 2 -y 2 -z 5</p>
+</dd>
+</dl>
+<p><a href="#id3"><span class="problematic" id="id4">``</span></a><a href="#id5"><span class="problematic" id="id6">`</span></a></p>
+<p>### Arguments
+#### Mandatory
+* <cite>-s</cite> or <cite>–signal-planes-paths</cite> Path to the directory of the signal files.
 Can also be a text file pointing to the files. <strong>There can be as many signal
-channels as you like, and each will be treated independently</strong>.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">b</span></code> or <code class="docutils literal notranslate"><span class="pre">--signal-planes-path</span></code> Path to the directory of the background files.
-Can also be a text file pointing to the files.  <strong>This background channel will
-be used for all signal channels</strong>.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">-o</span></code> or <code class="docutils literal notranslate"><span class="pre">--output-dir</span></code> Output directory for all intermediate and final
-results</p></li>
-</ul>
-<p><strong>Either</strong></p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">-x</span></code> or <code class="docutils literal notranslate"><span class="pre">--x-pixel-um</span></code> Pixel spacing of the data in the first dimension,
-specified in um.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">-y</span></code> or <code class="docutils literal notranslate"><span class="pre">--y-pixel-um</span></code> Pixel spacing of the data in the second dimension,
-specified in um.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">-z</span></code> or <code class="docutils literal notranslate"><span class="pre">--z-pixel-um</span></code> Pixel spacing of the data in the third dimension,
-specified in um.</p></li>
-</ul>
-<p><strong>Or</strong></p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">--metadata</span></code> Metadata file containing pixel sizes (any format supported
-by <a class="reference external" href="https://github.com/adamltyson/micrometa">micrometa</a> can be used).
-If both pixel sizes and metadata are provided, the command line arguments
-will take priority.</p></li>
-</ul>
-</div>
-<div class="section" id="the-following-options-can-also-be-used">
-<h3>The following options can also be used:<a class="headerlink" href="#the-following-options-can-also-be-used" title="Permalink to this headline">¶</a></h3>
-<p><strong>Additional options</strong></p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">--register</span></code> Register the background channel to the Allen brain atlas</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--summarise</span></code> Generate summary csv files showing how many cells are in
-each brain area (will also run registration if not specified.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--signal-channel-ids</span></code> Channel ID numbers, in the same order as</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--figures</span></code> Generate figures</p></li>
-</ul>
+channels as you like, and each will be treated independently</strong>.
+* <cite>b</cite> or <cite>–signal-planes-path</cite> Path to the directory of the background files.
+Can also be a text file pointing to the files.  <a href="#id7"><span class="problematic" id="id8">**</span></a>This background channel will</p>
+<blockquote>
+<div><p>be used for all signal channels**.
+* <cite>-o</cite> or <cite>–output-dir</cite> Output directory for all intermediate and final</p>
+</div></blockquote>
+<p>results</p>
+<p><strong>Either</strong>
+* <cite>-x</cite> or <cite>–x-pixel-um</cite> Pixel spacing of the data in the first dimension,
+specified in um.
+* <cite>-y</cite> or <cite>–y-pixel-um</cite> Pixel spacing of the data in the second dimension,
+specified in um.
+* <cite>-z</cite> or <cite>–z-pixel-um</cite> Pixel spacing of the data in the third dimension,
+specified in um.</p>
+<p><strong>Or</strong>
+* <cite>–metadata</cite> Metadata file containing pixel sizes (any format supported
+by [micrometa](<a class="reference external" href="https://github.com/adamltyson/micrometa">https://github.com/adamltyson/micrometa</a>) can be used).</p>
+<blockquote>
+<div><p>If both pixel sizes and metadata are provided, the command line arguments
+will take priority.</p>
+</div></blockquote>
+<p>#### The following options can also be used:</p>
+<p><strong>Additional options</strong>
+* <cite>–register</cite> Register the background channel to the Allen brain atlas
+* <cite>–summarise</cite> Generate summary csv files showing how many cells are in
+each brain area (will also run registration if not specified.
+* <cite>–signal-channel-ids</cite> Channel ID numbers, in the same order as
+* <cite>–figures</cite> Generate figures</p>
 <p><strong>Only run parts of cellfinder</strong></p>
 <p>If for some reason you don’t want some parts of cellfinder to run, you can use
 the following options. If a part of the pipeline is required by another
-part it will be run (i.e. <code class="docutils literal notranslate"><span class="pre">--no-detection</span></code> won’t do anything unless
-<code class="docutils literal notranslate"><span class="pre">--no-classification</span></code> is also used). Cellfinder will attempt to work out
+part it will be run (i.e. <cite>–no-detection</cite> won’t do anything unless
+<cite>–no-classification</cite> is also used). Cellfinder will attempt to work out
 what parts of the pipeline have allready been run (in a given output
 directory) and not run them again if appropriate.</p>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">--no-detection</span></code> Don’t run cell candidate detection</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--no-classification</span></code> Don’t run cell classification</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--no-standard_space</span></code> Dont convert cell positions to standard space.
-Otherwise will run automatically if registration and classification has run.</p></li>
+<li><p><cite>–no-detection</cite> Don’t run cell candidate detection</p></li>
+<li><p><cite>–no-classification</cite> Don’t run cell classification</p></li>
+<li><p><cite>–no-standard_space</cite> Dont convert cell positions to standard space.</p></li>
 </ul>
+<p>Otherwise will run automatically if registration and classification has run.</p>
 <p><strong>Figures options</strong></p>
 <p>Figures cannot yet be customised much, but the current options are here:</p>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">--no-heatmap</span></code> Don’t generate a heatmap of cell locations</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--heatmap-bin</span></code> Heatmap bin size (um of each edge of histogram cube)</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--heatmap-smoothing</span></code> Gaussian smoothing sigma, in um.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--no-mask-figs</span></code> Don’t mask the figures (removing any areas outside the
-brain, from e.g. smoothing)</p></li>
+<li><p><cite>–no-heatmap</cite> Don’t generate a heatmap of cell locations</p></li>
+<li><p><cite>–heatmap-bin</cite> Heatmap bin size (um of each edge of histogram cube)</p></li>
+<li><p><cite>–heatmap-smoothing</cite> Gaussian smoothing sigma, in um.</p></li>
+<li><p><cite>–no-mask-figs</cite> Don’t mask the figures (removing any areas outside the</p></li>
 </ul>
-<p><strong>Performance/debugging</strong></p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">--debug</span></code> Increase verbosity of statements printed to console and save all
-intermediate files.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--n-free-cpus</span></code> The number of CPU cores on the machine to leave
-unused by the program to spare resources.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--max-ram</span></code> Maximum amount of RAM to use (in GB) - <strong>not currently fully
-implemented for all parts of cellfinder</strong></p></li>
-</ul>
-<p>Useful for testing or if you know your cells are only in a specific region</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">--start-plane</span></code> The first plane to process in the Z dimension</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--end-plane</span></code> The last plane to process in the Z dimension</p></li>
-</ul>
+<p>brain, from e.g. smoothing)</p>
+<p><strong>Performance/debugging</strong>
+* <cite>–debug</cite> Increase verbosity of statements printed to console and save all
+intermediate files.
+* <cite>–n-free-cpus</cite> The number of CPU cores on the machine to leave
+unused by the program to spare resources.
+* <cite>–max-ram</cite> Maximum amount of RAM to use (in GB) - <strong>not currently fully
+implemented for all parts of cellfinder</strong></p>
+<p>Useful for testing or if you know your cells are only in a specific region
+* <cite>–start-plane</cite> The first plane to process in the Z dimension
+* <cite>–end-plane</cite> The last plane to process in the Z dimension</p>
 <p><strong>Cell candidate detection</strong></p>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">--save-planes</span></code> Whether to save the individual planes after
-processing and thresholding. Useful for debugging.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--outlier-keep</span></code> Dont remove putative cells that fall outside initial
-clusters</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--artifact-keep</span></code> Save artifacts into the initial xml file</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--max-cluster-size</span></code> Largest putative cell cluster (in cubic um) where
-splitting should be attempted.  <strong>Default: 100000</strong></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--soma-diameter</span></code> The expected soma size in um in the x/y dimensions.
-<strong>Default: 16</strong></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--ball-xy-size</span></code> The size in um of the ball used
-for the morphological filter in the x/y dimensions. <strong>Default: 6</strong></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--ball-z-size</span></code> The size in um of the ball used
-for the morphological filter in the z dimension.  <strong>Default: 15</strong></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--ball-overlap-fraction</span></code> The fraction of the ball that has to cover
-thresholded pixels for the centre pixel to be considered a nucleus pixel.
-<strong>Default: 0.6</strong></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--log-sigma-size</span></code> The filter size used in the Laplacian of Gaussian filter
-to enhance the cell intensities. Given as a fraction of the soma-diameter.
-<strong>Default: 0.2</strong></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--threshold</span></code> The cell threshold, in multiples of the standard deviation
-above the mean. <strong>Default: 10</strong></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--soma-spread-factor</span></code> Soma size spread factor (for splitting up
-cell clusters). <strong>Default: 1.4</strong></p></li>
+<li><p><cite>–save-planes</cite> Whether to save the individual planes after</p></li>
 </ul>
+<p>processing and thresholding. Useful for debugging.
+* <cite>–outlier-keep</cite> Dont remove putative cells that fall outside initial
+clusters
+* <cite>–artifact-keep</cite> Save artifacts into the initial xml file
+* <cite>–max-cluster-size</cite> Largest putative cell cluster (in cubic um) where
+splitting should be attempted.  <strong>Default: 100000</strong>
+* <cite>–soma-diameter</cite> The expected soma size in um in the x/y dimensions.</p>
+<blockquote>
+<div><p><strong>Default: 16</strong></p>
+</div></blockquote>
+<ul class="simple">
+<li><p><cite>–ball-xy-size</cite> The size in um of the ball used</p></li>
+</ul>
+<p>for the morphological filter in the x/y dimensions. <strong>Default: 6</strong>
+* <cite>–ball-z-size</cite> The size in um of the ball used
+for the morphological filter in the z dimension.  <strong>Default: 15</strong>
+* <cite>–ball-overlap-fraction</cite> The fraction of the ball that has to cover
+thresholded pixels for the centre pixel to be considered a nucleus pixel.</p>
+<blockquote>
+<div><p><strong>Default: 0.6</strong></p>
+</div></blockquote>
+<ul class="simple">
+<li><p><cite>–log-sigma-size</cite> The filter size used in the Laplacian of Gaussian filter</p></li>
+</ul>
+<p>to enhance the cell intensities. Given as a fraction of the soma-diameter.
+<strong>Default: 0.2</strong>
+* <cite>–threshold</cite> The cell threshold, in multiples of the standard deviation
+above the mean. <strong>Default: 10</strong>
+* <cite>–soma-spread-factor</cite> Soma size spread factor (for splitting up
+cell clusters). <strong>Default: 1.4</strong></p>
 <p><strong>Cell candidate classification</strong></p>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">--trained-model</span></code> To use your own network (not the one
-supplied with cellfinder) specify the model file.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--model-weights</span></code> To use pretrained model weights. Ensure that this model
-matches the <code class="docutils literal notranslate"><span class="pre">--network-depth</span></code> parameter.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--network-depth</span></code>. Resnet depth (based on
-<a class="reference external" href="https://arxiv.org/abs/1512.03385">He et al. (2015)</a> <strong>Default: 50</strong></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--batch-size</span></code> Batch size for classification. Can be adjusted depending on
-GPU memory. <strong>Default: 32</strong></p></li>
+<li><p><cite>–trained-model</cite> To use your own network (not the one</p></li>
 </ul>
-<p><em>You shouldn’t need to change these:</em></p>
+<p>supplied with cellfinder) specify the model file.
+* <cite>–model-weights</cite> To use pretrained model weights. Ensure that this model
+matches the <cite>–network-depth</cite> parameter.
+* <cite>–network-depth</cite>. Resnet depth (based on
+[He et al. (2015)](<a class="reference external" href="https://arxiv.org/abs/1512.03385">https://arxiv.org/abs/1512.03385</a>) <strong>Default: 50</strong>
+* <cite>–batch-size</cite> Batch size for classification. Can be adjusted depending on
+GPU memory. <strong>Default: 32</strong></p>
+<p><em>You shouldn’t need to change these:</em>
+* <cite>–x-pixel-um-network</cite> The pixel size (in microns, in the first dimension)
+that the machine learning network was trained on.  Set this to adjust the
+pixel sizes of the extracted cubes. <strong>Default 1</strong>
+* <cite>–y-pixel-um-network</cite> The pixel size (in microns, in the second dimension)
+that the machine learning network was trained on.  Set this to adjust the
+pixel sizes of the extracted cubes. <strong>Default 1</strong>
+* <cite>–z-pixel-um-network</cite> The pixel size (in microns, in the third dimension)
+that the machine learning network was trained on.  Set this to adjust the
+pixel sizes of the extracted cubes. <strong>Default 5</strong>
+* <cite>–cube-width</cite> The width of the cubes to extract in pixels (must be even).
+<strong>Default 50</strong>
+* <cite>–cube-height</cite> The height of the cubes to extract in pixels (must be even).
+<strong>Default 50</strong>
+* <cite>–cube-depth</cite> The depth (z)) of the cubes to extract in pixels</p>
+<blockquote>
+<div><p>(must be even). <strong>Default 20</strong></p>
+</div></blockquote>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">--x-pixel-um-network</span></code> The pixel size (in microns, in the first dimension)
-that the machine learning network was trained on.  Set this to adjust the
-pixel sizes of the extracted cubes. <strong>Default 1</strong></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--y-pixel-um-network</span></code> The pixel size (in microns, in the second dimension)
-that the machine learning network was trained on.  Set this to adjust the
-pixel sizes of the extracted cubes. <strong>Default 1</strong></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--z-pixel-um-network</span></code> The pixel size (in microns, in the third dimension)
-that the machine learning network was trained on.  Set this to adjust the
-pixel sizes of the extracted cubes. <strong>Default 5</strong></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--cube-width</span></code> The width of the cubes to extract in pixels (must be even).
-<strong>Default 50</strong></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--cube-height</span></code> The height of the cubes to extract in pixels (must be even).
-<strong>Default 50</strong></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--cube-depth</span></code> The depth (z)) of the cubes to extract in pixels
-(must be even). <strong>Default 20</strong></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--save-empty-cubes</span></code> If a cube cannot be extracted (e.g. to close to the
-edge of the image), save an empty cube instead. Useful to keep track of all
-cell candidates.</p></li>
+<li><p><cite>–save-empty-cubes</cite> If a cube cannot be extracted (e.g. to close to the</p></li>
 </ul>
-<p><strong>Registration to atlas</strong></p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">--registration-config</span></code> To supply your own, custom registration
-configuration file.</p></li>
+<p>edge of the image), save an empty cube instead. Useful to keep track of all
+cell candidates.</p>
+<dl>
+<dt><strong>Registration to atlas</strong></dt><dd><ul class="simple">
+<li><p><cite>–registration-config</cite> To supply your own, custom registration</p></li>
 </ul>
+<blockquote>
+<div><p>configuration file.</p>
+</div></blockquote>
 <p>If the supplied data does not match the NifTI standard
 orientation (origin is the most ventral, posterior, left voxel),
-then the atlas can be flipped to match the input data:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">--flip-x</span></code> Flip the sample brain along the first dimension for
-atlas registration</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--flip-y</span></code> Flip the sample brain along the second dimension for
-atlas registration</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--flip-z</span></code> Flip the sample brain along the third dimension for
-atlas registration</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--orientation</span></code> The orientation of the sample brain <code class="docutils literal notranslate"><span class="pre">coronal</span></code>, <code class="docutils literal notranslate"><span class="pre">saggital</span></code>
-or <code class="docutils literal notranslate"><span class="pre">horizontal</span></code></p></li>
+then the atlas can be flipped to match the input data:
+* <cite>–flip-x</cite> Flip the sample brain along the first dimension for
+atlas registration
+* <cite>–flip-y</cite> Flip the sample brain along the second dimension for
+atlas registration
+* <cite>–flip-z</cite> Flip the sample brain along the third dimension for
+atlas registration</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><cite>–orientation</cite> The orientation of the sample brain <cite>coronal</cite>, <cite>saggital</cite></p></li>
 </ul>
-<p><strong>Standard space options</strong></p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">--transform-all</span></code> Transform all cell positions (including artifacts).</p></li>
-</ul>
+</div></blockquote>
+<p>or <cite>horizontal</cite></p>
+</dd>
+</dl>
+<p><strong>Standard space options</strong>
+* <cite>–transform-all</cite> Transform all cell positions (including artifacts).</p>
 <p><strong>Atlas specification</strong></p>
 <p>When cellfinder runs, the appropriate machine learning models and
 reference atlas will be downloaded (if not previously done so). If you would
 like to download in advance to save time (or if you will not have an internet
-connection) please use <code class="docutils literal notranslate"><span class="pre">cellfinder_download</span></code>.</p>
+connection) please use <cite>cellfinder_download</cite>.</p>
 <p>Currently, the only supported atlas is the Allen reference mouse
-brain, originally from <a class="reference external" href="http://help.brain-map.org/display/mouseconnectivity/API#API-DownloadAtlas">here</a>.
-The atlas will download into <code class="docutils literal notranslate"><span class="pre">~/.cellfinder/atlas</span></code>.</p>
+brain, originally from [here](<a class="reference external" href="http://help.brain-map.org/display/mouseconnectivity/API#API-DownloadAtlas">http://help.brain-map.org/display/mouseconnectivity/API#API-DownloadAtlas</a>).
+The atlas will download into <cite>~/.cellfinder/atlas</cite>.</p>
 <p>In the future, other atlases will be available, and you will be able to choose
 which is downloaded.</p>
-<p>If you want to modify the cellfinder download, use:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">--atlas-install-path</span></code> Supply a path to download the atlas elsewhere. This
-should also update the default <code class="docutils literal notranslate"><span class="pre">registration.conf.custom</span></code> file so that the correct
+<p>If you want to modify the cellfinder download, use:
+* <cite>–atlas-install-path</cite> Supply a path to download the atlas elsewhere. This
+should also update the default <cite>registration.conf.custom</cite> file so that the correct
 atlas is sourced. Alternatively, use this command to tell cellfinder where an
 existing atlas is, to save it being downloaded twice. (Requires 20GB
-disk space)</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--atlas</span> <span class="pre">download</span> <span class="pre">path</span></code> The path to download the atlas into.
-(Requires 1.2GB disk space). Defaults to <code class="docutils literal notranslate"><span class="pre">/tmp</span></code>.</p></li>
-</ul>
+disk space)
+* <cite>–atlas download path</cite> The path to download the atlas into.
+(Requires 1.2GB disk space). Defaults to <cite>/tmp</cite>.</p>
 <p><strong>Historical options</strong></p>
 <p><em>If you are a new cellfinder user, it is unlikely you want to use these
 options. They are intended for those migrating from earlier versions of the
 software</em></p>
-<p>If you have channel numbers that you’d like to carry over into cellfinder</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">--signal-channel-ids</span></code>. Channel ID numbers, in the same order as ‘signal-planes-paths.
-Will default to ‘0, 1, 2’ etc, but maybe useful to specify.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--background-channel-id</span></code> Channel ID number, corresponding to
-‘background-planes-path’</p></li>
-</ul>
-</div>
+<p>If you have channel numbers that you’d like to carry over into cellfinder
+* <cite>–signal-channel-ids</cite>. Channel ID numbers, in the same order as ‘signal-planes-paths.
+Will default to ‘0, 1, 2’ etc, but maybe useful to specify.
+* <cite>–background-channel-id</cite> Channel ID number, corresponding to
+‘background-planes-path’</p>
 <hr class="docutils" />
-<div class="section" id="further-help">
-<h3>Further help<a class="headerlink" href="#further-help" title="Permalink to this headline">¶</a></h3>
-<p>All cellfinder options can be found by using the <code class="docutils literal notranslate"><span class="pre">-h</span></code> flag</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>cellfinder -h
-</pre></div>
-</div>
+<p>#### Further help
+All cellfinder options can be found by using the <cite>-h</cite> flag</p>
+<p><code class="docutils literal notranslate"><span class="pre">`bash</span>
+<span class="pre">cellfinder</span> <span class="pre">-h</span>
+<span class="pre">`</span></code></p>
 <p>If you have any issues, common issues can be found
-<a class="reference internal" href="troubleshooting.html"><span class="doc">here</span></a>. If you’re still having issues,
-<a class="reference external" href="mailto:adam&#46;tyson&#37;&#52;&#48;ucl&#46;ac&#46;uk?subject=Cellfinder%20troubleshooting">get in touch</a>,
-or even better <a class="reference external" href="https://github.com/adamltyson/cellfinder/issues/new">raise an issue on Github</a>.</p>
-</div>
-</div>
-</div>
+[here](troubleshooting.md). If you’re still having issues,
+[get in touch](<a class="reference external" href="mailto:adam&#46;tyson&#37;&#52;&#48;ucl&#46;ac&#46;uk?subject=Cellfinder%20troubleshooting">mailto:adam<span>&#46;</span>tyson<span>&#64;</span>ucl<span>&#46;</span>ac<span>&#46;</span>uk?subject=Cellfinder%20troubleshooting</a>),
+or even better [raise an issue on Github](<a class="reference external" href="https://github.com/adamltyson/cellfinder/issues/new">https://github.com/adamltyson/cellfinder/issues/new</a>).</p>
 
 
            </div>
@@ -392,10 +355,10 @@ or even better <a class="reference external" href="https://github.com/adamltyson
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="training.html" class="btn btn-neutral float-right" title="Training" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="training.html" class="btn btn-neutral float-right" title="&lt;no title&gt;" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="install.html" class="btn btn-neutral float-left" title="Installation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="install.html" class="btn btn-neutral float-left" title="&lt;no title&gt;" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

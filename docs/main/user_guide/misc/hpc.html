@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Cellfinder installation in a cluster computing environment. &mdash; Cellfinder  documentation</title>
+  <title>&lt;no title&gt; &mdash; Cellfinder  documentation</title>
   
 
   
@@ -21,10 +21,10 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
-        <script type="text/javascript" src="../../../_static/jquery.js"></script>
-        <script type="text/javascript" src="../../../_static/underscore.js"></script>
-        <script type="text/javascript" src="../../../_static/doctools.js"></script>
-        <script type="text/javascript" src="../../../_static/language_data.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/language_data.js"></script>
     
     <script type="text/javascript" src="../../../_static/js/theme.js"></script>
 
@@ -35,7 +35,7 @@
   <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="prev" title="Contributing" href="../../dev/CONTRIBUTING.html" /> 
+    <link rel="prev" title="&lt;no title&gt;" href="../../dev/CONTRIBUTING.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -79,41 +79,10 @@
               
             
             
-              <ul>
-<li class="toctree-l1"><a class="reference internal" href="../install.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../run.html">Usage</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../training.html">Training</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../troubleshooting.html">Troubleshooting</a></li>
+              <!-- Local TOC -->
+              <div class="local-toc"><ul class="simple">
 </ul>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../tools/cell_view_2D.html">Two dimensional cell viewer</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../tools/cell_view_3D.html">Three dimensional viewer</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../tools/cells_standard_space.html">Transforming cells into standard space</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../tools/count_summary.html">Organise cells into atlas regions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../tools/cube_extract.html">Cube extraction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../tools/region_summary.html">Summarise cell counts from multiple brains</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../tools/xml_crop.html">XML file cropping</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../tools/xml_scale.html">XML file rescaling</a></li>
-</ul>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../../about/release_notes.html">Releases</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../about/roadmap.html">Future Plans</a></li>
-</ul>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../../dev/CONTRIBUTING.html">Contributing</a></li>
-</ul>
-<ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Cellfinder installation in a cluster computing environment.</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#slurm">SLURM</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#prepare-the-environment">Prepare the environment</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#set-up-conda-environment-and-install-cellfinder">Set up conda environment and install cellfinder</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#run-cellfinder">Run cellfinder</a></li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-
+</div>
             
           
         </div>
@@ -157,7 +126,7 @@
     
       <li><a href="../../../index.html">Docs</a> &raquo;</li>
         
-      <li>Cellfinder installation in a cluster computing environment.</li>
+      <li>&lt;no title&gt;</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -174,114 +143,124 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="cellfinder-installation-in-a-cluster-computing-environment">
-<h1>Cellfinder installation in a cluster computing environment.<a class="headerlink" href="#cellfinder-installation-in-a-cluster-computing-environment" title="Permalink to this headline">¶</a></h1>
+  <p>## Cellfinder installation in a cluster computing environment.</p>
 <p>Currently cellfinder has only been written with
-<a class="reference external" href="https://slurm.schedmd.com/documentation.html">SLURM</a> in mind. In theory, it
+[SLURM](<a class="reference external" href="https://slurm.schedmd.com/documentation.html">https://slurm.schedmd.com/documentation.html</a>) in mind. In theory, it
 should be easy enough to allow the use of any other job scheduler.</p>
-<div class="section" id="slurm">
-<h2>SLURM<a class="headerlink" href="#slurm" title="Permalink to this headline">¶</a></h2>
-<p>Based on the
-<a class="reference external" href="https://www.sainsburywellcome.org/web/content/scientific-computing">SWC SLURM cluster</a>,
-and so most of the command syntax will likely vary. Specifically, you are
-unlikely to have modules configured in exactly the same way as us.</p>
-<div class="section" id="prepare-the-environment">
-<h3>Prepare the environment<a class="headerlink" href="#prepare-the-environment" title="Permalink to this headline">¶</a></h3>
-<ul class="simple">
-<li><p>On our cluster, <a class="reference external" href="http://modules.sourceforge.net/">modules</a> are only available
+<p>### SLURM
+Based on the
+[SWC SLURM cluster](<a class="reference external" href="https://www.sainsburywellcome.org/web/content/scientific-computing">https://www.sainsburywellcome.org/web/content/scientific-computing</a>),</p>
+<blockquote>
+<div><dl class="simple">
+<dt>and so most of the command syntax will likely vary. Specifically, you are</dt><dd><p>unlikely to have modules configured in exactly the same way as us.</p>
+</dd>
+</dl>
+</div></blockquote>
+<p>#### Prepare the environment
+* On our cluster, [modules](<a class="reference external" href="http://modules.sourceforge.net/">http://modules.sourceforge.net/</a>) are only available
 on a compute node, so start an interactive job on a GPU node, and request a
-GPU for testing.</p></li>
-</ul>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>srun -p gpu --gres<span class="o">=</span>gpu:1 --pty bash
-</pre></div>
-</div>
+GPU for testing.</p>
+<p><code class="docutils literal notranslate"><span class="pre">`bash</span>
+<span class="pre">srun</span> <span class="pre">-p</span> <span class="pre">gpu</span> <span class="pre">--gres=gpu:1</span> <span class="pre">--pty</span> <span class="pre">bash</span>
+<span class="pre">`</span></code></p>
 <ul class="simple">
 <li><p>Load miniconda</p></li>
 </ul>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>module load miniconda
-</pre></div>
-</div>
-</div>
-<div class="section" id="set-up-conda-environment-and-install-cellfinder">
-<h3>Set up conda environment and install cellfinder<a class="headerlink" href="#set-up-conda-environment-and-install-cellfinder" title="Permalink to this headline">¶</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">`bash</span>
+<span class="pre">module</span> <span class="pre">load</span> <span class="pre">miniconda</span>
+<span class="pre">`</span></code></p>
+<p>#### Set up conda environment and install cellfinder</p>
 <ul>
-<li><p>Now you can proceed as with a <a class="reference internal" href="../install.html"><span class="doc">local installation</span></a></p>
-<ul class="simple">
+<li><dl>
+<dt>Now you can proceed as with a [local installation](../install.md)</dt><dd><ul class="simple">
 <li><p>Create and activate new minimal conda environment</p></li>
 </ul>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>    conda create --name cellfinder <span class="nv">python</span><span class="o">=</span><span class="m">3</span>.7
-    conda activate cellfinder
-</pre></div>
-</div>
+<dl class="simple">
+<dt><a href="#id1"><span class="problematic" id="id2">``</span></a>` bash</dt><dd><p>conda create –name cellfinder python=3.7
+conda activate cellfinder</p>
+</dd>
+</dl>
+<p><a href="#id3"><span class="problematic" id="id4">``</span></a><a href="#id5"><span class="problematic" id="id6">`</span></a></p>
 <ul class="simple">
 <li><p>Install CUDA and cuDNN</p></li>
 </ul>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>    conda install <span class="nv">cudatoolkit</span><span class="o">=</span><span class="m">10</span>.1 cudnn
-</pre></div>
-</div>
+<dl class="simple">
+<dt><a href="#id7"><span class="problematic" id="id8">``</span></a>` bash</dt><dd><p>conda install cudatoolkit=10.1 cudnn</p>
+</dd>
+</dl>
+<p><a href="#id9"><span class="problematic" id="id10">``</span></a><a href="#id11"><span class="problematic" id="id12">`</span></a></p>
 <ul class="simple">
 <li><p>Install cellfinder</p></li>
 </ul>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>    pip install cellfinder
-</pre></div>
-</div>
+<dl class="simple">
+<dt><a href="#id13"><span class="problematic" id="id14">``</span></a>` bash</dt><dd><p>pip install cellfinder</p>
+</dd>
+</dl>
+<p><a href="#id15"><span class="problematic" id="id16">``</span></a><a href="#id17"><span class="problematic" id="id18">`</span></a></p>
+</dd>
+</dl>
 </li>
-<li><p>Check that tensorflow and CUDA are configured properly:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python
-</pre></div>
-</div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>   <span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="nn">tf</span>
-   <span class="n">tf</span><span class="o">.</span><span class="n">test</span><span class="o">.</span><span class="n">is_gpu_available</span><span class="p">()</span>
-</pre></div>
-</div>
-<p>If you see something like this, then all is well.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>    <span class="m">2019</span>-06-26 <span class="m">10</span>:51:34.697900: I tensorflow/core/platform/cpu_feature_guard.cc:141<span class="o">]</span> Your CPU supports instructions that this TensorFlow binary was not compiled to use: AVX512F
-    <span class="m">2019</span>-06-26 <span class="m">10</span>:51:34.881183: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1432<span class="o">]</span> Found device <span class="m">0</span> with properties: 
-    name: TITAN RTX major: <span class="m">7</span> minor: <span class="m">5</span> memoryClockRate<span class="o">(</span>GHz<span class="o">)</span>: <span class="m">1</span>.77
-    pciBusID: <span class="m">0000</span>:2d:00.0
-    totalMemory: <span class="m">23</span>.62GiB freeMemory: <span class="m">504</span>.25MiB
-    <span class="m">2019</span>-06-26 <span class="m">10</span>:51:34.881217: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1511<span class="o">]</span> Adding visible gpu devices: <span class="m">0</span>
-    <span class="m">2019</span>-06-26 <span class="m">10</span>:51:35.251465: I tensorflow/core/common_runtime/gpu/gpu_device.cc:982<span class="o">]</span> Device interconnect StreamExecutor with strength <span class="m">1</span> edge matrix:
-    <span class="m">2019</span>-06-26 <span class="m">10</span>:51:35.251505: I tensorflow/core/common_runtime/gpu/gpu_device.cc:988<span class="o">]</span>      <span class="m">0</span> 
-    <span class="m">2019</span>-06-26 <span class="m">10</span>:51:35.251511: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1001<span class="o">]</span> <span class="m">0</span>:   N 
-    <span class="m">2019</span>-06-26 <span class="m">10</span>:51:35.251729: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1115<span class="o">]</span> Created TensorFlow device <span class="o">(</span>/device:GPU:0 with <span class="m">195</span> MB memory<span class="o">)</span> -&gt; physical GPU <span class="o">(</span>device: <span class="m">0</span>, name: TITAN RTX, pci bus id: <span class="m">0000</span>:2d:00.0, compute capability: <span class="m">7</span>.5<span class="o">)</span>
-    True
-</pre></div>
-</div>
+<li><dl>
+<dt>Check that tensorflow and CUDA are configured properly:</dt><dd><p><code class="docutils literal notranslate"><span class="pre">`bash</span>
+<span class="pre">python</span>
+<span class="pre">`</span></code>
+<a href="#id19"><span class="problematic" id="id20">``</span></a><a href="#id21"><span class="problematic" id="id22">`</span></a>python</p>
+<blockquote>
+<div><p>import tensorflow as tf
+tf.test.is_gpu_available()</p>
+</div></blockquote>
+<p><a href="#id23"><span class="problematic" id="id24">``</span></a>`
+If you see something like this, then all is well.</p>
+<dl>
+<dt><a href="#id25"><span class="problematic" id="id26">``</span></a><a href="#id27"><span class="problematic" id="id28">`</span></a>bash</dt><dd><blockquote>
+<div><p>2019-06-26 10:51:34.697900: I tensorflow/core/platform/cpu_feature_guard.cc:141] Your CPU supports instructions that this TensorFlow binary was not compiled to use: AVX512F
+2019-06-26 10:51:34.881183: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1432] Found device 0 with properties:
+name: TITAN RTX major: 7 minor: 5 memoryClockRate(GHz): 1.77
+pciBusID: 0000:2d:00.0
+totalMemory: 23.62GiB freeMemory: 504.25MiB
+2019-06-26 10:51:34.881217: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1511] Adding visible gpu devices: 0
+2019-06-26 10:51:35.251465: I tensorflow/core/common_runtime/gpu/gpu_device.cc:982] Device interconnect StreamExecutor with strength 1 edge matrix:
+2019-06-26 10:51:35.251505: I tensorflow/core/common_runtime/gpu/gpu_device.cc:988]      0
+2019-06-26 10:51:35.251511: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1001] 0:   N
+2019-06-26 10:51:35.251729: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1115] Created TensorFlow device (/device:GPU:0 with 195 MB memory) -&gt; physical GPU (device: 0, name: TITAN RTX, pci bus id: 0000:2d:00.0, compute capability: 7.5)
+True</p>
+</div></blockquote>
+<p><a href="#id29"><span class="problematic" id="id30">``</span></a><a href="#id31"><span class="problematic" id="id32">`</span></a></p>
+</dd>
+</dl>
+</dd>
+</dl>
 </li>
 <li><p><strong>End your interactive job</strong></p></li>
 </ul>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">exit</span>
-</pre></div>
-</div>
-</div>
-<div class="section" id="run-cellfinder">
-<h3>Run cellfinder<a class="headerlink" href="#run-cellfinder" title="Permalink to this headline">¶</a></h3>
-<p>Allthough you can run cellfinder interactively, it is better to submit a batch
+<p><code class="docutils literal notranslate"><span class="pre">`bash</span>
+<span class="pre">exit</span>
+<span class="pre">`</span></code></p>
+<p>#### Run cellfinder
+Allthough you can run cellfinder interactively, it is better to submit a batch
 job.</p>
 <ul class="simple">
-<li><p>Write the job submission script. An example can be found
-<a class="reference external" href="https://github.com/SainsburyWellcomeCentre/cellfinder/tree/master/doc_build/examples/cellfinder_sbatch.sh">here</a>.
-If possible, set the output directory to local, fast scratch storage.</p></li>
+<li><p>Write the job submission script. An example can be found</p></li>
+</ul>
+<p>[here](<a class="reference external" href="https://github.com/SainsburyWellcomeCentre/cellfinder/tree/master/doc_build/examples/cellfinder_sbatch.sh">https://github.com/SainsburyWellcomeCentre/cellfinder/tree/master/doc_build/examples/cellfinder_sbatch.sh</a>).
+If possible, set the output directory to local, fast scratch storage.</p>
+<ul class="simple">
 <li><p>Submit the job to the job scheduler</p></li>
 </ul>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sbatch cellfinder_sbatch.sh
-</pre></div>
-</div>
+<p><code class="docutils literal notranslate"><span class="pre">`bash</span>
+<span class="pre">sbatch</span> <span class="pre">cellfinder_sbatch.sh</span>
+<span class="pre">`</span></code></p>
 <ul class="simple">
-<li><p>If you use the example script, you will recieve an email when the job is
-done. To watch the progress, log onto a node with the same storage drive
-mounted and run:</p></li>
+<li><p>If you use the example script, you will recieve an email when the job is</p></li>
 </ul>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>watch tail -n <span class="m">100</span> /path/to/cellfinder_log.log
-</pre></div>
-</div>
+<p>done. To watch the progress, log onto a node with the same storage drive
+mounted and run:
+<code class="docutils literal notranslate"><span class="pre">`bash</span>
+<span class="pre">watch</span> <span class="pre">tail</span> <span class="pre">-n</span> <span class="pre">100</span> <span class="pre">/path/to/cellfinder_log.log</span>
+<span class="pre">`</span></code></p>
 <ul class="simple">
 <li><p>Copy the results from the storage platform.</p></li>
 </ul>
-</div>
-</div>
-</div>
 
 
            </div>
@@ -292,7 +271,7 @@ mounted and run:</p></li>
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
       
-        <a href="../../dev/CONTRIBUTING.html" class="btn btn-neutral float-left" title="Contributing" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="../../dev/CONTRIBUTING.html" class="btn btn-neutral float-left" title="&lt;no title&gt;" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
