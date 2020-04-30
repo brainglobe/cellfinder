@@ -101,9 +101,9 @@ jobs:
       os: osx
       osx_image: xcode9.2   #macOS 10.12
       script: bash travis/install_build_wheels_osx.sh
-      after_success:
-        - pip install twine
-        - twine upload dist/* --skip-existing
+#      after_success:
+#        - pip install twine
+#        - twine upload dist/* --skip-existing
     - stage: deploy
       name: "Deploy macOS (py37)"
       language: shell
@@ -111,9 +111,9 @@ jobs:
       os: osx
       osx_image: xcode9.2   #macOS 10.12
       script: bash travis/install_build_wheels_osx.sh
-      after_success:
-        - pip install twine
-        - twine upload dist/* --skip-existing
+#      after_success:
+#        - pip install twine
+#        - twine upload dist/* --skip-existing
 notifications:
   email:
     recipients:
