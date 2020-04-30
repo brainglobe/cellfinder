@@ -29,21 +29,21 @@ jobs:
       language: shell
       env: TRAVIS_PYTHON_VERSION=3.6
       os: windows
-#      before_install:
-#        - source travis/install_test_windows.sh
+      before_install:
+        - source travis/install_windows.sh
 #        - conda create -n test-environment python=3.6
 #        - source activate test-environment
-      script: travis_wait 40 bash travis/install_test_windows.sh
+      script: travis_wait 40 bash travis/test_windows.sh
     - stage: test
       name: "Windows Python 3.7"
       language: shell
       env: TRAVIS_PYTHON_VERSION=3.7
       os: windows
-#      before_install:
-#        - source travis/install_test_windows.sh
+      before_install:
+        - source travis/install_windows.sh
 #        - conda create -n test-environment python=3.7
 #        - source activate test-environment
-      script: travis_wait 40 bash travis/install_test_windows.sh
+      script: travis_wait 40 bash travis/test_windows.sh
     - stage: deploy
       services:
         - docker
