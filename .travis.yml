@@ -29,8 +29,6 @@ jobs:
       language: shell # 'language: python' is an error on Travis CI Windows
       os: windows
       before_install:
-        - source travis/before_install_nix_win.sh
-      install:
         - source travis/install_windows.sh
         - conda create -n test-environment python=3.6
         - source activate test-environment
@@ -40,8 +38,6 @@ jobs:
       language: shell # 'language: python' is an error on Travis CI Windows
       os: windows
       before_install:
-        - source travis/before_install_nix_win.sh
-      install:
         - source travis/install_windows.sh
         - conda create -n test-environment python=3.7
         - source activate test-environment
