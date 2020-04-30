@@ -44,13 +44,13 @@ jobs:
 #        - conda create -n test-environment python=3.7
 #        - source activate test-environment
       script: travis_wait 40 bash travis/test_windows.sh
-#    - stage: test
-#      name: "macOS Python 3.6"
-#      os: osx
-#      osx_image: xcode11.2   #macOS 10.14.4
-#      language: shell
-#      env: TRAVIS_PYTHON_VERSION=3.6
-#      script: travis_wait 40 bash travis/install_test_osx.sh
+    - stage: test
+      name: "macOS Python 3.6"
+      os: osx
+      osx_image: xcode9.2   #macOS 10.14.4
+      language: shell
+      env: TRAVIS_PYTHON_VERSION=3.6
+      script: travis_wait 40 bash travis/install_test_osx.sh
     - stage: deploy
       name: "Deploy Linux (py36 & py37)"
       services:
