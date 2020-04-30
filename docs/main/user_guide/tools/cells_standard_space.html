@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>&lt;no title&gt; &mdash; Cellfinder  documentation</title>
+  <title>Transforming cells into standard space &mdash; Cellfinder  documentation</title>
   
 
   
@@ -21,10 +21,10 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
-        <script src="../../../_static/jquery.js"></script>
-        <script src="../../../_static/underscore.js"></script>
-        <script src="../../../_static/doctools.js"></script>
-        <script src="../../../_static/language_data.js"></script>
+        <script type="text/javascript" src="../../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../../_static/language_data.js"></script>
     
     <script type="text/javascript" src="../../../_static/js/theme.js"></script>
 
@@ -35,8 +35,8 @@
   <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="&lt;no title&gt;" href="count_summary.html" />
-    <link rel="prev" title="&lt;no title&gt;" href="cell_view_3D.html" /> 
+    <link rel="next" title="Organise cells into atlas regions" href="count_summary.html" />
+    <link rel="prev" title="Three dimensional viewer" href="cell_view_3D.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -80,10 +80,40 @@
               
             
             
-              <!-- Local TOC -->
-              <div class="local-toc"><ul class="simple">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../run.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../training.html">Training</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../troubleshooting.html">Troubleshooting</a></li>
 </ul>
-</div>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="cell_view_2D.html">Two dimensional cell viewer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cell_view_3D.html">Three dimensional viewer</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Transforming cells into standard space</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#arguments">Arguments</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#mandatory">Mandatory</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#the-following-options-can-also-be-used">The following options can also be used:</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="count_summary.html">Organise cells into atlas regions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cube_extract.html">Cube extraction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="region_summary.html">Summarise cell counts from multiple brains</a></li>
+<li class="toctree-l1"><a class="reference internal" href="xml_crop.html">XML file cropping</a></li>
+<li class="toctree-l1"><a class="reference internal" href="xml_scale.html">XML file rescaling</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../about/release_notes.html">Releases</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../about/roadmap.html">Future Plans</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../dev/CONTRIBUTING.html">Contributing</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../misc/hpc.html">Cellfinder installation in a cluster computing environment.</a></li>
+</ul>
+
             
           
         </div>
@@ -127,7 +157,7 @@
     
       <li><a href="../../../index.html">Docs</a> &raquo;</li>
         
-      <li>&lt;no title&gt;</li>
+      <li>Transforming cells into standard space</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -144,56 +174,64 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <p># Transforming cells into standard space</p>
+  <div class="section" id="transforming-cells-into-standard-space">
+<h1>Transforming cells into standard space<a class="headerlink" href="#transforming-cells-into-standard-space" title="Permalink to this headline">¶</a></h1>
 <p>To transform cell positions from the coordinate space of the raw data to that
 of another coordinate framework (usually the atlas).</p>
-<p><code class="docutils literal notranslate"><span class="pre">`</span> <span class="pre">bash</span>
-<span class="pre">cellfinder_cell_standard</span> <span class="pre">--cells</span> <span class="pre">/path/to/classified_cells.xml</span> <span class="pre">--transformation</span> <span class="pre">/path/to/control_point_file.nii</span> <span class="pre">--ref</span> <span class="pre">/path/to/reference_image.nii</span> <span class="pre">-o</span> <span class="pre">/path/to/output/directory</span> <span class="pre">-x</span> <span class="pre">0.002</span> <span class="pre">-y</span> <span class="pre">0.002</span> <span class="pre">-z</span> <span class="pre">0.005</span>
-<span class="pre">`</span></code></p>
-<p>### Arguments
-#### Mandatory
-* <cite>–cells</cite>  Path of the xml file containing cells to be transformed.
-* <cite>–transformation</cite> Path to the control point file
-(from niftyreg or cellfinder registration)
-* <cite>–reference</cite> Reference nii image, in the same space as the downsampled raw
-data</p>
-<blockquote>
-<div><ul class="simple">
-<li><p><cite>-o</cite> or <cite>–output-dir</cite> Output directory</p></li>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>cellfinder_cell_standard --cells /path/to/classified_cells.xml --transformation /path/to/control_point_file.nii --ref /path/to/reference_image.nii -o /path/to/output/directory -x <span class="m">0</span>.002 -y <span class="m">0</span>.002 -z <span class="m">0</span>.005
+</pre></div>
+</div>
+<div class="section" id="arguments">
+<h2>Arguments<a class="headerlink" href="#arguments" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="mandatory">
+<h3>Mandatory<a class="headerlink" href="#mandatory" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">--cells</span></code>  Path of the xml file containing cells to be transformed.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--transformation</span></code> Path to the control point file
+(from niftyreg or cellfinder registration)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--reference</span></code> Reference nii image, in the same space as the downsampled raw
+data</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">-o</span></code> or <code class="docutils literal notranslate"><span class="pre">--output-dir</span></code> Output directory</p></li>
 </ul>
-</div></blockquote>
-<p><strong>Either</strong>
-* <cite>-x</cite> or <cite>–x-pixel-mm</cite> Pixel spacing of the data in the first dimension,
-specified in mm.
-* <cite>-y</cite> or <cite>–y-pixel-mm</cite> Pixel spacing of the data in the second dimension,
-specified in mm.
-* <cite>-z</cite> or <cite>–z-pixel-mm</cite> Pixel spacing of the data in the third dimension,
-specified in mm.</p>
-<p><strong>Or</strong>
-* <cite>–metadata</cite> Metadata file containing pixel sizes (supported formats
-include [BakingTray](<a class="reference external" href="https://github.com/SainsburyWellcomeCentre/BakingTray">https://github.com/SainsburyWellcomeCentre/BakingTray</a>)
-recipe files [mesoSPIM](<a class="reference external" href="https://github.com/mesoSPIM/mesoSPIM-control">https://github.com/mesoSPIM/mesoSPIM-control</a>)</p>
-<blockquote>
-<div><p>metadata files or
-[cellfinder custom metadata files](<a class="reference external" href="https://github.com/SainsburyWellcomeCentre/cellfinder/tree/master/doc_build/examples/cellfinder_metadata.ini">https://github.com/SainsburyWellcomeCentre/cellfinder/tree/master/doc_build/examples/cellfinder_metadata.ini</a>).</p>
-<blockquote>
-<div><p>If both pixel sizes and metadata are provided, the command line arguments
-will take priority.</p>
-</div></blockquote>
-</div></blockquote>
-<p>#### The following options can also be used:
-* <cite>–transform-all</cite> Transform all cell positions (including artifacts).
-* <cite>—-registration-config</cite> To supply your own, custom registration
-configuration file.</p>
+<p><strong>Either</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">-x</span></code> or <code class="docutils literal notranslate"><span class="pre">--x-pixel-mm</span></code> Pixel spacing of the data in the first dimension,
+specified in mm.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">-y</span></code> or <code class="docutils literal notranslate"><span class="pre">--y-pixel-mm</span></code> Pixel spacing of the data in the second dimension,
+specified in mm.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">-z</span></code> or <code class="docutils literal notranslate"><span class="pre">--z-pixel-mm</span></code> Pixel spacing of the data in the third dimension,
+specified in mm.</p></li>
+</ul>
+<p><strong>Or</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">--metadata</span></code> Metadata file containing pixel sizes (supported formats
+include <a class="reference external" href="https://github.com/SainsburyWellcomeCentre/BakingTray">BakingTray</a>
+recipe files <a class="reference external" href="https://github.com/mesoSPIM/mesoSPIM-control">mesoSPIM</a>
+metadata files or
+<a class="reference external" href="https://github.com/SainsburyWellcomeCentre/cellfinder/tree/master/doc_build/examples/cellfinder_metadata.ini">cellfinder custom metadata files</a>.
+If both pixel sizes and metadata are provided, the command line arguments
+will take priority.</p></li>
+</ul>
+</div>
+<div class="section" id="the-following-options-can-also-be-used">
+<h3>The following options can also be used:<a class="headerlink" href="#the-following-options-can-also-be-used" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">--transform-all</span></code> Transform all cell positions (including artifacts).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">----registration-config</span></code> To supply your own, custom registration
+configuration file.</p></li>
+</ul>
 <p><strong>Performance/debugging</strong></p>
 <ul class="simple">
-<li><p><cite>-V</cite> or <cite>–verbose</cite> Increase verbosity of statements printed to console (all</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">-V</span></code> or <code class="docutils literal notranslate"><span class="pre">--verbose</span></code> Increase verbosity of statements printed to console (all
+debug information is saved to file regardless of this flag)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--n-free-cpus</span></code> The number of CPU cores on the machine to leave
+unused by the program to spare resources.</p></li>
 </ul>
-<p>debug information is saved to file regardless of this flag)
-* <cite>–n-free-cpus</cite> The number of CPU cores on the machine to leave
-unused by the program to spare resources.</p>
 <p><strong>All other options (and their defaults) can be round by running:</strong></p>
-<p><cite>cellfinder_cell_standard -h</cite></p>
+<p><code class="docutils literal notranslate"><span class="pre">cellfinder_cell_standard</span> <span class="pre">-h</span></code></p>
+</div>
+</div>
+</div>
 
 
            </div>
@@ -203,10 +241,10 @@ unused by the program to spare resources.</p>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="count_summary.html" class="btn btn-neutral float-right" title="&lt;no title&gt;" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="count_summary.html" class="btn btn-neutral float-right" title="Organise cells into atlas regions" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="cell_view_3D.html" class="btn btn-neutral float-left" title="&lt;no title&gt;" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="cell_view_3D.html" class="btn btn-neutral float-left" title="Three dimensional viewer" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

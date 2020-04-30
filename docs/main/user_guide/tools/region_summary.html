@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>&lt;no title&gt; &mdash; Cellfinder  documentation</title>
+  <title>Summarise cell counts from multiple brains &mdash; Cellfinder  documentation</title>
   
 
   
@@ -21,10 +21,10 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
-        <script src="../../../_static/jquery.js"></script>
-        <script src="../../../_static/underscore.js"></script>
-        <script src="../../../_static/doctools.js"></script>
-        <script src="../../../_static/language_data.js"></script>
+        <script type="text/javascript" src="../../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../../_static/language_data.js"></script>
     
     <script type="text/javascript" src="../../../_static/js/theme.js"></script>
 
@@ -35,8 +35,8 @@
   <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="&lt;no title&gt;" href="xml_crop.html" />
-    <link rel="prev" title="&lt;no title&gt;" href="cube_extract.html" /> 
+    <link rel="next" title="XML file cropping" href="xml_crop.html" />
+    <link rel="prev" title="Cube extraction" href="cube_extract.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -80,10 +80,40 @@
               
             
             
-              <!-- Local TOC -->
-              <div class="local-toc"><ul class="simple">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../run.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../training.html">Training</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../troubleshooting.html">Troubleshooting</a></li>
 </ul>
-</div>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="cell_view_2D.html">Two dimensional cell viewer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cell_view_3D.html">Three dimensional viewer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cells_standard_space.html">Transforming cells into standard space</a></li>
+<li class="toctree-l1"><a class="reference internal" href="count_summary.html">Organise cells into atlas regions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cube_extract.html">Cube extraction</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Summarise cell counts from multiple brains</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#arguments">Arguments</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#mandatory">Mandatory</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#the-following-options-can-also-be-used">The following options can also be used:</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="xml_crop.html">XML file cropping</a></li>
+<li class="toctree-l1"><a class="reference internal" href="xml_scale.html">XML file rescaling</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../about/release_notes.html">Releases</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../about/roadmap.html">Future Plans</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../dev/CONTRIBUTING.html">Contributing</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../misc/hpc.html">Cellfinder installation in a cluster computing environment.</a></li>
+</ul>
+
             
           
         </div>
@@ -127,7 +157,7 @@
     
       <li><a href="../../../index.html">Docs</a> &raquo;</li>
         
-      <li>&lt;no title&gt;</li>
+      <li>Summarise cell counts from multiple brains</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -144,51 +174,59 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <p># Summarise cell counts from multiple brains</p>
-<p>To summarise and organise the results from <cite>cellfinder_cells_into_region</cite>
+  <div class="section" id="summarise-cell-counts-from-multiple-brains">
+<h1>Summarise cell counts from multiple brains<a class="headerlink" href="#summarise-cell-counts-from-multiple-brains" title="Permalink to this headline">¶</a></h1>
+<p>To summarise and organise the results from <code class="docutils literal notranslate"><span class="pre">cellfinder_cells_into_region</span></code>
 (which is a list of every brain region and the number of cells) you can use
-<cite>cellfinder_region_summary</cite>.</p>
+<code class="docutils literal notranslate"><span class="pre">cellfinder_region_summary</span></code>.</p>
 <p>This takes a directory of csv’s output from
-<cite>cellfinder_cells_into_region</cite> and generates summary versions in which:</p>
-<blockquote>
-<div><ul class="simple">
-<li><p>Brain regions are organised in the same way for each csv file</p></li>
-<li><p>(Optionally, only the brain regions specified by <cite>–regions-list</cite> and/or</p></li>
-</ul>
-<p><cite>–regions</cite>)</p>
-</div></blockquote>
-<p><code class="docutils literal notranslate"><span class="pre">`</span> <span class="pre">bash</span>
-<span class="pre">cellfinder_region_summary</span> <span class="pre">/path/to/directory/with/csvs</span>
-<span class="pre">`</span></code></p>
-<p>### Arguments
-#### Mandatory
-*  Directory containing csv files to be summarised</p>
-<p>#### The following options can also be used:
-* <cite>–regions-list</cite> A text file listing a subset of brain regions to be included</p>
-<blockquote>
-<div><p>in the summary csv file (as per the allen brain atlas csv)
-* <cite>–sum-regions</cite> Rather than finding all child regions, sum them.</p>
-</div></blockquote>
+<code class="docutils literal notranslate"><span class="pre">cellfinder_cells_into_region</span></code> and generates summary versions in which:</p>
 <ul class="simple">
-<li><p><cite>–regions</cite> A list of additional regions to include, e.g:</p></li>
+<li><p>Brain regions are organised in the same way for each csv file</p></li>
+<li><p>(Optionally, only the brain regions specified by <code class="docutils literal notranslate"><span class="pre">--regions-list</span></code> and/or
+<code class="docutils literal notranslate"><span class="pre">--regions</span></code>)</p></li>
 </ul>
-<p><code class="docutils literal notranslate"><span class="pre">`bash</span>
-<span class="pre">--regions</span> <span class="pre">&quot;Anterior</span> <span class="pre">cingulate</span> <span class="pre">area&quot;</span> <span class="pre">&quot;Retrosplenial</span> <span class="pre">area&quot;</span>
-<span class="pre">`</span></code>
-* <cite>–structures-file</cite> The csv file containing the structures definition</p>
-<blockquote>
-<div><p>(if not using the default Allen brain atlas) <strong>[NOT YET IMPLEMENTED]</strong></p>
-</div></blockquote>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>cellfinder_region_summary /path/to/directory/with/csvs
+</pre></div>
+</div>
+<div class="section" id="arguments">
+<h2>Arguments<a class="headerlink" href="#arguments" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="mandatory">
+<h3>Mandatory<a class="headerlink" href="#mandatory" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Directory containing csv files to be summarised</p></li>
+</ul>
+</div>
+<div class="section" id="the-following-options-can-also-be-used">
+<h3>The following options can also be used:<a class="headerlink" href="#the-following-options-can-also-be-used" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">--regions-list</span></code> A text file listing a subset of brain regions to be included
+in the summary csv file (as per the allen brain atlas csv)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--sum-regions</span></code> Rather than finding all child regions, sum them.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--regions</span></code> A list of additional regions to include, e.g:</p></li>
+</ul>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>--regions <span class="s2">&quot;Anterior cingulate area&quot;</span> <span class="s2">&quot;Retrosplenial area&quot;</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">--structures-file</span></code> The csv file containing the structures definition
+(if not using the default Allen brain atlas) <strong>[NOT YET IMPLEMENTED]</strong></p></li>
+</ul>
 <p>N.B. The regions are hierarchical, so if you specify
-<cite>Retrosplenial area, dorsal part</cite>,
-you will get all subregions:
-* Retrosplenial area, dorsal part
-* Retrosplenial area, dorsal part, layer 1
-* Retrosplenial area, dorsal part, layer 2/3
-* Retrosplenial area, dorsal part, layer 4
-* Retrosplenial area, dorsal part, layer 5
-* Retrosplenial area, dorsal part, layer 6a
-* Retrosplenial area, dorsal part, layer 6b</p>
+<code class="docutils literal notranslate"><span class="pre">Retrosplenial</span> <span class="pre">area,</span> <span class="pre">dorsal</span> <span class="pre">part</span></code>,
+you will get all subregions:</p>
+<ul class="simple">
+<li><p>Retrosplenial area, dorsal part</p></li>
+<li><p>Retrosplenial area, dorsal part, layer 1</p></li>
+<li><p>Retrosplenial area, dorsal part, layer 2/3</p></li>
+<li><p>Retrosplenial area, dorsal part, layer 4</p></li>
+<li><p>Retrosplenial area, dorsal part, layer 5</p></li>
+<li><p>Retrosplenial area, dorsal part, layer 6a</p></li>
+<li><p>Retrosplenial area, dorsal part, layer 6b</p></li>
+</ul>
+</div>
+</div>
+</div>
 
 
            </div>
@@ -198,10 +236,10 @@ you will get all subregions:
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="xml_crop.html" class="btn btn-neutral float-right" title="&lt;no title&gt;" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="xml_crop.html" class="btn btn-neutral float-right" title="XML file cropping" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="cube_extract.html" class="btn btn-neutral float-left" title="&lt;no title&gt;" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="cube_extract.html" class="btn btn-neutral float-left" title="Cube extraction" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
