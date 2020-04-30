@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Training &mdash; Cellfinder  documentation</title>
+  <title>&lt;no title&gt; &mdash; Cellfinder  documentation</title>
   
 
   
@@ -21,10 +21,10 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
-        <script type="text/javascript" src="../../_static/jquery.js"></script>
-        <script type="text/javascript" src="../../_static/underscore.js"></script>
-        <script type="text/javascript" src="../../_static/doctools.js"></script>
-        <script type="text/javascript" src="../../_static/language_data.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/language_data.js"></script>
     
     <script type="text/javascript" src="../../_static/js/theme.js"></script>
 
@@ -35,8 +35,8 @@
   <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="Troubleshooting" href="troubleshooting.html" />
-    <link rel="prev" title="Usage" href="run.html" /> 
+    <link rel="next" title="&lt;no title&gt;" href="troubleshooting.html" />
+    <link rel="prev" title="&lt;no title&gt;" href="run.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -80,44 +80,10 @@
               
             
             
-              <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="install.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="run.html">Usage</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Training</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#generate-training-data">Generate training data</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#arguments">Arguments</a></li>
+              <!-- Local TOC -->
+              <div class="local-toc"><ul class="simple">
 </ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#start-training">Start training</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id1">Arguments</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#further-help">Further help</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="troubleshooting.html">Troubleshooting</a></li>
-</ul>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="tools/cell_view_2D.html">Two dimensional cell viewer</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tools/cell_view_3D.html">Three dimensional viewer</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tools/cells_standard_space.html">Transforming cells into standard space</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tools/count_summary.html">Organise cells into atlas regions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tools/cube_extract.html">Cube extraction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tools/region_summary.html">Summarise cell counts from multiple brains</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tools/xml_crop.html">XML file cropping</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tools/xml_scale.html">XML file rescaling</a></li>
-</ul>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../about/release_notes.html">Releases</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../about/roadmap.html">Future Plans</a></li>
-</ul>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../dev/CONTRIBUTING.html">Contributing</a></li>
-</ul>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="misc/hpc.html">Cellfinder installation in a cluster computing environment.</a></li>
-</ul>
-
+</div>
             
           
         </div>
@@ -161,7 +127,7 @@
     
       <li><a href="../../index.html">Docs</a> &raquo;</li>
         
-      <li>Training</li>
+      <li>&lt;no title&gt;</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -178,137 +144,112 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="training">
-<h1>Training<a class="headerlink" href="#training" title="Permalink to this headline">¶</a></h1>
+  <p># Training</p>
 <p>Cellfinder includes a pretrained network for cell candidate classification.
 This will likely need to be retrained for different applications. Rather than
 generate training data blindly, the aim is to reduce the amount of hands-on
 time by only generating training data where cellfinder classified a cell
 candidiate incorrectly.</p>
-<div class="section" id="generate-training-data">
-<h2>Generate training data<a class="headerlink" href="#generate-training-data" title="Permalink to this headline">¶</a></h2>
-<p>To generate training data, you will need:</p>
-<ul class="simple">
-<li><p>The cellfinder output file, <code class="docutils literal notranslate"><span class="pre">cell_classification.xml</span></code> (but <code class="docutils literal notranslate"><span class="pre">cells.xml</span></code>
-can also work).</p></li>
-<li><p>The raw data used initially for cellfinder</p></li>
-</ul>
-<p>To generate training data for a single brain, use <code class="docutils literal notranslate"><span class="pre">cellfinder_curate</span></code>:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>cellfinder_curate signal_images background_images cell_classification.xml
-</pre></div>
-</div>
-<div class="section" id="arguments">
-<h3>Arguments<a class="headerlink" href="#arguments" title="Permalink to this headline">¶</a></h3>
-<ul class="simple">
-<li><p>Signal images</p></li>
-<li><p>Background images</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">cell_classification.xml</span></code> file</p></li>
-</ul>
-<p><strong>Either</strong></p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">-x</span></code> or <code class="docutils literal notranslate"><span class="pre">--x-pixel-um</span></code> Pixel spacing of the data in the first dimension,
-specified in um.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">-y</span></code> or <code class="docutils literal notranslate"><span class="pre">--y-pixel-um</span></code> Pixel spacing of the data in the second dimension,
-specified in um.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">-z</span></code> or <code class="docutils literal notranslate"><span class="pre">--z-pixel-um</span></code> Pixel spacing of the data in the third dimension,
-specified in um.</p></li>
-</ul>
-<p><strong>Or</strong></p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">--metadata</span></code> Metadata file containing pixel sizes (any format supported
-by <a class="reference external" href="https://github.com/adamltyson/micrometa">micrometa</a> can be used).
-If both pixel sizes and metadata are provided, the command line arguments
-will take priority.</p></li>
-</ul>
-<p><strong>Optional</strong></p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">-o</span></code> or <code class="docutils literal notranslate"><span class="pre">--output</span></code> Output directory for curation results. If this is not
-given, then the directory containing <code class="docutils literal notranslate"><span class="pre">cell_classification.xml</span></code> will be used.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--symbol</span></code> Marker symbol (Default: <code class="docutils literal notranslate"><span class="pre">ring</span></code>)</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--marker-size</span></code> Marker size(Default: <code class="docutils literal notranslate"><span class="pre">15</span></code>)</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--opacity</span></code> Marker opacity (Default: <code class="docutils literal notranslate"><span class="pre">0.6</span></code>)</p></li>
-</ul>
-<p>A <a class="reference external" href="https://napari.org/">napari</a> window will then open, showing two tabs on the
-left hand side:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">Image</span></code> Selecting this allows you to change the contrast limits, to better
-visualise cells</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">Cell</span> <span class="pre">candidates</span></code> This shows the cell candidates than be curated. Cell
+<p>### Generate training data
+To generate training data, you will need:
+* The cellfinder output file, <cite>cell_classification.xml</cite> (but <cite>cells.xml</cite>
+can also work).
+* The raw data used initially for cellfinder</p>
+<p>To generate training data for a single brain, use <cite>cellfinder_curate</cite>:</p>
+<p><code class="docutils literal notranslate"><span class="pre">`bash</span>
+<span class="pre">cellfinder_curate</span> <span class="pre">signal_images</span> <span class="pre">background_images</span> <span class="pre">cell_classification.xml</span>
+<span class="pre">`</span></code></p>
+<p>#### Arguments
+* Signal images
+* Background images
+* <cite>cell_classification.xml</cite> file</p>
+<p><strong>Either</strong>
+* <cite>-x</cite> or <cite>–x-pixel-um</cite> Pixel spacing of the data in the first dimension,
+specified in um.
+* <cite>-y</cite> or <cite>–y-pixel-um</cite> Pixel spacing of the data in the second dimension,
+specified in um.
+* <cite>-z</cite> or <cite>–z-pixel-um</cite> Pixel spacing of the data in the third dimension,
+specified in um.</p>
+<p><strong>Or</strong>
+* <cite>–metadata</cite> Metadata file containing pixel sizes (any format supported
+by [micrometa](<a class="reference external" href="https://github.com/adamltyson/micrometa">https://github.com/adamltyson/micrometa</a>) can be used).</p>
+<blockquote>
+<div><p>If both pixel sizes and metadata are provided, the command line arguments
+will take priority.</p>
+</div></blockquote>
+<p><strong>Optional</strong>
+* <cite>-o</cite> or <cite>–output</cite> Output directory for curation results. If this is not
+given, then the directory containing <cite>cell_classification.xml</cite> will be used.
+* <cite>–symbol</cite> Marker symbol (Default: <cite>ring</cite>)
+* <cite>–marker-size</cite> Marker size(Default: <cite>15</cite>)
+* <cite>–opacity</cite> Marker opacity (Default: <cite>0.6</cite>)</p>
+<p>A [napari](<a class="reference external" href="https://napari.org/">https://napari.org/</a>) window will then open, showing two tabs on the
+left hand side:
+* <cite>Image</cite> Selecting this allows you to change the contrast limits, to better</p>
+<blockquote>
+<div><p>visualise cells
+* <cite>Cell candidates</cite> This shows the cell candidates than be curated. Cell
 candidates previously classified as cells are shown in yellow, and artifacts
-in blue.</p></li>
-</ul>
-<p>By selecting the <code class="docutils literal notranslate"><span class="pre">Cell</span> <span class="pre">candidates</span></code> tab and then the cell selecting tool
+in blue.</p>
+<p>By selecting the <cite>Cell candidates</cite> tab and then the cell selecting tool
 (arrow at the top), cell candidates can be selected (either individually,
-or many by dragging the cursor). There are then four keyboard commands:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">C</span></code> Confirm the classification result, and add this to the training set</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">T</span></code> Toggle the classification result (i.e. change the classification),
-and add this to the training set.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">Ctrl+S</span></code> Save the results to an xml file</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">Alt+E</span></code> Finish training. This will carry out three operations:</p>
-<ul>
-<li><p>Extract cubes around these points, into two directories (<code class="docutils literal notranslate"><span class="pre">cells</span></code> and
-<code class="docutils literal notranslate"><span class="pre">non_cells</span></code>).</p></li>
-<li><p>Generate a yaml file pointing to these files for use with
-<code class="docutils literal notranslate"><span class="pre">cellfinder_train</span></code> (see below)</p></li>
-<li><p>Close the viewer</p></li>
+or many by dragging the cursor). There are then four keyboard commands:
+* <cite>C</cite> Confirm the classification result, and add this to the training set
+* <cite>T</cite> Toggle the classification result (i.e. change the classification),
+and add this to the training set.
+* <cite>Ctrl+S</cite> Save the results to an xml file
+* <cite>Alt+E</cite> Finish training. This will carry out three operations:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Extract cubes around these points, into two directories (<cite>cells</cite> and</p></li>
 </ul>
-</li>
-</ul>
+<p><cite>non_cells</cite>).
+* Generate a yaml file pointing to these files for use with
+<cite>cellfinder_train</cite> (see below)
+* Close the viewer</p>
+</div></blockquote>
+</div></blockquote>
 <p>Once a yaml file has been generated, you can proceed to training. However, it
 is likely useful to generate yaml files from additional datasets.</p>
-</div>
-</div>
-<div class="section" id="start-training">
-<h2>Start training<a class="headerlink" href="#start-training" title="Permalink to this headline">¶</a></h2>
-<p>You can then use these yaml files for training</p>
+<p>### Start training
+You can then use these yaml files for training</p>
 <p><em>N.B. If you have any yaml files from previous versions of cellfinder, they
 will continue to work, but are not documented here. Just use them as
-you would the files from <code class="docutils literal notranslate"><span class="pre">cellfinder_curate</span></code>.</em></p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>cellfinder_train -y yaml_1.yml  yaml_2.yml -o /path/to/output/directory/
-</pre></div>
-</div>
-<div class="section" id="id1">
-<h3>Arguments<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">-y</span></code> or <code class="docutils literal notranslate"><span class="pre">--yaml</span></code> The path to the yaml files defining training data</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">-o</span></code> or <code class="docutils literal notranslate"><span class="pre">--output</span></code> Output directory for the trained model (or model weights)
-results</p></li>
-</ul>
-<p><strong>Optional</strong></p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">--continue-training</span></code> Continue training from an existing trained model.
+you would the files from `cellfinder_curate`.</em></p>
+<p><code class="docutils literal notranslate"><span class="pre">`bash</span>
+<span class="pre">cellfinder_train</span> <span class="pre">-y</span> <span class="pre">yaml_1.yml</span>&#160; <span class="pre">yaml_2.yml</span> <span class="pre">-o</span> <span class="pre">/path/to/output/directory/</span>
+<span class="pre">`</span></code></p>
+<p>#### Arguments
+* <cite>-y</cite> or <cite>–yaml</cite> The path to the yaml files defining training data
+* <cite>-o</cite> or <cite>–output</cite> Output directory for the trained model (or model weights)
+results</p>
+<p><strong>Optional</strong>
+* <cite>–continue-training</cite> Continue training from an existing trained model.
 If no model or model weights are specified, this will continue from the
-included model.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--trained-model</span></code> Path to a trained model to continue training</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--model-weights</span></code> Path to existing model weights to continue training</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--network-depth</span></code> Resnet depth
-(based on <a class="reference external" href="https://arxiv.org/abs/1512.03385">He et al. (2015)</a>). Choose from
+included model.
+* <cite>–trained-model</cite> Path to a trained model to continue training
+* <cite>–model-weights</cite> Path to existing model weights to continue training
+* <cite>–network-depth</cite> Resnet depth
+(based on [He et al. (2015)](<a class="reference external" href="https://arxiv.org/abs/1512.03385">https://arxiv.org/abs/1512.03385</a>)). Choose from
 (18, 34, 50, 101 or 152). In theory, a deeper network should classify better,
-at the expense of a larger model, and longer training time. Default: 50</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--batch-size</span></code> Batch size for training (how many cell candidates to process
-at once). Default: 16</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--epochs</span></code> How many times to use each sample for training. Default: 1000</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--test-fraction</span></code> What fraction of data to keep for validation. Default: 0.1</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--learning-rate</span></code> Learning rate for training the model</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--no-augment</span></code> Do not use data augmentation</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--save-weights</span></code> Only store the model weights, and not the full model.
-Useful to save storage space.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--save-checkpoints</span></code> Store the model at intermediate points during training</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--checkpoint-interval</span></code> Number of epochs between checkpoints</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--tensorboard</span></code> Log to <code class="docutils literal notranslate"><span class="pre">output_directory/tensorboard</span></code>. Use
-<code class="docutils literal notranslate"><span class="pre">tensorboard</span> <span class="pre">--logdir</span> <span class="pre">outputdirectory/tensorboard</span></code> to view.</p></li>
-</ul>
-</div>
-<div class="section" id="further-help">
-<h3>Further help<a class="headerlink" href="#further-help" title="Permalink to this headline">¶</a></h3>
-<p>All cellfinder_train options can be found by using the <code class="docutils literal notranslate"><span class="pre">-h</span></code> flag</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>cellfinder_train -h
-</pre></div>
-</div>
-</div>
-</div>
-</div>
+at the expense of a larger model, and longer training time. Default: 50
+* <cite>–batch-size</cite> Batch size for training (how many cell candidates to process
+at once). Default: 16
+* <cite>–epochs</cite> How many times to use each sample for training. Default: 1000
+* <cite>–test-fraction</cite> What fraction of data to keep for validation. Default: 0.1
+* <cite>–learning-rate</cite> Learning rate for training the model
+* <cite>–no-augment</cite> Do not use data augmentation
+* <cite>–save-weights</cite> Only store the model weights, and not the full model.
+Useful to save storage space.
+* <cite>–save-checkpoints</cite> Store the model at intermediate points during training
+* <cite>–checkpoint-interval</cite> Number of epochs between checkpoints
+* <cite>–tensorboard</cite> Log to <cite>output_directory/tensorboard</cite>. Use
+<cite>tensorboard –logdir outputdirectory/tensorboard</cite> to view.</p>
+<p>#### Further help
+All cellfinder_train options can be found by using the <cite>-h</cite> flag</p>
+<p><code class="docutils literal notranslate"><span class="pre">`</span> <span class="pre">bash</span>
+<span class="pre">cellfinder_train</span> <span class="pre">-h</span>
+<span class="pre">`</span></code></p>
 
 
            </div>
@@ -318,10 +259,10 @@ Useful to save storage space.</p></li>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="troubleshooting.html" class="btn btn-neutral float-right" title="Troubleshooting" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="troubleshooting.html" class="btn btn-neutral float-right" title="&lt;no title&gt;" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="run.html" class="btn btn-neutral float-left" title="Usage" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="run.html" class="btn btn-neutral float-left" title="&lt;no title&gt;" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

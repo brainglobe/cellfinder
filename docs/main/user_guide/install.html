@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Installation &mdash; Cellfinder  documentation</title>
+  <title>&lt;no title&gt; &mdash; Cellfinder  documentation</title>
   
 
   
@@ -21,10 +21,10 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
-        <script type="text/javascript" src="../../_static/jquery.js"></script>
-        <script type="text/javascript" src="../../_static/underscore.js"></script>
-        <script type="text/javascript" src="../../_static/doctools.js"></script>
-        <script type="text/javascript" src="../../_static/language_data.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/language_data.js"></script>
     
     <script type="text/javascript" src="../../_static/js/theme.js"></script>
 
@@ -35,7 +35,7 @@
   <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="Usage" href="run.html" />
+    <link rel="next" title="&lt;no title&gt;" href="run.html" />
     <link rel="prev" title="Cellfinder" href="../../index.html" /> 
 </head>
 
@@ -80,40 +80,10 @@
               
             
             
-              <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Installation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#if-required-install-cuda-for-gpu-support">If required, install CUDA for GPU-support</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#set-up-conda-environment-and-install-dependencies">Set up conda environment and install dependencies</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#optional-install-cuda-and-cudnn-into-the-conda-environment">Optional: Install CUDA and cuDNN into the conda environment:</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#install-cellfinder">Install cellfinder</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#download-atlas-and-trained-classification-models-optional">Download atlas and trained classification models (optional)</a></li>
+              <!-- Local TOC -->
+              <div class="local-toc"><ul class="simple">
 </ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="run.html">Usage</a></li>
-<li class="toctree-l1"><a class="reference internal" href="training.html">Training</a></li>
-<li class="toctree-l1"><a class="reference internal" href="troubleshooting.html">Troubleshooting</a></li>
-</ul>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="tools/cell_view_2D.html">Two dimensional cell viewer</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tools/cell_view_3D.html">Three dimensional viewer</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tools/cells_standard_space.html">Transforming cells into standard space</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tools/count_summary.html">Organise cells into atlas regions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tools/cube_extract.html">Cube extraction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tools/region_summary.html">Summarise cell counts from multiple brains</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tools/xml_crop.html">XML file cropping</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tools/xml_scale.html">XML file rescaling</a></li>
-</ul>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../about/release_notes.html">Releases</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../about/roadmap.html">Future Plans</a></li>
-</ul>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../dev/CONTRIBUTING.html">Contributing</a></li>
-</ul>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="misc/hpc.html">Cellfinder installation in a cluster computing environment.</a></li>
-</ul>
-
+</div>
             
           
         </div>
@@ -157,7 +127,7 @@
     
       <li><a href="../../index.html">Docs</a> &raquo;</li>
         
-      <li>Installation</li>
+      <li>&lt;no title&gt;</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -174,80 +144,68 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="installation">
-<h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
+  <p># Installation</p>
 <p><strong>For installation instructions in a cluster computing environment, see
-<a class="reference internal" href="misc/hpc.html"><span class="doc">here</span></a></strong></p>
+[here](misc/hpc.md)</strong></p>
 <p><strong>Only tested on Ubuntu 16.04 and 18.04</strong></p>
-<div class="section" id="if-required-install-cuda-for-gpu-support">
-<h2>If required, install CUDA for GPU-support<a class="headerlink" href="#if-required-install-cuda-for-gpu-support" title="Permalink to this headline">¶</a></h2>
-<p>Necessary for training cell classification, highly recommended for inference.
+<p>#### If required, install CUDA for GPU-support
+Necessary for training cell classification, highly recommended for inference.
 For compatibility, we require CUDA 10.1 and cuDNN &gt;=7.6, instructions can be
-found <a class="reference external" href="https://www.tensorflow.org/install/gpu">here</a>. If you need other
-versions of CUDA (for other work), please see <a class="reference external" href="https://blog.kovalevskyi.com/multiple-version-of-cuda-libraries-on-the-same-machine-b9502d50ae77">here</a> for how to link CUDA versions to conda environments.</p>
+found [here](<a class="reference external" href="https://www.tensorflow.org/install/gpu">https://www.tensorflow.org/install/gpu</a>). If you need other
+versions of CUDA (for other work), please see [here](<a class="reference external" href="https://blog.kovalevskyi.com/multiple-version-of-cuda-libraries-on-the-same-machine-b9502d50ae77">https://blog.kovalevskyi.com/multiple-version-of-cuda-libraries-on-the-same-machine-b9502d50ae77</a>) for how to link CUDA versions to conda environments.</p>
 <p>Alternatively, CUDA can be installed into your conda environment (see below).</p>
-</div>
-<div class="section" id="set-up-conda-environment-and-install-dependencies">
-<h2>Set up conda environment and install dependencies<a class="headerlink" href="#set-up-conda-environment-and-install-dependencies" title="Permalink to this headline">¶</a></h2>
+<p>#### Set up conda environment and install dependencies</p>
 <p><strong>Recommended, allthough not necessary</strong>
 Conda environments are used to isolate python versions and packages.</p>
 <p><strong>Once conda environment is set up, everything must be carried out
 in this environment</strong></p>
 <ul class="simple">
-<li><p>Download miniconda installation file
-<a class="reference external" href="https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh">here</a></p></li>
+<li><p>Download miniconda installation file</p></li>
+</ul>
+<p>[here](<a class="reference external" href="https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh">https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh</a>)</p>
+<ul class="simple">
 <li><p>Run miniconda installation file, e.g.:</p></li>
 </ul>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">bash</span> <span class="o">~/</span><span class="n">Downloads</span><span class="o">/</span><span class="n">Miniconda3</span><span class="o">-</span><span class="n">latest</span><span class="o">-</span><span class="n">Linux</span><span class="o">-</span><span class="n">x86_64</span><span class="o">.</span><span class="n">sh</span>
-</pre></div>
-</div>
-<ul class="simple">
-<li><p>Create and activate new minimal conda environment</p></li>
-</ul>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda create --name cellfinder <span class="nv">python</span><span class="o">=</span><span class="m">3</span>.7
-conda activate cellfinder
-</pre></div>
-</div>
-</div>
-<div class="section" id="optional-install-cuda-and-cudnn-into-the-conda-environment">
-<h2>Optional: Install CUDA and cuDNN into the conda environment:<a class="headerlink" href="#optional-install-cuda-and-cudnn-into-the-conda-environment" title="Permalink to this headline">¶</a></h2>
-<p><em>This avoids the need to install CUDA and cuDNN system-wide, but the GPU
+<p><code class="docutils literal notranslate"><span class="pre">`</span>
+<span class="pre">bash</span> <span class="pre">~/Downloads/Miniconda3-latest-Linux-x86_64.sh</span>
+<span class="pre">`</span></code>
+* Create and activate new minimal conda environment</p>
+<p><code class="docutils literal notranslate"><span class="pre">`</span> <span class="pre">bash</span>
+<span class="pre">conda</span> <span class="pre">create</span> <span class="pre">--name</span> <span class="pre">cellfinder</span> <span class="pre">python=3.7</span>
+<span class="pre">conda</span> <span class="pre">activate</span> <span class="pre">cellfinder</span>
+<span class="pre">`</span></code></p>
+<p>#### Optional: Install CUDA and cuDNN into the conda environment:
+<em>This avoids the need to install CUDA and cuDNN system-wide, but the GPU
 drivers are still required</em></p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda install <span class="nv">cudatoolkit</span><span class="o">=</span><span class="m">10</span>.1 cudnn
-</pre></div>
-</div>
-</div>
-<div class="section" id="install-cellfinder">
-<h2>Install cellfinder<a class="headerlink" href="#install-cellfinder" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip install cellfinder
-</pre></div>
-</div>
-<p><strong>If you use a conda environment, remember to activate it
-(<code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">activate</span> <span class="pre">cellfinder</span></code>) before using cellfinder.</strong></p>
-</div>
-<div class="section" id="download-atlas-and-trained-classification-models-optional">
-<h2>Download atlas and trained classification models (optional)<a class="headerlink" href="#download-atlas-and-trained-classification-models-optional" title="Permalink to this headline">¶</a></h2>
-<p>When cellfinder runs, the appropriate machine learning models and
+<p><code class="docutils literal notranslate"><span class="pre">`bash</span>
+<span class="pre">conda</span> <span class="pre">install</span> <span class="pre">cudatoolkit=10.1</span> <span class="pre">cudnn</span>
+<span class="pre">`</span></code></p>
+<p>#### Install cellfinder</p>
+<p><a href="#id1"><span class="problematic" id="id2">``</span></a>` bash
+pip install cellfinder</p>
+<p><a href="#id3"><span class="problematic" id="id4">``</span></a><a href="#id5"><span class="problematic" id="id6">`</span></a></p>
+<dl class="simple">
+<dt><a href="#id7"><span class="problematic" id="id8">**</span></a>If you use a conda environment, remember to activate it</dt><dd><p>(<cite>conda activate cellfinder</cite>) before using cellfinder.**</p>
+</dd>
+</dl>
+<p>#### Download atlas and trained classification models (optional)
+When cellfinder runs, the appropriate machine learning models and
 reference atlas will be downloaded (if not previously done so). If you would
 like to download in advance to save time (or if you will not have an internet
-connection) please use <code class="docutils literal notranslate"><span class="pre">cellfinder_download</span></code>.</p>
+connection) please use <cite>cellfinder_download</cite>.</p>
 <p>Currently, the only supported atlas is the Allen reference mouse
-brain, originally from <a class="reference external" href="http://help.brain-map.org/display/mouseconnectivity/API#API-DownloadAtlas">here</a>.
-The atlas will download into <code class="docutils literal notranslate"><span class="pre">./cellfinder/atlas</span></code>.</p>
+brain, originally from [here](<a class="reference external" href="http://help.brain-map.org/display/mouseconnectivity/API#API-DownloadAtlas">http://help.brain-map.org/display/mouseconnectivity/API#API-DownloadAtlas</a>).
+The atlas will download into <cite>./cellfinder/atlas</cite>.</p>
 <p>In the future, other atlases will be available, and you will be able to choose
 which is downloaded.</p>
-<p>If you want to modify the cellfinder download, use:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">--atlas-install-path</span></code> Supply a path to download the atlas elsewhere. This
-should also update the default <code class="docutils literal notranslate"><span class="pre">cellfinder.conf</span></code> file so that the correct
+<p>If you want to modify the cellfinder download, use:
+* <cite>–atlas-install-path</cite> Supply a path to download the atlas elsewhere. This
+should also update the default <cite>cellfinder.conf</cite> file so that the correct
 atlas is sourced. Alternatively, use this command to tell cellfinder where an
 existing atlas is, to save it being downloaded twice. (Requires 20GB
-disk space)</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">--atlas</span> <span class="pre">download</span> <span class="pre">path</span></code> The path to download the atlas into.
-(Requires 1.2GB disk space). Defaults to <code class="docutils literal notranslate"><span class="pre">/tmp</span></code>.</p></li>
-</ul>
-</div>
-</div>
+disk space)
+* <cite>–atlas download path</cite> The path to download the atlas into.
+(Requires 1.2GB disk space). Defaults to <cite>/tmp</cite>.</p>
 
 
            </div>
@@ -257,7 +215,7 @@ disk space)</p></li>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="run.html" class="btn btn-neutral float-right" title="Usage" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="run.html" class="btn btn-neutral float-right" title="&lt;no title&gt;" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="../../index.html" class="btn btn-neutral float-left" title="Cellfinder" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>

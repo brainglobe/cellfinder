@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Three dimensional viewer &mdash; Cellfinder  documentation</title>
+  <title>&lt;no title&gt; &mdash; Cellfinder  documentation</title>
   
 
   
@@ -21,10 +21,10 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
-        <script type="text/javascript" src="../../../_static/jquery.js"></script>
-        <script type="text/javascript" src="../../../_static/underscore.js"></script>
-        <script type="text/javascript" src="../../../_static/doctools.js"></script>
-        <script type="text/javascript" src="../../../_static/language_data.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/language_data.js"></script>
     
     <script type="text/javascript" src="../../../_static/js/theme.js"></script>
 
@@ -35,8 +35,8 @@
   <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="Transforming cells into standard space" href="cells_standard_space.html" />
-    <link rel="prev" title="Two dimensional cell viewer" href="cell_view_2D.html" /> 
+    <link rel="next" title="&lt;no title&gt;" href="cells_standard_space.html" />
+    <link rel="prev" title="&lt;no title&gt;" href="cell_view_2D.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -80,42 +80,10 @@
               
             
             
-              <ul>
-<li class="toctree-l1"><a class="reference internal" href="../install.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../run.html">Usage</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../training.html">Training</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../troubleshooting.html">Troubleshooting</a></li>
+              <!-- Local TOC -->
+              <div class="local-toc"><ul class="simple">
 </ul>
-<ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="cell_view_2D.html">Two dimensional cell viewer</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Three dimensional viewer</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#usage">Usage</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#arguments">Arguments</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#mandatory">Mandatory</a></li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="cells_standard_space.html">Transforming cells into standard space</a></li>
-<li class="toctree-l1"><a class="reference internal" href="count_summary.html">Organise cells into atlas regions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="cube_extract.html">Cube extraction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="region_summary.html">Summarise cell counts from multiple brains</a></li>
-<li class="toctree-l1"><a class="reference internal" href="xml_crop.html">XML file cropping</a></li>
-<li class="toctree-l1"><a class="reference internal" href="xml_scale.html">XML file rescaling</a></li>
-</ul>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../../about/release_notes.html">Releases</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../about/roadmap.html">Future Plans</a></li>
-</ul>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../../dev/CONTRIBUTING.html">Contributing</a></li>
-</ul>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../misc/hpc.html">Cellfinder installation in a cluster computing environment.</a></li>
-</ul>
-
+</div>
             
           
         </div>
@@ -159,7 +127,7 @@
     
       <li><a href="../../../index.html">Docs</a> &raquo;</li>
         
-      <li>Three dimensional viewer</li>
+      <li>&lt;no title&gt;</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -176,31 +144,23 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="three-dimensional-viewer">
-<h1>Three dimensional viewer<a class="headerlink" href="#three-dimensional-viewer" title="Permalink to this headline">¶</a></h1>
-<p><strong>3D image viewing using <a class="reference external" href="http://napari.org/">napari</a></strong></p>
+  <p># Three dimensional viewer</p>
+<p><strong>3D image viewing using [napari](http://napari.org/)</strong></p>
 <p><strong>Work in progress, for the time being, I recommend
-<a class="reference external" href="https://imagej.net/ClearVolume">ClearVolume</a> in
-<a class="reference external" href="https://fiji.sc/#download">ImageJ</a></strong></p>
-<p>Unlike the <a class="reference internal" href="cell_view_2D.html"><span class="doc">two dimensional cell viewer</span></a>, the data must fit
-into RAM.</p>
-<div class="section" id="usage">
-<h2>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>    cellfinder_view_3D -/path/to/image
-</pre></div>
-</div>
-<div class="section" id="arguments">
-<h3>Arguments<a class="headerlink" href="#arguments" title="Permalink to this headline">¶</a></h3>
-<div class="section" id="mandatory">
-<h4>Mandatory<a class="headerlink" href="#mandatory" title="Permalink to this headline">¶</a></h4>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">-i</span></code> or <code class="docutils literal notranslate"><span class="pre">--img-paths</span></code> Can be the path of a nifti file, tiff file,
-tiff files folder or text file containing a list of paths</p></li>
-</ul>
-</div>
-</div>
-</div>
-</div>
+[ClearVolume](https://imagej.net/ClearVolume) in
+[ImageJ](https://fiji.sc/#download)</strong></p>
+<p>Unlike the [two dimensional cell viewer](./cell_view_2D.md), the data must fit
+into RAM.
+## Usage</p>
+<dl class="simple">
+<dt><a href="#id1"><span class="problematic" id="id2">``</span></a>` bash</dt><dd><p>cellfinder_view_3D -/path/to/image</p>
+</dd>
+</dl>
+<p><a href="#id3"><span class="problematic" id="id4">``</span></a><a href="#id5"><span class="problematic" id="id6">`</span></a></p>
+<p>### Arguments
+#### Mandatory
+* <cite>-i</cite> or <cite>–img-paths</cite> Can be the path of a nifti file, tiff file,
+tiff files folder or text file containing a list of paths</p>
 
 
            </div>
@@ -210,10 +170,10 @@ tiff files folder or text file containing a list of paths</p></li>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="cells_standard_space.html" class="btn btn-neutral float-right" title="Transforming cells into standard space" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="cells_standard_space.html" class="btn btn-neutral float-right" title="&lt;no title&gt;" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="cell_view_2D.html" class="btn btn-neutral float-left" title="Two dimensional cell viewer" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="cell_view_2D.html" class="btn btn-neutral float-left" title="&lt;no title&gt;" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
