@@ -53,7 +53,7 @@ master_doc = "index"
 
 # General information about the project.
 project = "Cellfinder"
-copyright = "2019, Sainsbury Wellcome Centre"
+copyright = "2020, Sainsbury Wellcome Centre"
 author = "Adam Tyson, Charly Rousseau & Christian Niedworok"
 
 # The version info for the project you're documenting, acts as replacement for
