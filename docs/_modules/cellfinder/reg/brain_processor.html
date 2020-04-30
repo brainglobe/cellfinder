@@ -1,0 +1,393 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>cellfinder.reg.brain_processor &mdash; Cellfinder  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> Cellfinder
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../main/user_guide/install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../main/user_guide/run.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../main/user_guide/training.html">Training</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../main/user_guide/troubleshooting.html">Troubleshooting</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../main/user_guide/tools/cell_view_2D.html">Two dimensional cell viewer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../main/user_guide/tools/cell_view_3D.html">Three dimensional viewer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../main/user_guide/tools/cells_standard_space.html">Transforming cells into standard space</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../main/user_guide/tools/count_summary.html">Organise cells into atlas regions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../main/user_guide/tools/cube_extract.html">Cube extraction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../main/user_guide/tools/generate_region_volume.html">Region image generation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../main/user_guide/tools/region_summary.html">Summarise cell counts from multiple brains</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../main/user_guide/tools/roi_transform.html">ROI transformation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../main/user_guide/tools/xml_crop.html">XML file cropping</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../main/user_guide/tools/xml_scale.html">XML file rescaling</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../main/about/release_notes.html">Releases</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../main/about/roadmap.html">Future Plans</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../main/dev/CONTRIBUTING.html">Contributing</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../main/user_guide/misc/hpc.html">Cellfinder installation in a cluster computing environment.</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Cellfinder</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>cellfinder.reg.brain_processor</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for cellfinder.reg.brain_processor</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">brain_processor</span>
+<span class="sd">===============</span>
+
+<span class="sd">A module to prepare brains for registration</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">tqdm</span> <span class="kn">import</span> <span class="n">trange</span>
+<span class="kn">from</span> <span class="nn">brainio</span> <span class="kn">import</span> <span class="n">brainio</span>
+
+<span class="kn">from</span> <span class="nn">cellfinder.reg.config.atlas</span> <span class="kn">import</span> <span class="n">Atlas</span>
+<span class="kn">from</span> <span class="nn">cellfinder.tools</span> <span class="kn">import</span> <span class="n">image_processing</span>
+<span class="kn">from</span> <span class="nn">cellfinder.tools</span> <span class="kn">import</span> <span class="n">tools</span>
+
+<span class="n">transpositions</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;horizontal&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>
+    <span class="s2">&quot;coronal&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+    <span class="s2">&quot;sagittal&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+<span class="p">}</span>
+
+
+<div class="viewcode-block" id="BrainProcessor"><a class="viewcode-back" href="../../../main/api/registration.html#cellfinder.reg.brain_processor.BrainProcessor">[docs]</a><span class="k">class</span> <span class="nc">BrainProcessor</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A class to do some basic processing to the brains (3D image scans)</span>
+<span class="sd">    including:</span>
+<span class="sd">    - Changing the orientation</span>
+<span class="sd">    - filtering using despeckle and pseudo flatfield</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="BrainProcessor.__init__"><a class="viewcode-back" href="../../../main/api/registration.html#cellfinder.reg.brain_processor.BrainProcessor.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">config_path</span><span class="p">,</span>
+        <span class="n">target_brain_path</span><span class="p">,</span>
+        <span class="n">output_folder</span><span class="p">,</span>
+        <span class="n">x_pix_um</span><span class="p">,</span>
+        <span class="n">y_pix_um</span><span class="p">,</span>
+        <span class="n">z_pix_um</span><span class="p">,</span>
+        <span class="n">original_orientation</span><span class="o">=</span><span class="s2">&quot;coronal&quot;</span><span class="p">,</span>
+        <span class="n">load_parallel</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">sort_input_file</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">load_atlas</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">n_free_cpus</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+        <span class="n">scaling_rounding_decimals</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param str target_brain_path: The path to the brain to be processed</span>
+<span class="sd">            (image file, paths file or folder)</span>
+<span class="sd">        :param str output_folder: The folder where to store the results</span>
+<span class="sd">        :param float x_pix_um: The pixel spacing in the x dimension. It is</span>
+<span class="sd">            used to scale the brain to the atlas.</span>
+<span class="sd">        :param float y_pix_um: The pixel spacing in the x dimension. It is</span>
+<span class="sd">            used to scale the brain to the atlas.</span>
+<span class="sd">        :param float z_pix_um: The pixel spacing in the x dimension. It is</span>
+<span class="sd">            used to scale the brain to the atlas.</span>
+<span class="sd">        :param str original_orientation:</span>
+<span class="sd">        :param bool load_parallel: Load planes in parallel using</span>
+<span class="sd">            multiprocessing for faster data loading</span>
+<span class="sd">        :param bool sort_input_file: If set to true and the input is a</span>
+<span class="sd">            filepaths file, it will be naturally sorted</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">target_brain_path</span> <span class="o">=</span> <span class="n">target_brain_path</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">atlas</span> <span class="o">=</span> <span class="n">Atlas</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="n">dest_folder</span><span class="o">=</span><span class="n">output_folder</span><span class="p">)</span>
+        <span class="n">atlas_pixel_sizes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">atlas</span><span class="o">.</span><span class="n">pix_sizes</span>
+
+        <span class="n">x_scaling</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span>
+            <span class="n">x_pix_um</span> <span class="o">/</span> <span class="n">atlas_pixel_sizes</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">],</span> <span class="n">scaling_rounding_decimals</span>
+        <span class="p">)</span>
+        <span class="n">y_scaling</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span>
+            <span class="n">y_pix_um</span> <span class="o">/</span> <span class="n">atlas_pixel_sizes</span><span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">],</span> <span class="n">scaling_rounding_decimals</span>
+        <span class="p">)</span>
+        <span class="n">z_scaling</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span>
+            <span class="n">z_pix_um</span> <span class="o">/</span> <span class="n">atlas_pixel_sizes</span><span class="p">[</span><span class="s2">&quot;z&quot;</span><span class="p">],</span> <span class="n">scaling_rounding_decimals</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">original_orientation</span> <span class="o">=</span> <span class="n">original_orientation</span>
+
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Loading raw image data&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">target_brain</span> <span class="o">=</span> <span class="n">brainio</span><span class="o">.</span><span class="n">load_any</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">target_brain_path</span><span class="p">,</span>
+            <span class="n">x_scaling</span><span class="p">,</span>
+            <span class="n">y_scaling</span><span class="p">,</span>
+            <span class="n">z_scaling</span><span class="p">,</span>
+            <span class="n">load_parallel</span><span class="o">=</span><span class="n">load_parallel</span><span class="p">,</span>
+            <span class="n">sort_input_file</span><span class="o">=</span><span class="n">sort_input_file</span><span class="p">,</span>
+            <span class="n">n_free_cpus</span><span class="o">=</span><span class="n">n_free_cpus</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">swap_numpy_to_image_axis</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output_folder</span> <span class="o">=</span> <span class="n">output_folder</span>
+
+        <span class="k">if</span> <span class="n">load_atlas</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">atlas</span><span class="o">.</span><span class="n">load_all</span><span class="p">()</span></div>
+
+    <span class="k">def</span> <span class="nf">swap_numpy_to_image_axis</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">target_brain</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">swapaxes</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target_brain</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+<div class="viewcode-block" id="BrainProcessor.flip"><a class="viewcode-back" href="../../../main/api/registration.html#cellfinder.reg.brain_processor.BrainProcessor.flip">[docs]</a>    <span class="k">def</span> <span class="nf">flip</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">axes</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Flips the brain along the specified axes.</span>
+
+<span class="sd">        :param tuple axes: a tuple of 3 booleans indicating which axes to</span>
+<span class="sd">            flip or not</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">axis_idx</span><span class="p">,</span> <span class="n">flip_axis</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">axes</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">flip_axis</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">target_brain</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target_brain</span><span class="p">,</span> <span class="n">axis_idx</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">flip_atlas</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">axes</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">atlas</span><span class="o">.</span><span class="n">flip</span><span class="p">(</span><span class="n">axes</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">swap_atlas_orientation_to_self</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">atlas</span><span class="o">.</span><span class="n">reorientate_to_sample</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">original_orientation</span><span class="p">)</span>
+
+<div class="viewcode-block" id="BrainProcessor.filter"><a class="viewcode-back" href="../../../main/api/registration.html#cellfinder.reg.brain_processor.BrainProcessor.filter">[docs]</a>    <span class="k">def</span> <span class="nf">filter</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Applies a set of filters to the brain to avoid overfitting details in</span>
+<span class="sd">        the image during registration.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">target_brain</span> <span class="o">=</span> <span class="n">BrainProcessor</span><span class="o">.</span><span class="n">filter_for_registration</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">target_brain</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="BrainProcessor.filter_for_registration"><a class="viewcode-back" href="../../../main/api/registration.html#cellfinder.reg.brain_processor.BrainProcessor.filter_for_registration">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">filter_for_registration</span><span class="p">(</span><span class="n">brain</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        A static method to filter a 3D image to allow registration</span>
+<span class="sd">        (avoids overfitting details in the image) (algorithm from Alex Brown).</span>
+<span class="sd">        The filter is composed of a despeckle filter using opening and a</span>
+<span class="sd">        pseudo flatfield filter</span>
+
+<span class="sd">        :return: The filtered brain</span>
+<span class="sd">        :rtype: np.array</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">brain</span> <span class="o">=</span> <span class="n">brain</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="c1"># OPTIMISE: could multiprocess but not slow</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">trange</span><span class="p">(</span><span class="n">brain</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;filtering&quot;</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;plane&quot;</span><span class="p">):</span>
+            <span class="c1"># OPTIMISE: see if in place better</span>
+            <span class="n">brain</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">filter_plane_for_registration</span><span class="p">(</span><span class="n">brain</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">i</span><span class="p">])</span>
+        <span class="n">brain</span> <span class="o">=</span> <span class="n">tools</span><span class="o">.</span><span class="n">scale_and_convert_to_16_bits</span><span class="p">(</span><span class="n">brain</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">brain</span></div>
+
+<div class="viewcode-block" id="BrainProcessor.save"><a class="viewcode-back" href="../../../main/api/registration.html#cellfinder.reg.brain_processor.BrainProcessor.save">[docs]</a>    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dest_path</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Save self.target_brain to dest_path as a nifty image.</span>
+<span class="sd">        The scale (zooms of the output nifty image) is copied from the atlas</span>
+<span class="sd">        brain.</span>
+
+<span class="sd">        :param str dest_path: Where to save the image on the filesystem</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">atlas_pix_sizes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">atlas</span><span class="o">.</span><span class="n">pix_sizes</span>
+        <span class="n">transformation_matrix</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">atlas</span><span class="o">.</span><span class="n">make_atlas_scale_transformation_matrix</span><span class="p">()</span>
+        <span class="p">)</span>
+        <span class="n">brainio</span><span class="o">.</span><span class="n">to_nii</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">target_brain</span><span class="p">,</span>
+            <span class="n">dest_path</span><span class="p">,</span>
+            <span class="n">scale</span><span class="o">=</span><span class="p">(</span>
+                <span class="n">atlas_pix_sizes</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">,</span>
+                <span class="n">atlas_pix_sizes</span><span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">]</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">,</span>
+                <span class="n">atlas_pix_sizes</span><span class="p">[</span><span class="s2">&quot;z&quot;</span><span class="p">]</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="n">affine_transform</span><span class="o">=</span><span class="n">transformation_matrix</span><span class="p">,</span>
+        <span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="filter_plane_for_registration"><a class="viewcode-back" href="../../../main/api/registration.html#cellfinder.reg.brain_processor.filter_plane_for_registration">[docs]</a><span class="k">def</span> <span class="nf">filter_plane_for_registration</span><span class="p">(</span><span class="n">img_plane</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Apply a set of filter to the plane (typically to avoid overfitting details</span>
+<span class="sd">    in the image duringregistration)</span>
+<span class="sd">    The filter is composed of a despeckle filter using opening and a pseudo</span>
+<span class="sd">    flatfield filter</span>
+
+<span class="sd">    :param np.array img_plane: A 2D array to filter</span>
+<span class="sd">    :return: The filtered image</span>
+<span class="sd">    :rtype: np.array</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">img_plane</span> <span class="o">=</span> <span class="n">image_processing</span><span class="o">.</span><span class="n">despeckle_by_opening</span><span class="p">(</span><span class="n">img_plane</span><span class="p">)</span>
+    <span class="n">img_plane</span> <span class="o">=</span> <span class="n">image_processing</span><span class="o">.</span><span class="n">pseudo_flatfield</span><span class="p">(</span><span class="n">img_plane</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">img_plane</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Sainsbury Wellcome Centre
+
+    </p>
+  </div> 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

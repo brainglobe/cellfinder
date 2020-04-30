@@ -1,0 +1,279 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Converting cells to brainrender format &mdash; Cellfinder 0.3.5 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="Organise cells into atlas regions" href="count_summary.html" />
+    <link rel="prev" title="Transforming cells into standard space" href="cells_standard_space.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> Cellfinder
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.3.5
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../run.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../training.html">Training</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../troubleshooting.html">Troubleshooting</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="cell_view_2D.html">Two dimensional cell viewer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cell_view_3D.html">Three dimensional viewer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cells_standard_space.html">Transforming cells into standard space</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Converting cells to brainrender format</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#arguments">Arguments</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#positional">Positional</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#the-following-options-may-also-need-to-be-used">The following options may also need to be used:</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#to-visualise-this-file-in-brainrender">To visualise this file in BrainRender</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="count_summary.html">Organise cells into atlas regions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cube_extract.html">Cube extraction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="figures.html">Generate figures</a></li>
+<li class="toctree-l1"><a class="reference internal" href="generate_region_volume.html">Region image generation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="region_summary.html">Summarise cell counts from multiple brains</a></li>
+<li class="toctree-l1"><a class="reference internal" href="roi_transform.html">ROI transformation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="xml_crop.html">XML file cropping</a></li>
+<li class="toctree-l1"><a class="reference internal" href="xml_scale.html">XML file rescaling</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../about/release_notes.html">Releases</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../about/roadmap.html">Future Plans</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../dev/CONTRIBUTING.html">Contributing</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../misc/hpc.html">Cellfinder installation in a cluster computing environment.</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Cellfinder</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+      <li>Converting cells to brainrender format</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="converting-cells-to-brainrender-format">
+<h1>Converting cells to brainrender format<a class="headerlink" href="#converting-cells-to-brainrender-format" title="Permalink to this headline">¶</a></h1>
+<p><strong>Temporary tool until a Cellfinder -&gt; BrainRender bridge is finalised</strong></p>
+<p>To convert cell positions (e.g. in <code class="docutils literal notranslate"><span class="pre">cells_in_standard_space.xml</span></code>) to
+a format that can be used in
+<a class="reference external" href="https://github.com/BrancoLab/BrainRender">BrainRender</a>.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>    cellfinder_cells_to_brainrender cells_in_standard_space.xml exported_cells.h5
+</pre></div>
+</div>
+<div class="section" id="arguments">
+<h2>Arguments<a class="headerlink" href="#arguments" title="Permalink to this headline">¶</a></h2>
+<p>Run <code class="docutils literal notranslate"><span class="pre">cellfinder_cells_to_brainrender</span> <span class="pre">-h</span></code> to see all options.</p>
+<div class="section" id="positional">
+<h3>Positional<a class="headerlink" href="#positional" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Cellfinder cells file to be converted</p></li>
+<li><p>Output filename. Should end with ‘.h5’</p></li>
+</ul>
+</div>
+<div class="section" id="the-following-options-may-also-need-to-be-used">
+<h3>The following options may also need to be used:<a class="headerlink" href="#the-following-options-may-also-need-to-be-used" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">-x</span></code> or <code class="docutils literal notranslate"><span class="pre">--x-pixel-size</span></code> Pixel spacing of the data that the cells are
+defined in, in the first dimension, specified in um. (Default: 10)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">-y</span></code> or <code class="docutils literal notranslate"><span class="pre">--y-pixel-size</span></code> Pixel spacing of the data that the cells are
+defined in, in the second dimension, specified in um. (Default: 10)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">-z</span></code> or <code class="docutils literal notranslate"><span class="pre">--z-pixel-size</span></code> Pixel spacing of the data that the cells are
+defined in, in the third dimension, specified in um. (Default: 10)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--max-z</span></code> Maximum z extent of the atlas, specified in um. (Default: 13200)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--hdf-key</span></code> HDF identifying key. If this has changed, it must be specified
+in the call to <code class="docutils literal notranslate"><span class="pre">BrainRender.scene.Scene.add_cells_from_file()</span></code></p></li>
+</ul>
+</div>
+</div>
+<div class="section" id="to-visualise-this-file-in-brainrender">
+<h2>To visualise this file in BrainRender<a class="headerlink" href="#to-visualise-this-file-in-brainrender" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">BrainRender.scene</span> <span class="kn">import</span> <span class="n">Scene</span>
+<span class="n">scene</span> <span class="o">=</span> <span class="n">Scene</span><span class="p">(</span><span class="n">jupyter</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">scene</span><span class="o">.</span><span class="n">add_cells_from_file</span><span class="p">(</span><span class="s2">&quot;exported_cells.h5&quot;</span><span class="p">)</span>
+<span class="n">scene</span><span class="o">.</span><span class="n">render</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="count_summary.html" class="btn btn-neutral float-right" title="Organise cells into atlas regions" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="cells_standard_space.html" class="btn btn-neutral float-left" title="Transforming cells into standard space" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Sainsbury Wellcome Centre
+
+    </p>
+  </div> 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
