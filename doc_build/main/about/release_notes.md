@@ -3,6 +3,7 @@
 ## Version 0.3.12 (2020-04-30)
 ### Main updates
 * Windows bug fix thanks to [@EmanPaoli](https://github.com/EmanPaoli)
+* Prebuilt wheels now released for Linux, Windows and macOS (untested)
 
 ### Developers
 * Update dependencies & refactor usage of amap api
