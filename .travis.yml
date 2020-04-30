@@ -45,6 +45,7 @@ jobs:
 #        - source activate test-environment
       script: travis_wait 40 bash travis/test_windows.sh
     - stage: deploy
+      name: "Deploy Linux (py36 & py37)"
       services:
         - docker
       script:
@@ -58,14 +59,18 @@ jobs:
         - pip install twine
         - ls pypi_upload/*
         - twine upload pypi_upload/* --skip-existing
-#    - stage: deploy
-#      language: shell # 'language: python' is an error on Travis CI Windows
-#      os: windows
-#      script:
-#        - python setup.py bdist_wheel
-#      after_success:
-#        - pip install twine
-#        - twine upload dist\* --skip-existing
+    - stage: deploy
+      name: "Deploy Windows (py36)"
+      language: shell
+      env: TRAVIS_PYTHON_VERSION=3.6
+      os: windows
+      before_install:
+        - source travis/install_windows.sh
+      script:
+        - source travis/build_linux_wheels.sh
+      after_success:
+        - pip install twine
+        - twine upload dist/* --skip-existing
 
 notifications:
   email:
