@@ -27,3 +27,6 @@ conda config --set always_yes yes --set changeps1 no;
 conda update -q conda;
 # Useful for debugging any issues with conda
 conda info -a
+
+conda create -n test-environment python=$TRAVIS_PYTHON_VERSION
+source activate test-environment
