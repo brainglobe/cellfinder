@@ -8,8 +8,8 @@ like [amap](https://github.com/SainsburyWellcomeCentre/amap-python),
 [neuro](https://github.com/SainsburyWellcomeCentre/neuro), 
 [brainio](https://github.com/adamltyson/brainio),
 [imlib](https://github.com/adamltyson/imlib) etc.) please get in touch via
-[email](mailto:adam.tyson@ucl.ac.uk?subject=cellfinder), or better yet
-by starting a discussion on the 
+[email](mailto:adam.tyson@ucl.ac.uk?subject=cellfinder-development), or 
+better yet by starting a discussion on the 
 [gitter dev channel](https://gitter.im/cellfinder/dev). You might find that 
 there is someone already working on something similar, and you can work 
 together.
