@@ -1,4 +1,4 @@
-##Contributing to cellfinder
+## Contributing to cellfinder
 
 Contributors to cellfinder are absolutely encouraged, whether you want to fix 
 bugs, or add new features to better suit your data.
