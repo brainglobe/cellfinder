@@ -26,6 +26,9 @@ In all cases, please submit code to the main repository via a pull request.
 Upon approval, please merge via "Squash and Merge" on Github to maintain a 
 clean commit history.
 
+Please submit pull requests as early as possible (you can still push to the
+branch once submitted) to allow discussion.
+
 #### Formatting
 `cellfinder` uses [Black](https://github.com/python/black) to ensure a consistent 
 code style. Please run `black ./ -l 79 --target-version py37` before making 
