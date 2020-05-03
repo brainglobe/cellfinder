@@ -15,7 +15,6 @@ from imlib.IO.yaml import save_yaml
 
 from cellfinder.extract.extract_cubes import main as extract_cubes_main
 import cellfinder.tools.parser as cellfinder_parse
-from cellfinder.viewer.two_dimensional import estimate_image_max
 
 OUTPUT_NAME = "curated_cells.xml"
 CURATED_POINTS = []
@@ -103,8 +102,7 @@ def main():
     with napari.gui_qt():
         viewer = napari.Viewer(title="Cellfinder cell curation")
         images = magic_imread(img_paths, use_dask=True, stack=True)
-        max_value = estimate_image_max(img_paths)
-        viewer.add_image(images, contrast_limits=[0, max_value])
+        viewer.add_image(images, is_pyramid=False)
         face_color_cycle = ["lightskyblue", "lightgoldenrodyellow"]
         points_layer = viewer.add_points(
             cells,
