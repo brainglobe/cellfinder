@@ -4,7 +4,7 @@ Cellfinder
 Introduction:
 --------------
 Cellfinder is a collection of tools from the
-`Margrie Lab <https://www.sainsburywellcome.org/web/people/troy-margrie/>`_
+`Margrie Lab <https://www.sainsburywellcome.org/web/groups/margrie-lab/>`_
 and others at the
 `Sainsbury Wellcome Centre <https://www.sainsburywellcome.org/web/>`_
 for the analysis of whole-brain imaging data such as
