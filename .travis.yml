@@ -40,17 +40,17 @@ jobs:
       before_install:
         - source travis/install_windows.sh
       script: travis_wait 40 bash travis/test_windows.sh
-#    - stage: test
-#      name: "macOS Python 3.6"
-#      os: osx
+    - stage: test
+      name: "macOS Python 3.6"
+      os: osx
 #      osx_image: xcode9.2   #macOS 10.12
-#      language: shell
-#      env: TRAVIS_PYTHON_VERSION=3.6
-#      script: travis_wait 40 bash travis/install_test_osx.sh
+      language: shell
+      env: TRAVIS_PYTHON_VERSION=3.6
+      script: travis_wait 40 bash travis/install_test_osx.sh
     - stage: test
       name: "macOS Python 3.7"
       os: osx
-      osx_image: xcode9.2   #macOS 10.12
+#      osx_image: xcode9.2   #macOS 10.12
       language: shell
       env: TRAVIS_PYTHON_VERSION=3.7
       script: travis_wait 40 bash travis/install_test_osx.sh
