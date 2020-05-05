@@ -3,8 +3,10 @@
 **For installation instructions in a cluster computing environment, see 
 [here](misc/hpc.md)**
 
-**Only tested on Ubuntu 16.04 and 18.04**
+**Tested on Ubuntu (16.04 & 18.04) and Windows 10.**
 
+All instructions here are for a Linux environment, but they should 
+mostly be the same on Windows (apart from paths etc.).
 
 #### If required, install CUDA for GPU-support 
 Necessary for training cell classification, highly recommended for inference.
