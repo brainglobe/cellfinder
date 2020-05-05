@@ -1,5 +1,6 @@
 [![Python Version](https://img.shields.io/pypi/pyversions/cellfinder.svg)](https://pypi.org/project/cellfinder)
 [![PyPI](https://img.shields.io/pypi/v/cellfinder.svg)](https://pypi.org/project/cellfinder)
+[![PyPI](https://img.shields.io/pypi/dm/cellfinder)](https://pypistats.org/packages/cellfinder)
 [![Wheel](https://img.shields.io/pypi/wheel/cellfinder.svg)](https://pypi.org/project/cellfinder)
 [![Development Status](https://img.shields.io/pypi/status/cellfinder.svg)](https://github.com/SainsburyWellcomeCentre/cellfinder)
 [![Travis](https://img.shields.io/travis/com/SainsburyWellcomeCentre/cellfinder?label=Travis%20CI)](
@@ -9,8 +10,9 @@
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/python/black)
 [![Gitter](https://badges.gitter.im/cellfinder.svg)](https://gitter.im/cellfinder/?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3665329.svg)](https://doi.org/10.5281/zenodo.3665329)
-[![Generic badge](https://img.shields.io/badge/Contributions-Welcome-brightgreen.svg)](https://sainsburywellcomecentre.github.io/cellfinder/main/dev/CONTRIBUTING.html)
-
+[![Contributions](https://img.shields.io/badge/Contributions-Welcome-brightgreen.svg)](https://sainsburywellcomecentre.github.io/cellfinder/main/dev/CONTRIBUTING.html)
+[![Website](https://img.shields.io/website?up_message=online&url=https%3A%2F%2Fcellfinder.info)](https://cellfinder.info)
+[![Twitter](https://img.shields.io/twitter/follow/findingcells?style=social)](https://twitter.com/findingcells)
 # Cellfinder
 Whole-brain cell detection, registration and analysis.
 
