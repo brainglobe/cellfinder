@@ -1,5 +1,14 @@
 # Releases 
 
+## Version 0.3.13 (TBC)
+### Main updates
+* Support is now officially for Windows and Linux. macOS should generally 
+work, but there may be issues. 
+* [NiftyReg](http://cmictig.cs.ucl.ac.uk/wiki/index.php/NiftyReg) version 
+has been updated. Registration should now be slightly faster.
+
+
+
 ## Version 0.3.12 (2020-04-30)
 ### Main updates
 * Windows bug fix thanks to [@EmanPaoli](https://github.com/EmanPaoli)
