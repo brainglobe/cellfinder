@@ -25,6 +25,20 @@ jobs:
       python: 3.7
       script: travis_wait 40 bash travis/install_test_linux.sh
     - stage: test
+      name: "Ubuntu Xenial python 3.6"
+      language: python
+      os: linux
+      dist: xenial
+      python: 3.6
+      script: travis_wait 40 bash travis/install_test_linux.sh
+    - stage: test
+      name: "Ubuntu Xenial python 3.7"
+      language: python
+      os: linux
+      dist: xenial
+      python: 3.7
+      script: travis_wait 40 bash travis/install_test_linux.sh
+    - stage: test
       name: "Windows Python 3.6"
       language: shell
       env: TRAVIS_PYTHON_VERSION=3.6
