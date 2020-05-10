@@ -16,11 +16,16 @@ from imlib.general.exceptions import TransformationError
 from imlib.image.metadata import define_pixel_sizes
 from imlib.source.source_files import source_custom_config_cellfinder
 
+from fancylog import fancylog
+
 from brainio.brainio import load_any as load_any_image
 from amap.register.registration_params import RegistrationParams
+from amap.cli import registration_parse, geometry_parser
 
-from cellfinder.tools import tools, prep
+from cellfinder.tools import prep
 import cellfinder.tools.parser as cellfinder_parse
+
+import cellfinder as program_name
 
 
 def transform_cells_to_standard_space(args):
@@ -137,6 +142,8 @@ def cells_standard_space_cli_parser():
     parser = cellfinder_parse.pixel_parser(parser)
     parser = cellfinder_parse.standard_space_parse(parser)
     parser = cellfinder_parse.misc_parse(parser)
+    parser = geometry_parser(parser)
+    parser = registration_parse(parser)
 
     return parser
 
@@ -178,12 +185,12 @@ def cli_parse(parser):
         "data.",
     )
 
-    cli_parser.add_argument(
-        "--registration-config",
-        dest="registration_config",
-        type=str,
-        help="To supply your own, custom registration configuration file.",
-    )
+    # cli_parser.add_argument(
+    #     "--registration-config",
+    #     dest="registration_config",
+    #     type=str,
+    #     help="To supply your own, custom registration configuration file.",
+    # )
     return parser
 
 
@@ -210,9 +217,11 @@ def main():
     # (probably using pathlib)
     ensure_directory_exists(args.paths.output_dir)
     ensure_directory_exists(args.paths.standard_space_output_folder)
-    tools.start_logging(
+    fancylog.start_logging(
         args.paths.output_dir,
-        args=args,
+        log_to_file=False,
+        package=program_name,
+        variables=args,
         verbose=args.debug,
         filename="cells_to_standard_space",
         log_header="CELL TRANSFORMATION TO STANDARD SPACE LOG",

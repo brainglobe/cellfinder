@@ -18,11 +18,11 @@ data
  * `-o` or `--output-dir` Output directory
  
 **Either**
-* `-x` or `--x-pixel-mm` Pixel spacing of the data in the first dimension, 
+* `-x` or `--x-pixel-um` Pixel spacing of the data in the first dimension, 
 specified in mm.
-* `-y` or `--y-pixel-mm` Pixel spacing of the data in the second dimension, 
+* `-y` or `--y-pixel-um` Pixel spacing of the data in the second dimension, 
 specified in mm.
-* `-z` or `--z-pixel-mm` Pixel spacing of the data in the third dimension, 
+* `-z` or `--z-pixel-um` Pixel spacing of the data in the third dimension, 
 specified in mm.
 
 **Or**
