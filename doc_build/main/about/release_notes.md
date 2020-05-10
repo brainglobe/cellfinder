@@ -7,7 +7,9 @@ work, but there may be issues.
 * [NiftyReg](http://cmictig.cs.ucl.ac.uk/wiki/index.php/NiftyReg) version 
 has been updated. Registration should now be slightly faster.
 
-
+### Fixed
+* Bugs left in `cellfinder_cell_standard` after refactoring main code are 
+fixed.
 
 ## Version 0.3.12 (2020-04-30)
 ### Main updates
