@@ -41,7 +41,7 @@ Basic usage:
 cellfinder -s signal_images -b background_images -o output_dir --metadata metadata
 ```
 Full documentation can be 
-found [here](https://sainsburywellcomecentre.github.io/cellfinder).
+found [here](https://docs.cellfinder.info/).
  
 This software is at a very early stage, and was written with our data in mind. 
 Over time we hope to support other data types/formats. If you have any 
