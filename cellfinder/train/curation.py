@@ -102,7 +102,7 @@ def main():
     with napari.gui_qt():
         viewer = napari.Viewer(title="Cellfinder cell curation")
         images = magic_imread(img_paths, use_dask=True, stack=True)
-        viewer.add_image(images, is_pyramid=False)
+        viewer.add_image(images)
         face_color_cycle = ["lightskyblue", "lightgoldenrodyellow"]
         points_layer = viewer.add_points(
             cells,
