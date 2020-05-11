@@ -8,13 +8,11 @@ from cellfinder.detect.filters.plane_filters.base_tile_filter import (
 
 
 class TileWalker(object):
-    def __init__(self, img, soma_diameter, threshold_value):
+    def __init__(self, img, soma_diameter):
         self.img = img
         self.thresholded_img = img.copy()
         self.img_width, self.img_height = img.shape
         self.soma_diameter = soma_diameter
-        self.threshold_constant = threshold_value
-
         self.tile_width = self.soma_diameter * 2
         self.tile_height = self.soma_diameter * 2
 
