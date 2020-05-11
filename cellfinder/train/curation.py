@@ -118,7 +118,7 @@ def main():
         @viewer.bind_key("t")
         def toggle_point_property(viewer):
             """Toggle point type"""
-            selected_points = viewer.layers[1].selected_data
+            selected_points = list(viewer.layers[1].selected_data)
             if selected_points:
                 selected_properties = viewer.layers[1].properties["cell"][
                     selected_points
@@ -141,7 +141,7 @@ def main():
         @viewer.bind_key("c")
         def confirm_point_property(viewer):
             """Confirm point type"""
-            selected_points = viewer.layers[1].selected_data
+            selected_points = list(viewer.layers[1].selected_data)
             if selected_points:
                 # Add curated cells to list
                 CURATED_POINTS.extend(selected_points)
@@ -150,7 +150,7 @@ def main():
                     f"confirmed and added to the list "
                 )
 
-        @viewer.bind_key("Control-S")
+        @viewer.bind_key("Alt-Q")
         def save_curation(viewer):
             """Save file"""
             if not CURATED_POINTS:
@@ -169,6 +169,7 @@ def main():
 
                 print(f"Saving results to: {output_filename}")
                 save_cells(cells_to_save, output_filename)
+                print("Done!")
 
         @viewer.bind_key("Alt-E")
         def start_cube_extraction(viewer):
