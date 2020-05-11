@@ -29,7 +29,7 @@ class MpTileProcessor(object):
         plane = plane.T
         np.clip(plane, 0, clipping_value, out=plane)
 
-        walker = TileWalker(plane, soma_diameter, threshold_value)
+        walker = TileWalker(plane, soma_diameter)
 
         walker.walk_out_of_brain_only()
 
