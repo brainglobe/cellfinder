@@ -10,7 +10,7 @@
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/python/black)
 [![Gitter](https://badges.gitter.im/cellfinder.svg)](https://gitter.im/cellfinder/?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3665329.svg)](https://doi.org/10.5281/zenodo.3665329)
-[![Contributions](https://img.shields.io/badge/Contributions-Welcome-brightgreen.svg)](https://sainsburywellcomecentre.github.io/cellfinder/main/dev/CONTRIBUTING.html)
+[![Contributions](https://img.shields.io/badge/Contributions-Welcome-brightgreen.svg)](https://docs.cellfinder.info/for-developers/contributing-to-cellfinder)
 [![Website](https://img.shields.io/website?up_message=online&url=https%3A%2F%2Fcellfinder.info)](https://cellfinder.info)
 [![Twitter](https://img.shields.io/twitter/follow/findingcells?style=social)](https://twitter.com/findingcells)
 # Cellfinder

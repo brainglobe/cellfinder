@@ -3,7 +3,7 @@
 Contributors to cellfinder are absolutely encouraged, whether you want to fix 
 bugs, or add new features to better suit your data.
 
-If you would like to contribute to cellfinder (or any of the downstream tools
+If you would like to contribute to cellfinder (or any of the upstream tools
 like [amap](https://github.com/SainsburyWellcomeCentre/amap-python), 
 [neuro](https://github.com/SainsburyWellcomeCentre/neuro), 
 [brainio](https://github.com/adamltyson/brainio),
@@ -20,4 +20,4 @@ the issues of the other repositories).
 
 For a more practical guide on how to contribute, such as setting up a 
 development environment, please see 
-[here](https://sainsburywellcomecentre.github.io/cellfinder/main/dev/CONTRIBUTING.html).
+[here](https://docs.cellfinder.info/for-developers/contributing-to-cellfinder).
