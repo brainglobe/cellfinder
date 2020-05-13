@@ -141,10 +141,11 @@ setup(
             "cellfinder_curate = cellfinder.train.curation:main",
         ]
     },
+    url="https://cellfinder.info",
     project_urls={
         "Source Code": "https://github.com/SainsburyWellcomeCentre/cellfinder",
         "Bug Tracker": "https://github.com/SainsburyWellcomeCentre/cellfinder/issues",
-        "Documentation": "https://sainsburywellcomecentre.github.io/cellfinder",
+        "Documentation": "https://docs.cellfinder.info",
     },
     author="Adam Tyson, Christian Niedworok, Charly Rousseau",
     author_email="adam.tyson@ucl.ac.uk",

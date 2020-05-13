@@ -53,7 +53,9 @@ def transform_cells_to_standard_space(args):
     )
 
     logging.info("Loading deformation field")
-    deformation_field = load_any_image(args.paths.tmp__deformation_field, as_numpy=True)
+    deformation_field = load_any_image(
+        args.paths.tmp__deformation_field, as_numpy=True
+    )
     scales = get_scales(args, reg_params)
     field_scales = get_deformation_field_scales(reg_params)
 
