@@ -2,8 +2,8 @@
 blank_issues_enabled: true  # default
 contact_links:
 - name: 🤷💻 Troubleshooting
-  url: https://gitter.im/cellfinder
+  url: https://docs.cellfinder.info/troubleshooting/get-started
   about: See here for common issues
 - name: 🤷💻 cellfinder forum
-  url: https://docs.cellfinder.info/troubleshooting/get-started
+  url: https://gitter.im/cellfinder/
   about: Please ask general questions (how do I, what is this? etc.) here
