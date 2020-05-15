@@ -29,7 +29,7 @@ def test_detection_full(tmpdir):
     tmpdir = str(tmpdir)
 
     cellfinder_args = [
-        "cellfinder_run",
+        "cellfinder",
         "-s",
         signal_data,
         "-b",

@@ -10,7 +10,7 @@ from cellfinder.download.download import amend_cfg
 
 
 home = Path.home()
-DEFAULT_DOWNLOAD_DIRECTORY = home / "cellfinder"
+DEFAULT_DOWNLOAD_DIRECTORY = home / ".cellfinder"
 temp_dir = tempfile.TemporaryDirectory()
 temp_dir_path = Path(temp_dir.name)
 
@@ -29,6 +29,12 @@ def download_directory_parser(parser):
         type=Path,
         default=temp_dir_path,
         help="The path to download files into.",
+    )
+    parser.add_argument(
+        "--no-amend-config",
+        dest="no_amend_config",
+        action="store_true",
+        help="Don't amend the config file",
     )
     return parser
 
@@ -61,16 +67,19 @@ def download_parser():
 def main():
     args = download_parser().parse_args()
     if not args.no_atlas:
-        atlas_dir = args.install_path / "atlas"
+        atlas_dir = args.install_path  # / "atlas"
         atlas_download.atlas_download(
             args.atlas, atlas_dir, args.download_path
         )
     if not args.no_models:
         model_path = models.main(args.model, args.install_path)
 
-    amend_cfg(
-        new_atlas_folder=atlas_dir, atlas=args.atlas, new_model_path=model_path
-    )
+    if not args.no_amend_config:
+        amend_cfg(
+            new_atlas_folder=atlas_dir,
+            atlas=args.atlas,
+            new_model_path=model_path,
+        )
 
 
 if __name__ == "__main__":

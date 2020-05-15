@@ -17,6 +17,7 @@ from imlib.general.config import get_config_obj
 from imlib.source import source_files
 
 import amap.download.cli as atlas_download
+from amap.cli import check_atlas_install
 
 import cellfinder.tools.tf as tf_tools
 import cellfinder as program_for_log
@@ -399,7 +400,7 @@ class CalcWhatToRun:
 
 def prep_registration(args, sample_name="amap"):
     logging.info("Checking whether the atlas exists")
-    _, atlas_files_exist = check_atlas_install()
+    _, atlas_files_exist = check_atlas_install(args.registration_config)
     atlas_dir = args.install_path / "atlas"
     if not atlas_files_exist:
         logging.warning("Atlas does not exist, downloading.")
@@ -425,7 +426,7 @@ def prep_registration(args, sample_name="amap"):
     return args, additional_images_downsample
 
 
-def check_atlas_install():
+def check_atlas_install(cfg_file_path=None):
     """
     Checks whether the atlas directory exists, and whether it's empty or not.
     :return: Whether the directory exists, and whether the files also exist
@@ -433,7 +434,12 @@ def check_atlas_install():
     # TODO: make more sophisticated, check for all files that might be needed
     dir_exists = False
     files_exist = False
-    cfg_file_path = source_files.source_custom_config_cellfinder()
+    logging.info(cfg_file_path)
+    if cfg_file_path is None:
+        cfg_file_path = source_files.source_custom_config_cellfinder()
+    else:
+        pass
+
     if os.path.exists(cfg_file_path):
         config_obj = get_config_obj(cfg_file_path)
         atlas_conf = config_obj["atlas"]
