@@ -13,7 +13,7 @@
 Please reference any existing issues/PRs that relate to this PR.
 
 ## How has this PR been tested?
-Please explain how any new code has been tested, and how you have ensured that no existing functionality has changed?
+Please explain how any new code has been tested, and how you have ensured that no existing functionality has changed.
 
 ## Is this a breaking change?
 If this PR breaks any existing functionality, please explain how and why.
