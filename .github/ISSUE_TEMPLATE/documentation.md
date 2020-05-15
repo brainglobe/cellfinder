@@ -14,7 +14,7 @@ README? If this is a suggestion, where should it go?**
 i.e. what is not clear, incorrect, or could be improved?
 
 **How could this be improved?**
-Please consider submitting a pull request to make these changes. If you're not 
+Please consider submitting a pull request [here](https://github.com/adamltyson/cellfinder-documentation) to make these changes. If you're not 
 sure how, get in touch. 
 
 **Additional context**
