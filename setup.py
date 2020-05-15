@@ -32,8 +32,8 @@ requirements = [
     "fancylog>=0.0.7",
     "micrometa>=0.0.11",
     "imlib>=0.0.25",
-    "neuro>=0.0.11",
-    "amap>=0.0.21",
+    "neuro>=0.0.12rc2",
+    "amap>=0.1.22rc0",
 ]
 
 
@@ -93,7 +93,7 @@ else:
 
 setup(
     name="cellfinder",
-    version="0.3.13",
+    version="0.3.14rc0",
     description="Automated 3D cell detection and registration of whole-brain images",
     long_description=long_description,
     long_description_content_type="text/markdown",
