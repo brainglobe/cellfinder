@@ -28,12 +28,12 @@ requirements = [
     "dask >= 2.15.0",
     "napari>=0.3.0",
     "slurmio>=0.0.4",
-    "brainio>=0.0.14",
+    "brainio>=0.0.15",
     "fancylog>=0.0.7",
     "micrometa>=0.0.11",
     "imlib>=0.0.25",
-    "neuro>=0.0.12rc2",
-    "amap>=0.1.22rc0",
+    "neuro>=0.0.12",
+    "amap>=0.1.22",
 ]
 
 
@@ -93,7 +93,7 @@ else:
 
 setup(
     name="cellfinder",
-    version="0.3.14rc0",
+    version="0.3.14rc1",
     description="Automated 3D cell detection and registration of whole-brain images",
     long_description=long_description,
     long_description_content_type="text/markdown",
