@@ -13,6 +13,7 @@ from argparse import (
 )
 from pathlib import Path
 from imlib.general.numerical import check_positive_float, check_positive_int
+from imlib.source import source_files
 
 from amap.download.cli import atlas_parser as amap_parser
 from amap.cli import registration_parse, geometry_parser
@@ -52,7 +53,7 @@ def cellfinder_parser():
     parser = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter)
     parser = main_parse(parser)
     parser = registration_parse(parser)
-    # parser = atlas_parse(parser)
+    parser = config_parse(parser)
     parser = pixel_parser(parser)
     parser = geometry_parser(parser)
     parser = cellfinder_opt_parse(parser)
@@ -481,16 +482,17 @@ def figures_parse(parser):
     return parser
 
 
-# def atlas_parse(parser):
-#     atlas_parser = parser.add_argument_group("Atlas specific parameters")
-#     atlas_parser.add_argument(
-#         "--structures-file",
-#         dest="structures_file_path",
-#         type=str,
-#         help="The csv file containing the structures "
-#         "definition for the atlas.",
-#     )
-#     return parser
+def config_parse(parser):
+    config_opt_parser = parser.add_argument_group("Config options")
+    config_opt_parser.add_argument(
+        "--registration-config",
+        dest="registration_config",
+        type=str,
+        default=source_files.source_custom_config_cellfinder(),
+        help="To supply your own, custom registration configuration file.",
+    )
+
+    return parser
 
 
 def standard_space_parse(parser):

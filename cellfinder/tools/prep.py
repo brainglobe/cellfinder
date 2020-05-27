@@ -409,10 +409,6 @@ def prep_registration(args, sample_name="amap"):
         )
         amend_cfg(new_atlas_folder=atlas_dir, atlas=args.atlas)
 
-    if args.registration_config is None:
-        args.registration_config = (
-            source_files.source_custom_config_cellfinder()
-        )
     args.target_brain_path = args.background_planes_path[0]
     args.sample_name = sample_name
     logging.debug("Making registration directory")
