@@ -119,13 +119,15 @@ additional tools for the analysis of visualisation of whole-brain imaging data.
 ![heatmap](https://raw.githubusercontent.com/SainsburyWellcomeCentre/cellfinder/master/resources/heatmap.png)
 
 ### Mapping non-cellular volumes in standard space:
-**Virus injection site within the superior colliculus.**
+Virus injection site within the superior colliculus.
+
 *(Data courtesy of [@FedeClaudi](https://github.com/fedeclaudi) and 
 [brainrender](https://github.com/brancolab/brainrender))*
 ![injection](https://raw.githubusercontent.com/SainsburyWellcomeCentre/cellfinder/master/resources/injection.png)
 
 ### Mapping of probe tracks in standard space:
-**Neuropixels probe in primary visual cortex.**
+Neuropixels probe in primary visual cortex.
+
 *(Data courtesy of [@velezmat](https://github.com/velezmat)).*
 ![injection](https://raw.githubusercontent.com/SainsburyWellcomeCentre/cellfinder/master/resources/probe.png)
 
