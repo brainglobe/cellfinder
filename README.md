@@ -115,19 +115,19 @@ additional tools for the analysis of visualisation of whole-brain imaging data.
  See the [documentation](https://docs.cellfinder.info/neuro/standalone-tools) 
  for details.
 
-#### Heatmaps of detected cells:
+### Heatmaps of detected cells:
 ![heatmap](https://raw.githubusercontent.com/SainsburyWellcomeCentre/cellfinder/master/resources/heatmap.png)
 
-#### Mapping non-cellular volumes in standard space:
-![injection](https://raw.githubusercontent.com/SainsburyWellcomeCentre/cellfinder/master/resources/injection.png)
+### Mapping non-cellular volumes in standard space:
 **Virus injection site within the superior colliculus.**
 *(Data courtesy of [@FedeClaudi](https://github.com/fedeclaudi) and 
 [brainrender](https://github.com/brancolab/brainrender))*
+![injection](https://raw.githubusercontent.com/SainsburyWellcomeCentre/cellfinder/master/resources/injection.png)
 
-#### Mapping of probe tracks in standard space:
-![injection](https://raw.githubusercontent.com/SainsburyWellcomeCentre/cellfinder/master/resources/probe.png)
+### Mapping of probe tracks in standard space:
 **Neuropixels probe in primary visual cortex.**
-*(Data courtesy of [@velezmat](https://github.com/velezmat).
+*(Data courtesy of [@velezmat](https://github.com/velezmat).*
+![injection](https://raw.githubusercontent.com/SainsburyWellcomeCentre/cellfinder/master/resources/probe.png)
 
 ## Citing cellfinder
 
