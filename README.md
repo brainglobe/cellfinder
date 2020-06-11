@@ -122,6 +122,11 @@ additional tools for the analysis of visualisation of whole-brain imaging data.
 *(Data courtesy of [@FedeClaudi](https://github.com/fedeclaudi) and 
 [brainrender](https://github.com/brancolab/brainrender))*
 
+#### Mapping of probe tracks in standard space:
+![injection](https://raw.githubusercontent.com/SainsburyWellcomeCentre/cellfinder/master/resources/probe.png)
+**Neuropixels probe in primary visual cortex.**
+*(Data courtesy of [@velezmat](https://github.com/velezmat).
+
 ## Citing cellfinder
 
 If you find cellfinder useful, and use it in your research, please cite this repository:
