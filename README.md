@@ -112,6 +112,8 @@ Data courtesy of Sepiedeh Keshavarzi and Chryssanthi Tsitoura. [Details here](ht
 cellfinder is packaged with 
 [neuro](https://github.com/sainsburywellcomecentre/neuro) which provides 
 additional tools for the analysis of visualisation of whole-brain imaging data.
+ See the [documentation](https://docs.cellfinder.info/neuro/standalone-tools) 
+ for details.
 
 #### Heatmaps of detected cells:
 ![heatmap](https://raw.githubusercontent.com/SainsburyWellcomeCentre/cellfinder/master/resources/heatmap.png)
