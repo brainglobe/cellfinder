@@ -33,7 +33,7 @@ requirements = [
     "micrometa>=0.0.11",
     "imlib>=0.0.25",
     "neuro>=0.0.13",
-    "amap>=0.1.24",
+    "amap>=0.1.25",
 ]
 
 
@@ -93,7 +93,7 @@ else:
 
 setup(
     name="cellfinder",
-    version="0.3.14rc2",
+    version="0.3.14",
     description="Automated 3D cell detection and registration of whole-brain images",
     long_description=long_description,
     long_description_content_type="text/markdown",
