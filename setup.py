@@ -12,7 +12,7 @@ requirements = [
     "configparser",
     "pandas<=0.25.3,>=0.25.1",
     "packaging",
-    "scikit-image",
+    "scikit-image==0.16.2",
     "tifffile",
     "natsort",
     "tqdm",
