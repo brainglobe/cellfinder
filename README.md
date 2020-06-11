@@ -126,7 +126,7 @@ additional tools for the analysis of visualisation of whole-brain imaging data.
 
 ### Mapping of probe tracks in standard space:
 **Neuropixels probe in primary visual cortex.**
-*(Data courtesy of [@velezmat](https://github.com/velezmat).*
+*(Data courtesy of [@velezmat](https://github.com/velezmat)).*
 ![injection](https://raw.githubusercontent.com/SainsburyWellcomeCentre/cellfinder/master/resources/probe.png)
 
 ## Citing cellfinder
