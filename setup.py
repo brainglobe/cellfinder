@@ -28,11 +28,11 @@ requirements = [
     "dask >= 2.15.0",
     "napari>=0.3.0",
     "slurmio>=0.0.4",
-    "brainio>=0.0.15",
+    "brainio>=0.0.19",
     "fancylog>=0.0.7",
     "micrometa>=0.0.11",
     "imlib>=0.0.25",
-    "neuro>=0.0.12",
+    "neuro>=0.0.13",
     "amap>=0.1.24",
 ]
 
@@ -125,7 +125,6 @@ setup(
             "cellfinder = cellfinder.main:main",
             "cellfinder_download = cellfinder.download.cli:main",
             "cellfinder_train = cellfinder.train.train_yml:main",
-            "cellfinder_view_cells = cellfinder.viewer.two_dimensional:main",
             "cellfinder_count_summary = "
             "cellfinder.summarise.count_summary:main",
             "cellfinder_region_summary = "
