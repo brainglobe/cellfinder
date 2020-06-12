@@ -26,7 +26,8 @@ requirements = [
     "toolz>=0.7.3",
     "tensorflow>=2.2.0",
     "dask >= 2.15.0",
-    "napari[pyqt5]>=0.3.0",
+    "napari>=0.3.0",
+    "PyQt5>=5.12.3,<5.15.0",
     "slurmio>=0.0.4",
     "brainio>=0.0.19",
     "fancylog>=0.0.7",
@@ -93,7 +94,7 @@ else:
 
 setup(
     name="cellfinder",
-    version="0.3.14rc4",
+    version="0.3.14rc6",
     description="Automated 3D cell detection and registration of whole-brain images",
     long_description=long_description,
     long_description_content_type="text/markdown",
