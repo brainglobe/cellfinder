@@ -3,7 +3,7 @@ after_success:
   - coveralls
 
 stages:
-#  - test
+  - test
   - name: deploy
     if:
       tag IS present AND repo = SainsburyWellcomeCentre/cellfinder
