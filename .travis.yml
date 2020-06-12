@@ -3,7 +3,7 @@ after_success:
   - coveralls
 
 stages:
-  - test
+#  - test
   - name: deploy
     if:
       tag IS present AND repo = SainsburyWellcomeCentre/cellfinder
@@ -69,7 +69,7 @@ jobs:
         - mkdir pypi_upload
         - python setup.py sdist
         - cp dist/* pypi_upload/
-        - docker run --rm -v $(pwd):/io quay.io/pypa/manylinux2010_x86_64 /io/travis/build_linux_wheels.sh
+        - docker run --rm -v $(pwd):/io quay.io/pypa/manylinux2014_x86_64 /io/travis/build_linux_wheels.sh
         - cp wheelhouse/manylinux/* pypi_upload/
       after_success:
         - pip install twine
