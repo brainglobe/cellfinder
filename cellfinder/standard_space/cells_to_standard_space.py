@@ -186,6 +186,13 @@ def cli_parse(parser):
         help="Reference nii image, in the same space as the downsampled raw "
         "data.",
     )
+    cli_parser.add_argument(
+        "--registration-config",
+        dest="registration_config",
+        type=str,
+        default=None,
+        help="Custon registration config file (usually not needed)",
+    )
 
     return parser
 
