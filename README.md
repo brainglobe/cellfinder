@@ -138,3 +138,7 @@ If you find cellfinder useful, and use it in your research, please cite this rep
 > Adam L. Tyson, Charly V. Rousseau, Christian J. Niedworok and Troy W. Margrie (2020). cellfinder: automated 3D cell detection and registration of whole-brain images. [doi:10.5281/zenodo.3665329](http://doi.org/10.5281/zenodo.3665329)
 
 If you use any of the image registration functions in cellfinder, please also cite [amap](https://github.com/SainsburyWellcomeCentre/amap-python#citing-amap).
+
+**If you use this, or any other tools in the cellfinder suite, please
+ [let us know](mailto:adam.tyson@ucl.ac.uk?subject=cellfinder-paper), and 
+ we'd be happy to promote your paper/talk etc.**
