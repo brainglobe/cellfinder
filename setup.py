@@ -10,7 +10,7 @@ requirements = [
     "numpy",
     "scikit-learn",
     "configparser",
-    "pandas<=0.25.3,>=0.25.1",
+    "pandas>=0.25.1,<1.0.6",
     "packaging",
     "scikit-image==0.16.2",
     "tifffile",
