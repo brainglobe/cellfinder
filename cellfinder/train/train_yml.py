@@ -165,6 +165,12 @@ def training_parse():
         action="store_true",
         help="Log to output_directory/tensorboard",
     )
+    training_parser.add_argument(
+        "--save-progress",
+        dest="save_progress",
+        action="store_true",
+        help="Save training progress to a .csv file",
+    )
 
     training_parser = misc_parse(training_parser)
     training_parser = model_parser(training_parser)
@@ -215,7 +221,11 @@ def main():
 
     suppress_tf_logging(tf_suppress_log_messages)
 
-    from tensorflow.keras.callbacks import TensorBoard, ModelCheckpoint
+    from tensorflow.keras.callbacks import (
+        TensorBoard,
+        ModelCheckpoint,
+        CSVLogger,
+    )
 
     from cellfinder.tools.prep import prep_training
     from cellfinder.classify.tools import make_lists, get_model
@@ -299,6 +309,11 @@ def main():
             period=args.checkpoint_interval,
         )
         callbacks.append(checkpoints)
+
+    if args.save_progress:
+        filepath = str(output_dir / "training.csv")
+        csv_logger = CSVLogger(filepath)
+        callbacks.append(csv_logger)
 
     model.fit(
         training_generator,
