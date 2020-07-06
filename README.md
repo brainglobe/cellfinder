@@ -126,7 +126,8 @@ Virus injection site within the superior colliculus.
 ![injection](https://raw.githubusercontent.com/SainsburyWellcomeCentre/cellfinder/master/resources/injection.png)
 
 ### Mapping of probe tracks in standard space:
-Neuropixels probe in primary visual cortex.
+Neuropixels probe in primary visual cortex. 
+Tutorial [here](https://app.gitbook.com/@cellfinder/s/cellfinder/standalone-tools/silicon-probe-tracking).
 
 *(Data courtesy of [@velezmat](https://github.com/velezmat)).*
 ![injection](https://raw.githubusercontent.com/SainsburyWellcomeCentre/cellfinder/master/resources/probe.png)
