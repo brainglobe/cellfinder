@@ -102,10 +102,6 @@ setup(
     install_requires=requirements,
     extras_require={
         "dev": [
-            "sphinx",
-            "recommonmark",
-            "sphinx_rtd_theme",
-            "pydoc-markdown",
             "black",
             "pytest-cov",
             "pytest",
