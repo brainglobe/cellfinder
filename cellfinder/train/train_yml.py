@@ -154,13 +154,6 @@ def training_parse():
         help="Store the model at intermediate points during training",
     )
     training_parser.add_argument(
-        "--checkpoint-interval",
-        dest="checkpoint_interval",
-        type=check_positive_int,
-        default=1,
-        help="Number of epochs between checkpoints",
-    )
-    training_parser.add_argument(
         "--tensorboard",
         action="store_true",
         help="Log to output_directory/tensorboard",
@@ -270,8 +263,13 @@ def main():
             batch_size=args.batch_size,
             train=True,
         )
+
+        # for saving checkpoints
+        base_checkpoint_file_name = "-epoch.{epoch:02d}-loss-{val_loss:.3f}.h5"
+
     else:
         validation_generator = None
+        base_checkpoint_file_name = "-epoch.{epoch:02d}.h5"
 
     training_generator = CubeGeneratorFromDisk(
         signal_train,
@@ -297,16 +295,12 @@ def main():
 
     if args.save_checkpoints:
         if args.save_weights:
-            filepath = str(
-                output_dir / "weights.{epoch:02d}-{val_loss:.3f}.h5"
-            )
+            filepath = str(output_dir / ("weight" + base_checkpoint_file_name))
         else:
-            filepath = str(output_dir / "model.{epoch:02d}-{val_loss:.3f}.h5")
+            filepath = str(output_dir / ("model" + base_checkpoint_file_name))
 
         checkpoints = ModelCheckpoint(
-            filepath,
-            save_weights_only=args.save_weights,
-            period=args.checkpoint_interval,
+            filepath, save_weights_only=args.save_weights,
         )
         callbacks.append(checkpoints)
 
