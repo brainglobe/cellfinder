@@ -243,8 +243,13 @@ def main():
     )
 
     yaml_contents = parse_yaml(args.yaml_file)
-    tiff_files = get_tiff_files(yaml_contents)
 
+    tiff_files = get_tiff_files(yaml_contents)
+    logging.info(
+        f"Loading {sum(len(imlist) for imlist in tiff_files)} images "
+        f"from {len(yaml_contents)} datasets "
+        f"in {len(args.yaml_file)} yaml files"
+    )
     model = get_model(
         existing_model=args.trained_model,
         model_weights=args.model_weights,
