@@ -24,7 +24,6 @@ import cellfinder as program_for_log
 import cellfinder.tools.parser as parser
 from cellfinder.download import models as model_download
 from cellfinder.download.download import amend_cfg
-from cellfinder.download.cli import temp_dir_path
 from cellfinder.tools import tools, system
 
 

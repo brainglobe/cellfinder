@@ -10,9 +10,11 @@ it's warnings are silenced
 
 
 import os
+import logging
 
 from datetime import datetime
 from pathlib import Path
+from fancylog import fancylog
 from argparse import (
     ArgumentParser,
     ArgumentDefaultsHelpFormatter,
@@ -23,6 +25,9 @@ from imlib.general.numerical import check_positive_float, check_positive_int
 from imlib.general.system import ensure_directory_exists
 from imlib.IO.cells import find_relevant_tiffs
 from imlib.IO.yaml import read_yaml_section
+
+import cellfinder as program_for_log
+
 
 tf_suppress_log_messages = [
     "sample_weight modes were coerced from",
@@ -148,17 +153,10 @@ def training_parse():
         "save storage space.",
     )
     training_parser.add_argument(
-        "--save-checkpoints",
-        dest="save_checkpoints",
+        "--no-save-checkpoints",
+        dest="no_save_checkpoints",
         action="store_true",
         help="Store the model at intermediate points during training",
-    )
-    training_parser.add_argument(
-        "--checkpoint-interval",
-        dest="checkpoint_interval",
-        type=check_positive_int,
-        default=1,
-        help="Number of epochs between checkpoints",
     )
     training_parser.add_argument(
         "--tensorboard",
@@ -236,8 +234,22 @@ def main():
     output_dir = Path(args.output_dir)
     ensure_directory_exists(output_dir)
     args = prep_training(args)
+
+    fancylog.start_logging(
+        args.output_dir,
+        program_for_log,
+        variables=[args],
+        log_header="CELLFINDER TRAINING LOG",
+    )
+
     yaml_contents = parse_yaml(args.yaml_file)
+
     tiff_files = get_tiff_files(yaml_contents)
+    logging.info(
+        f"Found {sum(len(imlist) for imlist in tiff_files)} images "
+        f"from {len(yaml_contents)} datasets "
+        f"in {len(args.yaml_file)} yaml files"
+    )
 
     model = get_model(
         existing_model=args.trained_model,
@@ -250,6 +262,7 @@ def main():
     signal_train, background_train, labels_train = make_lists(tiff_files)
 
     if args.test_fraction > 0:
+        logging.info("Splitting data into training and validation datasets")
         (
             signal_train,
             signal_test,
@@ -263,6 +276,11 @@ def main():
             labels_train,
             test_size=args.test_fraction,
         )
+
+        logging.info(
+            f"Using {len(signal_train)} images for training and "
+            f"{len(signal_test)} images for validation"
+        )
         validation_generator = CubeGeneratorFromDisk(
             signal_test,
             background_test,
@@ -270,8 +288,14 @@ def main():
             batch_size=args.batch_size,
             train=True,
         )
+
+        # for saving checkpoints
+        base_checkpoint_file_name = "-epoch.{epoch:02d}-loss-{val_loss:.3f}.h5"
+
     else:
+        logging.info("No validation data selected.")
         validation_generator = None
+        base_checkpoint_file_name = "-epoch.{epoch:02d}.h5"
 
     training_generator = CubeGeneratorFromDisk(
         signal_train,
@@ -295,18 +319,14 @@ def main():
         )
         callbacks.append(tensorboard)
 
-    if args.save_checkpoints:
+    if not args.no_save_checkpoints:
         if args.save_weights:
-            filepath = str(
-                output_dir / "weights.{epoch:02d}-{val_loss:.3f}.h5"
-            )
+            filepath = str(output_dir / ("weight" + base_checkpoint_file_name))
         else:
-            filepath = str(output_dir / "model.{epoch:02d}-{val_loss:.3f}.h5")
+            filepath = str(output_dir / ("model" + base_checkpoint_file_name))
 
         checkpoints = ModelCheckpoint(
-            filepath,
-            save_weights_only=args.save_weights,
-            period=args.checkpoint_interval,
+            filepath, save_weights_only=args.save_weights,
         )
         callbacks.append(checkpoints)
 
@@ -315,6 +335,7 @@ def main():
         csv_logger = CSVLogger(filepath)
         callbacks.append(csv_logger)
 
+    logging.info("Beginning training.")
     model.fit(
         training_generator,
         validation_data=validation_generator,
@@ -324,13 +345,13 @@ def main():
     )
 
     if args.save_weights:
-        print("Saving model weights")
+        logging.info("Saving model weights")
         model.save_weights(str(output_dir / "model_weights.h5"))
     else:
-        print("Saving model")
+        logging.info("Saving model")
         model.save(output_dir / "model.h5")
 
-    print(
+    logging.info(
         "Finished training, " "Total time taken: %s",
         datetime.now() - start_time,
     )

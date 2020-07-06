@@ -7,22 +7,24 @@ with open(path.join(this_directory, "README.md"), encoding="utf-8") as f:
     long_description = f.read()
 
 requirements = [
-    "numpy",
+    "numpy>=1.15.4,<1.19.0",
     "scikit-learn",
     "configparser",
-    "pandas<=0.25.3,>=0.25.1",
+    "pandas>=0.25.1,<=0.25.3",
     "packaging",
-    "scikit-image==0.16.2",
+    "scikit-image>=0.14.0,<0.17.0",
     "tifffile",
     "natsort",
     "tqdm",
     "anytree",
-    "h5py",
+    "h5py>=2.8,<3.0.0",
     "multiprocessing-logging",
     "psutil",
     "nibabel",
     "configobj",
-    "scipy>=0.18",
+    # "scipy>=0.18,<2.0.0",
+    # temporarily until tf relaxes this
+    "scipy==1.4.1",
     "toolz>=0.7.3",
     "tensorflow>=2.2.0",
     "dask >= 2.15.0",
@@ -100,10 +102,6 @@ setup(
     install_requires=requirements,
     extras_require={
         "dev": [
-            "sphinx",
-            "recommonmark",
-            "sphinx_rtd_theme",
-            "pydoc-markdown",
             "black",
             "pytest-cov",
             "pytest",
