@@ -246,10 +246,11 @@ def main():
 
     tiff_files = get_tiff_files(yaml_contents)
     logging.info(
-        f"Loading {sum(len(imlist) for imlist in tiff_files)} images "
+        f"Found {sum(len(imlist) for imlist in tiff_files)} images "
         f"from {len(yaml_contents)} datasets "
         f"in {len(args.yaml_file)} yaml files"
     )
+
     model = get_model(
         existing_model=args.trained_model,
         model_weights=args.model_weights,
@@ -261,6 +262,7 @@ def main():
     signal_train, background_train, labels_train = make_lists(tiff_files)
 
     if args.test_fraction > 0:
+        logging.info("Splitting data into training and validation datasets")
         (
             signal_train,
             signal_test,
@@ -274,6 +276,11 @@ def main():
             labels_train,
             test_size=args.test_fraction,
         )
+
+        logging.info(
+            f"Using {len(signal_train)} images for training and "
+            f"{len(signal_test)} images for validation"
+        )
         validation_generator = CubeGeneratorFromDisk(
             signal_test,
             background_test,
@@ -286,6 +293,7 @@ def main():
         base_checkpoint_file_name = "-epoch.{epoch:02d}-loss-{val_loss:.3f}.h5"
 
     else:
+        logging.info("No validation data selected.")
         validation_generator = None
         base_checkpoint_file_name = "-epoch.{epoch:02d}.h5"
 
@@ -327,6 +335,7 @@ def main():
         csv_logger = CSVLogger(filepath)
         callbacks.append(csv_logger)
 
+    logging.info("Beginning training.")
     model.fit(
         training_generator,
         validation_data=validation_generator,
@@ -336,13 +345,13 @@ def main():
     )
 
     if args.save_weights:
-        print("Saving model weights")
+        logging.info("Saving model weights")
         model.save_weights(str(output_dir / "model_weights.h5"))
     else:
-        print("Saving model")
+        logging.info("Saving model")
         model.save(output_dir / "model.h5")
 
-    print(
+    logging.info(
         "Finished training, " "Total time taken: %s",
         datetime.now() - start_time,
     )
