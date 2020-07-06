@@ -10,9 +10,11 @@ it's warnings are silenced
 
 
 import os
+import logging
 
 from datetime import datetime
 from pathlib import Path
+from fancylog import fancylog
 from argparse import (
     ArgumentParser,
     ArgumentDefaultsHelpFormatter,
@@ -23,6 +25,9 @@ from imlib.general.numerical import check_positive_float, check_positive_int
 from imlib.general.system import ensure_directory_exists
 from imlib.IO.cells import find_relevant_tiffs
 from imlib.IO.yaml import read_yaml_section
+
+import cellfinder as program_for_log
+
 
 tf_suppress_log_messages = [
     "sample_weight modes were coerced from",
@@ -229,6 +234,14 @@ def main():
     output_dir = Path(args.output_dir)
     ensure_directory_exists(output_dir)
     args = prep_training(args)
+
+    fancylog.start_logging(
+        args.output_dir,
+        program_for_log,
+        variables=[args],
+        log_header="CELLFINDER TRAINING LOG",
+    )
+
     yaml_contents = parse_yaml(args.yaml_file)
     tiff_files = get_tiff_files(yaml_contents)
 
