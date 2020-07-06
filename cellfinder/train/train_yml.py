@@ -148,8 +148,8 @@ def training_parse():
         "save storage space.",
     )
     training_parser.add_argument(
-        "--save-checkpoints",
-        dest="save_checkpoints",
+        "--no-save-checkpoints",
+        dest="no_save_checkpoints",
         action="store_true",
         help="Store the model at intermediate points during training",
     )
@@ -293,7 +293,7 @@ def main():
         )
         callbacks.append(tensorboard)
 
-    if args.save_checkpoints:
+    if not args.no_save_checkpoints:
         if args.save_weights:
             filepath = str(output_dir / ("weight" + base_checkpoint_file_name))
         else:
