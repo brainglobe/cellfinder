@@ -7,7 +7,7 @@ with open(path.join(this_directory, "README.md"), encoding="utf-8") as f:
     long_description = f.read()
 
 requirements = [
-    "numpy>=1.15.4,<1.19.0",
+    "numpy>=1.15.4,<1.20.0",
     "scikit-learn",
     "configparser",
     "pandas>=0.25.1,<=0.25.3",
