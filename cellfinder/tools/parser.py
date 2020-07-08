@@ -11,6 +11,7 @@ from argparse import (
     ArgumentDefaultsHelpFormatter,
     ArgumentTypeError,
 )
+from cellfinder import __version__
 from pathlib import Path
 from imlib.general.numerical import check_positive_float, check_positive_int
 from imlib.source import source_files
@@ -136,6 +137,11 @@ def main_parse(parser):
         dest="background_ch_id",
         type=check_positive_int,
         help="Channel ID number, corresponding to 'background-planes-path'.",
+    )
+    main_parser.add_argument(
+        "--version",
+        action="version",
+        version="%(prog)s {version}".format(version=__version__),
     )
     return parser
 
