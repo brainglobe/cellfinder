@@ -24,7 +24,7 @@ requirements = [
     "configobj",
     # "scipy>=0.18,<2.0.0",
     # temporarily until tf relaxes this
-    "scipy==1.4.1",
+    "scipy==1.5.2",
     "toolz>=0.7.3",
     "tensorflow>=2.2.0",
     "dask >= 2.15.0",
