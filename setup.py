@@ -35,7 +35,8 @@ requirements = [
     "micrometa>=0.0.11",
     "imlib>=0.0.26",
     "neuro>=0.0.13",
-    "amap>=0.1.26",
+    # "amap>=0.1.26",
+    "brainreg",
 ]
 
 
