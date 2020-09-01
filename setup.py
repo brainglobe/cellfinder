@@ -96,8 +96,9 @@ else:
 
 setup(
     name="cellfinder",
-    version="0.3.15rc0",
-    description="Automated 3D cell detection and registration of whole-brain images",
+    version="0.3.16",
+    description="Automated 3D cell detection and registration of "
+    "whole-brain images",
     long_description=long_description,
     long_description_content_type="text/markdown",
     install_requires=requirements,
@@ -108,6 +109,9 @@ setup(
             "pytest",
             "gitpython",
             "coverage>=5.0.3",
+            "bump2version",
+            "pre-commit",
+            "flake8",
         ]
     },
     setup_requires=["cython"],
@@ -142,7 +146,8 @@ setup(
     url="https://cellfinder.info",
     project_urls={
         "Source Code": "https://github.com/SainsburyWellcomeCentre/cellfinder",
-        "Bug Tracker": "https://github.com/SainsburyWellcomeCentre/cellfinder/issues",
+        "Bug Tracker": "https://github.com/SainsburyWellcomeCentre/"
+        "cellfinder/issues",
         "Documentation": "https://docs.cellfinder.info",
     },
     author="Adam Tyson, Christian Niedworok, Charly Rousseau",

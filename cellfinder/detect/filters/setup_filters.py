@@ -21,7 +21,6 @@ def setup(
     plane = plane.T
 
     max_value = get_max_value(plane)
-    clipping_value = max_value - 2
     thrsh_val = max_value - 1
     soma_centre_val = max_value
 

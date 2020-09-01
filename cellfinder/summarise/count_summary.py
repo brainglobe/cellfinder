@@ -1,7 +1,6 @@
 import argparse
 import os
 import logging
-
 import pandas as pd
 from tqdm import tqdm
 
@@ -11,7 +10,6 @@ from brainio import brainio
 from imlib.IO.cells import get_cells
 from imlib.pandas.misc import sanitise_df
 from imlib.image.metadata import define_pixel_sizes
-from imlib.general.config import get_config_obj
 from imlib.source.source_files import get_structures_path
 
 from neuro.structures.structures_tree import (
@@ -96,13 +94,6 @@ def get_scales(sample_pixel_sizes, atlas_pixel_sizes, scale=True):
         return 1, 1, 1
 
 
-def get_atlas_pixel_sizes(atlas_config_path):
-    config_obj = get_config_obj(atlas_config_path)
-    atlas_conf = config_obj["atlas"]
-    atlas_pixel_sizes = atlas_conf["pixel_size"]
-    return atlas_pixel_sizes
-
-
 def get_max_coords(cells):
     max_x, max_y, max_z = (0, 0, 0)
     for cell in cells:
@@ -177,13 +168,11 @@ def get_structure_from_coordinates(
             transformed_coords[order[1]],
             transformed_coords[order[2]],
         ]
-    except IndexError as err:
+    except IndexError:
         logging.warning(
-            "The cell {}, scaled to {} "
-            "falls outside of the atlas with "
-            "dimensions {}. Treating as outside the brain".format(
-                cell, transformed_coords, atlas.shape, max_coords, err
-            )
+            f"The cell {cell}, scaled to {transformed_coords} falls outside "
+            f"of the atlas with dimensions {atlas.shape}. Treating as "
+            f"outside the brain"
         )
         return 0
 

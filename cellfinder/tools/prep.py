@@ -17,7 +17,6 @@ from imlib.general.config import get_config_obj
 from imlib.source import source_files
 
 import amap.download.cli as atlas_download
-from amap.cli import check_atlas_install
 
 import cellfinder.tools.tf as tf_tools
 import cellfinder as program_for_log
@@ -73,9 +72,10 @@ class Paths:
         self.tmp__freeform_registered_atlas_brain_path = self.make_reg_path(
             "freeform_registered_atlas_brain.nii"
         )
-        self.tmp__inverse_freeform_registered_atlas_brain_path = self.make_reg_path(
-            "inverse_freeform_registered_brain.nii"
-        )
+        # self.tmp__inverse_freeform_registered_atlas_brain_path =
+        # self.make_reg_path(
+        #     "inverse_freeform_registered_brain.nii"
+        # )
 
         self.registered_atlas_img_path = self.make_reg_path(
             "registered_atlas.nii"
@@ -487,7 +487,7 @@ def prep_tensorflow(max_threads):
 
 
 def prep_models(args):
-    ## if no model or weights, set default weights
+    # if no model or weights, set default weights
     if args.trained_model is None and args.model_weights is None:
         logging.debug("No model or weights supplied, so using the default")
 
@@ -498,7 +498,7 @@ def prep_models(args):
             amend_cfg(new_model_path=model_path)
 
         model_weights = get_model_weights(config_file)
-        if model_weights is not "" and Path(model_weights).exists():
+        if model_weights != "" and Path(model_weights).exists():
             args.model_weights = model_weights
         else:
             logging.debug("Model weights do not exist, downloading")

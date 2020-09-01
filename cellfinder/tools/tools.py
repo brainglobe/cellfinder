@@ -1,12 +1,5 @@
-import logging
-import os
-import numpy as np
-
 from natsort import natsorted
 from random import getrandbits, uniform
-from imlib.general.list import remove_empty_string
-from imlib.general.system import check_path_in_dir
-from cellfinder.tools import system
 
 
 def get_max_value(obj_in):
@@ -25,8 +18,8 @@ def get_max_value(obj_in):
 def union(a, b):
     """
     Return the union (elements in both) of two lists
-    :param list a: 
-    :param list b: 
+    :param list a:
+    :param list b:
     :return: Union of the two lists
     """
     return list(set(a) | set(b))
@@ -135,11 +128,11 @@ def convert_shape_dict_to_array_shape(shape_dict, type="numpy"):
     """
 
     shape = []
-    if type is "numpy":
+    if type == "numpy":
         shape.append(int(shape_dict["y"]))
         shape.append(int(shape_dict["x"]))
 
-    elif type is "fiji":
+    elif type == "fiji":
         shape.append(int(shape_dict["x"]))
         shape.append(int(shape_dict["y"]))
     else:
