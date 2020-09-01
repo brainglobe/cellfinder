@@ -16,14 +16,32 @@ from imlib.general.exceptions import CommandLineInputError
 from imlib.general.config import get_config_obj
 from imlib.source import source_files
 
-import amap.download.cli as atlas_download
-
+from cellfinder.tools.parser import cellfinder_parser
 import cellfinder.tools.tf as tf_tools
 import cellfinder as program_for_log
 import cellfinder.tools.parser as parser
 from cellfinder.download import models as model_download
 from cellfinder.download.download import amend_cfg
 from cellfinder.tools import tools, system
+import json
+from argparse import Namespace
+from brainreg.paths import Paths as BrainRegPaths
+
+
+def get_arg_groups(args, parser):
+    arg_groups = {}
+    for group in parser._action_groups:
+        group_dict = {
+            a.dest: getattr(args, a.dest, None) for a in group._group_actions
+        }
+        arg_groups[group.title] = Namespace(**group_dict)
+
+    return arg_groups
+
+
+def log_metadata(file_path, args):
+    with open(file_path, "w") as f:
+        json.dump(args, f, default=lambda x: x.__dict__)
 
 
 def check_input_arg_existance(args):
@@ -51,6 +69,7 @@ class Paths:
     # TODO: Maybe transfer to a config file.
     def __init__(self, output_dir):
         self.output_dir = output_dir
+        self.metadata_path = os.path.join(self.output_dir, "cellfinder.json")
 
     def make_reg_paths(self):
         self.registration_output_folder = os.path.join(
@@ -178,6 +197,8 @@ class Paths:
 
 def prep_cellfinder_general():
     args = parser.cellfinder_parser().parse_args()
+    arg_groups = get_arg_groups(args, cellfinder_parser())
+
     args = define_pixel_sizes(args)
     check_input_arg_existance(args)
 
@@ -199,7 +220,7 @@ def prep_cellfinder_general():
     args.signal_ch_ids, args.background_ch_id = check_and_return_ch_ids(
         args.signal_ch_ids, args.background_ch_id, args.signal_planes_paths
     )
-    return args, what_to_run
+    return args, arg_groups, what_to_run
 
 
 def check_and_return_ch_ids(signal_ids, background_id, signal_channel_list):
@@ -397,19 +418,8 @@ class CalcWhatToRun:
             self.standard_space = False
 
 
-def prep_registration(args, sample_name="amap"):
-    logging.info("Checking whether the atlas exists")
-    _, atlas_files_exist = check_atlas_install(args.registration_config)
-    atlas_dir = args.install_path / "atlas"
-    if not atlas_files_exist:
-        logging.warning("Atlas does not exist, downloading.")
-        atlas_download.atlas_download(
-            args.atlas, atlas_dir, args.download_path
-        )
-        amend_cfg(new_atlas_folder=atlas_dir, atlas=args.atlas)
-
+def prep_registration(args):
     args.target_brain_path = args.background_planes_path[0]
-    args.sample_name = sample_name
     logging.debug("Making registration directory")
     ensure_directory_exists(args.paths.registration_output_folder)
 
@@ -417,6 +427,8 @@ def prep_registration(args, sample_name="amap"):
     for idx, images in enumerate(args.signal_planes_paths):
         channel = args.signal_ch_ids[idx]
         additional_images_downsample[f"channel_{channel}"] = images
+
+    args.brainreg_paths = BrainRegPaths(args.paths.registration_output_folder)
 
     return args, additional_images_downsample
 

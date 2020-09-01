@@ -10,6 +10,8 @@ it's warnings are silenced
 
 import os
 import logging
+import json
+from argparse import Namespace
 from datetime import datetime
 from imlib.general.logging import suppress_specific_logs
 
@@ -18,48 +20,51 @@ tf_suppress_log_messages = [
 ]
 
 
+def get_arg_groups(args, parser):
+    arg_groups = {}
+    for group in parser._action_groups:
+        group_dict = {
+            a.dest: getattr(args, a.dest, None) for a in group._group_actions
+        }
+        arg_groups[group.title] = Namespace(**group_dict)
+
+    return arg_groups
+
+
+def log_metadata(file_path, args):
+    with open(file_path, "w") as f:
+        json.dump(args, f, default=lambda x: x.__dict__)
+
+
 def main():
     suppress_tf_logging(tf_suppress_log_messages)
-    import amap.main as register
+    from brainreg.main import main as register
 
     from cellfinder.tools import prep
 
     start_time = datetime.now()
-    args, what_to_run = prep.prep_cellfinder_general()
+    args, arg_groups, what_to_run = prep.prep_cellfinder_general()
 
     if what_to_run.register:
         # TODO: add register_part_brain option
         logging.info("Registering to atlas")
         args, additional_images_downsample = prep.prep_registration(args)
-
-        register.main(
-            args.registration_config,
+        register(
+            args.atlas,
+            args.orientation,
             args.target_brain_path,
-            args.paths.registration_output_folder,
+            args.brainreg_paths,
+            arg_groups["NiftyReg registration backend options"],
             x_pixel_um=args.x_pixel_um,
             y_pixel_um=args.y_pixel_um,
             z_pixel_um=args.z_pixel_um,
-            orientation=args.orientation,
-            flip_x=args.flip_x,
-            flip_y=args.flip_y,
-            flip_z=args.flip_z,
-            affine_n_steps=args.affine_n_steps,
-            affine_use_n_steps=args.affine_use_n_steps,
-            freeform_n_steps=args.freeform_n_steps,
-            freeform_use_n_steps=args.freeform_use_n_steps,
-            bending_energy_weight=args.bending_energy_weight,
-            grid_spacing=args.grid_spacing,
-            smoothing_sigma_reference=args.smoothing_sigma_reference,
-            smoothing_sigma_floating=args.smoothing_sigma_floating,
-            histogram_n_bins_floating=args.histogram_n_bins_floating,
-            histogram_n_bins_reference=args.histogram_n_bins_reference,
             sort_input_file=args.sort_input_file,
             n_free_cpus=args.n_free_cpus,
-            save_downsampled=not (args.no_save_downsampled),
             additional_images_downsample=additional_images_downsample,
-            boundaries=not (args.no_boundaries),
+            backend=args.backend,
             debug=args.debug,
         )
+
     else:
         logging.info("Skipping registration")
 

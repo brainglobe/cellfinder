@@ -16,11 +16,11 @@ from pathlib import Path
 from imlib.general.numerical import check_positive_float, check_positive_int
 from imlib.source import source_files
 
-from amap.download.cli import atlas_parser as amap_parser
-from amap.cli import registration_parse, geometry_parser
-from amap.cli import visualisation_parser as amap_vis_parser
 from cellfinder.download.cli import model_parser, download_directory_parser
 from micrometa.micrometa import SUPPORTED_METADATA_TYPES
+
+from brainreg.cli import atlas_parse, geometry_parser, niftyreg_parse
+from brainreg.cli import backend_parse as brainreg_backend_parse
 
 # TODO: Gradually move all paths as strings to Path objects
 
@@ -53,10 +53,8 @@ def valid_model_depth(depth):
 def cellfinder_parser():
     parser = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter)
     parser = main_parse(parser)
-    parser = registration_parse(parser)
     parser = config_parse(parser)
     parser = pixel_parser(parser)
-    parser = geometry_parser(parser)
     parser = cellfinder_opt_parse(parser)
     parser = io_parse(parser)
     parser = cell_detect_parse(parser)
@@ -64,12 +62,18 @@ def cellfinder_parser():
     parser = cube_extract_parse(parser)
     parser = count_summary_parse(parser)
     parser = figures_parse(parser)
-    parser = amap_vis_parser(parser)
     parser = standard_space_parse(parser)
     parser = misc_parse(parser)
-    parser = amap_parser(parser)
     parser = model_parser(parser)
     parser = download_directory_parser(parser)
+
+    # brainreg options
+    parser = atlas_parse(parser)
+    parser = geometry_parser(parser)
+    parser = brainreg_backend_parse(parser)
+    # This needs to be abstracted away into brainreg for multiple backends
+    parser = niftyreg_parse(parser)
+
     return parser
 
 
@@ -105,24 +109,23 @@ def main_parse(parser):
         help="Output directory for all intermediate and final results.",
     )
     main_parser.add_argument(
-        "--register",
+        "--no-register",
         dest="register",
-        action="store_true",
-        help="Register the background channel to the Allen brain atlas",
+        action="store_false",
+        help="Do not perform registration",
     )
     main_parser.add_argument(
-        "--summarise",
+        "--no-summarise",
         dest="summarise",
-        action="store_true",
-        help="Generate summary csv files showing how many cells are in "
-        "each brain area"
-        "(will also run registration if not specified.",
+        action="store_false",
+        help="Do not generate summary csv files showing how many cells are in "
+        "each brain area",
     )
     main_parser.add_argument(
-        "--figures",
+        "--no-figures",
         dest="figures",
         action="store_true",
-        help="Generate figures",
+        help="Do not generate figures",
     )
     main_parser.add_argument(
         "--signal-channel-ids",
@@ -554,5 +557,14 @@ def misc_parse(parser):
         help="Path to the metadata file. Supported formats are '{}'.".format(
             SUPPORTED_METADATA_TYPES
         ),
+    )
+    misc_parser.add_argument(
+        "--sort-input-file",
+        dest="sort_input_file",
+        action="store_true",
+        help="If set to true, the input text file will be sorted using "
+        "natural sorting. This means that the file paths will be "
+        "sorted as would be expected by a human and "
+        "not purely alphabetically",
     )
     return parser
