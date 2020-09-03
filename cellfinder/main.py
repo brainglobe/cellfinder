@@ -43,7 +43,7 @@ def main():
     from cellfinder.tools import prep
 
     start_time = datetime.now()
-    args, arg_groups, what_to_run = prep.prep_cellfinder_general()
+    args, arg_groups, what_to_run, atlas = prep.prep_cellfinder_general()
 
     if what_to_run.register:
         # TODO: add register_part_brain option
@@ -86,23 +86,23 @@ def main():
             args.output_dir = channel_directory
             args.signal_channel = channel
             # Run for each channel
-            run_all(args, what_to_run)
+            run_all(args, what_to_run, atlas)
 
     else:
         args.signal_channel = args.signal_ch_ids[0]
-        run_all(args, what_to_run)
+        run_all(args, what_to_run, atlas)
     logging.info(
         "Finished. Total time taken: {}".format(datetime.now() - start_time)
     )
 
 
-def run_all(args, what_to_run):
+def run_all(args, what_to_run, atlas):
     from cellfinder.detect import detect
     from cellfinder.classify import classify
+    from cellfinder.analyse import analyse
 
     # from cellfinder.figures import figures
     from cellfinder.tools import prep
-    from pathlib import Path
 
     args, what_to_run = prep.prep_channel_specific_general(args, what_to_run)
 
@@ -120,33 +120,8 @@ def run_all(args, what_to_run):
     else:
         logging.info("Skipping cell classification")
 
-    from bg_atlasapi import BrainGlobeAtlas
-    from cellfinder.bg_summarise import get_brain_structures
-
-    # TODO: bring into whattorun
-    if what_to_run.classify and os.path.exists(
-        args.brainreg_paths.deformation_field_0
-    ):
-        atlas = BrainGlobeAtlas(args.atlas)
-
-        deformation_field_paths = [
-            args.brainreg_paths.deformation_field_0,
-            args.brainreg_paths.deformation_field_1,
-            args.brainreg_paths.deformation_field_2,
-        ]
-
-        get_brain_structures(
-            atlas,
-            args.orientation,
-            args.x_pixel_um,
-            args.y_pixel_um,
-            args.z_pixel_um,
-            args.paths.classification_out_file,
-            args.signal_planes_paths[0],
-            deformation_field_paths,
-            args.brainreg_paths.volume_csv_path,
-            Path(args.output_dir),
-        )
+    if what_to_run.analyse:
+        analyse.run(args, atlas)
 
     # if what_to_run.figures:
     #     logging.info("Generating figures")

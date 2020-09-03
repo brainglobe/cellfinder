@@ -47,6 +47,7 @@ def test_registration_niftyreg(tmpdir):
         "allen_mouse_50um",
         "--no-detection",
         "--no-classification",
+        "--no-analyse",
     ]
 
     sys.argv = cellfinder_args

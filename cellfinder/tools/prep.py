@@ -26,6 +26,7 @@ from cellfinder.download.download import amend_cfg
 from cellfinder.tools import tools, system
 from argparse import Namespace
 from brainreg.paths import Paths as BrainRegPaths
+from bg_atlasapi import BrainGlobeAtlas
 
 
 def get_arg_groups(args, parser):
@@ -105,8 +106,8 @@ def prep_cellfinder_general():
         args.signal_ch_ids, args.background_ch_id, args.signal_planes_paths
     )
     args.brainreg_paths = BrainRegPaths(args.paths.registration_output_folder)
-
-    return args, arg_groups, what_to_run
+    atlas = BrainGlobeAtlas(args.atlas)
+    return args, arg_groups, what_to_run, atlas
 
 
 def check_and_return_ch_ids(signal_ids, background_id, signal_channel_list):
@@ -204,8 +205,12 @@ class CalcWhatToRun:
         self.detect = True
         self.classify = True
         self.register = True
+        self.analyse = True
         self.figures = True
 
+        self.atlas_image = os.path.join(
+            args.paths.registration_output_folder, "registered_atlas.tiff"
+        )
         # order is important
         self.cli_options(args)
         self.existence(args)
@@ -218,15 +223,12 @@ class CalcWhatToRun:
     def cli_options(self, args):
         self.detect = not args.no_detection
         self.classify = not args.no_classification
-        self.register = args.register
-        self.figures = args.figures
+        self.register = not args.no_register
+        self.analyse = not args.no_analyse
+        self.figures = not args.no_figures
 
     def existence(self, args):
-        if os.path.exists(
-            os.path.join(
-                args.paths.registration_output_folder, "registered_atlas.tiff"
-            )
-        ):
+        if os.path.exists(self.atlas_image):
             logging.warning(
                 "Registered atlas exists, assuming " "already run. Skipping."
             )
@@ -253,12 +255,13 @@ class CalcWhatToRun:
         if os.path.exists(args.paths.figures_dir) and (
             not os.listdir(args.paths.figures_dir) == []
         ):
-
             logging.warning(
                 "Figures directory not empty, assuming already run. "
                 "Skipping detection, and classification."
             )
             self.figures = False
+        if not os.path.exists(self.atlas_image):
+            self.analyse = False
 
 
 def prep_registration(args):

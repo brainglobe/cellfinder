@@ -55,14 +55,12 @@ def cellfinder_parser():
     parser = main_parse(parser)
     parser = config_parse(parser)
     parser = pixel_parser(parser)
-    parser = cellfinder_opt_parse(parser)
+    parser = run_parse(parser)
     parser = io_parse(parser)
     parser = cell_detect_parse(parser)
     parser = classification_parse(parser)
     parser = cube_extract_parse(parser)
-    # parser = count_summary_parse(parser)
     parser = figures_parse(parser)
-    # parser = standard_space_parse(parser)
     parser = misc_parse(parser)
     parser = model_parser(parser)
     parser = download_directory_parser(parser)
@@ -107,18 +105,6 @@ def main_parse(parser):
         type=str,
         required=True,
         help="Output directory for all intermediate and final results.",
-    )
-    main_parser.add_argument(
-        "--no-register",
-        dest="register",
-        action="store_false",
-        help="Do not perform registration",
-    )
-    main_parser.add_argument(
-        "--no-figures",
-        dest="figures",
-        action="store_true",
-        help="Do not generate figures",
     )
     main_parser.add_argument(
         "--signal-channel-ids",
@@ -202,22 +188,40 @@ def pixel_parser(parser):
     return parser
 
 
-def cellfinder_opt_parse(parser):
-    cellfinder_opt_parser = parser.add_argument_group(
-        "Cellfinder specific options"
+def run_parse(parser):
+    run_parser = parser.add_argument_group(
+        "Options to disable part of cellfinder"
     )
-    cellfinder_opt_parser.add_argument(
+    run_parser.add_argument(
         "--no-detection",
         dest="no_detection",
         action="store_true",
         help="Dont run cell candidate detection",
     )
 
-    cellfinder_opt_parser.add_argument(
+    run_parser.add_argument(
         "--no-classification",
         dest="no_classification",
         action="store_true",
         help="Dont run cell classification",
+    )
+    run_parser.add_argument(
+        "--no-register",
+        dest="no_register",
+        action="store_true",
+        help="Do not perform registration",
+    )
+    run_parser.add_argument(
+        "--no-analyse",
+        dest="no_analyse",
+        action="store_true",
+        help="Do not analyse and export cell positions",
+    )
+    run_parser.add_argument(
+        "--no-figures",
+        dest="no_figures",
+        action="store_true",
+        help="Do not generate figures",
     )
 
     return parser
@@ -407,46 +411,6 @@ def cube_extract_parse(parser):
     return parser
 
 
-#
-#
-# def count_summary_parse(parser):
-#     # TODO: add depth option (for reporting/grouping structures)
-#     count_summary_parser = parser.add_argument_group(
-#         "Cell count summary specific parameters"
-#     )
-#     count_summary_parser.add_argument(
-#         "--atlas-config",
-#         dest="atlas_config",
-#         type=str,
-#         help="Atlas configuration file. In the same format as the"
-#         "registration config file",
-#     )
-#     count_summary_parser.add_argument(
-#         "--coordinates-order",
-#         dest="coordinates_order",
-#         nargs=3,
-#         type=check_positive_int,
-#         default=[0, 1, 2],
-#         help="The order in which to read the dimensions in the atlas
-#         from the"
-#         " cell coordinates. 0,1,2 means x,y,z. 1,0,2 means y,x,z",
-#     )
-#     count_summary_parser.add_argument(
-#         "--cells-only",
-#         dest="cells_only",
-#         action="store_false",
-#         help="Used for testing. Will include non cells in the checks",
-#     )
-#     count_summary_parser.add_argument(
-#         "--scale-cell-coordinates",
-#         dest="scale_cell_coordinates",
-#         action="store_false",
-#         help="For testing whether to disable the scaling of cell
-#         coordinates",
-#     )
-#     return parser
-
-
 def figures_parse(parser):
     figure_parser = parser.add_argument_group(
         "Figure generation specific parameters"
@@ -492,20 +456,6 @@ def config_parse(parser):
     )
 
     return parser
-
-
-# def standard_space_parse(parser):
-#     standard_space_parser = parser.add_argument_group(
-#         "Cell transformation to standard space options"
-#     )
-#     standard_space_parser.add_argument(
-#         "--transform-all",
-#         dest="transform_all",
-#         action="store_true",
-#         help="Transform all cell positions (including artifacts).",
-#     )
-#
-#     return parser
 
 
 def misc_parse(parser):
