@@ -108,27 +108,6 @@ with RSP.
 Data courtesy of Sepiedeh Keshavarzi and Chryssanthi Tsitoura. [Details here](https://www.youtube.com/watch?v=pMHP0o-KsoQ)
 
 
-## Additional tools
-cellfinder is packaged with 
-[neuro](https://github.com/sainsburywellcomecentre/neuro) which provides 
-additional tools for the analysis of visualisation of whole-brain imaging data.
- See the [documentation](https://docs.cellfinder.info/neuro/standalone-tools) 
- for details.
-
-### Mapping non-cellular volumes in standard space:
-Virus injection site within the superior colliculus.
-
-*(Data courtesy of [@FedeClaudi](https://github.com/fedeclaudi) and 
-[brainrender](https://github.com/brancolab/brainrender))*
-![injection](https://raw.githubusercontent.com/SainsburyWellcomeCentre/cellfinder/master/resources/injection.png)
-
-### Mapping of probe tracks in standard space:
-Neuropixels probe in primary visual cortex. 
-Tutorial [here](https://app.gitbook.com/@cellfinder/s/cellfinder/standalone-tools/silicon-probe-tracking).
-
-*(Data courtesy of [@velezmat](https://github.com/velezmat)).*
-![injection](https://raw.githubusercontent.com/SainsburyWellcomeCentre/cellfinder/master/resources/probe.png)
-
 ## Citing cellfinder
 
 If you find cellfinder useful, and use it in your research, please cite this repository:
