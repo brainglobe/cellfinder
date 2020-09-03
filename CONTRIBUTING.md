@@ -5,7 +5,7 @@ bugs, or add new features to better suit your data.
 
 If you would like to contribute to cellfinder (or any of the upstream tools
 like [brainreg](https://github.com/brainglobe/brainreg), 
-[brainio](https://github.com/adamltyson/brainio),
+[imio](https://github.com/adamltyson/imio),
 [imlib](https://github.com/adamltyson/imlib) etc.) please get in touch via
 [email](mailto:adam.tyson@ucl.ac.uk?subject=cellfinder-development), or 
 better yet by starting a discussion on the 

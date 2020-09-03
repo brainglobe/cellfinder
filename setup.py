@@ -29,11 +29,11 @@ requirements = [
     "dask >= 2.15.0",
     "napari[pyqt5]>=0.3.0",
     "slurmio>=0.0.4",
-    "brainio>=0.0.19",
     "fancylog>=0.0.7",
     "micrometa>=0.0.11",
     "imlib>=0.0.26",
     "brainreg",
+    "imio",
 ]
 
 
