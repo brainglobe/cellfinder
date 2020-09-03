@@ -68,9 +68,6 @@ def main():
     else:
         logging.info("Skipping registration")
 
-    if what_to_run.summarise:
-        args = prep.prep_atlas_conf(args)
-
     if len(args.signal_planes_paths) > 1:
         base_directory = args.output_dir
 
@@ -102,12 +99,11 @@ def main():
 def run_all(args, what_to_run):
     from cellfinder.detect import detect
     from cellfinder.classify import classify
-    import cellfinder.summarise.count_summary as cell_count_summary
-    from cellfinder.figures import figures
+
+    # import cellfinder.summarise.count_summary as cell_count_summary
+    # from cellfinder.figures import figures
     from cellfinder.tools import prep
-    from cellfinder.standard_space.cells_to_standard_space import (
-        transform_cells_to_standard_space,
-    )
+    from pathlib import Path
 
     args, what_to_run = prep.prep_channel_specific_general(args, what_to_run)
 
@@ -125,26 +121,44 @@ def run_all(args, what_to_run):
     else:
         logging.info("Skipping cell classification")
 
-    if what_to_run.summarise:
-        logging.info("Summarising cell counts")
-        cell_count_summary.analysis_run(args)
+    from bg_atlasapi import BrainGlobeAtlas
+    from cellfinder.bg_summarise import get_brain_structures
 
-    else:
-        logging.info("Skipping cell count summary")
+    # TODO: bring into whattorun
+    if os.path.exists(args.brainreg_paths.deformation_field_0):
+        atlas = BrainGlobeAtlas(args.atlas)
 
-    if what_to_run.standard_space:
-        logging.info("Converting cells to standard space")
-        args = prep.standard_space_prep(args)
-        transform_cells_to_standard_space(args)
-    else:
-        logging.info("Skipping converting cells to standard space")
+        deformation_field_paths = [
+            args.brainreg_paths.deformation_field_0,
+            args.brainreg_paths.deformation_field_1,
+            args.brainreg_paths.deformation_field_2,
+        ]
 
-    if what_to_run.figures:
-        logging.info("Generating figures")
-        args = prep.figures_prep(args)
-        figures.figures(args)
-    else:
-        logging.info("Skipping figure generation")
+        get_brain_structures(
+            atlas,
+            args.orientation,
+            args.x_pixel_um,
+            args.y_pixel_um,
+            args.z_pixel_um,
+            args.paths.classification_out_file,
+            args.signal_planes_paths[0],
+            deformation_field_paths,
+            Path(args.output_dir),
+        )
+
+    # if what_to_run.summarise:
+    #     logging.info("Summarising cell counts")
+    #     cell_count_summary.analysis_run(args)
+    #
+    # else:
+    #     logging.info("Skipping cell count summary")
+    #
+    # if what_to_run.figures:
+    #     logging.info("Generating figures")
+    #     args = prep.figures_prep(args)
+    #     figures.figures(args)
+    # else:
+    #     logging.info("Skipping figure generation")
 
 
 def suppress_tf_logging(tf_suppress_log_messages):

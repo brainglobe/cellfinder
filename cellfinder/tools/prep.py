@@ -220,6 +220,8 @@ def prep_cellfinder_general():
     args.signal_ch_ids, args.background_ch_id = check_and_return_ch_ids(
         args.signal_ch_ids, args.background_ch_id, args.signal_planes_paths
     )
+    args.brainreg_paths = BrainRegPaths(args.paths.registration_output_folder)
+
     return args, arg_groups, what_to_run
 
 
@@ -318,54 +320,33 @@ class CalcWhatToRun:
         self.detect = True
         self.classify = True
         self.register = True
-        self.summarise = True
         self.figures = True
-        self.standard_space = True
 
         # order is important
         self.cli_options(args)
-        self.hierarchy()
         self.existence(args)
 
     def update(self, args):
         self.cli_options(args)
-        self.hierarchy()
         self.existence(args)
         self.channel_specific_update(args)
 
     def cli_options(self, args):
         self.detect = not args.no_detection
         self.classify = not args.no_classification
-
         self.register = args.register
-        self.summarise = args.summarise
         self.figures = args.figures
-
-        self.standard_space = not args.no_standard_space
-
-    def hierarchy(self):
-        if self.summarise or self.figures:
-            self.classify = True
-            self.register = True
-
-        if not self.detect or not self.classify:
-            self.standard_space = False
 
     def existence(self, args):
         if os.path.exists(
             os.path.join(
-                args.paths.registration_output_folder, "registered_atlas.nii"
+                args.paths.registration_output_folder, "registered_atlas.tiff"
             )
         ):
             logging.warning(
                 "Registered atlas exists, assuming " "already run. Skipping."
             )
             self.register = False
-        else:
-            # If registration hasn't happened (and it's not going to), then
-            # don't carry out standard space analysis
-            if not self.register and not self.figures:
-                self.standard_space = False
 
     def channel_specific_update(self, args):
         if os.path.exists(args.paths.cells_file_path):
@@ -385,17 +366,6 @@ class CalcWhatToRun:
             self.classify = False
             self.detect = False
 
-        if os.path.exists(
-            os.path.join(args.output_dir, "summary_cell_counts.csv")
-        ):
-            logging.warning(
-                "Summary file exists, assuming already run. "
-                "skipping everything."
-            )
-            self.summarise = False
-            self.detect = False
-            self.classify = False
-
         if os.path.exists(args.paths.figures_dir) and (
             not os.listdir(args.paths.figures_dir) == []
         ):
@@ -405,17 +375,6 @@ class CalcWhatToRun:
                 "Skipping detection, and classification."
             )
             self.figures = False
-            self.detect = False
-            self.classify = False
-
-        if os.path.exists(args.paths.cells_in_standard_space):
-            logging.warning(
-                "Cells in standard space xml file exists, assuming already "
-                "run. Skipping detection and classification."
-            )
-            self.detect = False
-            self.classify = False
-            self.standard_space = False
 
 
 def prep_registration(args):
@@ -427,9 +386,6 @@ def prep_registration(args):
     for idx, images in enumerate(args.signal_planes_paths):
         channel = args.signal_ch_ids[idx]
         additional_images_downsample[f"channel_{channel}"] = images
-
-    args.brainreg_paths = BrainRegPaths(args.paths.registration_output_folder)
-
     return args, additional_images_downsample
 
 

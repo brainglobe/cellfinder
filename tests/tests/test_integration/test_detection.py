@@ -44,7 +44,7 @@ def test_detection_full(tmpdir):
         z_pix,
         "--n-free-cpus",
         "0",
-        "--no-standard-space",
+        "--no-register",
         "--save-planes",
     ]
     sys.argv = cellfinder_args
