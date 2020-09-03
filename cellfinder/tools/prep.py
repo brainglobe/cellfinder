@@ -7,6 +7,7 @@ Functions to prepare files and directories needed for other functions
 
 import os
 import logging
+
 from fancylog import fancylog
 from pathlib import Path
 
@@ -23,7 +24,6 @@ import cellfinder.tools.parser as parser
 from cellfinder.download import models as model_download
 from cellfinder.download.download import amend_cfg
 from cellfinder.tools import tools, system
-import json
 from argparse import Namespace
 from brainreg.paths import Paths as BrainRegPaths
 
@@ -37,11 +37,6 @@ def get_arg_groups(args, parser):
         arg_groups[group.title] = Namespace(**group_dict)
 
     return arg_groups
-
-
-def log_metadata(file_path, args):
-    with open(file_path, "w") as f:
-        json.dump(args, f, default=lambda x: x.__dict__)
 
 
 def check_input_arg_existance(args):
@@ -66,75 +61,12 @@ class Paths:
     deleted if "--debug" is not used.
     """
 
-    # TODO: Maybe transfer to a config file.
     def __init__(self, output_dir):
         self.output_dir = output_dir
-        self.metadata_path = os.path.join(self.output_dir, "cellfinder.json")
-
-    def make_reg_paths(self):
         self.registration_output_folder = os.path.join(
             self.output_dir, "registration"
         )
-        self.downsampled_background = self.make_reg_path("downsampled.nii")
-        self.tmp__downsampled_filtered = self.make_reg_path(
-            "downsampled_filtered.nii"
-        )
-        self.registered_atlas_path = self.make_reg_path("registered_atlas.nii")
-        self.hemispheres_atlas_path = self.make_reg_path(
-            "registered_hemispheres.nii"
-        )
-        self.volume_csv_path = self.make_reg_path("volumes.csv")
-
-        self.tmp__affine_registered_atlas_brain_path = self.make_reg_path(
-            "affine_registered_atlas_brain.nii"
-        )
-        self.tmp__freeform_registered_atlas_brain_path = self.make_reg_path(
-            "freeform_registered_atlas_brain.nii"
-        )
-        # self.tmp__inverse_freeform_registered_atlas_brain_path =
-        # self.make_reg_path(
-        #     "inverse_freeform_registered_brain.nii"
-        # )
-
-        self.registered_atlas_img_path = self.make_reg_path(
-            "registered_atlas.nii"
-        )
-        self.registered_hemispheres_img_path = self.make_reg_path(
-            "registered_hemispheres.nii"
-        )
-
-        self.affine_matrix_path = self.make_reg_path("affine_matrix.txt")
-        self.invert_affine_matrix_path = self.make_reg_path(
-            "invert_affine_matrix.txt"
-        )
-
-        self.control_point_file_path = self.make_reg_path(
-            "control_point_file.nii"
-        )
-        self.inverse_control_point_file_path = self.make_reg_path(
-            "inverse_control_point_file.nii"
-        )
-
-        (
-            self.tmp__affine_log_file_path,
-            self.tmp__affine_error_path,
-        ) = self.compute_reg_log_file_paths("affine")
-        (
-            self.tmp__freeform_log_file_path,
-            self.tmp__freeform_error_file_path,
-        ) = self.compute_reg_log_file_paths("freeform")
-        (
-            self.tmp__inverse_freeform_log_file_path,
-            self.tmp__inverse_freeform_error_file_path,
-        ) = self.compute_reg_log_file_paths("inverse_freeform")
-        (
-            self.tmp__segmentation_log_file,
-            self.tmp__segmentation_error_file,
-        ) = self.compute_reg_log_file_paths("segment")
-        (
-            self.tmp__invert_affine_log_file,
-            self.tmp__invert_affine_error_file,
-        ) = self.compute_reg_log_file_paths("invert_affine")
+        self.metadata_path = os.path.join(self.output_dir, "cellfinder.json")
 
     def make_channel_specific_paths(self):
         self.cells_file_path = os.path.join(self.output_dir, "cells.xml")
@@ -142,57 +74,10 @@ class Paths:
         self.classification_out_file = os.path.join(
             self.output_dir, "cell_classification.xml"
         )
-        self.standard_space_output_folder = os.path.join(
-            self.output_dir, "standard_space"
-        )
-        self.cells_in_standard_space = os.path.join(
-            self.standard_space_output_folder, "cells_in_standard_space.xml"
-        )
         self.figures_dir = os.path.join(self.output_dir, "figures")
 
     def make_figures_paths(self):
-        self.heatmap = os.path.join(self.figures_dir, "heatmap.nii")
-
-    def make_invert_cell_position_paths(self):
-        self.tmp__deformation_field = os.path.join(
-            self.standard_space_output_folder, "deformation_field.nii"
-        )
-        self.tmp__deformation_log_file_path = os.path.join(
-            self.standard_space_output_folder, "deformation.log"
-        )
-        self.tmp__deformation_error_path = os.path.join(
-            self.standard_space_output_folder, "deformation.err"
-        )
-
-    def make_reg_path(self, basename):
-        """
-        Compute the absolute path of the destination file to
-        self.registration_output_folder.
-
-        :param str basename:
-        :return: The path
-        :rtype: str
-        """
-        return os.path.join(self.registration_output_folder, basename)
-
-    def compute_reg_log_file_paths(self, basename):
-        """
-        Compute the path of the log and err file for the step corresponding
-        to basename
-
-        :param str basename:
-        :return: log_file_path, error_file_path
-        """
-
-        log_file_template = os.path.join(
-            self.registration_output_folder, "{}.log"
-        )
-        error_file_template = os.path.join(
-            self.registration_output_folder, "{}.err"
-        )
-        log_file_path = log_file_template.format(basename)
-        error_file_path = error_file_template.format(basename)
-        return log_file_path, error_file_path
+        self.heatmap = os.path.join(self.figures_dir, "heatmap.tiff")
 
 
 def prep_cellfinder_general():
@@ -206,7 +91,6 @@ def prep_cellfinder_general():
         os.makedirs(args.output_dir)
 
     args.paths = Paths(args.output_dir)
-    args.paths.make_reg_paths()
 
     fancylog.start_logging(
         args.output_dir,
@@ -415,26 +299,6 @@ def check_atlas_install(cfg_file_path=None):
     return dir_exists, files_exist
 
 
-def prep_atlas_conf(args):
-    """
-    Used by cellfinder_run to source the correct registration configuration
-    and also by cellfinder_count_summary to get atlas pixel sizes.
-
-    :param args: Args possibly including "registration_config"
-    :return: args: Args with atlas configuration for registration
-    """
-    if args.atlas_config is None:
-        if (
-            hasattr(args, "registration_config")
-            and args.registration_config is not None
-        ):
-            args.atlas_config = args.registration_config
-        else:
-            # can get atlas pixel sizes from registration config
-            args.atlas_config = source_files.source_custom_config_cellfinder()
-    return args
-
-
 def prep_classification(args):
     n_processes = get_num_processes(min_free_cpu_cores=args.n_free_cpus)
     prep_tensorflow(n_processes)
@@ -501,12 +365,6 @@ def prep_candidate_detection(args):
     else:
         args.plane_directory = None  # FIXME: remove this fudge
 
-    return args
-
-
-def standard_space_prep(args):
-    ensure_directory_exists(args.paths.standard_space_output_folder)
-    args.paths.make_invert_cell_position_paths()
     return args
 
 
