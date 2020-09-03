@@ -124,7 +124,9 @@ def run_all(args, what_to_run):
     from cellfinder.bg_summarise import get_brain_structures
 
     # TODO: bring into whattorun
-    if os.path.exists(args.brainreg_paths.deformation_field_0):
+    if what_to_run.classify and os.path.exists(
+        args.brainreg_paths.deformation_field_0
+    ):
         atlas = BrainGlobeAtlas(args.atlas)
 
         deformation_field_paths = [
