@@ -30,7 +30,7 @@ Cellfinder is a collection of tools from the
  
  * Cell detection (initial cell candidate detection and refinement using 
  deep learning).
- * Atlas registration (using [amap](https://github.com/SainsburyWellcomeCentre/amap-python))
+ * Atlas registration (using [brainreg](https://github.com/brainglobe/brainreg))
  * Analysis of cell positions in a common space
  
 Installation is with 
@@ -79,8 +79,8 @@ cells or artefacts:
 ![raw](https://raw.githubusercontent.com/SainsburyWellcomeCentre/cellfinder/master/resources/classify.png)
 **Cassified cell candidates. Yellow - cells, Blue - artefacts**
 
-### Registration and segmentation (amap)
-Using [amap](https://github.com/SainsburyWellcomeCentre/amap-python), 
+### Registration and segmentation (brainreg)
+Using [brainreg](https://github.com/brainglobe/brainreg), 
 cellfinder aligns a template brain and atlas annotations (e.g. 
 the Allen Reference Atlas, ARA) to the sample allowing detected cells to be assigned 
 a brain region.
@@ -138,7 +138,7 @@ If you find cellfinder useful, and use it in your research, please cite this rep
 
 > Adam L. Tyson, Charly V. Rousseau, Christian J. Niedworok and Troy W. Margrie (2020). cellfinder: automated 3D cell detection and registration of whole-brain images. [doi:10.5281/zenodo.3665329](http://doi.org/10.5281/zenodo.3665329)
 
-If you use any of the image registration functions in cellfinder, please also cite [amap](https://github.com/SainsburyWellcomeCentre/amap-python#citing-amap).
+If you use any of the image registration functions in cellfinder, please also cite [brainreg](https://github.com/brainglobe/brainreg#citing-brainreg).
 
 **If you use this, or any other tools in the cellfinder suite, please
  [let us know](mailto:adam.tyson@ucl.ac.uk?subject=cellfinder-paper), and 

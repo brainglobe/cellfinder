@@ -6,7 +6,6 @@ import urllib.request
 from imlib.general.system import disk_free_gb
 from imlib.general.config import get_config_obj
 from imlib.source import source_files
-from amap.download.download import write_atlas_to_cfg
 
 
 class DownloadError(Exception):
@@ -77,20 +76,11 @@ def download(
         os.remove(download_path)
 
 
-def amend_cfg(new_atlas_folder=None, new_model_path=None, atlas=None):
-    """
-    Updates the registration config file to point to the correct atlas path
-    :param new_atlas_folder:
-    """
+def amend_cfg(new_model_path=None):
     print("Ensuring custom config file is correct")
 
     original_config = source_files.source_config_cellfinder()
     new_config = source_files.source_custom_config_cellfinder()
-    if new_atlas_folder is not None:
-        write_atlas_to_cfg(
-            new_atlas_folder, atlas, original_config, new_config
-        )
-        original_config = new_config
 
     if new_model_path is not None:
         write_model_to_cfg(new_model_path, original_config, new_config)
