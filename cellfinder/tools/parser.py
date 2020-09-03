@@ -60,7 +60,6 @@ def cellfinder_parser():
     parser = cell_detect_parse(parser)
     parser = classification_parse(parser)
     parser = cube_extract_parse(parser)
-    parser = figures_parse(parser)
     parser = misc_parse(parser)
     parser = model_parser(parser)
     parser = download_directory_parser(parser)
@@ -216,12 +215,6 @@ def run_parse(parser):
         dest="no_analyse",
         action="store_true",
         help="Do not analyse and export cell positions",
-    )
-    run_parser.add_argument(
-        "--no-figures",
-        dest="no_figures",
-        action="store_true",
-        help="Do not generate figures",
     )
 
     return parser
@@ -411,48 +404,14 @@ def cube_extract_parse(parser):
     return parser
 
 
-def figures_parse(parser):
-    figure_parser = parser.add_argument_group(
-        "Figure generation specific parameters"
-    )
-    figure_parser.add_argument(
-        "--no-heatmap",
-        dest="heatmap",
-        action="store_false",
-        help="Don't generate a heatmap of cell locations",
-    )
-    figure_parser.add_argument(
-        "--heatmap-bin",
-        dest="heatmap_binning",
-        type=check_positive_float,
-        default=100,
-        help="Heatmap bin size (um of each edge of histogram cube)",
-    )
-    figure_parser.add_argument(
-        "--heatmap-smoothing",
-        dest="heatmap_smooth",
-        type=check_positive_float,
-        default=100,
-        help="Gaussian smoothing sigma, in um.",
-    )
-    figure_parser.add_argument(
-        "--no-mask-figs",
-        dest="mask_figures",
-        action="store_false",
-        help="Don't mask the figures (removing any areas outside the brain,"
-        "from e.g. smoothing)",
-    )
-    return parser
-
-
 def config_parse(parser):
     config_opt_parser = parser.add_argument_group("Config options")
     config_opt_parser.add_argument(
-        "--registration-config",
+        "--config",
         dest="registration_config",
         type=str,
         default=source_files.source_custom_config_cellfinder(),
-        help="To supply your own, custom registration configuration file.",
+        help="To supply your own, custom configuration file.",
     )
 
     return parser

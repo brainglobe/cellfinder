@@ -75,10 +75,6 @@ class Paths:
         self.classification_out_file = os.path.join(
             self.output_dir, "cell_classification.xml"
         )
-        self.figures_dir = os.path.join(self.output_dir, "figures")
-
-    def make_figures_paths(self):
-        self.heatmap = os.path.join(self.figures_dir, "heatmap.tiff")
 
 
 def prep_cellfinder_general():
@@ -206,18 +202,17 @@ class CalcWhatToRun:
         self.classify = True
         self.register = True
         self.analyse = True
-        self.figures = True
 
         self.atlas_image = os.path.join(
             args.paths.registration_output_folder, "registered_atlas.tiff"
         )
         # order is important
         self.cli_options(args)
-        self.existence(args)
+        self.existence()
 
     def update(self, args):
         self.cli_options(args)
-        self.existence(args)
+        self.existence()
         self.channel_specific_update(args)
 
     def cli_options(self, args):
@@ -225,9 +220,8 @@ class CalcWhatToRun:
         self.classify = not args.no_classification
         self.register = not args.no_register
         self.analyse = not args.no_analyse
-        self.figures = not args.no_figures
 
-    def existence(self, args):
+    def existence(self):
         if os.path.exists(self.atlas_image):
             logging.warning(
                 "Registered atlas exists, assuming " "already run. Skipping."
@@ -252,14 +246,6 @@ class CalcWhatToRun:
             self.classify = False
             self.detect = False
 
-        if os.path.exists(args.paths.figures_dir) and (
-            not os.listdir(args.paths.figures_dir) == []
-        ):
-            logging.warning(
-                "Figures directory not empty, assuming already run. "
-                "Skipping detection, and classification."
-            )
-            self.figures = False
         if not os.path.exists(self.atlas_image):
             self.analyse = False
 
@@ -368,10 +354,4 @@ def prep_candidate_detection(args):
     else:
         args.plane_directory = None  # FIXME: remove this fudge
 
-    return args
-
-
-def figures_prep(args):
-    ensure_directory_exists(args.paths.figures_dir)
-    args.paths.make_figures_paths()
     return args

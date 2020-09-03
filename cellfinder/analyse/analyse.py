@@ -1,12 +1,15 @@
-from imlib.IO.cells import get_cells
-import bg_space as bgs
-import numpy as np
 import imio
 import tifffile
-import pandas as pd
 import os
-from imlib.pandas.misc import sanitise_df
+import logging
+
+import numpy as np
+import pandas as pd
+import bg_space as bgs
+
 from pathlib import Path
+from imlib.IO.cells import get_cells
+from imlib.pandas.misc import sanitise_df
 
 
 def export_points(
@@ -17,7 +20,7 @@ def export_points(
     name="points",
     points_file_extension=".h5",
 ):
-    print("Exporting to brainrender")
+    logging.info("Exporting to brainrender")
     max_axis_2 = atlas.metadata["shape"][2]
     output_filename = output_directory / (name + points_file_extension)
     points = pd.DataFrame(points * resolution)

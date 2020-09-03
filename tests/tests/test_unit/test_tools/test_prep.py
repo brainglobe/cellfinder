@@ -47,27 +47,24 @@ class Args:
         empty=None,
         no_detection=False,
         no_classification=False,
-        register=False,
-        summarise=False,
+        no_register=False,
+        no_analyse=False,
         no_standard_space=False,
-        figures=False,
         output_dir=None,
         registration_output_folder=None,
         cells_file_path=None,
         cubes_output_dir=None,
         classification_out_file=None,
         cells_in_standard_space=None,
-        figures_dir=None,
     ):
         self.cell_count_model_dir = model_dir
         self.empty = empty
 
         self.no_detection = no_detection
         self.no_classification = no_classification
-        self.register = register
-        self.summarise = summarise
+        self.no_register = no_register
+        self.no_summarise = no_analyse
         self.no_standard_space = no_standard_space
-        self.figures = figures
 
         self.output_dir = output_dir
 
@@ -77,7 +74,6 @@ class Args:
             cubes_output_dir=cubes_output_dir,
             classification_out_file=classification_out_file,
             cells_in_standard_space=cells_in_standard_space,
-            figures_dir=figures_dir,
         )
 
 
@@ -89,14 +85,12 @@ class Paths:
         cubes_output_dir=None,
         classification_out_file=None,
         cells_in_standard_space=None,
-        figures_dir=None,
     ):
         self.registration_output_folder = output_dir
         self.cells_file_path = cells_file_path
         self.tmp__cubes_output_dir = cubes_output_dir
         self.classification_out_file = classification_out_file
         self.cells_in_standard_space = cells_in_standard_space
-        self.figures_dir = figures_dir
 
 
 # def get_dict_of_what_to_run(what_to_run):

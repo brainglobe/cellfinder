@@ -101,7 +101,6 @@ def run_all(args, what_to_run, atlas):
     from cellfinder.classify import classify
     from cellfinder.analyse import analyse
 
-    # from cellfinder.figures import figures
     from cellfinder.tools import prep
 
     args, what_to_run = prep.prep_channel_specific_general(args, what_to_run)
@@ -122,13 +121,6 @@ def run_all(args, what_to_run, atlas):
 
     if what_to_run.analyse:
         analyse.run(args, atlas)
-
-    # if what_to_run.figures:
-    #     logging.info("Generating figures")
-    #     args = prep.figures_prep(args)
-    #     figures.figures(args)
-    # else:
-    #     logging.info("Skipping figure generation")
 
 
 def suppress_tf_logging(tf_suppress_log_messages):
