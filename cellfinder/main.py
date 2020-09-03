@@ -100,7 +100,6 @@ def run_all(args, what_to_run):
     from cellfinder.detect import detect
     from cellfinder.classify import classify
 
-    # import cellfinder.summarise.count_summary as cell_count_summary
     # from cellfinder.figures import figures
     from cellfinder.tools import prep
     from pathlib import Path
@@ -143,16 +142,10 @@ def run_all(args, what_to_run):
             args.paths.classification_out_file,
             args.signal_planes_paths[0],
             deformation_field_paths,
+            args.brainreg_paths.volume_csv_path,
             Path(args.output_dir),
         )
 
-    # if what_to_run.summarise:
-    #     logging.info("Summarising cell counts")
-    #     cell_count_summary.analysis_run(args)
-    #
-    # else:
-    #     logging.info("Skipping cell count summary")
-    #
     # if what_to_run.figures:
     #     logging.info("Generating figures")
     #     args = prep.figures_prep(args)

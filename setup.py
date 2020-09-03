@@ -20,7 +20,6 @@ requirements = [
     "h5py>=2.8,<3.0.0",
     "multiprocessing-logging",
     "psutil",
-    "nibabel",
     "configobj",
     # "scipy>=0.18,<2.0.0",
     # temporarily until tf relaxes this
@@ -35,7 +34,6 @@ requirements = [
     "micrometa>=0.0.11",
     "imlib>=0.0.26",
     "neuro>=0.0.13",
-    # "amap>=0.1.26",
     "brainreg",
 ]
 
@@ -128,18 +126,6 @@ setup(
             "cellfinder = cellfinder.main:main",
             "cellfinder_download = cellfinder.download.cli:main",
             "cellfinder_train = cellfinder.train.train_yml:main",
-            "cellfinder_count_summary = "
-            "cellfinder.summarise.count_summary:main",
-            "cellfinder_region_summary = "
-            "cellfinder.analyse.group.region_summary:main",
-            "cellfinder_xml_crop = cellfinder.utils.xml_crop:main",
-            "cellfinder_xml_scale = cellfinder.utils.xml_scale:main",
-            "cellfinder_cell_standard = "
-            "cellfinder.standard_space.cells_to_standard_space:main",
-            "cellfinder_gen_region_vol = "
-            "cellfinder.utils.generate_region_volume:main",
-            "cellfinder_cells_to_brainrender = "
-            "neuro.points.points_to_brainrender:main",
             "cellfinder_curate = cellfinder.train.curation:main",
         ]
     },
