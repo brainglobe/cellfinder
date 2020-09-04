@@ -24,7 +24,7 @@ def main(args, max_workers=3):
 
     logging.debug("Initialising cube generator")
     inference_generator = CubeGeneratorFromFile(
-        args.paths.cells_file_path,
+        args.paths.detected_points,
         signal_images,
         background_images,
         batch_size=args.batch_size,
@@ -66,5 +66,5 @@ def main(args, max_workers=3):
 
     logging.info("Saving classified cells")
     save_cells(
-        cells_list, args.paths.classification_out_file, save_csv=args.save_csv
+        cells_list, args.paths.classified_points, save_csv=args.save_csv
     )

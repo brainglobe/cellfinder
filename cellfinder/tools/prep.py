@@ -70,11 +70,20 @@ class Paths:
         self.metadata_path = os.path.join(self.output_dir, "cellfinder.json")
 
     def make_channel_specific_paths(self):
-        self.cells_file_path = os.path.join(self.output_dir, "cells.xml")
-        self.tmp__cubes_output_dir = os.path.join(self.output_dir, "cubes")
-        self.classification_out_file = os.path.join(
-            self.output_dir, "cell_classification.xml"
+        self.points_directory = os.path.join(self.output_dir, "points")
+        self.detected_points = os.path.join(self.points_directory, "cells.xml")
+        self.classified_points = os.path.join(
+            self.points_directory, "cell_classification.xml"
         )
+        self.downsampled_points = os.path.join(
+            self.points_directory, "downsampled.points"
+        )
+        self.atlas_points = os.path.join(self.points_directory, "atlas.points")
+        self.brainrender_points = os.path.join(
+            self.points_directory, "points.h5"
+        )
+
+        self.tmp__cubes_output_dir = os.path.join(self.output_dir, "cubes")
 
 
 def prep_cellfinder_general():
@@ -229,14 +238,14 @@ class CalcWhatToRun:
             self.register = False
 
     def channel_specific_update(self, args):
-        if os.path.exists(args.paths.cells_file_path):
+        if os.path.exists(args.paths.detected_points):
             logging.warning(
                 "Initial detection file exists (cells.xml), "
                 "assuming already run. Skipping."
             )
             self.detect = False
 
-        if os.path.exists(args.paths.classification_out_file):
+        if os.path.exists(args.paths.classified_points):
             logging.warning(
                 "Cell classification file "
                 "(cell_classification.xml)"

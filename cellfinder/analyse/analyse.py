@@ -114,7 +114,7 @@ def summarise_points(
 
 
 def transform_points_to_downsampled_space(
-    points, atlas, target_shape, source_space, output_directory=None
+    points, atlas, target_shape, source_space, output_filename=None
 ):
     target_space = bgs.AnatomicalSpace(
         atlas.metadata["orientation"],
@@ -122,15 +122,20 @@ def transform_points_to_downsampled_space(
         resolution=atlas.resolution,
     )
     points = source_space.map_points_to(target_space, points)
-    if output_directory is not None:
-        filename = output_directory / "downsampled.points"
+
+    if output_filename is not None:
         df = pd.DataFrame(points)
-        df.to_hdf(filename, key="df", mode="w")
+        df.to_hdf(output_filename, key="df", mode="w")
     return points
 
 
 def transform_points_to_atlas_space(
-    points, source_space, atlas, deformation_field_paths, output_directory=None
+    points,
+    source_space,
+    atlas,
+    deformation_field_paths,
+    downsampled_points_path=None,
+    atlas_points_path=None,
 ):
     target_shape = tifffile.imread(deformation_field_paths[0]).shape
     downsampled_points = transform_points_to_downsampled_space(
@@ -138,19 +143,19 @@ def transform_points_to_atlas_space(
         atlas,
         target_shape,
         source_space,
-        output_directory=output_directory,
+        output_filename=downsampled_points_path,
     )
     transformed_points = transform_points_downsampled_to_atlas_space(
         downsampled_points,
         atlas,
         deformation_field_paths,
-        output_directory=output_directory,
+        output_filename=atlas_points_path,
     )
     return transformed_points
 
 
 def transform_points_downsampled_to_atlas_space(
-    downsampled_points, atlas, deformation_field_paths, output_directory=None
+    downsampled_points, atlas, deformation_field_paths, output_filename=None
 ):
     field_scales = [int(1000 / resolution) for resolution in atlas.resolution]
     points = [[], [], []]
@@ -169,10 +174,9 @@ def transform_points_downsampled_to_atlas_space(
 
     transformed_points = np.array(points).T
 
-    if output_directory is not None:
-        filename = output_directory / "atlas.points"
+    if output_filename is not None:
         df = pd.DataFrame(transformed_points)
-        df.to_hdf(filename, key="df", mode="w")
+        df.to_hdf(output_filename, key="df", mode="w")
 
     return transformed_points
 
@@ -185,7 +189,7 @@ def run(args, atlas):
     ]
 
     output_directory = Path(args.output_dir)
-    cells = get_cells(args.paths.classification_out_file, cells_only=True)
+    cells = get_cells(args.paths.classified_points, cells_only=True)
     cell_list = []
     for cell in cells:
         cell_list.append([cell.z, cell.y, cell.x])
@@ -209,7 +213,8 @@ def run(args, atlas):
         source_space,
         atlas,
         deformation_field_paths,
-        output_directory=output_directory,
+        downsampled_points_path=args.paths.downsampled_points,
+        atlas_points_path=args.paths.atlas_points,
     )
 
     logging.info("Summarising cell positions")
@@ -224,7 +229,6 @@ def run(args, atlas):
     export_points(
         transformed_cells,
         atlas,
-        output_directory,
         atlas.resolution[0],
-        name="cells",
+        args.paths.brainrender_points,
     )

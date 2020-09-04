@@ -50,7 +50,7 @@ def test_detection_full(tmpdir):
     sys.argv = cellfinder_args
     cellfinder_run()
 
-    cells_test_xml = os.path.join(tmpdir, "cell_classification.xml")
+    cells_test_xml = os.path.join(tmpdir, "points", "cell_classification.xml")
 
     cells_validation = cell_io.get_cells(cells_validation_xml)
     cells_test = cell_io.get_cells(cells_test_xml)
