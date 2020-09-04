@@ -11,13 +11,25 @@ it's warnings are silenced
 import os
 import logging
 import json
+import tifffile
 from argparse import Namespace
 from datetime import datetime
+import bg_space as bgs
 from imlib.general.logging import suppress_specific_logs
 
 tf_suppress_log_messages = [
     "multiprocessing can interact badly with TensorFlow"
 ]
+
+
+def get_downsampled_space(atlas, downsampled_image_path):
+    target_shape = tifffile.imread(downsampled_image_path).shape
+    downsampled_space = bgs.AnatomicalSpace(
+        atlas.metadata["orientation"],
+        shape=target_shape,
+        resolution=atlas.resolution,
+    )
+    return downsampled_space
 
 
 def get_arg_groups(args, parser):
@@ -100,6 +112,7 @@ def run_all(args, what_to_run, atlas):
     from cellfinder.detect import detect
     from cellfinder.classify import classify
     from cellfinder.analyse import analyse
+    from cellfinder.figures import figures
 
     from cellfinder.tools import prep
 
@@ -119,8 +132,22 @@ def run_all(args, what_to_run, atlas):
     else:
         logging.info("Skipping cell classification")
 
+    if what_to_run.analyse or what_to_run.figures:
+        downsampled_space = get_downsampled_space(
+            atlas, args.brainreg_paths.boundaries_file_path
+        )
+
     if what_to_run.analyse:
-        analyse.run(args, atlas)
+        logging.info("Analysing cell positions")
+        analyse.run(args, atlas, downsampled_space)
+    else:
+        logging.info("Skipping cell position analysis")
+
+    if what_to_run.figures:
+        logging.info("Generating figures")
+        figures.run(args, atlas, downsampled_space.shape)
+    else:
+        logging.info("Skipping figure generation")
 
 
 def suppress_tf_logging(tf_suppress_log_messages):

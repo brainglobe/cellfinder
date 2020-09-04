@@ -53,6 +53,7 @@ def test_registration_niftyreg(tmpdir):
         "--no-detection",
         "--no-classification",
         "--no-analyse",
+        "--no-figures",
     ]
 
     sys.argv = cellfinder_args

@@ -85,6 +85,9 @@ class Paths:
 
         self.tmp__cubes_output_dir = os.path.join(self.output_dir, "cubes")
 
+        self.figures_directory = os.path.join(self.output_dir, "figures")
+        self.heatmap = os.path.join(self.figures_directory, "heatmap.tiff")
+
 
 def prep_cellfinder_general():
     args = parser.cellfinder_parser().parse_args()
@@ -211,6 +214,7 @@ class CalcWhatToRun:
         self.classify = True
         self.register = True
         self.analyse = True
+        self.figures = True
 
         self.atlas_image = os.path.join(
             args.paths.registration_output_folder, "registered_atlas.tiff"
@@ -229,6 +233,7 @@ class CalcWhatToRun:
         self.classify = not args.no_classification
         self.register = not args.no_register
         self.analyse = not args.no_analyse
+        self.figures = not args.no_figures
 
     def existence(self):
         if os.path.exists(self.atlas_image):
@@ -257,6 +262,10 @@ class CalcWhatToRun:
 
         if not os.path.exists(self.atlas_image):
             self.analyse = False
+            self.figures = False
+
+        if os.path.exists(args.paths.heatmap):
+            self.figures = False
 
 
 def prep_registration(args):

@@ -114,15 +114,9 @@ def summarise_points(
 
 
 def transform_points_to_downsampled_space(
-    points, atlas, target_shape, source_space, output_filename=None
+    points, target_space, source_space, output_filename=None
 ):
-    target_space = bgs.AnatomicalSpace(
-        atlas.metadata["orientation"],
-        shape=target_shape,
-        resolution=atlas.resolution,
-    )
     points = source_space.map_points_to(target_space, points)
-
     if output_filename is not None:
         df = pd.DataFrame(points)
         df.to_hdf(output_filename, key="df", mode="w")
@@ -134,14 +128,13 @@ def transform_points_to_atlas_space(
     source_space,
     atlas,
     deformation_field_paths,
+    downsampled_space,
     downsampled_points_path=None,
     atlas_points_path=None,
 ):
-    target_shape = tifffile.imread(deformation_field_paths[0]).shape
     downsampled_points = transform_points_to_downsampled_space(
         points,
-        atlas,
-        target_shape,
+        downsampled_space,
         source_space,
         output_filename=downsampled_points_path,
     )
@@ -181,7 +174,7 @@ def transform_points_downsampled_to_atlas_space(
     return transformed_points
 
 
-def run(args, atlas):
+def run(args, atlas, downsampled_space):
     deformation_field_paths = [
         args.brainreg_paths.deformation_field_0,
         args.brainreg_paths.deformation_field_1,
@@ -213,6 +206,7 @@ def run(args, atlas):
         source_space,
         atlas,
         deformation_field_paths,
+        downsampled_space,
         downsampled_points_path=args.paths.downsampled_points,
         atlas_points_path=args.paths.atlas_points,
     )
