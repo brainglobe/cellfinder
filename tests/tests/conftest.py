@@ -5,9 +5,17 @@ import pytest
 from imlib.general.config import get_config_obj
 from cellfinder.download.cli import main as cellfinder_download
 
-data_dir = os.path.join(os.getcwd(), "tests", "data", "brain",)
+data_dir = os.path.join(
+    os.getcwd(),
+    "tests",
+    "data",
+    "brain",
+)
 test_output_dir = os.path.join(
-    os.getcwd(), "tests", "data", "registration_output",
+    os.getcwd(),
+    "tests",
+    "data",
+    "registration_output",
 )
 
 TEST_ATLAS = "allen_2017_100um"

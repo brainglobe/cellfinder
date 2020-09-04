@@ -1,7 +1,7 @@
 import imio
 import tifffile
-import os
 import logging
+import os
 
 import numpy as np
 import pandas as pd
@@ -11,23 +11,7 @@ from pathlib import Path
 from imlib.IO.cells import get_cells
 from imlib.pandas.misc import sanitise_df
 
-
-def export_points(
-    points,
-    atlas,
-    output_directory,
-    resolution,
-    name="points",
-    points_file_extension=".h5",
-):
-    logging.info("Exporting to brainrender")
-    max_axis_2 = atlas.metadata["shape"][2]
-    output_filename = output_directory / (name + points_file_extension)
-    points = pd.DataFrame(points * resolution)
-    points.columns = ["x", "y", "z"]
-    # BR is oriented differently (for now)
-    points["z"] = (max_axis_2 * resolution) - points["z"]
-    points.to_hdf(output_filename, key="df", mode="w")
+from cellfinder.export.to_brainrender import export_points
 
 
 class Point:
@@ -130,7 +114,10 @@ def summarise_points(
 
 
 def transform_cells_to_atlas_space(
-    cells, source_space, atlas, deformation_field_paths,
+    cells,
+    source_space,
+    atlas,
+    deformation_field_paths,
 ):
     target_shape = tifffile.imread(deformation_field_paths[0]).shape
 
@@ -192,6 +179,7 @@ def run(args, atlas):
         cells, source_space, atlas, deformation_field_paths
     )
 
+    logging.info("Summarising cell positions")
     summarise_points(
         transformed_cells,
         atlas,
@@ -199,6 +187,7 @@ def run(args, atlas):
         output_directory,
     )
 
+    logging.info("Exporting cells to brainrender")
     export_points(
         transformed_cells,
         atlas,

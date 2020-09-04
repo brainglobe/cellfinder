@@ -441,7 +441,9 @@ def main(
     # copies=2 is set because at all times there is a plane queue (deque)
     # and an array passed to `Cube`
     ram_per_process = get_ram_requirement_per_process(
-        planes_paths[0][0], num_planes_needed_for_cube, copies=2,
+        planes_paths[0][0],
+        num_planes_needed_for_cube,
+        copies=2,
     )
     n_processes = get_num_processes(
         min_free_cpu_cores=n_free_cpus,

@@ -9,7 +9,12 @@ from imio.load import load_any
 
 from cellfinder.main import main as cellfinder_run
 
-data_dir = os.path.join(os.getcwd(), "tests", "data", "brain",)
+data_dir = os.path.join(
+    os.getcwd(),
+    "tests",
+    "data",
+    "brain",
+)
 
 test_niftyreg_output = os.path.join(
     os.getcwd(), "tests", "data", "registration_output", platform.system()
@@ -93,8 +98,12 @@ def test_registration_niftyreg(tmpdir):
 
 
 def are_images_equal(image_name, output_directory, test_output_directory):
-    image = load_any(os.path.join(output_directory, image_name),)
-    test_image = load_any(os.path.join(test_output_directory, image_name),)
+    image = load_any(
+        os.path.join(output_directory, image_name),
+    )
+    test_image = load_any(
+        os.path.join(test_output_directory, image_name),
+    )
     np.testing.assert_allclose(
         image, test_image, rtol=relative_tolerance, atol=absolute_tolerance
     )
