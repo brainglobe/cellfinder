@@ -113,27 +113,50 @@ def summarise_points(
     return df
 
 
-def transform_cells_to_atlas_space(
-    cells,
-    source_space,
-    atlas,
-    deformation_field_paths,
+def transform_points_to_downsampled_space(
+    points, atlas, target_shape, source_space, output_directory=None
 ):
-    target_shape = tifffile.imread(deformation_field_paths[0]).shape
-
     target_space = bgs.AnatomicalSpace(
         atlas.metadata["orientation"],
         shape=target_shape,
         resolution=atlas.resolution,
     )
-    mapped_points = source_space.map_points_to(target_space, cells)
+    points = source_space.map_points_to(target_space, points)
+    if output_directory is not None:
+        filename = output_directory / "downsampled.points"
+        df = pd.DataFrame(points)
+        df.to_hdf(filename, key="df", mode="w")
+    return points
 
+
+def transform_points_to_atlas_space(
+    points, source_space, atlas, deformation_field_paths, output_directory=None
+):
+    target_shape = tifffile.imread(deformation_field_paths[0]).shape
+    downsampled_points = transform_points_to_downsampled_space(
+        points,
+        atlas,
+        target_shape,
+        source_space,
+        output_directory=output_directory,
+    )
+    transformed_points = transform_points_downsampled_to_atlas_space(
+        downsampled_points,
+        atlas,
+        deformation_field_paths,
+        output_directory=output_directory,
+    )
+    return transformed_points
+
+
+def transform_points_downsampled_to_atlas_space(
+    downsampled_points, atlas, deformation_field_paths, output_directory=None
+):
     field_scales = [int(1000 / resolution) for resolution in atlas.resolution]
-
     points = [[], [], []]
     for axis, deformation_field_path in enumerate(deformation_field_paths):
         deformation_field = tifffile.imread(deformation_field_path)
-        for point in mapped_points:
+        for point in downsampled_points:
             point = [int(round(p)) for p in point]
             points[axis].append(
                 int(
@@ -145,6 +168,12 @@ def transform_cells_to_atlas_space(
             )
 
     transformed_points = np.array(points).T
+
+    if output_directory is not None:
+        filename = output_directory / "atlas.points"
+        df = pd.DataFrame(transformed_points)
+        df.to_hdf(filename, key="df", mode="w")
+
     return transformed_points
 
 
@@ -175,8 +204,12 @@ def run(args, atlas):
         resolution=(args.z_pixel_um, args.y_pixel_um, args.x_pixel_um),
     )
 
-    transformed_cells = transform_cells_to_atlas_space(
-        cells, source_space, atlas, deformation_field_paths
+    transformed_cells = transform_points_to_atlas_space(
+        cells,
+        source_space,
+        atlas,
+        deformation_field_paths,
+        output_directory=output_directory,
     )
 
     logging.info("Summarising cell positions")
