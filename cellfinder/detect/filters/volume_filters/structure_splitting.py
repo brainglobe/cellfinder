@@ -167,15 +167,14 @@ def split_cells(cell_points, outlier_keep=False):
             if check_centre_in_cuboid(x, original_max_coords)
         ]
 
-    else:
-        absolute_centres = []
-        # FIXME: extract functionality
-        for relative_centre in relative_centres:
-            absolute_centre = {
-                "x": orig_corner["x"] + relative_centre["x"],
-                "y": orig_corner["y"] + relative_centre["y"],
-                "z": orig_corner["z"] + relative_centre["z"],
-            }
-            absolute_centres.append(absolute_centre)
+    absolute_centres = []
+    # FIXME: extract functionality
+    for relative_centre in relative_centres:
+        absolute_centre = {
+            "x": orig_corner["x"] + relative_centre["x"],
+            "y": orig_corner["y"] + relative_centre["y"],
+            "z": orig_corner["z"] + relative_centre["z"],
+        }
+        absolute_centres.append(absolute_centre)
 
         return absolute_centres
