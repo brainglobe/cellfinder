@@ -88,6 +88,9 @@ class Paths:
         self.figures_directory = os.path.join(self.output_dir, "figures")
         self.heatmap = os.path.join(self.figures_directory, "heatmap.tiff")
 
+        self.analysis_directory = os.path.join(self.output_dir, "analysis")
+        self.summary_csv = os.path.join(self.analysis_directory, "summary.csv")
+
 
 def prep_cellfinder_general():
     args = parser.cellfinder_parser().parse_args()

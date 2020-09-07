@@ -1,7 +1,6 @@
 import imio
 import tifffile
 import logging
-import os
 
 import numpy as np
 import pandas as pd
@@ -10,6 +9,7 @@ import bg_space as bgs
 from pathlib import Path
 from imlib.IO.cells import get_cells
 from imlib.pandas.misc import sanitise_df
+from imlib.general.system import ensure_directory_exists
 
 from cellfinder.export.to_brainrender import export_points
 
@@ -59,8 +59,7 @@ def summarise_points(
     transformed_points,
     atlas,
     volume_csv_path,
-    output_dir,
-    file_name="summary_cell_counts.csv",
+    output_filename,
 ):
     points = []
     structures_with_points = set()
@@ -105,10 +104,9 @@ def summarise_points(
     df = calculate_densities(combined_hemispheres, volume_csv_path)
     df = sanitise_df(df)
 
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
-    output_file = os.path.join(output_dir, file_name)
-    df.to_csv(output_file, index=False)
+    logging.debug("Ensuring output directory exists")
+    ensure_directory_exists(Path(output_filename).parent)
+    df.to_csv(output_filename, index=False)
 
     return df
 
@@ -181,7 +179,6 @@ def run(args, atlas, downsampled_space):
         args.brainreg_paths.deformation_field_2,
     ]
 
-    output_directory = Path(args.output_dir)
     cells = get_cells(args.paths.classified_points, cells_only=True)
     cell_list = []
     for cell in cells:
@@ -216,7 +213,7 @@ def run(args, atlas, downsampled_space):
         transformed_cells,
         atlas,
         args.brainreg_paths.volume_csv_path,
-        output_directory,
+        args.paths.summary_csv,
     )
 
     logging.info("Exporting cells to brainrender")
