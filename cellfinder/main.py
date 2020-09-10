@@ -126,10 +126,10 @@ def run_all(args, what_to_run, atlas):
         logging.info("Skipping cell detection")
 
     if what_to_run.classify:
-        args, cells_exist = prep.prep_classification(args)
-        if cells_exist:
+        args = prep.prep_classification(args, what_to_run)
+        if what_to_run.classify:
             logging.info("Running cell classification")
-            cells_exist = classify.main(args)
+            what_to_run.cells_exist = classify.main(args)
 
         else:
             logging.info("No cells were detected, skipping classification.")
@@ -137,18 +137,20 @@ def run_all(args, what_to_run, atlas):
     else:
         logging.info("Skipping cell classification")
 
-    if (what_to_run.analyse or what_to_run.figures) and cells_exist:
+    what_to_run.update_if_cells_required()
+
+    if what_to_run.analyse or what_to_run.figures:
         downsampled_space = get_downsampled_space(
             atlas, args.brainreg_paths.boundaries_file_path
         )
 
-    if what_to_run.analyse and cells_exist:
+    if what_to_run.analyse:
         logging.info("Analysing cell positions")
         analyse.run(args, atlas, downsampled_space)
     else:
         logging.info("Skipping cell position analysis")
 
-    if what_to_run.figures and cells_exist:
+    if what_to_run.figures:
         logging.info("Generating figures")
         figures.run(args, atlas, downsampled_space.shape)
     else:

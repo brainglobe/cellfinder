@@ -221,6 +221,8 @@ class CalcWhatToRun:
         self.register = True
         self.analyse = True
         self.figures = True
+        self.candidates_exist = True
+        self.cells_exist = True
 
         self.atlas_image = os.path.join(
             args.paths.registration_output_folder, "registered_atlas.tiff"
@@ -273,6 +275,15 @@ class CalcWhatToRun:
         if os.path.exists(args.paths.heatmap):
             self.figures = False
 
+    def update_if_candidates_required(self):
+        if not self.candidates_exist:
+            self.classify = False
+
+    def update_if_cells_required(self):
+        if not self.cells_exist:
+            self.analyse = False
+            self.figures = False
+
 
 def prep_registration(args):
     args.target_brain_path = args.background_planes_path[0]
@@ -312,15 +323,19 @@ def check_atlas_install(cfg_file_path=None):
     return dir_exists, files_exist
 
 
-def prep_classification(args):
+def prep_classification(args, what_to_run):
     try:
         get_cells(args.paths.detected_points)
         n_processes = get_num_processes(min_free_cpu_cores=args.n_free_cpus)
         prep_tensorflow(n_processes)
         args = prep_models(args)
-        return args, True
     except MissingCellsError:
-        return args, False
+        what_to_run.cells_exist = False
+        what_to_run.candidates_exist = False
+        what_to_run.update_if_cells_required()
+    what_to_run.update_if_candidates_required()
+
+    return args
 
 
 def prep_training(args):
