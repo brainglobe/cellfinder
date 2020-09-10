@@ -3,7 +3,8 @@ import numpy as np
 from imlib.general.system import get_sorted_file_paths, get_num_processes
 
 
-from imlib.IO.cells import save_cells
+from imlib.IO.cells import save_cells, get_cells
+from imlib.cells.cells import MissingCellsError
 from cellfinder.classify.tools import get_model
 from cellfinder.classify.cube_generator import CubeGeneratorFromFile
 from cellfinder.train.train_yml import models
@@ -68,3 +69,8 @@ def main(args, max_workers=3):
     save_cells(
         cells_list, args.paths.classified_points, save_csv=args.save_csv
     )
+    try:
+        get_cells(args.paths.classified_points, cells_only=True)
+        return True
+    except MissingCellsError:
+        return False

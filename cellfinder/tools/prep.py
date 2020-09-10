@@ -15,6 +15,9 @@ from imlib.general.system import ensure_directory_exists, get_num_processes
 from imlib.image.metadata import define_pixel_sizes
 from imlib.general.exceptions import CommandLineInputError
 from imlib.general.config import get_config_obj
+from imlib.IO.cells import get_cells
+from imlib.cells.cells import MissingCellsError
+
 from imlib.source import source_files
 
 from cellfinder.tools.parser import cellfinder_parser
@@ -310,10 +313,14 @@ def check_atlas_install(cfg_file_path=None):
 
 
 def prep_classification(args):
-    n_processes = get_num_processes(min_free_cpu_cores=args.n_free_cpus)
-    prep_tensorflow(n_processes)
-    args = prep_models(args)
-    return args
+    try:
+        get_cells(args.paths.detected_points)
+        n_processes = get_num_processes(min_free_cpu_cores=args.n_free_cpus)
+        prep_tensorflow(n_processes)
+        args = prep_models(args)
+        return args, True
+    except MissingCellsError:
+        return args, False
 
 
 def prep_training(args):
