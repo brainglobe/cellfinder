@@ -312,32 +312,6 @@ def prep_registration(args):
     return args, additional_images_downsample
 
 
-# def check_atlas_install(cfg_file_path=None):
-#     """
-#     Checks whether the atlas directory exists, and whether it's empty or not.
-#     :return: Whether the directory exists, and whether the files also exist
-#     """
-#     # TODO: make more sophisticated, check for all files that might be needed
-#     dir_exists = False
-#     files_exist = False
-#     logging.info(cfg_file_path)
-#     if cfg_file_path is None:
-#         cfg_file_path = source_files.source_custom_config_cellfinder()
-#     else:
-#         pass
-#
-#     if os.path.exists(cfg_file_path):
-#         config_obj = get_config_obj(cfg_file_path)
-#         atlas_conf = config_obj["atlas"]
-#         atlas_directory = atlas_conf["base_folder"]
-#         if os.path.exists(atlas_directory):
-#             dir_exists = True
-#             if not os.listdir(atlas_directory) == []:
-#                 files_exist = True
-#
-#     return dir_exists, files_exist
-
-
 def prep_classification(args, what_to_run):
     try:
         get_cells(args.paths.detected_points)
