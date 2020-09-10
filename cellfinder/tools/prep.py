@@ -7,9 +7,10 @@ Functions to prepare files and directories needed for other functions
 
 import os
 import logging
+import json
 
 from fancylog import fancylog
-from pathlib import Path
+from pathlib import Path, PurePath
 
 from imlib.general.system import ensure_directory_exists, get_num_processes
 from imlib.image.metadata import define_pixel_sizes
@@ -95,6 +96,18 @@ class Paths:
         self.summary_csv = os.path.join(self.analysis_directory, "summary.csv")
 
 
+def serialise(obj):
+    if isinstance(obj, PurePath):
+        return str(obj)
+    else:
+        return obj.__dict__
+
+
+def log_metadata(file_path, args):
+    with open(file_path, "w") as f:
+        json.dump(args, f, default=serialise)
+
+
 def prep_cellfinder_general():
     args = parser.cellfinder_parser().parse_args()
     arg_groups = get_arg_groups(args, cellfinder_parser())
@@ -114,6 +127,8 @@ def prep_cellfinder_general():
         verbose=args.debug,
         log_header="CELLFINDER LOG",
     )
+
+    log_metadata(args.paths.metadata_path, args)
 
     what_to_run = CalcWhatToRun(args)
     args.signal_ch_ids, args.background_ch_id = check_and_return_ch_ids(
@@ -297,30 +312,30 @@ def prep_registration(args):
     return args, additional_images_downsample
 
 
-def check_atlas_install(cfg_file_path=None):
-    """
-    Checks whether the atlas directory exists, and whether it's empty or not.
-    :return: Whether the directory exists, and whether the files also exist
-    """
-    # TODO: make more sophisticated, check for all files that might be needed
-    dir_exists = False
-    files_exist = False
-    logging.info(cfg_file_path)
-    if cfg_file_path is None:
-        cfg_file_path = source_files.source_custom_config_cellfinder()
-    else:
-        pass
-
-    if os.path.exists(cfg_file_path):
-        config_obj = get_config_obj(cfg_file_path)
-        atlas_conf = config_obj["atlas"]
-        atlas_directory = atlas_conf["base_folder"]
-        if os.path.exists(atlas_directory):
-            dir_exists = True
-            if not os.listdir(atlas_directory) == []:
-                files_exist = True
-
-    return dir_exists, files_exist
+# def check_atlas_install(cfg_file_path=None):
+#     """
+#     Checks whether the atlas directory exists, and whether it's empty or not.
+#     :return: Whether the directory exists, and whether the files also exist
+#     """
+#     # TODO: make more sophisticated, check for all files that might be needed
+#     dir_exists = False
+#     files_exist = False
+#     logging.info(cfg_file_path)
+#     if cfg_file_path is None:
+#         cfg_file_path = source_files.source_custom_config_cellfinder()
+#     else:
+#         pass
+#
+#     if os.path.exists(cfg_file_path):
+#         config_obj = get_config_obj(cfg_file_path)
+#         atlas_conf = config_obj["atlas"]
+#         atlas_directory = atlas_conf["base_folder"]
+#         if os.path.exists(atlas_directory):
+#             dir_exists = True
+#             if not os.listdir(atlas_directory) == []:
+#                 files_exist = True
+#
+#     return dir_exists, files_exist
 
 
 def prep_classification(args, what_to_run):
