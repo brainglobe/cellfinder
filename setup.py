@@ -23,7 +23,8 @@ requirements = [
     # temporarily until tf relaxes this
     "scipy==1.4.1",
     "tensorflow>=2.2.0",
-    "napari[pyqt5]>=0.3.0",
+    "napari[pyqt5]>=0.3.7",
+    "napari-ndtiffs",
     "slurmio>=0.0.4",
     "fancylog>=0.0.7",
     "micrometa>=0.0.11",
