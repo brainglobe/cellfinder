@@ -7,22 +7,19 @@ with open(path.join(this_directory, "README.md"), encoding="utf-8") as f:
     long_description = f.read()
 
 requirements = [
-    "numpy>=1.15.4,<1.19.0",
+    "numpy",
     "scikit-learn",
     "configparser",
-    "pandas>=0.25.1,<=0.25.3",
+    "pandas",
     "packaging",
-    "scikit-image>=0.14.0,<0.17.0",
+    "scikit-image",
     "tifffile",
     "natsort",
     "tqdm",
     "multiprocessing-logging",
     "psutil",
     "configobj",
-    # "scipy>=0.18,<2.0.0",
-    # temporarily until tf relaxes this
-    "scipy==1.4.1",
-    "tensorflow>=2.2.0",
+    "tensorflow>=2.3.1",
     "napari[pyqt5]>=0.3.7",
     "napari-ndtiffs",
     "napari-cellfinder",
@@ -110,7 +107,7 @@ setup(
         ]
     },
     setup_requires=["cython"],
-    python_requires=">=3.6, <3.8",
+    python_requires=">=3.7",
     packages=find_namespace_packages(exclude=("docs", "doc_build", "tests")),
     include_package_data=True,
     ext_modules=[
