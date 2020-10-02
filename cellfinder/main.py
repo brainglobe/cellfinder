@@ -44,6 +44,7 @@ def get_arg_groups(args, parser):
 
 
 def log_metadata(file_path, args):
+    args.metadata = str(args.metadata)  # quick fix, need to deal with properly
     with open(file_path, "w") as f:
         json.dump(args, f, default=lambda x: x.__dict__)
 
