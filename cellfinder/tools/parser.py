@@ -203,7 +203,7 @@ def run_parse(parser):
         "--no-classification",
         dest="no_classification",
         action="store_true",
-        help="Dont run cell classification",
+        help="Do not run cell classification",
     )
     run_parser.add_argument(
         "--no-register",
