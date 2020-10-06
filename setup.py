@@ -20,7 +20,7 @@ requirements = [
     "psutil",
     "configobj",
     "tensorflow>=2.3.1",
-    "napari[pyqt5]>=0.3.7",
+    "napari[pyside2]>=0.3.7",
     "napari-ndtiffs",
     "napari-cellfinder",
     "slurmio>=0.0.4",
