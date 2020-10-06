@@ -68,9 +68,9 @@ def test_registration_niftyreg(tmpdir):
             "deformation_field_1.tiff",
             "deformation_field_2.tiff",
             "downsampled.tiff",
-            "downsampled_brain.tiff",
+            "downsampled_channel_0.tiff",
             "downsampled_standard.tiff",
-            "downsampled_standard_brain.tiff",
+            "downsampled_standard_channel_0.tiff",
             "registered_atlas.tiff",
             "registered_hemispheres.tiff",
         ]
@@ -81,9 +81,9 @@ def test_registration_niftyreg(tmpdir):
             "deformation_field_1.tiff",
             "deformation_field_2.tiff",
             "downsampled.tiff",
-            "downsampled_brain.tiff",
+            "downsampled_channel_0.tiff",
             # "downsampled_standard.tiff",
-            # "downsampled_standard_brain.tiff",
+            # "downsampled_standard_channel_0.tiff",
             # "registered_atlas.tiff",
             # "registered_hemispheres.tiff",
         ]
