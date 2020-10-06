@@ -13,7 +13,7 @@ class TiffList(object):
     """
 
     def __init__(self, ch1_list, channels, label=None):
-        """ A list of tiff files output by the cell extractor plugin to be
+        """A list of tiff files output by the cell extractor plugin to be
         used in machine learning.
         Expects file names to end with "ch[ch].tif", where [ch] is the
         non-zero-padded channel index.

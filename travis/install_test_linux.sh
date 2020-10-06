@@ -10,5 +10,5 @@ pip install -e .[dev]
 conda info -a
 black ./ -l 79 --target-version py37 --check
 cellfinder -h
-cellfinder_download --atlas allen_2017_100um
+brainglobe install -a allen_mouse_50um
 pytest --cov=cellfinder

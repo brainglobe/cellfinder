@@ -11,13 +11,6 @@ stages:
 jobs:
   include:
     - stage: test
-      name: "Ubuntu Bionic python 3.6"
-      language: python
-      os: linux
-      dist: bionic
-      python: 3.6
-      script: travis_wait 40 bash travis/install_test_linux.sh
-    - stage: test
       name: "Ubuntu Bionic python 3.7"
       language: python
       os: linux
@@ -25,31 +18,31 @@ jobs:
       python: 3.7
       script: travis_wait 40 bash travis/install_test_linux.sh
     - stage: test
-      name: "Ubuntu Xenial python 3.6"
+      name: "Ubuntu Bionic python 3.8"
       language: python
       os: linux
-      dist: xenial
-      python: 3.6
+      dist: bionic
+      python: 3.8
       script: travis_wait 40 bash travis/install_test_linux.sh
     - stage: test
-      name: "Ubuntu Xenial python 3.7"
+      name: "Ubuntu Xenial python 3.8"
       language: python
       os: linux
       dist: xenial
       python: 3.7
       script: travis_wait 40 bash travis/install_test_linux.sh
     - stage: test
-      name: "Windows Python 3.6"
+      name: "Windows Python 3.7"
       language: shell
-      env: TRAVIS_PYTHON_VERSION=3.6
+      env: TRAVIS_PYTHON_VERSION=3.7
       os: windows
       before_install:
         - source travis/install_windows.sh
       script: travis_wait 40 bash travis/test_windows.sh
     - stage: test
-      name: "Windows Python 3.7"
+      name: "Windows Python 3.8"
       language: shell
-      env: TRAVIS_PYTHON_VERSION=3.7
+      env: TRAVIS_PYTHON_VERSION=3.8
       os: windows
       before_install:
         - source travis/install_windows.sh
@@ -61,7 +54,7 @@ jobs:
 #      env: TRAVIS_PYTHON_VERSION=3.7
 #      script: travis_wait 40 bash travis/install_test_osx.sh
     - stage: deploy
-      name: "Deploy Linux (py36 & py37)"
+      name: "Deploy Linux (py37 & py38)"
       language: python
       services:
         - docker
@@ -76,9 +69,9 @@ jobs:
         - ls pypi_upload/*
         - twine upload pypi_upload/* --skip-existing
     - stage: deploy
-      name: "Deploy Windows (py36)"
+      name: "Deploy Windows (py37)"
       language: shell
-      env: TRAVIS_PYTHON_VERSION=3.6
+      env: TRAVIS_PYTHON_VERSION=3.7
       os: windows
       before_install:
         - source travis/install_windows.sh
@@ -88,9 +81,9 @@ jobs:
         - pip install twine
         - twine upload dist/* --skip-existing
     - stage: deploy
-      name: "Deploy Windows (py37)"
+      name: "Deploy Windows (py38)"
       language: shell
-      env: TRAVIS_PYTHON_VERSION=3.7
+      env: TRAVIS_PYTHON_VERSION=3.8
       os: windows
       before_install:
         - source travis/install_windows.sh

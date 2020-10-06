@@ -34,7 +34,9 @@ def curation_parser(parser):
         dest="signal_image_paths", type=str, help="Signal images"
     )
     parser.add_argument(
-        dest="background_image_paths", type=str, help="Background images",
+        dest="background_image_paths",
+        type=str,
+        help="Background images",
     )
 
     parser.add_argument(
@@ -104,7 +106,7 @@ def main():
         images = magic_imread(img_paths, use_dask=True, stack=True)
         viewer.add_image(images)
         face_color_cycle = ["lightskyblue", "lightgoldenrodyellow"]
-        points_layer = viewer.add_points(
+        viewer.add_points(
             cells,
             properties=properties,
             symbol=args.symbol,

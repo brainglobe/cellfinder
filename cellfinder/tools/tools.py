@@ -1,12 +1,5 @@
-import logging
-import os
-import numpy as np
-
 from natsort import natsorted
 from random import getrandbits, uniform
-from imlib.general.list import remove_empty_string
-from imlib.general.system import check_path_in_dir
-from cellfinder.tools import system
 
 
 def get_max_value(obj_in):
@@ -25,8 +18,8 @@ def get_max_value(obj_in):
 def union(a, b):
     """
     Return the union (elements in both) of two lists
-    :param list a: 
-    :param list b: 
+    :param list a:
+    :param list b:
     :return: Union of the two lists
     """
     return list(set(a) | set(b))
@@ -122,35 +115,6 @@ def swap_elements_list(list_in, swap_a, swap_b):
     """
     list_in[swap_a], list_in[swap_b] = list_in[swap_b], list_in[swap_a]
     return list_in
-
-
-def convert_shape_dict_to_array_shape(shape_dict, type="numpy"):
-    """
-    Converts a dict with "x", "y" (and optionally "z") attributes into
-    a tuple that can be used to e.g. initialise a numpy array
-    :param shape_dict: Dict with  "x", "y" (and optionally "z") attributes
-    :param type: One of "numpy" or "fiji", to determine whether the "x" or the
-    "y" attribute is the first dimension.
-    :return: Tuple array shape
-    """
-
-    shape = []
-    if type is "numpy":
-        shape.append(int(shape_dict["y"]))
-        shape.append(int(shape_dict["x"]))
-
-    elif type is "fiji":
-        shape.append(int(shape_dict["x"]))
-        shape.append(int(shape_dict["y"]))
-    else:
-        raise NotImplementedError(
-            "Type: {} not recognise, please specify "
-            "'numpy' or 'fiji'".format(type)
-        )
-    if "z" in shape_dict:
-        shape.append(int(shape_dict["z"]))
-
-    return tuple(shape)
 
 
 def is_any_list_overlap(list_a, list_b):

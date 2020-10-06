@@ -25,11 +25,6 @@ def bin_array(arr, bin_width=15, bin_height=15):
     return binned_array
 
 
-def pad_and_bin_max(arr, bin_width=15, bin_height=15):
-    binned_array = bin_array(arr, bin_width, bin_height)
-    return binned_array.max(axis=(1, 3))
-
-
 def pad_and_bin_mean(arr, bin_width=15, bin_height=15):
     binned_array = bin_array(arr, bin_width, bin_height)
     return binned_array.mean(axis=(1, 3))

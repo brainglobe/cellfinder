@@ -4,7 +4,11 @@ import multiprocessing
 from multiprocessing import Queue as MultiprocessingQueue
 from multiprocessing import Lock
 
-from imlib.general.system import get_sorted_file_paths, get_num_processes
+from imlib.general.system import (
+    get_sorted_file_paths,
+    get_num_processes,
+    ensure_directory_exists,
+)
 
 from cellfinder.detect.filters.plane_filters.multiprocessing import (
     MpTileProcessor,
@@ -45,6 +49,7 @@ def calculate_parameters_in_pixels(
 
 
 def main(args):
+    ensure_directory_exists(args.paths.points_directory)
     n_processes = get_num_processes(min_free_cpu_cores=args.n_free_cpus)
     start_time = datetime.now()
 
@@ -91,7 +96,7 @@ def main(args):
     mp_3d_filter = Mp3DFilter(
         mp_3d_filter_queue,
         soma_diameter,
-        args.output_dir,
+        args.paths.detected_points,
         setup_params=setup_params,
         soma_size_spread_factor=args.soma_spread_factor,
         planes_paths_range=planes_paths_range,
@@ -104,8 +109,6 @@ def main(args):
         save_csv=args.save_csv,
     )
 
-    # fake = Mp3DFilter_fake(setup_params
-    #                        )
     # start 3D analysis (waits for planes in queue)
     bf_process = multiprocessing.Process(target=mp_3d_filter.process, args=())
     bf_process.start()  # needs to be started before the loop

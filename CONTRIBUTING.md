@@ -4,9 +4,8 @@ Contributors to cellfinder are absolutely encouraged, whether you want to fix
 bugs, or add new features to better suit your data.
 
 If you would like to contribute to cellfinder (or any of the upstream tools
-like [amap](https://github.com/SainsburyWellcomeCentre/amap-python), 
-[neuro](https://github.com/SainsburyWellcomeCentre/neuro), 
-[brainio](https://github.com/adamltyson/brainio),
+like [brainreg](https://github.com/brainglobe/brainreg), 
+[imio](https://github.com/adamltyson/imio),
 [imlib](https://github.com/adamltyson/imlib) etc.) please get in touch via
 [email](mailto:adam.tyson@ucl.ac.uk?subject=cellfinder-development), or 
 better yet by starting a discussion on the 

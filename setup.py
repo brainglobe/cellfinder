@@ -7,35 +7,28 @@ with open(path.join(this_directory, "README.md"), encoding="utf-8") as f:
     long_description = f.read()
 
 requirements = [
-    "numpy>=1.15.4,<1.19.0",
+    "numpy",
     "scikit-learn",
     "configparser",
-    "pandas>=0.25.1,<=0.25.3",
+    "pandas",
     "packaging",
-    "scikit-image>=0.14.0,<0.17.0",
+    "scikit-image",
     "tifffile",
     "natsort",
     "tqdm",
-    "anytree",
-    "h5py>=2.8,<3.0.0",
     "multiprocessing-logging",
     "psutil",
-    "nibabel",
     "configobj",
-    # "scipy>=0.18,<2.0.0",
-    # temporarily until tf relaxes this
-    "scipy==1.4.1",
-    "toolz>=0.7.3",
-    "tensorflow>=2.2.0",
-    "dask >= 2.15.0",
-    "napari[pyqt5]>=0.3.0",
+    "tensorflow>=2.3.1",
+    "napari[pyqt5]>=0.3.7",
+    "napari-ndtiffs",
+    "napari-cellfinder",
     "slurmio>=0.0.4",
-    "brainio>=0.0.19",
     "fancylog>=0.0.7",
     "micrometa>=0.0.11",
     "imlib>=0.0.26",
-    "neuro>=0.0.13",
-    "amap>=0.1.26",
+    "brainreg",
+    "imio",
 ]
 
 
@@ -95,8 +88,9 @@ else:
 
 setup(
     name="cellfinder",
-    version="0.3.15rc0",
-    description="Automated 3D cell detection and registration of whole-brain images",
+    version="0.3.17",
+    description="Automated 3D cell detection and registration of "
+    "whole-brain images",
     long_description=long_description,
     long_description_content_type="text/markdown",
     install_requires=requirements,
@@ -107,10 +101,13 @@ setup(
             "pytest",
             "gitpython",
             "coverage>=5.0.3",
+            "bump2version",
+            "pre-commit",
+            "flake8",
         ]
     },
     setup_requires=["cython"],
-    python_requires=">=3.6, <3.8",
+    python_requires=">=3.7",
     packages=find_namespace_packages(exclude=("docs", "doc_build", "tests")),
     include_package_data=True,
     ext_modules=[
@@ -123,25 +120,14 @@ setup(
             "cellfinder = cellfinder.main:main",
             "cellfinder_download = cellfinder.download.cli:main",
             "cellfinder_train = cellfinder.train.train_yml:main",
-            "cellfinder_count_summary = "
-            "cellfinder.summarise.count_summary:main",
-            "cellfinder_region_summary = "
-            "cellfinder.analyse.group.region_summary:main",
-            "cellfinder_xml_crop = cellfinder.utils.xml_crop:main",
-            "cellfinder_xml_scale = cellfinder.utils.xml_scale:main",
-            "cellfinder_cell_standard = "
-            "cellfinder.standard_space.cells_to_standard_space:main",
-            "cellfinder_gen_region_vol = "
-            "cellfinder.utils.generate_region_volume:main",
-            "cellfinder_cells_to_brainrender = "
-            "neuro.points.points_to_brainrender:main",
             "cellfinder_curate = cellfinder.train.curation:main",
         ]
     },
     url="https://cellfinder.info",
     project_urls={
         "Source Code": "https://github.com/SainsburyWellcomeCentre/cellfinder",
-        "Bug Tracker": "https://github.com/SainsburyWellcomeCentre/cellfinder/issues",
+        "Bug Tracker": "https://github.com/SainsburyWellcomeCentre/"
+        "cellfinder/issues",
         "Documentation": "https://docs.cellfinder.info",
     },
     author="Adam Tyson, Christian Niedworok, Charly Rousseau",

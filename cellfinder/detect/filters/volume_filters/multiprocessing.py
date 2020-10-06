@@ -24,7 +24,7 @@ class Mp3DFilter(object):
         self,
         data_queue,
         soma_diameter,
-        output_folder,
+        output_file,
         soma_size_spread_factor=1.4,
         setup_params=None,
         planes_paths_range=None,
@@ -38,7 +38,7 @@ class Mp3DFilter(object):
     ):
         self.data_queue = data_queue
         self.soma_diameter = soma_diameter
-        self.output_folder = output_folder
+        self.output_file = output_file
         self.soma_size_spread_factor = soma_size_spread_factor
         self.progress_bar = None
         self.planes_paths_range = planes_paths_range
@@ -50,7 +50,6 @@ class Mp3DFilter(object):
 
         self.artifact_keep = artifact_keep
 
-        self.output_file = "cells"
         self.save_csv = save_csv
 
         self.clipping_val = None
@@ -168,12 +167,9 @@ class Mp3DFilter(object):
                         )
                     )
 
-        xml_file_path = os.path.join(
-            self.output_folder, self.output_file + ".xml"
-        )
         save_cells(
             cells,
-            xml_file_path,
+            self.output_file,
             save_csv=self.save_csv,
             artifact_keep=self.artifact_keep,
         )

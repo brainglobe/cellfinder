@@ -16,11 +16,11 @@ from pathlib import Path
 from imlib.general.numerical import check_positive_float, check_positive_int
 from imlib.source import source_files
 
-from amap.download.cli import atlas_parser as amap_parser
-from amap.cli import registration_parse, geometry_parser
-from amap.cli import visualisation_parser as amap_vis_parser
 from cellfinder.download.cli import model_parser, download_directory_parser
 from micrometa.micrometa import SUPPORTED_METADATA_TYPES
+
+from brainreg.cli import atlas_parse, geometry_parser, niftyreg_parse
+from brainreg.cli import backend_parse as brainreg_backend_parse
 
 # TODO: Gradually move all paths as strings to Path objects
 
@@ -53,23 +53,25 @@ def valid_model_depth(depth):
 def cellfinder_parser():
     parser = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter)
     parser = main_parse(parser)
-    parser = registration_parse(parser)
     parser = config_parse(parser)
     parser = pixel_parser(parser)
-    parser = geometry_parser(parser)
-    parser = cellfinder_opt_parse(parser)
+    parser = run_parse(parser)
     parser = io_parse(parser)
     parser = cell_detect_parse(parser)
     parser = classification_parse(parser)
     parser = cube_extract_parse(parser)
-    parser = count_summary_parse(parser)
-    parser = figures_parse(parser)
-    parser = amap_vis_parser(parser)
-    parser = standard_space_parse(parser)
     parser = misc_parse(parser)
-    parser = amap_parser(parser)
     parser = model_parser(parser)
+    parser = figures_parse(parser)
     parser = download_directory_parser(parser)
+
+    # brainreg options
+    parser = atlas_parse(parser)
+    parser = geometry_parser(parser)
+    parser = brainreg_backend_parse(parser)
+    # This needs to be abstracted away into brainreg for multiple backends
+    parser = niftyreg_parse(parser)
+
     return parser
 
 
@@ -103,26 +105,6 @@ def main_parse(parser):
         type=str,
         required=True,
         help="Output directory for all intermediate and final results.",
-    )
-    main_parser.add_argument(
-        "--register",
-        dest="register",
-        action="store_true",
-        help="Register the background channel to the Allen brain atlas",
-    )
-    main_parser.add_argument(
-        "--summarise",
-        dest="summarise",
-        action="store_true",
-        help="Generate summary csv files showing how many cells are in "
-        "each brain area"
-        "(will also run registration if not specified.",
-    )
-    main_parser.add_argument(
-        "--figures",
-        dest="figures",
-        action="store_true",
-        help="Generate figures",
     )
     main_parser.add_argument(
         "--signal-channel-ids",
@@ -206,31 +188,42 @@ def pixel_parser(parser):
     return parser
 
 
-def cellfinder_opt_parse(parser):
-    cellfinder_opt_parser = parser.add_argument_group(
-        "Cellfinder specific options"
+def run_parse(parser):
+    run_parser = parser.add_argument_group(
+        "Options to disable part of cellfinder"
     )
-    cellfinder_opt_parser.add_argument(
+    run_parser.add_argument(
         "--no-detection",
         dest="no_detection",
         action="store_true",
         help="Dont run cell candidate detection",
     )
 
-    cellfinder_opt_parser.add_argument(
+    run_parser.add_argument(
         "--no-classification",
         dest="no_classification",
         action="store_true",
         help="Dont run cell classification",
     )
-
-    cellfinder_opt_parser.add_argument(
-        "--no-standard-space",
-        dest="no_standard_space",
+    run_parser.add_argument(
+        "--no-register",
+        dest="no_register",
         action="store_true",
-        help="Dont convert cell positions to standard space. Otherwise will "
-        "run automatically if registration and classification has run.",
+        help="Do not perform registration",
     )
+    run_parser.add_argument(
+        "--no-analyse",
+        dest="no_analyse",
+        action="store_true",
+        help="Do not analyse and export cell positions",
+    )
+    run_parser.add_argument(
+        "--no-figures",
+        dest="no_figures",
+        action="store_true",
+        help="Do not create figures (e.g. heatmap)",
+    )
+
     return parser
 
 
@@ -418,58 +411,22 @@ def cube_extract_parse(parser):
     return parser
 
 
-def count_summary_parse(parser):
-    # TODO: add depth option (for reporting/grouping structures)
-    count_summary_parser = parser.add_argument_group(
-        "Cell count summary specific parameters"
-    )
-    count_summary_parser.add_argument(
-        "--atlas-config",
-        dest="atlas_config",
+def config_parse(parser):
+    config_opt_parser = parser.add_argument_group("Config options")
+    config_opt_parser.add_argument(
+        "--config",
+        dest="registration_config",
         type=str,
-        help="Atlas configuration file. In the same format as the"
-        "registration config file",
+        default=source_files.source_custom_config_cellfinder(),
+        help="To supply your own, custom configuration file.",
     )
-    count_summary_parser.add_argument(
-        "--coordinates-order",
-        dest="coordinates_order",
-        nargs=3,
-        type=check_positive_int,
-        default=[0, 1, 2],
-        help="The order in which to read the dimensions in the atlas from the"
-        " cell coordinates. 0,1,2 means x,y,z. 1,0,2 means y,x,z",
-    )
-    count_summary_parser.add_argument(
-        "--cells-only",
-        dest="cells_only",
-        action="store_false",
-        help="Used for testing. Will include non cells in the checks",
-    )
-    count_summary_parser.add_argument(
-        "--scale-cell-coordinates",
-        dest="scale_cell_coordinates",
-        action="store_false",
-        help="For testing whether to disable the scaling of cell coordinates",
-    )
+
     return parser
 
 
 def figures_parse(parser):
     figure_parser = parser.add_argument_group(
         "Figure generation specific parameters"
-    )
-    figure_parser.add_argument(
-        "--no-heatmap",
-        dest="heatmap",
-        action="store_false",
-        help="Don't generate a heatmap of cell locations",
-    )
-    figure_parser.add_argument(
-        "--heatmap-bin",
-        dest="heatmap_binning",
-        type=check_positive_float,
-        default=100,
-        help="Heatmap bin size (um of each edge of histogram cube)",
     )
     figure_parser.add_argument(
         "--heatmap-smoothing",
@@ -485,33 +442,6 @@ def figures_parse(parser):
         help="Don't mask the figures (removing any areas outside the brain,"
         "from e.g. smoothing)",
     )
-    return parser
-
-
-def config_parse(parser):
-    config_opt_parser = parser.add_argument_group("Config options")
-    config_opt_parser.add_argument(
-        "--registration-config",
-        dest="registration_config",
-        type=str,
-        default=source_files.source_custom_config_cellfinder(),
-        help="To supply your own, custom registration configuration file.",
-    )
-
-    return parser
-
-
-def standard_space_parse(parser):
-    standard_space_parser = parser.add_argument_group(
-        "Cell transformation to standard space options"
-    )
-    standard_space_parser.add_argument(
-        "--transform-all",
-        dest="transform_all",
-        action="store_true",
-        help="Transform all cell positions (including artifacts).",
-    )
-
     return parser
 
 
@@ -554,5 +484,14 @@ def misc_parse(parser):
         help="Path to the metadata file. Supported formats are '{}'.".format(
             SUPPORTED_METADATA_TYPES
         ),
+    )
+    misc_parser.add_argument(
+        "--sort-input-file",
+        dest="sort_input_file",
+        action="store_true",
+        help="If set to true, the input text file will be sorted using "
+        "natural sorting. This means that the file paths will be "
+        "sorted as would be expected by a human and "
+        "not purely alphabetically",
     )
     return parser

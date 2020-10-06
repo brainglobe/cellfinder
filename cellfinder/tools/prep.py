@@ -7,24 +7,41 @@ Functions to prepare files and directories needed for other functions
 
 import os
 import logging
+import json
+
 from fancylog import fancylog
-from pathlib import Path
+from pathlib import Path, PurePath
 
 from imlib.general.system import ensure_directory_exists, get_num_processes
 from imlib.image.metadata import define_pixel_sizes
 from imlib.general.exceptions import CommandLineInputError
 from imlib.general.config import get_config_obj
+from imlib.IO.cells import get_cells
+from imlib.cells.cells import MissingCellsError
+
 from imlib.source import source_files
 
-import amap.download.cli as atlas_download
-from amap.cli import check_atlas_install
-
+from cellfinder.tools.parser import cellfinder_parser
 import cellfinder.tools.tf as tf_tools
 import cellfinder as program_for_log
 import cellfinder.tools.parser as parser
 from cellfinder.download import models as model_download
 from cellfinder.download.download import amend_cfg
 from cellfinder.tools import tools, system
+from argparse import Namespace
+from brainreg.paths import Paths as BrainRegPaths
+from bg_atlasapi import BrainGlobeAtlas
+
+
+def get_arg_groups(args, parser):
+    arg_groups = {}
+    for group in parser._action_groups:
+        group_dict = {
+            a.dest: getattr(args, a.dest, None) for a in group._group_actions
+        }
+        arg_groups[group.title] = Namespace(**group_dict)
+
+    return arg_groups
 
 
 def check_input_arg_existance(args):
@@ -49,135 +66,52 @@ class Paths:
     deleted if "--debug" is not used.
     """
 
-    # TODO: Maybe transfer to a config file.
     def __init__(self, output_dir):
         self.output_dir = output_dir
-
-    def make_reg_paths(self):
         self.registration_output_folder = os.path.join(
             self.output_dir, "registration"
         )
-        self.downsampled_background = self.make_reg_path("downsampled.nii")
-        self.tmp__downsampled_filtered = self.make_reg_path(
-            "downsampled_filtered.nii"
-        )
-        self.registered_atlas_path = self.make_reg_path("registered_atlas.nii")
-        self.hemispheres_atlas_path = self.make_reg_path(
-            "registered_hemispheres.nii"
-        )
-        self.volume_csv_path = self.make_reg_path("volumes.csv")
-
-        self.tmp__affine_registered_atlas_brain_path = self.make_reg_path(
-            "affine_registered_atlas_brain.nii"
-        )
-        self.tmp__freeform_registered_atlas_brain_path = self.make_reg_path(
-            "freeform_registered_atlas_brain.nii"
-        )
-        self.tmp__inverse_freeform_registered_atlas_brain_path = self.make_reg_path(
-            "inverse_freeform_registered_brain.nii"
-        )
-
-        self.registered_atlas_img_path = self.make_reg_path(
-            "registered_atlas.nii"
-        )
-        self.registered_hemispheres_img_path = self.make_reg_path(
-            "registered_hemispheres.nii"
-        )
-
-        self.affine_matrix_path = self.make_reg_path("affine_matrix.txt")
-        self.invert_affine_matrix_path = self.make_reg_path(
-            "invert_affine_matrix.txt"
-        )
-
-        self.control_point_file_path = self.make_reg_path(
-            "control_point_file.nii"
-        )
-        self.inverse_control_point_file_path = self.make_reg_path(
-            "inverse_control_point_file.nii"
-        )
-
-        (
-            self.tmp__affine_log_file_path,
-            self.tmp__affine_error_path,
-        ) = self.compute_reg_log_file_paths("affine")
-        (
-            self.tmp__freeform_log_file_path,
-            self.tmp__freeform_error_file_path,
-        ) = self.compute_reg_log_file_paths("freeform")
-        (
-            self.tmp__inverse_freeform_log_file_path,
-            self.tmp__inverse_freeform_error_file_path,
-        ) = self.compute_reg_log_file_paths("inverse_freeform")
-        (
-            self.tmp__segmentation_log_file,
-            self.tmp__segmentation_error_file,
-        ) = self.compute_reg_log_file_paths("segment")
-        (
-            self.tmp__invert_affine_log_file,
-            self.tmp__invert_affine_error_file,
-        ) = self.compute_reg_log_file_paths("invert_affine")
+        self.metadata_path = os.path.join(self.output_dir, "cellfinder.json")
 
     def make_channel_specific_paths(self):
-        self.cells_file_path = os.path.join(self.output_dir, "cells.xml")
+        self.points_directory = os.path.join(self.output_dir, "points")
+        self.detected_points = os.path.join(self.points_directory, "cells.xml")
+        self.classified_points = os.path.join(
+            self.points_directory, "cell_classification.xml"
+        )
+        self.downsampled_points = os.path.join(
+            self.points_directory, "downsampled.points"
+        )
+        self.atlas_points = os.path.join(self.points_directory, "atlas.points")
+        self.brainrender_points = os.path.join(
+            self.points_directory, "points.h5"
+        )
+
         self.tmp__cubes_output_dir = os.path.join(self.output_dir, "cubes")
-        self.classification_out_file = os.path.join(
-            self.output_dir, "cell_classification.xml"
-        )
-        self.standard_space_output_folder = os.path.join(
-            self.output_dir, "standard_space"
-        )
-        self.cells_in_standard_space = os.path.join(
-            self.standard_space_output_folder, "cells_in_standard_space.xml"
-        )
-        self.figures_dir = os.path.join(self.output_dir, "figures")
 
-    def make_figures_paths(self):
-        self.heatmap = os.path.join(self.figures_dir, "heatmap.nii")
+        self.figures_directory = os.path.join(self.output_dir, "figures")
+        self.heatmap = os.path.join(self.figures_directory, "heatmap.tiff")
 
-    def make_invert_cell_position_paths(self):
-        self.tmp__deformation_field = os.path.join(
-            self.standard_space_output_folder, "deformation_field.nii"
-        )
-        self.tmp__deformation_log_file_path = os.path.join(
-            self.standard_space_output_folder, "deformation.log"
-        )
-        self.tmp__deformation_error_path = os.path.join(
-            self.standard_space_output_folder, "deformation.err"
-        )
+        self.analysis_directory = os.path.join(self.output_dir, "analysis")
+        self.summary_csv = os.path.join(self.analysis_directory, "summary.csv")
 
-    def make_reg_path(self, basename):
-        """
-        Compute the absolute path of the destination file to
-        self.registration_output_folder.
 
-        :param str basename:
-        :return: The path
-        :rtype: str
-        """
-        return os.path.join(self.registration_output_folder, basename)
+def serialise(obj):
+    if isinstance(obj, PurePath):
+        return str(obj)
+    else:
+        return obj.__dict__
 
-    def compute_reg_log_file_paths(self, basename):
-        """
-        Compute the path of the log and err file for the step corresponding
-        to basename
 
-        :param str basename:
-        :return: log_file_path, error_file_path
-        """
-
-        log_file_template = os.path.join(
-            self.registration_output_folder, "{}.log"
-        )
-        error_file_template = os.path.join(
-            self.registration_output_folder, "{}.err"
-        )
-        log_file_path = log_file_template.format(basename)
-        error_file_path = error_file_template.format(basename)
-        return log_file_path, error_file_path
+def log_metadata(file_path, args):
+    with open(file_path, "w") as f:
+        json.dump(args, f, default=serialise)
 
 
 def prep_cellfinder_general():
     args = parser.cellfinder_parser().parse_args()
+    arg_groups = get_arg_groups(args, cellfinder_parser())
+
     args = define_pixel_sizes(args)
     check_input_arg_existance(args)
 
@@ -185,7 +119,6 @@ def prep_cellfinder_general():
         os.makedirs(args.output_dir)
 
     args.paths = Paths(args.output_dir)
-    args.paths.make_reg_paths()
 
     fancylog.start_logging(
         args.output_dir,
@@ -195,11 +128,15 @@ def prep_cellfinder_general():
         log_header="CELLFINDER LOG",
     )
 
+    log_metadata(args.paths.metadata_path, args)
+
     what_to_run = CalcWhatToRun(args)
     args.signal_ch_ids, args.background_ch_id = check_and_return_ch_ids(
         args.signal_ch_ids, args.background_ch_id, args.signal_planes_paths
     )
-    return args, what_to_run
+    args.brainreg_paths = BrainRegPaths(args.paths.registration_output_folder)
+    atlas = BrainGlobeAtlas(args.atlas)
+    return args, arg_groups, what_to_run, atlas
 
 
 def check_and_return_ch_ids(signal_ids, background_id, signal_channel_list):
@@ -297,64 +234,46 @@ class CalcWhatToRun:
         self.detect = True
         self.classify = True
         self.register = True
-        self.summarise = True
+        self.analyse = True
         self.figures = True
-        self.standard_space = True
+        self.candidates_exist = True
+        self.cells_exist = True
 
+        self.atlas_image = os.path.join(
+            args.paths.registration_output_folder, "registered_atlas.tiff"
+        )
         # order is important
         self.cli_options(args)
-        self.hierarchy()
-        self.existence(args)
+        self.existence()
 
     def update(self, args):
         self.cli_options(args)
-        self.hierarchy()
-        self.existence(args)
+        self.existence()
         self.channel_specific_update(args)
 
     def cli_options(self, args):
         self.detect = not args.no_detection
         self.classify = not args.no_classification
+        self.register = not args.no_register
+        self.analyse = not args.no_analyse
+        self.figures = not args.no_figures
 
-        self.register = args.register
-        self.summarise = args.summarise
-        self.figures = args.figures
-
-        self.standard_space = not args.no_standard_space
-
-    def hierarchy(self):
-        if self.summarise or self.figures:
-            self.classify = True
-            self.register = True
-
-        if not self.detect or not self.classify:
-            self.standard_space = False
-
-    def existence(self, args):
-        if os.path.exists(
-            os.path.join(
-                args.paths.registration_output_folder, "registered_atlas.nii"
-            )
-        ):
+    def existence(self):
+        if os.path.exists(self.atlas_image):
             logging.warning(
                 "Registered atlas exists, assuming " "already run. Skipping."
             )
             self.register = False
-        else:
-            # If registration hasn't happened (and it's not going to), then
-            # don't carry out standard space analysis
-            if not self.register and not self.figures:
-                self.standard_space = False
 
     def channel_specific_update(self, args):
-        if os.path.exists(args.paths.cells_file_path):
+        if os.path.exists(args.paths.detected_points):
             logging.warning(
                 "Initial detection file exists (cells.xml), "
                 "assuming already run. Skipping."
             )
             self.detect = False
 
-        if os.path.exists(args.paths.classification_out_file):
+        if os.path.exists(args.paths.classified_points):
             logging.warning(
                 "Cell classification file "
                 "(cell_classification.xml)"
@@ -364,52 +283,25 @@ class CalcWhatToRun:
             self.classify = False
             self.detect = False
 
-        if os.path.exists(
-            os.path.join(args.output_dir, "summary_cell_counts.csv")
-        ):
-            logging.warning(
-                "Summary file exists, assuming already run. "
-                "skipping everything."
-            )
-            self.summarise = False
-            self.detect = False
-            self.classify = False
-
-        if os.path.exists(args.paths.figures_dir) and (
-            not os.listdir(args.paths.figures_dir) == []
-        ):
-
-            logging.warning(
-                "Figures directory not empty, assuming already run. "
-                "Skipping detection, and classification."
-            )
+        if not os.path.exists(self.atlas_image):
+            self.analyse = False
             self.figures = False
-            self.detect = False
+
+        if os.path.exists(args.paths.heatmap):
+            self.figures = False
+
+    def update_if_candidates_required(self):
+        if not self.candidates_exist:
             self.classify = False
 
-        if os.path.exists(args.paths.cells_in_standard_space):
-            logging.warning(
-                "Cells in standard space xml file exists, assuming already "
-                "run. Skipping detection and classification."
-            )
-            self.detect = False
-            self.classify = False
-            self.standard_space = False
+    def update_if_cells_required(self):
+        if not self.cells_exist:
+            self.analyse = False
+            self.figures = False
 
 
-def prep_registration(args, sample_name="amap"):
-    logging.info("Checking whether the atlas exists")
-    _, atlas_files_exist = check_atlas_install(args.registration_config)
-    atlas_dir = args.install_path / "atlas"
-    if not atlas_files_exist:
-        logging.warning("Atlas does not exist, downloading.")
-        atlas_download.atlas_download(
-            args.atlas, atlas_dir, args.download_path
-        )
-        amend_cfg(new_atlas_folder=atlas_dir, atlas=args.atlas)
-
+def prep_registration(args):
     args.target_brain_path = args.background_planes_path[0]
-    args.sample_name = sample_name
     logging.debug("Making registration directory")
     ensure_directory_exists(args.paths.registration_output_folder)
 
@@ -417,60 +309,21 @@ def prep_registration(args, sample_name="amap"):
     for idx, images in enumerate(args.signal_planes_paths):
         channel = args.signal_ch_ids[idx]
         additional_images_downsample[f"channel_{channel}"] = images
-
     return args, additional_images_downsample
 
 
-def check_atlas_install(cfg_file_path=None):
-    """
-    Checks whether the atlas directory exists, and whether it's empty or not.
-    :return: Whether the directory exists, and whether the files also exist
-    """
-    # TODO: make more sophisticated, check for all files that might be needed
-    dir_exists = False
-    files_exist = False
-    logging.info(cfg_file_path)
-    if cfg_file_path is None:
-        cfg_file_path = source_files.source_custom_config_cellfinder()
-    else:
-        pass
+def prep_classification(args, what_to_run):
+    try:
+        get_cells(args.paths.detected_points)
+        n_processes = get_num_processes(min_free_cpu_cores=args.n_free_cpus)
+        prep_tensorflow(n_processes)
+        args = prep_models(args)
+    except MissingCellsError:
+        what_to_run.cells_exist = False
+        what_to_run.candidates_exist = False
+        what_to_run.update_if_cells_required()
+    what_to_run.update_if_candidates_required()
 
-    if os.path.exists(cfg_file_path):
-        config_obj = get_config_obj(cfg_file_path)
-        atlas_conf = config_obj["atlas"]
-        atlas_directory = atlas_conf["base_folder"]
-        if os.path.exists(atlas_directory):
-            dir_exists = True
-            if not os.listdir(atlas_directory) == []:
-                files_exist = True
-
-    return dir_exists, files_exist
-
-
-def prep_atlas_conf(args):
-    """
-    Used by cellfinder_run to source the correct registration configuration
-    and also by cellfinder_count_summary to get atlas pixel sizes.
-
-    :param args: Args possibly including "registration_config"
-    :return: args: Args with atlas configuration for registration
-    """
-    if args.atlas_config is None:
-        if (
-            hasattr(args, "registration_config")
-            and args.registration_config is not None
-        ):
-            args.atlas_config = args.registration_config
-        else:
-            # can get atlas pixel sizes from registration config
-            args.atlas_config = source_files.source_custom_config_cellfinder()
-    return args
-
-
-def prep_classification(args):
-    n_processes = get_num_processes(min_free_cpu_cores=args.n_free_cpus)
-    prep_tensorflow(n_processes)
-    args = prep_models(args)
     return args
 
 
@@ -487,7 +340,7 @@ def prep_tensorflow(max_threads):
 
 
 def prep_models(args):
-    ## if no model or weights, set default weights
+    # if no model or weights, set default weights
     if args.trained_model is None and args.model_weights is None:
         logging.debug("No model or weights supplied, so using the default")
 
@@ -498,7 +351,7 @@ def prep_models(args):
             amend_cfg(new_model_path=model_path)
 
         model_weights = get_model_weights(config_file)
-        if model_weights is not "" and Path(model_weights).exists():
+        if model_weights != "" and Path(model_weights).exists():
             args.model_weights = model_weights
         else:
             logging.debug("Model weights do not exist, downloading")
@@ -533,16 +386,4 @@ def prep_candidate_detection(args):
     else:
         args.plane_directory = None  # FIXME: remove this fudge
 
-    return args
-
-
-def standard_space_prep(args):
-    ensure_directory_exists(args.paths.standard_space_output_folder)
-    args.paths.make_invert_cell_position_paths()
-    return args
-
-
-def figures_prep(args):
-    ensure_directory_exists(args.paths.figures_dir)
-    args.paths.make_figures_paths()
     return args

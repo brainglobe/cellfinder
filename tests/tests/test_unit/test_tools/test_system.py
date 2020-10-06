@@ -14,14 +14,14 @@ background_im_dir = os.path.join(data_dir, "background")
 
 def test_get_subdirectories():
     subdirs = system.get_subdirectories(data_dir)
-    assert len(subdirs) == 10
+    assert len(subdirs) == 9
     assert Path(data_dir / "cells") in subdirs
-    assert Path(data_dir / "nii") in subdirs
+    assert Path(data_dir / "brain") in subdirs
 
     subdir_names = system.get_subdirectories(data_dir, names_only=True)
-    assert len(subdir_names) == 10
+    assert len(subdir_names) == 9
     assert "cells" in subdir_names
-    assert "nii" in subdir_names
+    assert "brain" in subdir_names
 
 
 def test_get_number_of_files_in_dir():

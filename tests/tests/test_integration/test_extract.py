@@ -1,10 +1,10 @@
 import os
 import pytest
+import imio
 
 import numpy as np
 
 from tifffile import tifffile
-from brainio import brainio
 
 from imlib.cells.cells import Cell
 from imlib.IO.cells import get_cells
@@ -66,7 +66,7 @@ def load_cubes_in_dir(directory):
     cubes = []
     for file in cube_list:
         file_path = os.path.join(directory, file)
-        cubes.append(brainio.load_any(file_path))
+        cubes.append(imio.load_any(file_path))
     return cubes
 
 

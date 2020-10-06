@@ -1,20 +1,16 @@
 import logging
 
-from neuro.heatmap.heatmap import main as heatmap
+from cellfinder.figures import heatmap
 
 
-def figures(args):
-    if args.heatmap:
-        logging.info("Generating heatmap")
-        heatmap(
-            args.paths.classification_out_file,
-            args.paths.heatmap,
-            args.background_planes_path[0],
-            args.paths.registered_atlas_path,
-            args.heatmap_binning,
-            args.x_pixel_um,
-            args.y_pixel_um,
-            args.z_pixel_um,
-            args.heatmap_smooth,
-            args.mask_figures,
-        )
+def run(args, atlas, downsampled_shape):
+    logging.info("Generating heatmap")
+    heatmap.run(
+        args.paths.downsampled_points,
+        atlas,
+        downsampled_shape,
+        args.brainreg_paths.registered_atlas,
+        args.paths.heatmap,
+        smoothing=args.heatmap_smooth,
+        mask=args.mask_figures,
+    )

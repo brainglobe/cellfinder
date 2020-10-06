@@ -3,7 +3,8 @@ import numpy as np
 from imlib.general.system import get_sorted_file_paths, get_num_processes
 
 
-from imlib.IO.cells import save_cells
+from imlib.IO.cells import save_cells, get_cells
+from imlib.cells.cells import MissingCellsError
 from cellfinder.classify.tools import get_model
 from cellfinder.classify.cube_generator import CubeGeneratorFromFile
 from cellfinder.train.train_yml import models
@@ -24,7 +25,7 @@ def main(args, max_workers=3):
 
     logging.debug("Initialising cube generator")
     inference_generator = CubeGeneratorFromFile(
-        args.paths.cells_file_path,
+        args.paths.detected_points,
         signal_images,
         background_images,
         batch_size=args.batch_size,
@@ -66,5 +67,10 @@ def main(args, max_workers=3):
 
     logging.info("Saving classified cells")
     save_cells(
-        cells_list, args.paths.classification_out_file, save_csv=args.save_csv
+        cells_list, args.paths.classified_points, save_csv=args.save_csv
     )
+    try:
+        get_cells(args.paths.classified_points, cells_only=True)
+        return True
+    except MissingCellsError:
+        return False

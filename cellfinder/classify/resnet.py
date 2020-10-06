@@ -37,7 +37,7 @@ def build_model(
     shape=(50, 50, 20, 2),
     network_depth="18-layer",
     optimizer=None,
-    learning_rate=0.0005,  # higher rates don't always converge w fit_generator.
+    learning_rate=0.0005,  # higher rates don't always converge
     loss="categorical_crossentropy",
     metrics=["accuracy"],
     number_classes=2,
@@ -253,7 +253,8 @@ def residual_block(
         if bottleneck:
             y = Activation(
                 activation,
-                name=f"resunit{resnet_unit_label}_block{block_id}_activation_b",
+                name=f"resunit{resnet_unit_label}_block"
+                f"{block_id}_activation_b",
             )(y)
 
             y = Conv3D(
