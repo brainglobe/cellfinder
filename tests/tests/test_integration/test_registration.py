@@ -49,7 +49,7 @@ def test_registration_niftyreg(tmpdir):
         "--n-free-cpus",
         "0",
         "--atlas",
-        "allen_mouse_50um",
+        "allen_mouse_100um",
         "--no-detection",
         "--no-classification",
         "--no-analyse",
