@@ -87,6 +87,7 @@ def test_registration_niftyreg(tmpdir):
             # "registered_atlas.tiff",
             # "registered_hemispheres.tiff",
         ]
+    output_directory = os.path.join(output_directory, "registration")
     for image in image_list:
         are_images_equal(image, output_directory, test_niftyreg_output)
 
