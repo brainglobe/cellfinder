@@ -4,7 +4,7 @@ import numpy as np
 from napari.utils.io import magic_imread
 from pathlib import Path
 
-from PySide2.QtWidgets import QApplication
+from qtpy.QtWidgets import QApplication
 
 from imlib.general.system import get_sorted_file_paths, ensure_directory_exists
 from imlib.general.list import unique_elements_lists
