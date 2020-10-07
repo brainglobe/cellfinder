@@ -9,7 +9,7 @@
 [![Dependabot Status](https://api.dependabot.com/badges/status?host=github&repo=brainglobe/cellfinder)](https://dependabot.com)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/python/black)
 [![Gitter](https://badges.gitter.im/cellfinder.svg)](https://gitter.im/cellfinder/?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3665329.svg)](https://doi.org/10.5281/zenodo.3665329)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3891338.svg)](https://doi.org/10.5281/zenodo.3891338)
 [![Contributions](https://img.shields.io/badge/Contributions-Welcome-brightgreen.svg)](https://docs.brainglobe.info/cellfinder/contributing)
 [![Website](https://img.shields.io/website?up_message=online&url=https%3A%2F%2Fcellfinder.info)](https://cellfinder.info)
 [![Twitter](https://img.shields.io/twitter/follow/findingcells?style=social)](https://twitter.com/findingcells)
@@ -112,7 +112,7 @@ Data courtesy of Sepiedeh Keshavarzi and Chryssanthi Tsitoura. [Details here](ht
 
 If you find cellfinder useful, and use it in your research, please cite this repository:
 
-> Adam L. Tyson, Charly V. Rousseau, Christian J. Niedworok and Troy W. Margrie (2020). cellfinder: automated 3D cell detection and registration of whole-brain images. [doi:10.5281/zenodo.3665329](http://doi.org/10.5281/zenodo.3665329)
+> Adam L. Tyson, Charly V. Rousseau, Christian J. Niedworok and Troy W. Margrie (2020). cellfinder: automated 3D cell detection and registration of whole-brain images. [10.5281/zenodo.3891338](https://doi.org/10.5281/zenodo.3891338)
 
 If you use any of the image registration functions in cellfinder, please also cite [brainreg](https://github.com/brainglobe/brainreg#citing-brainreg).
 
