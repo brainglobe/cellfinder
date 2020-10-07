@@ -72,6 +72,9 @@ class Paths:
             self.output_dir, "registration"
         )
         self.metadata_path = os.path.join(self.output_dir, "cellfinder.json")
+        self.registration_metadata_path = os.path.join(
+            self.registration_output_folder, "brainreg.json"
+        )
 
     def make_channel_specific_paths(self):
         self.points_directory = os.path.join(self.output_dir, "points")
@@ -304,7 +307,7 @@ def prep_registration(args):
     args.target_brain_path = args.background_planes_path[0]
     logging.debug("Making registration directory")
     ensure_directory_exists(args.paths.registration_output_folder)
-
+    log_metadata(args.paths.registration_metadata_path, args)
     additional_images_downsample = {}
     for idx, images in enumerate(args.signal_planes_paths):
         channel = args.signal_ch_ids[idx]
