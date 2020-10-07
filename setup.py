@@ -7,7 +7,7 @@ with open(path.join(this_directory, "README.md"), encoding="utf-8") as f:
     long_description = f.read()
 
 requirements = [
-    "numpy",
+    "numpy<1.19.0,>=1.16.0",  # until tensorflow supports numpy 1.19
     "scikit-learn",
     "configparser",
     "pandas",
