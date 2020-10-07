@@ -125,10 +125,9 @@ setup(
     },
     url="https://cellfinder.info",
     project_urls={
-        "Source Code": "https://github.com/SainsburyWellcomeCentre/cellfinder",
-        "Bug Tracker": "https://github.com/SainsburyWellcomeCentre/"
-        "cellfinder/issues",
-        "Documentation": "https://docs.cellfinder.info",
+        "Source Code": "https://github.com/brainglobe/cellfinder",
+        "Bug Tracker": "https://github.com/brainglobe/cellfinder/issues",
+        "Documentation": "https://docs.brainglobe.info/cellfinder",
     },
     author="Adam Tyson, Christian Niedworok, Charly Rousseau",
     author_email="adam.tyson@ucl.ac.uk",
