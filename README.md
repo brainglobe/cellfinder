@@ -116,6 +116,6 @@ If you find cellfinder useful, and use it in your research, please cite this rep
 
 If you use any of the image registration functions in cellfinder, please also cite [brainreg](https://github.com/brainglobe/brainreg#citing-brainreg).
 
-**If you use this, or any other tools in the cellfinder suite, please
+**If you use this, or any other tools in the brainglobe suite, please
  [let us know](mailto:adam.tyson@ucl.ac.uk?subject=cellfinder), and 
  we'd be happy to promote your paper/talk etc.**
