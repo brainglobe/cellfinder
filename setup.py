@@ -21,7 +21,7 @@ requirements = [
     "configobj",
     "tensorflow>=2.3.1",
     "napari[pyside2]>=0.3.7",
-    "napari-cellfinder>=0.1.0",
+    "napari-cellfinder>=0.1.1",
     "slurmio>=0.0.4",
     "fancylog>=0.0.7",
     "micrometa>=0.0.11",
