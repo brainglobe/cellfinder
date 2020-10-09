@@ -13,7 +13,8 @@ from fancylog import fancylog
 from pathlib import Path, PurePath
 
 from imlib.general.system import ensure_directory_exists, get_num_processes
-from imlib.image.metadata import define_pixel_sizes
+
+# from imlib.image.metadata import define_pixel_sizes
 from imlib.general.exceptions import CommandLineInputError
 from imlib.general.config import get_config_obj
 from imlib.IO.cells import get_cells
@@ -115,7 +116,7 @@ def prep_cellfinder_general():
     args = parser.cellfinder_parser().parse_args()
     arg_groups = get_arg_groups(args, cellfinder_parser())
 
-    args = define_pixel_sizes(args)
+    # args = define_pixel_sizes(args)
     check_input_arg_existance(args)
 
     if not os.path.exists(args.output_dir):

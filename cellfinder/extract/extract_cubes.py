@@ -246,10 +246,12 @@ def save_cubes(
     planes_paths,
     planes_to_read,
     planes_shape,
-    x_pix_um,
-    y_pix_um,
-    x_pix_um_network,
-    y_pix_um_network,
+    voxel_sizes,
+    network_voxel_sizes,
+    # x_pix_um,
+    # y_pix_um,
+    # x_pix_um_network,
+    # y_pix_um_network,
     num_planes_for_cube=20,
     cube_width=50,
     cube_height=50,
@@ -309,10 +311,10 @@ def save_cubes(
                         cell,
                         ch,
                         stacks,
-                        x_pix_um=x_pix_um,
-                        y_pix_um=y_pix_um,
-                        x_pix_um_network=x_pix_um_network,
-                        y_pix_um_network=y_pix_um_network,
+                        x_pix_um=voxel_sizes[2],
+                        y_pix_um=voxel_sizes[1],
+                        x_pix_um_network=network_voxel_sizes[2],
+                        y_pix_um_network=network_voxel_sizes[1],
                         final_depth=cube_depth,
                         width=cube_width,
                         height=cube_height,
@@ -371,12 +373,8 @@ def main(
     cube_depth,
     cube_width,
     cube_height,
-    x_pixel_um,
-    y_pixel_um,
-    z_pixel_um,
-    x_pixel_um_network,
-    y_pixel_um_network,
-    z_pixel_um_network,
+    voxel_sizes,
+    network_voxel_sizes,
     max_ram,
     n_free_cpus=4,
     save_empty_cubes=False,
@@ -384,8 +382,10 @@ def main(
 
     start_time = datetime.now()
 
-    if z_pixel_um != z_pixel_um_network:
-        plane_scaling_factor = z_pixel_um_network / z_pixel_um
+    if voxel_sizes[0] != network_voxel_sizes[0]:
+        plane_scaling_factor = float(network_voxel_sizes[0]) / float(
+            voxel_sizes[0]
+        )
         num_planes_needed_for_cube = round(cube_depth * plane_scaling_factor)
     else:
         num_planes_needed_for_cube = cube_depth
@@ -471,10 +471,8 @@ def main(
                 planes_paths,
                 sub_planes_to_read,
                 planes_shape,
-                x_pixel_um,
-                y_pixel_um,
-                x_pixel_um_network,
-                y_pixel_um_network,
+                voxel_sizes,
+                network_voxel_sizes,
                 num_planes_for_cube=num_planes_needed_for_cube,
                 cube_width=cube_width,
                 cube_height=cube_height,

@@ -24,7 +24,6 @@ requirements = [
     "napari-cellfinder>=0.1.1",
     "slurmio>=0.0.4",
     "fancylog>=0.0.7",
-    "micrometa>=0.0.11",
     "imlib>=0.0.26",
     "brainreg",
     "imio",

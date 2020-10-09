@@ -8,7 +8,7 @@ from qtpy.QtWidgets import QApplication
 
 from imlib.general.system import get_sorted_file_paths, ensure_directory_exists
 from imlib.general.list import unique_elements_lists
-from imlib.image.metadata import define_pixel_sizes
+
 from imlib.IO.cells import cells_xml_to_df, save_cells, get_cells
 from imlib.cells.cells import Cell
 from imlib.IO.yaml import save_yaml
@@ -79,7 +79,7 @@ def get_cell_labels_arrays(
 
 def main():
     args = parser().parse_args()
-    args = define_pixel_sizes(args)
+    # args = define_pixel_sizes(args)
 
     if args.output is None:
         output = Path(args.cells_xml)
@@ -192,12 +192,8 @@ def main():
                     args.cube_depth,
                     args.cube_width,
                     args.cube_height,
-                    args.x_pixel_um,
-                    args.y_pixel_um,
-                    args.z_pixel_um,
-                    args.x_pixel_um_network,
-                    args.y_pixel_um_network,
-                    args.z_pixel_um_network,
+                    args.voxel_sizes,
+                    args.network_voxel_sizes,
                     args.max_ram,
                     args.n_free_cpus,
                     args.save_empty_cubes,
@@ -222,12 +218,8 @@ def run_extraction(
     cube_depth,
     cube_width,
     cube_height,
-    x_pixel_um,
-    y_pixel_um,
-    z_pixel_um,
-    x_pixel_um_network,
-    y_pixel_um_network,
-    z_pixel_um_network,
+    voxel_sizes,
+    network_voxel_sizes,
     max_ram,
     n_free_cpus,
     save_empty_cubes,
@@ -259,12 +251,8 @@ def run_extraction(
             cube_depth,
             cube_width,
             cube_height,
-            x_pixel_um,
-            y_pixel_um,
-            z_pixel_um,
-            x_pixel_um_network,
-            y_pixel_um_network,
-            z_pixel_um_network,
+            voxel_sizes,
+            network_voxel_sizes,
             max_ram,
             n_free_cpus,
             save_empty_cubes,

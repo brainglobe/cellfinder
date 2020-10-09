@@ -12,12 +12,10 @@ from argparse import (
     ArgumentTypeError,
 )
 from cellfinder import __version__
-from pathlib import Path
 from imlib.general.numerical import check_positive_float, check_positive_int
 from imlib.source import source_files
 
 from cellfinder.download.cli import model_parser, download_directory_parser
-from micrometa.micrometa import SUPPORTED_METADATA_TYPES
 
 from brainreg.cli import atlas_parse, geometry_parser, niftyreg_parse
 from brainreg.cli import backend_parse as brainreg_backend_parse
@@ -135,55 +133,22 @@ def pixel_parser(parser):
         "Options to define pixel sizes of raw data"
     )
     pixel_opt_parser.add_argument(
-        "-x",
-        "--x-pixel-um",
-        dest="x_pixel_um",
-        type=check_positive_float,
-        help="Pixel spacing of the data in the first "
-        "dimension, specified in um.",
+        "-v",
+        "--voxel-sizes",
+        dest="voxel_sizes",
+        required=True,
+        nargs="+",
+        help="Voxel sizes in microns, in the order of data orientation. "
+        "e.g. '5 2 2'",
     )
     pixel_opt_parser.add_argument(
-        "-y",
-        "--y-pixel-um",
-        dest="y_pixel_um",
-        type=check_positive_float,
-        help="Pixel spacing of the data in the second "
-        "dimension, specified in um.",
-    )
-    pixel_opt_parser.add_argument(
-        "-z",
-        "--z-pixel-um",
-        dest="z_pixel_um",
-        type=check_positive_float,
-        help="Pixel spacing of the data in the third "
-        "dimension, specified in um.",
-    )
-    pixel_opt_parser.add_argument(
-        "--x-pixel-um-network",
-        dest="x_pixel_um_network",
-        type=check_positive_float,
-        default=1,
-        help="The pixel size (in the first dimension) that the machine "
-        "learning network was trained on.  Set this to adjust the "
-        "pixel sizes of the extracted cubes",
-    )
-    pixel_opt_parser.add_argument(
-        "--y-pixel-um-network",
-        dest="y_pixel_um_network",
-        type=check_positive_float,
-        default=1,
-        help="The pixel size (in the first dimension) that the machine "
-        "learning network was trained on. Set this to adjust the pixel "
-        "sizes of the extracted cubes",
-    )
-    pixel_opt_parser.add_argument(
-        "--z-pixel-um-network",
-        dest="z_pixel_um_network",
-        type=check_positive_float,
-        default=5,
-        help="The pixel size (in the third dimension) that the machine"
-        " learning network was trained on. Set this to adjust the pixel "
-        "sizes of the extracted cubes",
+        "--network-voxel-sizes",
+        dest="network_voxel_sizes",
+        nargs="+",
+        default=[5, 1, 1],
+        help="Voxel sizes in microns that the machine learning network was "
+        "trained on, in the order of data orientation. e.g. '5 2 2'."
+        "Set this to adjust the pixel sizes of the extracted cubes",
     )
     return parser
 
@@ -476,14 +441,6 @@ def misc_parse(parser):
         action="store_true",
         help="Debug mode. Will increase verbosity of logging and save all "
         "intermediate files for diagnosis of software issues.",
-    )
-    misc_parser.add_argument(
-        "--metadata",
-        dest="metadata",
-        type=Path,
-        help="Path to the metadata file. Supported formats are '{}'.".format(
-            SUPPORTED_METADATA_TYPES
-        ),
     )
     misc_parser.add_argument(
         "--sort-input-file",
