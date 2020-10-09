@@ -40,6 +40,8 @@ def test_detection_full(tmpdir):
         z_pix,
         y_pix,
         x_pix,
+        "--orientation",
+        "psl",
         "--n-free-cpus",
         "0",
         "--no-register",

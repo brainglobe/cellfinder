@@ -44,6 +44,8 @@ def test_registration_niftyreg(tmpdir):
         z_pix,
         y_pix,
         x_pix,
+        "--orientation",
+        "psl",
         "--n-free-cpus",
         "0",
         "--atlas",
