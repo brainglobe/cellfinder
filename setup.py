@@ -86,7 +86,7 @@ else:
 
 setup(
     name="cellfinder",
-    version="0.4.0",
+    version="0.4.1",
     description="Automated 3D cell detection and registration of "
     "whole-brain images",
     long_description=long_description,
@@ -134,8 +134,8 @@ setup(
         "Operating System :: POSIX :: Linux",
         "Operating System :: Microsoft :: Windows :: Windows 10",
         "Programming Language :: Python",
-        "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
         "Topic :: Scientific/Engineering :: Image Recognition",
         "Intended Audience :: Developers",
         "Intended Audience :: Science/Research",
