@@ -9,14 +9,14 @@ like [brainreg](https://github.com/brainglobe/brainreg),
 [imlib](https://github.com/adamltyson/imlib) etc.) please get in touch via
 [email](mailto:adam.tyson@ucl.ac.uk?subject=cellfinder-development), or 
 better yet by starting a discussion on the 
-[gitter dev channel](https://gitter.im/cellfinder/dev). You might find that 
+[gitter channel](https://gitter.im/brainglobe/cellfinder). You might find that 
 there is someone already working on something similar, and you can work 
 together.
 
 If you're not sure where to start, check out the
-[issues](https://github.com/SainsburyWellcomeCentre/cellfinder/issues) (and 
+[issues](https://github.com/brainglobe/cellfinder/issues) (and 
 the issues of the other repositories).
 
 For a more practical guide on how to contribute, such as setting up a 
 development environment, please see 
-[here](https://docs.cellfinder.info/for-developers/contributing-to-cellfinder).
+[here](https://docs.brainglobe.info/cellfinder/contributing).
