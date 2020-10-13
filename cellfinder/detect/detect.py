@@ -18,9 +18,7 @@ from cellfinder.detect.filters.volume_filters.multiprocessing import Mp3DFilter
 
 
 def calculate_parameters_in_pixels(
-    x_pixel_um,
-    y_pixel_um,
-    z_pixel_um,
+    voxel_sizes,
     soma_diameter_um,
     max_cluster_size_um3,
     ball_xy_size_um,
@@ -28,22 +26,18 @@ def calculate_parameters_in_pixels(
 ):
     """
     Convert the command-line arguments from real (um) units to pixels
-    :param x_pixel_um:
-    :param y_pixel_um:
-    :param z_pixel_um:
-    :param soma_diameter_um:
-    :param max_cluster_size_um3:
-    :param ball_xy_size_um:
-    :param ball_z_size_um:
-    :return:
     """
 
-    mean_in_plane_pixel_size = 0.5 * (x_pixel_um + y_pixel_um)
-    voxel_volume = x_pixel_um * y_pixel_um * z_pixel_um
+    mean_in_plane_pixel_size = 0.5 * (
+        float(voxel_sizes[2]) + float(voxel_sizes[1])
+    )
+    voxel_volume = (
+        float(voxel_sizes[2]) * float(voxel_sizes[1]) * float(voxel_sizes[0])
+    )
     soma_diameter = int(round(soma_diameter_um / mean_in_plane_pixel_size))
     max_cluster_size = int(round(max_cluster_size_um3 / voxel_volume))
     ball_xy_size = int(round(ball_xy_size_um / mean_in_plane_pixel_size))
-    ball_z_size = int(round(ball_z_size_um / z_pixel_um))
+    ball_z_size = int(round(ball_z_size_um / float(voxel_sizes[0])))
 
     return soma_diameter, max_cluster_size, ball_xy_size, ball_z_size
 
@@ -59,9 +53,7 @@ def main(args):
         ball_xy_size,
         ball_z_size,
     ) = calculate_parameters_in_pixels(
-        args.x_pixel_um,
-        args.y_pixel_um,
-        args.z_pixel_um,
+        args.voxel_sizes,
         args.soma_diameter,
         args.max_cluster_size,
         args.ball_xy_size,

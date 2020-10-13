@@ -13,7 +13,8 @@ from fancylog import fancylog
 from pathlib import Path, PurePath
 
 from imlib.general.system import ensure_directory_exists, get_num_processes
-from imlib.image.metadata import define_pixel_sizes
+
+# from imlib.image.metadata import define_pixel_sizes
 from imlib.general.exceptions import CommandLineInputError
 from imlib.general.config import get_config_obj
 from imlib.IO.cells import get_cells
@@ -72,6 +73,9 @@ class Paths:
             self.output_dir, "registration"
         )
         self.metadata_path = os.path.join(self.output_dir, "cellfinder.json")
+        self.registration_metadata_path = os.path.join(
+            self.registration_output_folder, "brainreg.json"
+        )
 
     def make_channel_specific_paths(self):
         self.points_directory = os.path.join(self.output_dir, "points")
@@ -112,7 +116,7 @@ def prep_cellfinder_general():
     args = parser.cellfinder_parser().parse_args()
     arg_groups = get_arg_groups(args, cellfinder_parser())
 
-    args = define_pixel_sizes(args)
+    # args = define_pixel_sizes(args)
     check_input_arg_existance(args)
 
     if not os.path.exists(args.output_dir):
@@ -304,7 +308,7 @@ def prep_registration(args):
     args.target_brain_path = args.background_planes_path[0]
     logging.debug("Making registration directory")
     ensure_directory_exists(args.paths.registration_output_folder)
-
+    log_metadata(args.paths.registration_metadata_path, args)
     additional_images_downsample = {}
     for idx, images in enumerate(args.signal_planes_paths):
         channel = args.signal_ch_ids[idx]

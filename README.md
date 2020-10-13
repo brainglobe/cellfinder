@@ -8,7 +8,7 @@
 [![Coverage Status](https://coveralls.io/repos/github/brainglobe/cellfinder/badge.svg?branch=master)](https://coveralls.io/github/brainglobe/cellfinder?branch=master)
 [![Dependabot Status](https://api.dependabot.com/badges/status?host=github&repo=brainglobe/cellfinder)](https://dependabot.com)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/python/black)
-[![Gitter](https://badges.gitter.im/cellfinder.svg)](https://gitter.im/cellfinder/?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+[![Gitter](https://badges.gitter.im/brainglobe.svg)](https://gitter.im/BrainGlobe/cellfinder/?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3891338.svg)](https://doi.org/10.5281/zenodo.3891338)
 [![Contributions](https://img.shields.io/badge/Contributions-Welcome-brightgreen.svg)](https://docs.brainglobe.info/cellfinder/contributing)
 [![Website](https://img.shields.io/website?up_message=online&url=https%3A%2F%2Fcellfinder.info)](https://cellfinder.info)
@@ -47,7 +47,7 @@ This software is at a very early stage, and was written with our data in mind.
 Over time we hope to support other data types/formats. If you have any 
 questions or issues, please get in touch by 
 [email](mailto:adam.tyson@ucl.ac.uk?subject=cellfinder), 
-[gitter](https://gitter.im/cellfinder/community) or by 
+[gitter](https://gitter.im/BrainGlobe/cellfinder) or by 
 [raising an issue](https://github.com/brainglobe/cellfinder/issues/new/choose).
 
 

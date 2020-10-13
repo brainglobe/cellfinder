@@ -29,6 +29,7 @@ absolute_tolerance = 10
 check_less_precise_pd = 1
 
 
+@pytest.mark.xfail(reason="Issues across machines")
 @pytest.mark.slow
 def test_registration_niftyreg(tmpdir):
     output_directory = os.path.join(str(tmpdir), "output")
@@ -40,12 +41,12 @@ def test_registration_niftyreg(tmpdir):
         data_dir,
         "-o",
         output_directory,
-        "-x",
-        x_pix,
-        "-y",
-        y_pix,
-        "-z",
+        "-v",
         z_pix,
+        y_pix,
+        x_pix,
+        "--orientation",
+        "psl",
         "--n-free-cpus",
         "0",
         "--atlas",

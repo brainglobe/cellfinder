@@ -10,9 +10,7 @@ it's warnings are silenced
 
 import os
 import logging
-import json
 import tifffile
-from argparse import Namespace
 from datetime import datetime
 import bg_space as bgs
 from imlib.general.logging import suppress_specific_logs
@@ -30,23 +28,6 @@ def get_downsampled_space(atlas, downsampled_image_path):
         resolution=atlas.resolution,
     )
     return downsampled_space
-
-
-def get_arg_groups(args, parser):
-    arg_groups = {}
-    for group in parser._action_groups:
-        group_dict = {
-            a.dest: getattr(args, a.dest, None) for a in group._group_actions
-        }
-        arg_groups[group.title] = Namespace(**group_dict)
-
-    return arg_groups
-
-
-def log_metadata(file_path, args):
-    args.metadata = str(args.metadata)  # quick fix, need to deal with properly
-    with open(file_path, "w") as f:
-        json.dump(args, f, default=lambda x: x.__dict__)
 
 
 def main():
@@ -67,10 +48,8 @@ def main():
             args.orientation,
             args.target_brain_path,
             args.brainreg_paths,
+            args.voxel_sizes,
             arg_groups["NiftyReg registration backend options"],
-            x_pixel_um=args.x_pixel_um,
-            y_pixel_um=args.y_pixel_um,
-            z_pixel_um=args.z_pixel_um,
             sort_input_file=args.sort_input_file,
             n_free_cpus=args.n_free_cpus,
             additional_images_downsample=additional_images_downsample,

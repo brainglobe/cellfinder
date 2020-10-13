@@ -32,13 +32,9 @@ class CubeGeneratorFromFile(Sequence):
         cells_file,
         signal_planes,
         background_planes,
+        voxel_sizes,
+        network_voxel_sizes,
         batch_size=16,
-        x_pixel_um=1,
-        y_pixel_um=1,
-        z_pixel_um=5,
-        x_pixel_um_network=1,
-        y_pixel_um_network=1,
-        z_pixel_um_network=5,
         cube_width=50,
         cube_height=50,
         cube_depth=20,
@@ -58,12 +54,12 @@ class CubeGeneratorFromFile(Sequence):
         self.signal_planes = signal_planes
         self.background_planes = background_planes
         self.batch_size = batch_size
-        self.x_pixel_um = x_pixel_um
-        self.y_pixel_um = y_pixel_um
-        self.z_pixel_um = z_pixel_um
-        self.x_pixel_um_network = x_pixel_um_network
-        self.y_pixel_um_network = y_pixel_um_network
-        self.z_pixel_um_network = z_pixel_um_network
+        self.axis_2_pixel_um = float(voxel_sizes[2])
+        self.axis_1_pixel_um = float(voxel_sizes[1])
+        self.axis_0_pixel_um = float(voxel_sizes[0])
+        self.network_axis_2_pixel_um = float(network_voxel_sizes[2])
+        self.network_axis_1_pixel_um = float(network_voxel_sizes[1])
+        self.network_axis_0_pixel_um = float(network_voxel_sizes[0])
         self.cube_width = cube_width
         self.cube_height = cube_height
         self.cube_depth = cube_depth
@@ -82,8 +78,8 @@ class CubeGeneratorFromFile(Sequence):
 
         self.scale_cubes = False
 
-        self.rescaling_factor_x = 1
-        self.rescaling_factor_y = 1
+        self.rescaling_factor_axis_2 = 1
+        self.rescaling_factor_axis_1 = 1
         self.rescaled_cube_width = self.cube_width
         self.rescaled_cube_height = self.cube_height
 
@@ -123,22 +119,28 @@ class CubeGeneratorFromFile(Sequence):
             )
 
     def __check_in_plane_scaling(self):
-        if self.x_pixel_um != self.x_pixel_um_network:
-            self.rescaling_factor_x = self.x_pixel_um_network / self.x_pixel_um
+        if self.axis_2_pixel_um != self.network_axis_2_pixel_um:
+            self.rescaling_factor_axis_2 = (
+                self.network_axis_2_pixel_um / self.axis_2_pixel_um
+            )
             self.rescaled_cube_width = (
-                self.cube_width * self.rescaling_factor_x
+                self.cube_width * self.rescaling_factor_axis_2
             )
             self.scale_cubes = True
-        if self.y_pixel_um != self.y_pixel_um_network:
-            self.rescaling_factor_y = self.y_pixel_um_network / self.y_pixel_um
+        if self.axis_1_pixel_um != self.network_axis_1_pixel_um:
+            self.rescaling_factor_axis_1 = (
+                self.network_axis_1_pixel_um / self.axis_1_pixel_um
+            )
             self.rescaled_cube_height = (
-                self.cube_height * self.rescaling_factor_y
+                self.cube_height * self.rescaling_factor_axis_1
             )
             self.scale_cubes = True
 
     def __check_z_scaling(self):
-        if self.z_pixel_um != self.z_pixel_um_network:
-            plane_scaling_factor = self.z_pixel_um_network / self.z_pixel_um
+        if self.axis_0_pixel_um != self.network_axis_0_pixel_um:
+            plane_scaling_factor = (
+                self.network_axis_0_pixel_um / self.axis_0_pixel_um
+            )
             self.num_planes_needed_for_cube = round(
                 self.cube_depth * plane_scaling_factor
             )
@@ -173,10 +175,10 @@ class CubeGeneratorFromFile(Sequence):
             return True
 
     def __get_boundaries(self):
-        x0 = int(round((self.cube_width / 2) * self.rescaling_factor_x))
+        x0 = int(round((self.cube_width / 2) * self.rescaling_factor_axis_2))
         x1 = int(round(self.image_width - x0))
 
-        y0 = int(round((self.cube_height / 2) * self.rescaling_factor_y))
+        y0 = int(round((self.cube_height / 2) * self.rescaling_factor_axis_1))
         y1 = int(round(self.image_height - y0))
 
         z0 = int(round(self.num_planes_needed_for_cube / 2))

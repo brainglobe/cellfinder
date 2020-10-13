@@ -7,7 +7,7 @@ with open(path.join(this_directory, "README.md"), encoding="utf-8") as f:
     long_description = f.read()
 
 requirements = [
-    "numpy",
+    "numpy<1.19.0,>=1.16.0",  # until tensorflow supports numpy 1.19
     "scikit-learn",
     "configparser",
     "pandas",
@@ -21,11 +21,9 @@ requirements = [
     "configobj",
     "tensorflow>=2.3.1",
     "napari[pyside2]>=0.3.7",
-    "napari-ndtiffs",
-    "napari-cellfinder",
+    "napari-cellfinder>=0.1.1",
     "slurmio>=0.0.4",
     "fancylog>=0.0.7",
-    "micrometa>=0.0.11",
     "imlib>=0.0.26",
     "brainreg",
     "imio",
@@ -88,7 +86,7 @@ else:
 
 setup(
     name="cellfinder",
-    version="0.3.17",
+    version="0.4.0",
     description="Automated 3D cell detection and registration of "
     "whole-brain images",
     long_description=long_description,
