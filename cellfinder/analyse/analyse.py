@@ -195,11 +195,7 @@ def run(args, atlas, downsampled_space):
     source_space = bgs.AnatomicalSpace(
         args.orientation,
         shape=source_shape,
-        resolution=(
-            args.axis_0_pixel_um,
-            args.axis_1_pixel_um,
-            args.axis_2_pixel_um,
-        ),
+        resolution=[float(i) for i in args.voxel_sizes],
     )
 
     transformed_cells = transform_points_to_atlas_space(
