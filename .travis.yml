@@ -6,7 +6,7 @@ stages:
   - test
   - name: deploy
     if:
-      tag IS present AND repo = SainsburyWellcomeCentre/cellfinder
+      tag IS present AND repo = brainglobe/cellfinder
 
 jobs:
   include:
