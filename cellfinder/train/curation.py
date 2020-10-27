@@ -34,9 +34,7 @@ def curation_parser(parser):
         dest="signal_image_paths", type=str, help="Signal images"
     )
     parser.add_argument(
-        dest="background_image_paths",
-        type=str,
-        help="Background images",
+        dest="background_image_paths", type=str, help="Background images",
     )
 
     parser.add_argument(
