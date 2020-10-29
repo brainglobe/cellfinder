@@ -35,15 +35,9 @@ class CubeExtractArgs:
         self.cube_depth = 20
         self.save_empty_cubes = False
         self.voxel_sizes = [5, 1, 1]
-        # self.x_pixel_um = 1
-        # self.y_pixel_um = 1
-        # self.z_pixel_um = 5
 
         # get these from parser defaults
         self.network_voxel_sizes = [5, 1, 1]
-        # self.x_pixel_um_network = 1
-        # self.y_pixel_um_network = 1
-        # self.z_pixel_um_network = 5
 
         self.n_free_cpus = 0
         self.n_max_threads = 10
@@ -92,12 +86,6 @@ def test_cube_extraction(tmpdir, depth=20):
         args.cube_height,
         args.voxel_sizes,
         args.network_voxel_sizes,
-        # args.x_pixel_um,
-        # args.y_pixel_um,
-        # args.z_pixel_um,
-        # args.x_pixel_um_network,
-        # args.y_pixel_um_network,
-        # args.z_pixel_um_network,
         args.max_ram,
         args.n_free_cpus,
         args.save_empty_cubes,
@@ -126,12 +114,6 @@ def test_cube_extraction(tmpdir, depth=20):
         args.cube_height,
         args.voxel_sizes,
         args.network_voxel_sizes,
-        # args.x_pixel_um,
-        # args.y_pixel_um,
-        # args.z_pixel_um,
-        # args.x_pixel_um_network,
-        # args.y_pixel_um_network,
-        # args.z_pixel_um_network,
         args.max_ram,
         args.n_free_cpus,
         args.save_empty_cubes,
@@ -185,12 +167,6 @@ def test_cube_extraction(tmpdir, depth=20):
             args.cube_height,
             args.voxel_sizes,
             args.network_voxel_sizes,
-            # args.x_pixel_um,
-            # args.y_pixel_um,
-            # args.z_pixel_um,
-            # args.x_pixel_um_network,
-            # args.y_pixel_um_network,
-            # args.z_pixel_um_network,
             args.max_ram,
             args.n_free_cpus,
             args.save_empty_cubes,

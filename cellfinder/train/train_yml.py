@@ -326,7 +326,8 @@ def main():
             filepath = str(output_dir / ("model" + base_checkpoint_file_name))
 
         checkpoints = ModelCheckpoint(
-            filepath, save_weights_only=args.save_weights,
+            filepath,
+            save_weights_only=args.save_weights,
         )
         callbacks.append(checkpoints)
 

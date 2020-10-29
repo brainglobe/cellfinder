@@ -4,7 +4,9 @@ import pandas as pd
 
 
 def export_points(
-    points, resolution, output_filename,
+    points,
+    resolution,
+    output_filename,
 ):
     logging.info("Exporting to brainrender")
     points = pd.DataFrame(points * resolution)

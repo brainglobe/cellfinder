@@ -51,10 +51,10 @@ class Cube(object):
         self.rescaling_factor_y = 1
 
         if x_pix_um != x_pix_um_network:
-            self.rescaling_factor_x = x_pix_um_network / x_pix_um
+            self.rescaling_factor_x = float(x_pix_um_network) / float(x_pix_um)
             self.scale_cubes = True
         if y_pix_um != y_pix_um_network:
-            self.rescaling_factor_y = y_pix_um_network / y_pix_um
+            self.rescaling_factor_y = float(y_pix_um_network) / float(y_pix_um)
             self.scale_cubes = True
 
         # This should be decided earlier
@@ -248,10 +248,6 @@ def save_cubes(
     planes_shape,
     voxel_sizes,
     network_voxel_sizes,
-    # x_pix_um,
-    # y_pix_um,
-    # x_pix_um_network,
-    # y_pix_um_network,
     num_planes_for_cube=20,
     cube_width=50,
     cube_height=50,
@@ -441,7 +437,9 @@ def main(
     # copies=2 is set because at all times there is a plane queue (deque)
     # and an array passed to `Cube`
     ram_per_process = get_ram_requirement_per_process(
-        planes_paths[0][0], num_planes_needed_for_cube, copies=2,
+        planes_paths[0][0],
+        num_planes_needed_for_cube,
+        copies=2,
     )
     n_processes = get_num_processes(
         min_free_cpu_cores=n_free_cpus,

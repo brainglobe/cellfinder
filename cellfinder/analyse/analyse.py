@@ -56,7 +56,10 @@ def combine_df_hemispheres(df):
 
 
 def summarise_points(
-    transformed_points, atlas, volume_csv_path, output_filename,
+    transformed_points,
+    atlas,
+    volume_csv_path,
+    output_filename,
 ):
     points = []
     structures_with_points = set()
@@ -215,5 +218,7 @@ def run(args, atlas, downsampled_space):
 
     logging.info("Exporting cells to brainrender")
     export_points(
-        transformed_cells, atlas.resolution[0], args.paths.brainrender_points,
+        transformed_cells,
+        atlas.resolution[0],
+        args.paths.brainrender_points,
     )
