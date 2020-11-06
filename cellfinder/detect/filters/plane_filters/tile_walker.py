@@ -30,7 +30,9 @@ class TileWalker(object):
             0 : self.tile_width, 0 : self.tile_height
         ].mean()
         corner_sd = img[0 : self.tile_width, 0 : self.tile_height].std()
-        out_of_brain_threshold = corner_intensity + (2 * corner_sd)
+        out_of_brain_threshold = (
+            corner_intensity + (2 * corner_sd)
+        ) + 1  # add 1 to ensure not 0, as disables
 
         self.ftf = OutOfBrainTileFilter(
             out_of_brain_intensity_threshold=out_of_brain_threshold

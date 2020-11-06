@@ -292,7 +292,7 @@ def cell_detect_parse(parser):
     cell_detect_parser.add_argument(
         "--threshold",
         dest="n_sds_above_mean_thresh",
-        type=check_positive_int,
+        type=check_positive_float,
         default=10,
         help="The cell threshold, in multiples of the standard deviation"
         "above the mean",
