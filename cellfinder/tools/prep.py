@@ -98,6 +98,9 @@ class Paths:
 
         self.analysis_directory = os.path.join(self.output_dir, "analysis")
         self.summary_csv = os.path.join(self.analysis_directory, "summary.csv")
+        self.all_points_csv = os.path.join(
+            self.analysis_directory, "all_points.csv"
+        )
 
 
 def serialise(obj):
@@ -290,6 +293,9 @@ class CalcWhatToRun:
         if not os.path.exists(self.atlas_image):
             self.analyse = False
             self.figures = False
+
+        if os.path.exists(args.paths.summary_csv):
+            self.analyse = False
 
         if os.path.exists(args.paths.heatmap):
             self.figures = False
