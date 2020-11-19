@@ -15,7 +15,11 @@ from cellfinder.export.to_brainrender import export_points
 
 
 class Point:
-    def __init__(self, structure, hemisphere):
+    def __init__(
+        self, raw_coordinate, atlas_coordinate, structure, hemisphere
+    ):
+        self.raw_coordinate = raw_coordinate
+        self.atlas_coordinate = atlas_coordinate
         self.structure = structure
         self.hemisphere = hemisphere
 
@@ -56,24 +60,70 @@ def combine_df_hemispheres(df):
 
 
 def summarise_points(
+    raw_points,
     transformed_points,
     atlas,
     volume_csv_path,
-    output_filename,
+    all_points_filename,
+    summary_filename,
 ):
     points = []
     structures_with_points = set()
-    for point in transformed_points:
+    for idx, point in enumerate(transformed_points):
         try:
             structure = atlas.structure_from_coords(point)
             structure = atlas.structures[structure]["name"]
             hemisphere = atlas.hemisphere_from_coords(point, as_string=True)
-            points.append(Point(structure, hemisphere))
+            points.append(Point(raw_points[idx], point, structure, hemisphere))
             structures_with_points.add(structure)
         except:
             continue
 
+    logging.debug("Ensuring output directory exists")
+    ensure_directory_exists(Path(all_points_filename).parent)
+    create_all_cell_csv(points, all_points_filename)
+
+    get_region_totals(
+        points, structures_with_points, volume_csv_path, summary_filename
+    )
+
+
+def create_all_cell_csv(points, all_points_filename):
+    a = 1
+    df = pd.DataFrame(
+        columns=(
+            "coordinate_raw_axis_0",
+            "coordinate_raw_axis_1",
+            "coordinate_raw_axis_2",
+            "coordinate_atlas_axis_0",
+            "coordinate_atlas_axis_1",
+            "coordinate_atlas_axis_2",
+            "structure_name",
+            "hemisphere",
+        )
+    )
+    for point in points:
+        df = df.append(
+            {
+                "coordinate_raw_axis_0": point.raw_coordinate[0],
+                "coordinate_raw_axis_1": point.raw_coordinate[1],
+                "coordinate_raw_axis_2": point.raw_coordinate[2],
+                "coordinate_atlas_axis_0": point.atlas_coordinate[0],
+                "coordinate_atlas_axis_1": point.atlas_coordinate[1],
+                "coordinate_atlas_axis_2": point.atlas_coordinate[2],
+                "structure_name": point.structure,
+                "hemisphere": point.hemisphere,
+            },
+            ignore_index=True,
+        )
+    df.to_csv(all_points_filename, index=False)
+
+
+def get_region_totals(
+    points, structures_with_points, volume_csv_path, output_filename
+):
     structures_with_points = list(structures_with_points)
+
     point_numbers = pd.DataFrame(
         columns=("structure_name", "hemisphere", "cell_count")
     )
@@ -104,11 +154,7 @@ def summarise_points(
     df = calculate_densities(combined_hemispheres, volume_csv_path)
     df = sanitise_df(df)
 
-    logging.debug("Ensuring output directory exists")
-    ensure_directory_exists(Path(output_filename).parent)
     df.to_csv(output_filename, index=False)
-
-    return df
 
 
 def transform_points_to_downsampled_space(
@@ -215,11 +261,12 @@ def run(args, atlas, downsampled_space):
         args.paths.brainrender_points,
     )
 
-
     logging.info("Summarising cell positions")
     summarise_points(
+        cells,
         transformed_cells,
         atlas,
         args.brainreg_paths.volume_csv_path,
+        args.paths.all_points_csv,
         args.paths.summary_csv,
     )

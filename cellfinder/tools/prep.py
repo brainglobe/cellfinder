@@ -98,6 +98,9 @@ class Paths:
 
         self.analysis_directory = os.path.join(self.output_dir, "analysis")
         self.summary_csv = os.path.join(self.analysis_directory, "summary.csv")
+        self.all_points_csv = os.path.join(
+            self.analysis_directory, "all_points.csv"
+        )
 
 
 def serialise(obj):
