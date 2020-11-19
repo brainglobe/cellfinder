@@ -208,17 +208,18 @@ def run(args, atlas, downsampled_space):
         atlas_points_path=args.paths.atlas_points,
     )
 
+    logging.info("Exporting cells to brainrender")
+    export_points(
+        transformed_cells,
+        atlas.resolution[0],
+        args.paths.brainrender_points,
+    )
+
+
     logging.info("Summarising cell positions")
     summarise_points(
         transformed_cells,
         atlas,
         args.brainreg_paths.volume_csv_path,
         args.paths.summary_csv,
-    )
-
-    logging.info("Exporting cells to brainrender")
-    export_points(
-        transformed_cells,
-        atlas.resolution[0],
-        args.paths.brainrender_points,
     )

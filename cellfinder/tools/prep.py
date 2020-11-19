@@ -288,8 +288,11 @@ class CalcWhatToRun:
             self.detect = False
 
         if not os.path.exists(self.atlas_image):
-            self.analyse = False
+            # self.analyse = False
             self.figures = False
+
+        if os.path.exists(args.paths.summary_csv):
+            self.analyse = False
 
         if os.path.exists(args.paths.heatmap):
             self.figures = False
