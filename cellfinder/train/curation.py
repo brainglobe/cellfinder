@@ -193,6 +193,8 @@ class CurationWidget(QWidget):
 
     def get_signal(self):
         self.signal_layer, self.signal_path = self.get_data(name="signal")
+        self.status_label.setText("Ready")
+
 
     def get_data(self, name="", visible=True):
         self.status_label.setText("Loading...")
