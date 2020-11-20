@@ -230,17 +230,48 @@ def run(args, atlas, downsampled_space):
         cell_list.append([cell.z, cell.y, cell.x])
     cells = np.array(cell_list)
 
+    run_analysis(
+        cells,
+        args.signal_planes_paths[0],
+        args.orientation,
+        args.voxel_sizes,
+        atlas,
+        deformation_field_paths,
+        downsampled_space,
+        args.paths.downsampled_points,
+        args.paths.atlas_points,
+        args.paths.brainrender_points,
+        args.brainreg_paths.volume_csv_path,
+        args.paths.all_points_csv,
+        args.paths.summary_csv,
+    )
+
+
+def run_analysis(
+    cells,
+    signal_planes,
+    orientation,
+    voxel_sizes,
+    atlas,
+    deformation_field_paths,
+    downsampled_space,
+    downsampled_points_path,
+    atlas_points_path,
+    brainrender_points_path,
+    volume_csv_path,
+    all_points_csv_path,
+    summary_csv_path,
+):
+
     source_shape = tuple(
-        imio.get_size_image_from_file_paths(
-            args.signal_planes_paths[0]
-        ).values()
+        imio.get_size_image_from_file_paths(signal_planes).values()
     )
     source_shape = (source_shape[2], source_shape[1], source_shape[0])
 
     source_space = bgs.AnatomicalSpace(
-        args.orientation,
+        orientation,
         shape=source_shape,
-        resolution=[float(i) for i in args.voxel_sizes],
+        resolution=[float(i) for i in voxel_sizes],
     )
 
     transformed_cells = transform_points_to_atlas_space(
@@ -249,15 +280,15 @@ def run(args, atlas, downsampled_space):
         atlas,
         deformation_field_paths,
         downsampled_space,
-        downsampled_points_path=args.paths.downsampled_points,
-        atlas_points_path=args.paths.atlas_points,
+        downsampled_points_path=downsampled_points_path,
+        atlas_points_path=atlas_points_path,
     )
 
     logging.info("Exporting cells to brainrender")
     export_points(
         transformed_cells,
         atlas.resolution[0],
-        args.paths.brainrender_points,
+        brainrender_points_path,
     )
 
     logging.info("Summarising cell positions")
@@ -265,7 +296,7 @@ def run(args, atlas, downsampled_space):
         cells,
         transformed_cells,
         atlas,
-        args.brainreg_paths.volume_csv_path,
-        args.paths.all_points_csv,
-        args.paths.summary_csv,
+        volume_csv_path,
+        all_points_csv_path,
+        summary_csv_path,
     )

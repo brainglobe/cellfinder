@@ -7,6 +7,7 @@ import bg_space as bgs
 
 from pathlib import Path
 from qtpy import QtCore
+from napari.qt.threading import thread_worker
 
 
 from bg_atlasapi import BrainGlobeAtlas
@@ -27,6 +28,7 @@ from qtpy.QtWidgets import (
 
 
 from cellfinder.main import get_downsampled_space
+from cellfinder.analyse.analyse import run_analysis
 from cellfinder.analyse.analyse import (
     transform_points_to_atlas_space,
     export_points,
@@ -297,65 +299,13 @@ class CurationWidget(QWidget):
         self.get_output_directory()
         self.get_brainreg_directory()
 
-        brainreg_paths = BrainregPaths(self.brainreg_directory)
-
-        with open(brainreg_paths.metadata_path) as json_file:
-            metadata = json.load(json_file)
-
-        source_shape = tuple(
-            imio.get_size_image_from_file_paths(self.signal_path).values()
-        )
-        atlas = BrainGlobeAtlas(metadata["atlas"])
-        deformation_field_paths = [
-            brainreg_paths.deformation_field_0,
-            brainreg_paths.deformation_field_1,
-            brainreg_paths.deformation_field_2,
-        ]
-        source_shape = (source_shape[2], source_shape[1], source_shape[0])
-        source_space = bgs.AnatomicalSpace(
-            metadata["orientation"],
-            shape=source_shape,
-            resolution=[float(i) for i in metadata["voxel_sizes"]],
-        )
-        downsampled_space = get_downsampled_space(
-            atlas, brainreg_paths.boundaries_file_path
-        )
-
-        self.status_label.setText("Transforming cells to standard space")
-        print("Transforming cells to standard space")
-
-        transformed_cells = transform_points_to_atlas_space(
+        analyse_cell_positions(
             self.cell_layer.data,
-            source_space,
-            atlas,
-            deformation_field_paths,
-            downsampled_space,
-            downsampled_points_path=self.output_directory
-            / "downsampled.points",
-            atlas_points_path=self.output_directory / "atlas.points",
+            self.brainreg_directory,
+            self.signal_path,
+            self.output_directory,
         )
-
-        self.status_label.setText("Exporting cells to brainrender")
-        print("Exporting cells to brainrender")
-        export_points(
-            transformed_cells,
-            atlas.resolution[0],
-            self.output_directory / "points.h5",
-        )
-
-        self.status_label.setText("Summarising cell positions")
-        print("Summarising cell positions")
-        summarise_points(
-            self.cell_layer.data,
-            transformed_cells,
-            atlas,
-            brainreg_paths.volume_csv_path,
-            self.output_directory / "all_points.csv",
-            self.output_directory / "summary.csv",
-        )
-
         self.status_label.setText("Ready")
-        print("Done")
 
     def get_brainreg_directory(self):
         options = QFileDialog.Options()
@@ -365,6 +315,44 @@ class CurationWidget(QWidget):
             "Select brainreg directory",
             options=options,
         )
+
+
+def analyse_cell_positions(
+    points, brainreg_directory, signal_path, output_directory
+):
+    brainreg_paths = BrainregPaths(brainreg_directory)
+
+    with open(brainreg_paths.metadata_path) as json_file:
+        metadata = json.load(json_file)
+
+    atlas = BrainGlobeAtlas(metadata["atlas"])
+
+    downsampled_space = get_downsampled_space(
+        atlas, brainreg_paths.boundaries_file_path
+    )
+    deformation_field_paths = [
+        brainreg_paths.deformation_field_0,
+        brainreg_paths.deformation_field_1,
+        brainreg_paths.deformation_field_2,
+    ]
+
+    run_analysis(
+        points,
+        signal_path,
+        metadata["orientation"],
+        metadata["voxel_sizes"],
+        atlas,
+        deformation_field_paths,
+        downsampled_space,
+        output_directory / "downsampled.points",
+        output_directory / "atlas.points",
+        output_directory / "points.h5",
+        brainreg_paths.volume_csv_path,
+        output_directory / "all_points.csv",
+        output_directory / "summary.csv",
+    )
+
+    print("Done")
 
 
 def main():
