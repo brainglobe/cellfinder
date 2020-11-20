@@ -262,6 +262,7 @@ class CurationWidget(QWidget):
         )
 
     def save_cell_count(self):
+        self.status_label.setText("Saving cells")
         print("Saving cells")
         self.get_output_directory()
         filename = self.output_directory / "cells.xml"
@@ -273,6 +274,7 @@ class CurationWidget(QWidget):
 
         save_cells(cells_to_save, str(filename))
 
+        self.status_label.setText("Ready")
         print("Done!")
 
     def get_output_directory(self):
@@ -287,7 +289,9 @@ class CurationWidget(QWidget):
             self.output_directory = Path(self.output_directory)
 
     def analyse_cells(self):
+        self.status_label.setText("Analysing cells")
         print("Analysing cells")
+
         self.get_output_directory()
         self.get_brainreg_directory()
 
@@ -314,6 +318,8 @@ class CurationWidget(QWidget):
         downsampled_space = get_downsampled_space(
             atlas, brainreg_paths.boundaries_file_path
         )
+
+        self.status_label.setText("Transforming cells to standard space")
         print("Transforming cells to standard space")
 
         transformed_cells = transform_points_to_atlas_space(
@@ -326,6 +332,8 @@ class CurationWidget(QWidget):
             / "downsampled.points",
             atlas_points_path=self.output_directory / "atlas.points",
         )
+
+        self.status_label.setText("Exporting cells to brainrender")
         print("Exporting cells to brainrender")
         export_points(
             transformed_cells,
@@ -333,6 +341,7 @@ class CurationWidget(QWidget):
             self.output_directory / "points.h5",
         )
 
+        self.status_label.setText("Summarising cell positions")
         print("Summarising cell positions")
         summarise_points(
             self.cell_layer.data,
@@ -343,6 +352,7 @@ class CurationWidget(QWidget):
             self.output_directory / "summary.csv",
         )
 
+        self.status_label.setText("Ready")
         print("Done")
 
     def get_brainreg_directory(self):
