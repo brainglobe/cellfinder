@@ -1,7 +1,3 @@
-import napari
-import numpy as np
-from pathlib import Path
-from napari.qt.threading import thread_worker
 from qtpy import QtCore
 
 from qtpy.QtWidgets import (
@@ -10,38 +6,28 @@ from qtpy.QtWidgets import (
     QGridLayout,
     QGroupBox,
     QWidget,
-    QMessageBox,
 )
 import json
-from cellfinder.analyse.analyse import transform_points_to_atlas_space
+from cellfinder.analyse.analyse import (
+    transform_points_to_atlas_space,
+    export_points,
+    summarise_points,
+)
 from bg_atlasapi import BrainGlobeAtlas
 import bg_space as bgs
 import imio
 from brainreg_segment.layout.gui_elements import (
     add_button,
-    add_combobox,
 )
-from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 import napari
 import numpy as np
-from napari.utils.io import magic_imread
 from pathlib import Path
 from brainreg.paths import Paths as BrainregPaths
-from qtpy.QtWidgets import QApplication
-
-from imlib.general.system import get_sorted_file_paths, ensure_directory_exists
-from imlib.general.list import unique_elements_lists
-
-from imlib.IO.cells import cells_xml_to_df, save_cells, get_cells
+from imlib.IO.cells import save_cells
 from imlib.cells.cells import Cell
-from imlib.IO.yaml import save_yaml
 
-from cellfinder.extract.extract_cubes import main as extract_cubes_main
-import cellfinder.tools.parser as cellfinder_parse
-from napari_brainreg.brainreg import reader_function as brainreg_reader
-
-OUTPUT_NAME = "curated_cells.xml"
-CURATED_POINTS = []
+from napari_cellfinder.cellfinder import get_cell_arrays
+from cellfinder.main import get_downsampled_space
 
 
 # Constants used throughout
@@ -100,23 +86,23 @@ class CurationWidget(QWidget):
         self.load_data_layout.setContentsMargins(10, 10, 10, 10)
         self.load_data_layout.setAlignment(QtCore.Qt.AlignBottom)
 
-        self.load_cellfinder_dir_button = add_button(
-            "Load cellfinder project",
-            self.load_data_layout,
-            self.get_cellfinder_directory,
-            0,
-            0,
-            minimum_width=COLUMN_WIDTH,
-        )
+        # self.load_cellfinder_dir_button = add_button(
+        #     "Load cellfinder project",
+        #     self.load_data_layout,
+        #     self.get_cellfinder_directory,
+        #     0,
+        #     0,
+        #     minimum_width=COLUMN_WIDTH,
+        # )
 
-        self.load_background_button = add_button(
-            "Load background",
-            self.load_data_layout,
-            self.get_background,
-            1,
-            0,
-            minimum_width=COLUMN_WIDTH,
-        )
+        # self.load_background_button = add_button(
+        #     "Load background",
+        #     self.load_data_layout,
+        #     self.get_background,
+        #     1,
+        #     0,
+        #     minimum_width=COLUMN_WIDTH,
+        # )
 
         self.load_signal_button = add_button(
             "Load signal",
@@ -136,11 +122,20 @@ class CurationWidget(QWidget):
             minimum_width=COLUMN_WIDTH,
         )
 
+        self.add_cells_button = add_button(
+            "Load cell count",
+            self.load_data_layout,
+            self.load_cells,
+            4,
+            0,
+            minimum_width=COLUMN_WIDTH,
+        )
+
         self.save_cells_button = add_button(
             "Save cells",
             self.load_data_layout,
             self.save_cell_count,
-            4,
+            5,
             0,
             minimum_width=COLUMN_WIDTH,
         )
@@ -148,7 +143,7 @@ class CurationWidget(QWidget):
             "Analyse cells",
             self.load_data_layout,
             self.analyse_cells,
-            5,
+            6,
             0,
             minimum_width=COLUMN_WIDTH,
         )
@@ -243,15 +238,29 @@ class CurationWidget(QWidget):
             name="cells",
         )
 
+    def load_cells(self):
+        options = QFileDialog.Options()
+        options |= QFileDialog.DontUseNativeDialog
+        filename = QFileDialog.getOpenFileName(
+            self,
+            "Select cell file...",
+            filter="cellfinder xml files (*.xml)",
+            options=options,
+        )
+        cells, _ = get_cell_arrays(filename[0])
+
+        self.cell_layer = self.viewer.add_points(
+            cells,
+            symbol="ring",
+            n_dimensional=True,
+            size=10,
+            opacity=0.6,
+            face_color="lightgoldenrodyellow",
+            name="cells",
+        )
+
     def save_cell_count(self):
         print("Saving cells")
-        # options = QFileDialog.Options()
-        # options |= QFileDialog.DontUseNativeDialog
-        #
-        # filename = QFileDialog.getSaveFileName(
-        #     self, "Save File", options=options
-        # )[0]
-
         self.get_output_directory()
         filename = self.output_directory / "cells.xml"
 
@@ -300,16 +309,37 @@ class CurationWidget(QWidget):
             shape=source_shape,
             resolution=[float(i) for i in metadata["voxel_sizes"]],
         )
+        downsampled_space = get_downsampled_space(
+            atlas, brainreg_paths.boundaries_file_path
+        )
+        print("Transforming cells to standard space")
 
-        # transformed_cells = transform_points_to_atlas_space(
-        #     self.cell_layer.data,
-        #     source_space,
-        #     atlas,
-        #     deformation_field_paths,
-        #     downsampled_space,
-        #     downsampled_points_path=args.paths.downsampled_points,
-        #     atlas_points_path=args.paths.atlas_points,
-        # )
+        transformed_cells = transform_points_to_atlas_space(
+            self.cell_layer.data,
+            source_space,
+            atlas,
+            deformation_field_paths,
+            downsampled_space,
+            downsampled_points_path=self.output_directory
+            / "downsampled.points",
+            atlas_points_path=self.output_directory / "atlas.points",
+        )
+        print("Exporting cells to brainrender")
+        export_points(
+            transformed_cells,
+            atlas.resolution[0],
+            self.output_directory / "points.h5",
+        )
+
+        print("Summarising cell positions")
+        summarise_points(
+            self.cell_layer.data,
+            transformed_cells,
+            atlas,
+            brainreg_paths.volume_csv_path,
+            self.output_directory / "all_points.csv",
+            self.output_directory / "summary.csv",
+        )
 
         print("Done")
 
