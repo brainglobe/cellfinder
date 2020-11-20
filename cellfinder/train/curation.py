@@ -92,11 +92,28 @@ class CurationWidget(QWidget):
         self.load_data_layout.setContentsMargins(10, 10, 10, 10)
         self.load_data_layout.setAlignment(QtCore.Qt.AlignBottom)
 
-        self.load_button = add_button(
+        self.load_cellfinder_dir_button = add_button(
             "Load project",
             self.load_data_layout,
             self.get_cellfinder_directory,
             0,
+            0,
+            minimum_width=COLUMN_WIDTH,
+        )
+        self.load_background_button = add_button(
+            "Load background",
+            self.load_data_layout,
+            self.get_background,
+            1,
+            0,
+            minimum_width=COLUMN_WIDTH,
+        )
+
+        self.load_signal_button = add_button(
+            "Load signal",
+            self.load_data_layout,
+            self.get_signal,
+            2,
             0,
             minimum_width=COLUMN_WIDTH,
         )
@@ -145,6 +162,42 @@ class CurationWidget(QWidget):
             )
             return
 
+    def get_background(self):
+        self.get_data(name="background")
+
+    def get_signal(self):
+        self.get_data(name="signal")
+
+    def get_data(self, name =""):
+        self.status_label.setText("Loading...")
+        options = QFileDialog.Options()
+        options |= QFileDialog.DontUseNativeDialog
+        directory = QFileDialog.getExistingDirectory(
+            self,
+            f"Select {name} channel",
+            options=options,
+        )
+
+        if not directory:
+            return
+
+        if self.directory != directory:
+            self.directory = Path(directory)
+        else:
+            print(f"{str(directory)} already loaded.")
+            return
+
+        self.load_data(name=name)
+
+    def load_data(self, name=""):
+        try:
+            self.viewer.open(str(self.directory), name=name)
+        except ValueError:
+            print(
+                f"The directory ({self.directory}) cannot be "
+                f"loaded, please try again."
+            )
+            return
 
 
 
