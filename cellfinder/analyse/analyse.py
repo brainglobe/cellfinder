@@ -89,7 +89,6 @@ def summarise_points(
 
 
 def create_all_cell_csv(points, all_points_filename):
-    a = 1
     df = pd.DataFrame(
         columns=(
             "coordinate_raw_axis_0",
