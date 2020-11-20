@@ -1,5 +1,22 @@
+import json
+import napari
+import imio
+
+import numpy as np
+import bg_space as bgs
+
+from pathlib import Path
 from qtpy import QtCore
 
+
+from bg_atlasapi import BrainGlobeAtlas
+from imlib.IO.cells import save_cells
+from imlib.cells.cells import Cell
+from napari_cellfinder.cellfinder import get_cell_arrays
+from brainreg.paths import Paths as BrainregPaths
+from brainreg_segment.layout.gui_elements import (
+    add_button,
+)
 from qtpy.QtWidgets import (
     QLabel,
     QFileDialog,
@@ -7,28 +24,14 @@ from qtpy.QtWidgets import (
     QGroupBox,
     QWidget,
 )
-import json
+
+
+from cellfinder.main import get_downsampled_space
 from cellfinder.analyse.analyse import (
     transform_points_to_atlas_space,
     export_points,
     summarise_points,
 )
-from bg_atlasapi import BrainGlobeAtlas
-import bg_space as bgs
-import imio
-from brainreg_segment.layout.gui_elements import (
-    add_button,
-)
-import napari
-import numpy as np
-from pathlib import Path
-from brainreg.paths import Paths as BrainregPaths
-from imlib.IO.cells import save_cells
-from imlib.cells.cells import Cell
-
-from napari_cellfinder.cellfinder import get_cell_arrays
-from cellfinder.main import get_downsampled_space
-
 
 # Constants used throughout
 WINDOW_HEIGHT = 750
@@ -194,7 +197,6 @@ class CurationWidget(QWidget):
     def get_signal(self):
         self.signal_layer, self.signal_path = self.get_data(name="signal")
         self.status_label.setText("Ready")
-
 
     def get_data(self, name="", visible=True):
         self.status_label.setText("Loading...")
