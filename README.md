@@ -3,10 +3,9 @@
 [![Downloads](https://pepy.tech/badge/cellfinder)](https://pepy.tech/project/cellfinder)
 [![Wheel](https://img.shields.io/pypi/wheel/cellfinder.svg)](https://pypi.org/project/cellfinder)
 [![Development Status](https://img.shields.io/pypi/status/cellfinder.svg)](https://github.com/brainglobe/cellfinder)
-[![Travis](https://img.shields.io/travis/com/brainglobe/cellfinder?label=Travis%20CI)](
-    https://travis-ci.com/brainglobe/cellfinder)
+[![Tests](https://img.shields.io/github/workflow/status/brainglobe/cellfinder/tests)](
+    https://github.com/brainglobe/cellfinder/actions)
 [![Coverage Status](https://coveralls.io/repos/github/brainglobe/cellfinder/badge.svg?branch=master)](https://coveralls.io/github/brainglobe/cellfinder?branch=master)
-[![Dependabot Status](https://api.dependabot.com/badges/status?host=github&repo=brainglobe/cellfinder)](https://dependabot.com)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/python/black)
 [![Gitter](https://badges.gitter.im/brainglobe.svg)](https://gitter.im/BrainGlobe/cellfinder/?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3891338.svg)](https://doi.org/10.5281/zenodo.3891338)
