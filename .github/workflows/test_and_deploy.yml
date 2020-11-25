@@ -56,7 +56,7 @@ jobs:
       uses: actions/setup-python@v1
       with:
         python-version: "3.x"
-    - name: Publish wheels to PyPI
+    - name: Publish source distribution dist to PyPI
       env:
         TWINE_USERNAME: __token__
         TWINE_PASSWORD: ${{ secrets.TWINE_API_KEY }}
@@ -79,7 +79,6 @@ jobs:
       uses: RalfG/python-wheels-manylinux-build@v0.3.2-manylinux2014_x86_64
       with:
         python-versions: 'cp37-cp37m cp38-cp38'
-#           build-requirements: 'cython numpy'
     - name: Publish wheels to PyPI
       env:
         TWINE_USERNAME: __token__
@@ -92,12 +91,15 @@ jobs:
     #    needs: [ubuntu-latest, win]
     #    if: contains(github.ref, 'tags')
     runs-on: windows-latest
+        strategy:
+          matrix:
+            python-version: [3.7, 3.8]
     steps:
     - uses: actions/checkout@v2
     - name: Set up Python
       uses: actions/setup-python@v1
-      with:
-        python-version: "3.7"
+#      with:
+#        python-version: "3.7"
     - name: Publish wheels to PyPI
       env:
         TWINE_USERNAME: __token__
@@ -107,21 +109,21 @@ jobs:
         python setup.py bdist_wheel
         twine upload dist\*
 
-  deploy-windows-wheelspy38:
-    #    needs: [ubuntu-latest, win]
-    #    if: contains(github.ref, 'tags')
-    runs-on: windows-latest
-    steps:
-    - uses: actions/checkout@v2
-    - name: Set up Python
-      uses: actions/setup-python@v1
-      with:
-        python-version: "3.8"
-    - name: Publish wheels to PyPI
-      env:
-        TWINE_USERNAME: __token__
-        TWINE_PASSWORD: ${{ secrets.TWINE_API_KEY }}
-      run: |
-        pip install twine wheel
-        python setup.py bdist_wheel
-        twine upload dist\*
+#  deploy-windows-wheelspy38:
+#    #    needs: [ubuntu-latest, win]
+#    #    if: contains(github.ref, 'tags')
+#    runs-on: windows-latest
+#    steps:
+#    - uses: actions/checkout@v2
+#    - name: Set up Python
+#      uses: actions/setup-python@v1
+#      with:
+#        python-version: "3.8"
+#    - name: Publish wheels to PyPI
+#      env:
+#        TWINE_USERNAME: __token__
+#        TWINE_PASSWORD: ${{ secrets.TWINE_API_KEY }}
+#      run: |
+#        pip install twine wheel
+#        python setup.py bdist_wheel
+#        twine upload dist\*
