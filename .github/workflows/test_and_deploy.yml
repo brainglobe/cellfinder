@@ -42,7 +42,7 @@ jobs:
       - name: Coverage
         uses: codecov/codecov-action@v1
 
-  # minimizing matrix by only testing 3.8 on windows
+  # On windows, only test 3.8
   win:
     needs: lint
     name: ${{ matrix.platform }} (3.8)
