@@ -46,7 +46,7 @@ jobs:
 #        env:
 #          PLATFORM: ${{ matrix.platform }}
 
-  deploy:
+  deploy-linux-wheels:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -67,3 +67,27 @@ jobs:
       run: |
         pip install twine
         twine upload dist/*-manylinux*.whl
+
+  deploy-windows-wheels:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python
+      uses: actions/setup-python@v1
+
+#    needs: [ubuntu-latest, win]
+#    if: contains(github.ref, 'tags')
+
+#    - name: Build manylinux Python wheels
+#      uses: RalfG/python-wheels-manylinux-build@v0.3.2-manylinux2014_x86_64
+#      with:
+#        python-versions: 'cp37-cp37m cp38-cp38'
+#           build-requirements: 'cython numpy'
+    - name: Publish wheels to PyPI
+      env:
+        TWINE_USERNAME: __token__
+        TWINE_PASSWORD: ${{ secrets.TWINE_API_KEY }}
+      run: |
+        pip install twine
+        python setup.py sdist bdist_wheel
+        twine upload dist/*

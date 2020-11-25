@@ -86,7 +86,7 @@ else:
 
 setup(
     name="cellfinder",
-    version="0.4.7rc0",
+    version="0.4.7rc1",
     description="Automated 3D cell detection and registration of "
     "whole-brain images",
     long_description=long_description,
