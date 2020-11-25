@@ -87,7 +87,7 @@ jobs:
         pip install twine
         twine upload dist/*-manylinux*.whl
 
-  deploy-windows-wheelspy37:
+  deploy-windows-wheels:
     #    needs: [ubuntu-latest, win]
     #    if: contains(github.ref, 'tags')
     runs-on: windows-latest
@@ -98,8 +98,8 @@ jobs:
     - uses: actions/checkout@v2
     - name: Set up Python
       uses: actions/setup-python@v1
-#      with:
-#        python-version: "3.7"
+      with:
+          python-version: ${{ matrix.python-version }}
     - name: Publish wheels to PyPI
       env:
         TWINE_USERNAME: __token__
