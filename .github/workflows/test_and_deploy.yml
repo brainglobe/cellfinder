@@ -3,7 +3,25 @@ name: tests
 on: push
 
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python
+      uses: actions/setup-python@v1
+      with:
+          python-version: "3.x"
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install black flake8
+    - name: Lint
+      run: |
+        black ./ --check
+        flake8
+
   ubuntu-latest:
+    needs: lint
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -26,6 +44,7 @@ jobs:
 
   # minimizing matrix by only testing 3.8 on windows
   win:
+    needs: lint
     name: ${{ matrix.platform }} (3.8)
     runs-on: ${{ matrix.platform }}
     strategy:
