@@ -1,13 +1,10 @@
 import json
 import napari
-import imio
 
 import numpy as np
-import bg_space as bgs
 
 from pathlib import Path
 from qtpy import QtCore
-from napari.qt.threading import thread_worker
 
 
 from bg_atlasapi import BrainGlobeAtlas
@@ -29,13 +26,8 @@ from qtpy.QtWidgets import (
 
 from cellfinder.main import get_downsampled_space
 from cellfinder.analyse.analyse import run_analysis
-from cellfinder.analyse.analyse import (
-    transform_points_to_atlas_space,
-    export_points,
-    summarise_points,
-)
 
-from imlib.general.system import get_sorted_file_paths, ensure_directory_exists
+from imlib.general.system import get_sorted_file_paths
 from napari.utils.io import magic_imread
 
 
@@ -296,7 +288,7 @@ class CurationWidget(QWidget):
             options |= QFileDialog.DontUseNativeDialog
             self.output_directory = QFileDialog.getExistingDirectory(
                 self,
-                f"Select output directory",
+                "Select output directory",
                 options=options,
             )
             self.output_directory = Path(self.output_directory)
