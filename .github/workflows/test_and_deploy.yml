@@ -91,9 +91,9 @@ jobs:
     #    needs: [ubuntu-latest, win]
     #    if: contains(github.ref, 'tags')
     runs-on: windows-latest
-        strategy:
-          matrix:
-            python-version: [3.7, 3.8]
+    strategy:
+      matrix:
+        python-version: [3.7, 3.8]
     steps:
     - uses: actions/checkout@v2
     - name: Set up Python
