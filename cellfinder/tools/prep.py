@@ -88,7 +88,7 @@ class Paths:
         )
         self.atlas_points = os.path.join(self.points_directory, "atlas.points")
         self.brainrender_points = os.path.join(
-            self.points_directory, "points.h5"
+            self.points_directory, "points.npy"
         )
 
         self.tmp__cubes_output_dir = os.path.join(self.output_dir, "cubes")

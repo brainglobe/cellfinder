@@ -118,7 +118,8 @@ setup(
             "cellfinder = cellfinder.main:main",
             "cellfinder_download = cellfinder.download.cli:main",
             "cellfinder_train = cellfinder.train.train_yml:main",
-            "cellfinder_curate = cellfinder.train.curation:main",
+            "cellfinder_curate_new = cellfinder.train.curation:main",
+            "cellfinder_curate = cellfinder.train.curation_old:main",
         ]
     },
     url="https://cellfinder.info",
