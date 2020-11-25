@@ -35,6 +35,11 @@ from cellfinder.analyse.analyse import (
     summarise_points,
 )
 
+from imlib.general.system import get_sorted_file_paths, ensure_directory_exists
+from napari.utils.io import magic_imread
+
+
+
 # Constants used throughout
 WINDOW_HEIGHT = 750
 WINDOW_WIDTH = 1500
@@ -223,9 +228,14 @@ class CurationWidget(QWidget):
 
     def load_data(self, name="", visible=True):
         try:
-            return self.viewer.open(
-                str(self.directory), name=name, visible=visible
+            img_paths = get_sorted_file_paths(
+                self.directory, file_extension=".tif"
             )
+            images = magic_imread(img_paths, use_dask=True, stack=True)
+            return self.viewer.add_image(images)
+            # return self.viewer.open(
+            #     str(self.directory), name=name, visible=visible
+            # )
         except ValueError:
             print(
                 f"The directory ({self.directory}) cannot be "
