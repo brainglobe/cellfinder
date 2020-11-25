@@ -39,7 +39,6 @@ from imlib.general.system import get_sorted_file_paths, ensure_directory_exists
 from napari.utils.io import magic_imread
 
 
-
 # Constants used throughout
 WINDOW_HEIGHT = 750
 WINDOW_WIDTH = 1500
@@ -356,7 +355,7 @@ def analyse_cell_positions(
         downsampled_space,
         output_directory / "downsampled.points",
         output_directory / "atlas.points",
-        output_directory / "points.h5",
+        output_directory / "points.npy",
         brainreg_paths.volume_csv_path,
         output_directory / "all_points.csv",
         output_directory / "summary.csv",

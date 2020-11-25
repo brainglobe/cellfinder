@@ -1,6 +1,6 @@
 import logging
 
-import pandas as pd
+import numpy as np
 
 
 def export_points(
@@ -9,6 +9,4 @@ def export_points(
     output_filename,
 ):
     logging.info("Exporting to brainrender")
-    points = pd.DataFrame(points * resolution)
-    points.columns = ["x", "y", "z"]
-    points.to_hdf(output_filename, key="df", mode="w")
+    np.save(output_filename, points * resolution)
