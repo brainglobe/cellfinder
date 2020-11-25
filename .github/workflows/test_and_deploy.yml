@@ -47,10 +47,14 @@ jobs:
 #          PLATFORM: ${{ matrix.platform }}
 
   deploy:
-#    needs: [ubuntu-latest, win]
     runs-on: ubuntu-latest
-#    if: contains(github.ref, 'tags')
     steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python
+      uses: actions/setup-python@v1
+
+#    needs: [ubuntu-latest, win]
+#    if: contains(github.ref, 'tags')
       - name: Build manylinux Python wheels
         uses: RalfG/python-wheels-manylinux-build@v0.3.2-manylinux2014_x86_64
         with:
