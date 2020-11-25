@@ -62,4 +62,3 @@ jobs:
           TWINE_PASSWORD: ${{ secrets.TWINE_API_KEY }}
         run: |
           twine upload dist/*-manylinux*.whl
-manylinux*.whl
