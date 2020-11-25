@@ -65,4 +65,5 @@ jobs:
         TWINE_USERNAME: __token__
         TWINE_PASSWORD: ${{ secrets.TWINE_API_KEY }}
       run: |
+        pip install twine
         twine upload dist/*-manylinux*.whl
