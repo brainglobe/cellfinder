@@ -58,8 +58,8 @@ jobs:
 #           build-requirements: 'cython numpy'
       - name: Publish wheels to PyPI
         env:
-        TWINE_USERNAME: __token__
-        TWINE_PASSWORD: ${{ secrets.TWINE_API_KEY }}
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.TWINE_API_KEY }}
         run: |
           twine upload dist/*-manylinux*.whl
 #      - uses: actions/checkout@v2
