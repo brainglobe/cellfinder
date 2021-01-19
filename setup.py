@@ -114,8 +114,8 @@ setup(
     ],
     url="https://cellfinder.info",
     project_urls={
-        "Source Code": "https://github.com/brainglobe/cellfinder",
-        "Bug Tracker": "https://github.com/brainglobe/cellfinder/issues",
+        "Source Code": "https://github.com/brainglobe/cellfinder-core",
+        "Bug Tracker": "https://github.com/brainglobe/cellfinder-core/issues",
         "Documentation": "https://docs.brainglobe.info/cellfinder",
     },
     author="Adam Tyson, Christian Niedworok, Charly Rousseau",
