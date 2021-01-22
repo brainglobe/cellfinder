@@ -12,6 +12,7 @@ import os
 import logging
 from imlib.general.logging import suppress_specific_logs
 from imlib.IO.cells import save_cells
+from cellfinder_core.tools.IO import read_with_dask
 
 tf_suppress_log_messages = [
     "multiprocessing can interact badly with TensorFlow"
@@ -19,8 +20,8 @@ tf_suppress_log_messages = [
 
 
 def main(
-    signal_planes_path,
-    background_planes_path,
+    signal_array,
+    background_array,
     classified_points_path,
     voxel_sizes,
     start_plane=0,
@@ -58,8 +59,9 @@ def main(
     home = Path.home()
     install_path = home / ".cellfinder"
     logging.info("Detecting cell candidates")
+
     points = detect.main(
-        signal_planes_path,
+        signal_array,
         start_plane,
         end_plane,
         voxel_sizes,
@@ -73,6 +75,7 @@ def main(
         log_sigma_size,
         n_sds_above_mean_thresh,
     )
+    print("DONE")
 
     model_weights = prep.prep_classification(
         trained_model, model_weights, install_path, model, n_free_cpus
@@ -81,8 +84,8 @@ def main(
         logging.info("Running classification")
         points = classify.main(
             points,
-            signal_planes_path,
-            background_planes_path,
+            signal_array,
+            background_array,
             n_free_cpus,
             voxel_sizes,
             network_voxel_sizes,

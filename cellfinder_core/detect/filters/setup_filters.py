@@ -12,14 +12,13 @@ from cellfinder_core.tools.tools import get_max_value
 
 
 def setup(
-    first_img_path,
+    plane,
     soma_diameter,
     ball_xy_size,
     ball_z_size,
     ball_overlap_fraction=0.6,
     z_offset=0,
 ):
-    plane = tifffile.imread(first_img_path)
     plane = plane.T
 
     max_value = get_max_value(plane)
@@ -46,9 +45,7 @@ def setup(
     return ball_filter, cell_detector
 
 
-def setup_tile_filtering(first_img_path):
-    plane = tifffile.imread(first_img_path)
-    plane = plane.T
+def setup_tile_filtering(plane):
 
     max_value = get_max_value(plane)
     clipping_value = max_value - 2

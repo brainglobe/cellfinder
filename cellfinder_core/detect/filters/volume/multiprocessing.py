@@ -71,6 +71,7 @@ class Mp3DFilter(object):
         while True:
             plane_id, plane, mask = self.data_queue.get()
             logging.debug(f"Plane {plane_id} received for 3D filtering")
+            print(f"Plane {plane_id} received for 3D filtering")
 
             if plane_id is None:
                 self.progress_bar.close()
