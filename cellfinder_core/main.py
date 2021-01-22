@@ -22,7 +22,7 @@ tf_suppress_log_messages = [
 def main(
     signal_array,
     background_array,
-    classified_points_path,
+    # classified_points_path,
     voxel_sizes,
     start_plane=0,
     end_plane=-1,
