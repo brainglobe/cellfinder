@@ -2,7 +2,6 @@ import numpy as np
 import tensorflow as tf
 
 from random import shuffle
-from tifffile import tifffile
 from skimage.io import imread
 from scipy.ndimage import zoom
 from tensorflow.python.keras.utils.data_utils import Sequence
@@ -19,7 +18,7 @@ class CubeGeneratorFromFile(Sequence):
     keras.Model.fit_generator() or keras.Model.predict_generator()
 
     If augment=True, each augmentation selected has an "augment_likelihood"
-    chance of beingapplied to each cube
+    chance of being applied to each cube
     """
 
     # TODO: shuffle within (and maybe between) batches
@@ -28,8 +27,8 @@ class CubeGeneratorFromFile(Sequence):
     def __init__(
         self,
         points,
-        signal_planes,
-        background_planes,
+        signal_array,
+        background_array,
         voxel_sizes,
         network_voxel_sizes,
         batch_size=16,
@@ -49,8 +48,8 @@ class CubeGeneratorFromFile(Sequence):
         interpolation_order=2,
     ):
         self.points = points
-        self.signal_planes = signal_planes
-        self.background_planes = background_planes
+        self.signal_array = signal_array
+        self.background_array = background_array
         self.batch_size = batch_size
         self.axis_2_pixel_um = float(voxel_sizes[2])
         self.axis_1_pixel_um = float(voxel_sizes[1])
@@ -81,7 +80,7 @@ class CubeGeneratorFromFile(Sequence):
         self.rescaled_cube_width = self.cube_width
         self.rescaled_cube_height = self.cube_height
 
-        self.__check_image_paths()
+        self.__check_image_sizes()
         self.__get_image_size()
         self.__check_z_scaling()
         self.__check_in_plane_scaling()
@@ -90,18 +89,17 @@ class CubeGeneratorFromFile(Sequence):
         if shuffle:
             self.on_epoch_end()
 
-    def __check_image_paths(self):
-        if len(self.signal_planes) != len(self.background_planes):
+    def __check_image_sizes(self):
+        if len(self.signal_array) != len(self.background_array):
             raise ValueError(
-                f"Number of signal images ({len(self.signal_planes)} does not"
+                f"Number of signal images ({len(self.signal_array)} does not"
                 f"match the number of background images "
-                f"({len(self.background_planes)}"
+                f"({len(self.background_array)}"
             )
 
     def __get_image_size(self):
-        self.image_z_size = len(self.signal_planes)
-        first_plane = tifffile.imread(self.signal_planes[0])
-        self.image_height, self.image_width = first_plane.shape
+        self.image_z_size = len(self.signal_array)
+        self.image_height, self.image_width = self.signal_array[0].shape
 
     def __check_in_plane_scaling(self):
         if self.axis_2_pixel_um != self.network_axis_2_pixel_um:
@@ -236,15 +234,15 @@ class CubeGeneratorFromFile(Sequence):
             )
         )
         background_stack = np.empty_like(signal_stack)
-        for plane, plane_path in enumerate(
-            self.signal_planes[min_plane:max_plane]
+        for plane, image_plane in enumerate(
+            self.signal_array[min_plane:max_plane]
         ):
-            signal_stack[plane] = tifffile.imread(plane_path)
+            signal_stack[plane] = np.array(image_plane)
 
-        for plane, plane_path in enumerate(
-            self.background_planes[min_plane:max_plane]
+        for plane, image_plane in enumerate(
+            self.background_array[min_plane:max_plane]
         ):
-            background_stack[plane] = tifffile.imread(plane_path)
+            background_stack[plane] = np.array(image_plane)
 
         return signal_stack, background_stack
 

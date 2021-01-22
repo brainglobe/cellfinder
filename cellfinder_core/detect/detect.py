@@ -145,6 +145,7 @@ def main(
 
     processes[-1].join()
     mp_3d_filter_queue.put((None, None, None))  # Signal the end
+    cells = output_queue.get()
     bf_process.join()
 
     print(
@@ -153,4 +154,4 @@ def main(
         )
     )
 
-    return output_queue.get()
+    return cells

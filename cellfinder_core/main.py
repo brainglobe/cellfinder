@@ -75,7 +75,6 @@ def main(
         log_sigma_size,
         n_sds_above_mean_thresh,
     )
-    print("DONE")
 
     model_weights = prep.prep_classification(
         trained_model, model_weights, install_path, model, n_free_cpus
@@ -99,8 +98,9 @@ def main(
         )
     else:
         logging.info("No candidates, skipping classification")
-    logging.info("Saving classified cells")
-    save_cells(points, classified_points_path)
+    return points
+    # logging.info("Saving classified cells")
+    # save_cells(points, classified_points_path)
 
 
 def suppress_tf_logging(tf_suppress_log_messages):

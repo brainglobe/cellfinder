@@ -10,8 +10,8 @@ from cellfinder_core.train.train_yml import models
 
 def main(
     points,
-    signal_paths,
-    background_planes_path,
+    signal_array,
+    background_array,
     n_free_cpus,
     voxel_sizes,
     network_voxel_sizes,
@@ -24,10 +24,10 @@ def main(
     network_depth,
     max_workers=3,
 ):
-    signal_images = get_sorted_file_paths(signal_paths, file_extension="tif")
-    background_images = get_sorted_file_paths(
-        background_planes_path, file_extension="tif"
-    )
+    # signal_images = get_sorted_file_paths(signal_paths, file_extension="tif")
+    # background_images = get_sorted_file_paths(
+    #     background_planes_path, file_extension="tif"
+    # )
 
     # Too many workers doesn't increase speed, and uses huge amounts of RAM
     workers = get_num_processes(
@@ -37,8 +37,8 @@ def main(
     logging.debug("Initialising cube generator")
     inference_generator = CubeGeneratorFromFile(
         points,
-        signal_images,
-        background_images,
+        signal_array,
+        background_array,
         voxel_sizes,
         network_voxel_sizes,
         batch_size=batch_size,
