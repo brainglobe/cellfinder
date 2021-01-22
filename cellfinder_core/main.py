@@ -11,6 +11,7 @@ it's warnings are silenced
 import os
 import logging
 from imlib.general.logging import suppress_specific_logs
+from imlib.IO.cells import save_cells
 
 tf_suppress_log_messages = [
     "multiprocessing can interact badly with TensorFlow"
@@ -20,7 +21,6 @@ tf_suppress_log_messages = [
 def main(
     signal_planes_path,
     background_planes_path,
-    points_file,
     classified_points_path,
     voxel_sizes,
     start_plane=0,
@@ -58,7 +58,7 @@ def main(
     home = Path.home()
     install_path = home / ".cellfinder"
     logging.info("Detecting cell candidates")
-    detect.main(
+    points = detect.main(
         signal_planes_path,
         start_plane,
         end_plane,
@@ -70,7 +70,6 @@ def main(
         ball_overlap_fraction,
         soma_spread_factor,
         n_free_cpus,
-        points_file,
         log_sigma_size,
         n_sds_above_mean_thresh,
     )
@@ -78,24 +77,27 @@ def main(
     model_weights = prep.prep_classification(
         trained_model, model_weights, install_path, model, n_free_cpus
     )
-    logging.info("Running cell classification")
-    classify.main(
-        signal_planes_path,
-        background_planes_path,
-        n_free_cpus,
-        points_file,
-        voxel_sizes,
-        network_voxel_sizes,
-        batch_size,
-        cube_height,
-        cube_width,
-        cube_depth,
-        trained_model,
-        model_weights,
-        network_depth,
-        classified_points_path,
-        save_csv=False,
-    )
+    if len(points) > 0:
+        logging.info("Running classification")
+        points = classify.main(
+            points,
+            signal_planes_path,
+            background_planes_path,
+            n_free_cpus,
+            voxel_sizes,
+            network_voxel_sizes,
+            batch_size,
+            cube_height,
+            cube_width,
+            cube_depth,
+            trained_model,
+            model_weights,
+            network_depth,
+        )
+    else:
+        logging.info("No candidates, skipping classification")
+    logging.info("Saving classified cells")
+    save_cells(points, classified_points_path)
 
 
 def suppress_tf_logging(tf_suppress_log_messages):

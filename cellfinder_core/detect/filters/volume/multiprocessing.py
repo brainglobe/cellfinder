@@ -5,7 +5,6 @@ import logging
 from tqdm import tqdm
 
 from imlib.cells.cells import Cell
-from imlib.IO.cells import save_cells
 from tifffile import tifffile
 
 from cellfinder_core.detect.filters.volume.structure_detection import (
@@ -23,8 +22,8 @@ class Mp3DFilter(object):
     def __init__(
         self,
         data_queue,
+        output_queue,
         soma_diameter,
-        output_file,
         soma_size_spread_factor=1.4,
         setup_params=None,
         planes_paths_range=None,
@@ -34,11 +33,10 @@ class Mp3DFilter(object):
         max_cluster_size=5000,
         outlier_keep=False,
         artifact_keep=True,
-        save_csv=False,
     ):
         self.data_queue = data_queue
+        self.output_queue = output_queue
         self.soma_diameter = soma_diameter
-        self.output_file = output_file
         self.soma_size_spread_factor = soma_size_spread_factor
         self.progress_bar = None
         self.planes_paths_range = planes_paths_range
@@ -49,8 +47,6 @@ class Mp3DFilter(object):
         self.outlier_keep = outlier_keep
 
         self.artifact_keep = artifact_keep
-
-        self.save_csv = save_csv
 
         self.clipping_val = None
         self.threshold_value = None
@@ -79,7 +75,8 @@ class Mp3DFilter(object):
             if plane_id is None:
                 self.progress_bar.close()
                 logging.debug("3D filter done")
-                self.get_results()
+                cells = self.get_results()
+                self.output_queue.put(cells)
                 break
 
             logging.debug(f"Adding plane {plane_id} for 3D filtering")
@@ -167,12 +164,7 @@ class Mp3DFilter(object):
                         )
                     )
 
-        save_cells(
-            cells,
-            self.output_file,
-            save_csv=self.save_csv,
-            artifact_keep=self.artifact_keep,
-        )
+        return cells
 
 
 def sphere_volume(radius):

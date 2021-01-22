@@ -23,13 +23,11 @@ DETECTION_TOLERANCE = 2
 @pytest.mark.slow
 def test_detection_full(tmpdir):
 
-    candidates_test_xml = os.path.join(tmpdir, "cells.xml")
     cells_test_xml = os.path.join(tmpdir, "cell_classification.xml")
 
     main(
         signal_data,
         background_data,
-        candidates_test_xml,
         cells_test_xml,
         voxel_sizes,
     )

@@ -3,17 +3,16 @@ import numpy as np
 from imlib.general.system import get_sorted_file_paths, get_num_processes
 
 
-from imlib.IO.cells import save_cells
 from cellfinder_core.classify.tools import get_model
 from cellfinder_core.classify.cube_generator import CubeGeneratorFromFile
 from cellfinder_core.train.train_yml import models
 
 
 def main(
+    points,
     signal_paths,
     background_planes_path,
     n_free_cpus,
-    detected_points,
     voxel_sizes,
     network_voxel_sizes,
     batch_size,
@@ -23,8 +22,6 @@ def main(
     trained_model,
     model_weights,
     network_depth,
-    classified_points_path,
-    save_csv=False,
     max_workers=3,
 ):
     signal_images = get_sorted_file_paths(signal_paths, file_extension="tif")
@@ -39,7 +36,7 @@ def main(
 
     logging.debug("Initialising cube generator")
     inference_generator = CubeGeneratorFromFile(
-        detected_points,
+        points,
         signal_images,
         background_images,
         voxel_sizes,
@@ -68,12 +65,11 @@ def main(
     predictions = predictions.astype("uint16")
 
     predictions = np.argmax(predictions, axis=1)
-    cells_list = []
+    points_list = []
 
-    # only go through the "extractable" cells
-    for idx, cell in enumerate(inference_generator.ordered_cells):
+    # only go through the "extractable" points
+    for idx, cell in enumerate(inference_generator.ordered_points):
         cell.type = predictions[idx] + 1
-        cells_list.append(cell)
+        points_list.append(cell)
 
-    logging.info("Saving classified cells")
-    save_cells(cells_list, classified_points_path, save_csv=save_csv)
+    return points_list

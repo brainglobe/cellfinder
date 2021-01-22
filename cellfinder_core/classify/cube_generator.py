@@ -1,4 +1,3 @@
-import logging
 import numpy as np
 import tensorflow as tf
 
@@ -7,7 +6,6 @@ from tifffile import tifffile
 from skimage.io import imread
 from scipy.ndimage import zoom
 from tensorflow.python.keras.utils.data_utils import Sequence
-from imlib.IO.cells import get_cells
 from imlib.cells.cells import group_cells_by_z
 from imlib.general.numerical import is_even
 
@@ -29,7 +27,7 @@ class CubeGeneratorFromFile(Sequence):
 
     def __init__(
         self,
-        cells_file,
+        points,
         signal_planes,
         background_planes,
         voxel_sizes,
@@ -50,7 +48,7 @@ class CubeGeneratorFromFile(Sequence):
         shuffle=False,
         interpolation_order=2,
     ):
-        self.cells_file = cells_file
+        self.points = points
         self.signal_planes = signal_planes
         self.background_planes = background_planes
         self.batch_size = batch_size
@@ -85,10 +83,9 @@ class CubeGeneratorFromFile(Sequence):
 
         self.__check_image_paths()
         self.__get_image_size()
-        self.__load_cells()
         self.__check_z_scaling()
         self.__check_in_plane_scaling()
-        self.__remove_outlier_cells()
+        self.__remove_outlier_points()
         self.__get_batches()
         if shuffle:
             self.on_epoch_end()
@@ -105,18 +102,6 @@ class CubeGeneratorFromFile(Sequence):
         self.image_z_size = len(self.signal_planes)
         first_plane = tifffile.imread(self.signal_planes[0])
         self.image_height, self.image_width = first_plane.shape
-
-    def __load_cells(self):
-        self.cells = get_cells(self.cells_file)
-        if not self.cells:
-            logging.error(
-                f"No cells found, exiting. "
-                f"Please check the file: {self.cells_file}"
-            )
-            raise ValueError(
-                f"No cells found, exiting. "
-                f"Please check the file: {self.cells_file}"
-            )
 
     def __check_in_plane_scaling(self):
         if self.axis_2_pixel_um != self.network_axis_2_pixel_um:
@@ -154,21 +139,23 @@ class CubeGeneratorFromFile(Sequence):
                 "input data"
             )
 
-    def __remove_outlier_cells(self):
+    def __remove_outlier_points(self):
         """
-        Remove cells that won't get extracted (i.e too close to the edge)
+        Remove points that won't get extracted (i.e too close to the edge)
         """
-        self.cells = [cell for cell in self.cells if self.extractable(cell)]
+        self.points = [
+            point for point in self.points if self.extractable(point)
+        ]
 
-    def extractable(self, cell):
+    def extractable(self, point):
         x0, x1, y0, y1, z0, z1 = self.__get_boundaries()
         if (
-            cell.z < z0
-            or cell.z > z1
-            or cell.x < x0
-            or cell.x > x1
-            or cell.y < y0
-            or cell.y > y1
+            point.z < z0
+            or point.z > z1
+            or point.x < x0
+            or point.x > x1
+            or point.y < y0
+            or point.y > y1
         ):
             return False
         else:
@@ -186,18 +173,18 @@ class CubeGeneratorFromFile(Sequence):
         return x0, x1, y0, y1, z0, z1
 
     def __get_batches(self):
-        self.cells_groups = group_cells_by_z(self.cells)
+        self.points_groups = group_cells_by_z(self.points)
         # TODO: add optional shuffling of each group here
         self.batches = []
-        for centre_plane in self.cells_groups.keys():
-            cells_per_plane = self.cells_groups[centre_plane]
-            for i in range(0, len(cells_per_plane), self.batch_size):
-                self.batches.append(cells_per_plane[i : i + self.batch_size])
+        for centre_plane in self.points_groups.keys():
+            points_per_plane = self.points_groups[centre_plane]
+            for i in range(0, len(points_per_plane), self.batch_size):
+                self.batches.append(points_per_plane[i : i + self.batch_size])
 
-        self.ordered_cells = []
+        self.ordered_points = []
         for batch in self.batches:
             for cell in batch:
-                self.ordered_cells.append(cell)
+                self.ordered_points.append(cell)
 
     def __len__(self):
         """

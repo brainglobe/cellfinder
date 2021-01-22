@@ -55,7 +55,6 @@ def main(
     ball_overlap_fraction,
     soma_spread_factor,
     n_free_cpus,
-    points_file,
     log_sigma_size,
     n_sds_above_mean_thresh,
     outlier_keep=False,
@@ -104,11 +103,12 @@ def main(
         ball_overlap_fraction,
         start_plane,
     ]
+    output_queue = MultiprocessingQueue(maxsize=ball_z_size)
 
     mp_3d_filter = Mp3DFilter(
         mp_3d_filter_queue,
+        output_queue,
         soma_diameter,
-        points_file,
         setup_params=setup_params,
         soma_size_spread_factor=soma_spread_factor,
         planes_paths_range=planes_paths_range,
@@ -118,7 +118,6 @@ def main(
         max_cluster_size=max_cluster_size,
         outlier_keep=outlier_keep,
         artifact_keep=artifact_keep,
-        save_csv=save_csv,
     )
 
     # start 3D analysis (waits for planes in queue)
@@ -154,6 +153,7 @@ def main(
 
     processes[-1].join()
     mp_3d_filter_queue.put((None, None, None))  # Signal the end
+
     bf_process.join()
 
     logging.info(
@@ -161,3 +161,5 @@ def main(
             datetime.now() - start_time
         )
     )
+
+    return output_queue.get()
