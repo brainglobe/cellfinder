@@ -153,5 +153,4 @@ def main(
             datetime.now() - start_time
         )
     )
-
     return cells
