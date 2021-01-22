@@ -13,7 +13,7 @@ from imlib.general.system import (
     delete_directory_contents,
     get_sorted_file_paths,
 )
-import cellfinder.extract.extract_cubes as extract_cubes
+import cellfinder_core.extract.extract_cubes as extract_cubes
 
 data_dir = os.path.join("tests", "data")
 

@@ -1,2 +1,2 @@
-include cellfinder/config/*
+include cellfinder_core/config/*
 global-include *.pxd

@@ -5,7 +5,7 @@ from pathlib import Path
 from math import isclose
 from imlib.general.system import ensure_directory_exists
 
-import cellfinder.tools.system as system
+import cellfinder_core.tools.system as system
 from imlib.general.exceptions import CommandLineInputError
 
 data_dir = Path("tests", "data")

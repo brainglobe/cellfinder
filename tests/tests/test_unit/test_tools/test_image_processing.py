@@ -2,7 +2,7 @@ import random
 
 import numpy as np
 
-from cellfinder.tools import image_processing as img_tools
+from cellfinder_core.tools import image_processing as img_tools
 
 
 def test_crop_center_2d():

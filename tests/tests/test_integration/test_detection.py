@@ -1,10 +1,9 @@
 import os
-import sys
 import pytest
 
 from math import isclose
 
-from cellfinder.main import main as cellfinder_run
+from cellfinder_core.main import main
 import imlib.IO.cells as cell_io
 
 data_dir = os.path.join(
@@ -14,10 +13,7 @@ signal_data = os.path.join(data_dir, "crop_planes", "ch0")
 background_data = os.path.join(data_dir, "crop_planes", "ch1")
 cells_validation_xml = os.path.join(data_dir, "cell_classification.xml")
 
-x_pix = "2"
-y_pix = "2"
-z_pix = "5"
-
+voxel_sizes = [5, 2, 2]
 DETECTION_TOLERANCE = 2
 
 
@@ -26,31 +22,17 @@ DETECTION_TOLERANCE = 2
 
 @pytest.mark.slow
 def test_detection_full(tmpdir):
-    tmpdir = str(tmpdir)
 
-    cellfinder_args = [
-        "cellfinder",
-        "-s",
+    candidates_test_xml = os.path.join(tmpdir, "cells.xml")
+    cells_test_xml = os.path.join(tmpdir, "cell_classification.xml")
+
+    main(
         signal_data,
-        "-b",
         background_data,
-        "-o",
-        tmpdir,
-        "-v",
-        z_pix,
-        y_pix,
-        x_pix,
-        "--orientation",
-        "psl",
-        "--n-free-cpus",
-        "0",
-        "--no-register",
-        "--save-planes",
-    ]
-    sys.argv = cellfinder_args
-    cellfinder_run()
-
-    cells_test_xml = os.path.join(tmpdir, "points", "cell_classification.xml")
+        candidates_test_xml,
+        cells_test_xml,
+        voxel_sizes,
+    )
 
     cells_validation = cell_io.get_cells(cells_validation_xml)
     cells_test = cell_io.get_cells(cells_test_xml)

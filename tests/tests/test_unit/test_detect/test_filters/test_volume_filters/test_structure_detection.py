@@ -2,7 +2,7 @@ import pytest
 
 import numpy as np
 
-from cellfinder.detect.filters.volume_filters import structure_detection
+from cellfinder_core.detect.filters.volume import structure_detection
 
 
 def test_get_non_zero_ull_min():

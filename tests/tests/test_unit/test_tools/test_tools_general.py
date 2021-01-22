@@ -3,7 +3,7 @@ import random
 
 import numpy as np
 
-import cellfinder.tools.tools as tools
+import cellfinder_core.tools.tools as tools
 
 
 a = [1, "a", 10, 30]
