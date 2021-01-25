@@ -23,7 +23,7 @@ requirements = [
     "fancylog>=0.0.7",
     "imlib>=0.0.26",
     "imio",
-    "dask",
+    "dask[array]",
 ]
 
 
