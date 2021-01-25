@@ -1,7 +1,5 @@
 import math
 
-from tifffile import tifffile
-
 from cellfinder_core.detect.filters.volume.ball_filter import (
     BallFilter,
 )

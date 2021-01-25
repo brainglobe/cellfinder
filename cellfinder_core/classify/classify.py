@@ -1,6 +1,6 @@
 import logging
 import numpy as np
-from imlib.general.system import get_sorted_file_paths, get_num_processes
+from imlib.general.system import get_num_processes
 
 
 from cellfinder_core.classify.tools import get_model

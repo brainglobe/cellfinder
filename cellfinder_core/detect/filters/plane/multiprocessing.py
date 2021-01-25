@@ -1,5 +1,4 @@
 import numpy as np
-from tifffile import tifffile
 
 from cellfinder_core.detect.filters.plane.classical_filter import (
     enhance_peaks,
