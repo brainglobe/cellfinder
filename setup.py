@@ -77,7 +77,7 @@ else:
 
 setup(
     name="cellfinder-core",
-    version="0.0.4",
+    version="0.0.5",
     description="Automated 3D cell detection in large microscopy images",
     long_description=long_description,
     long_description_content_type="text/markdown",
