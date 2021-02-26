@@ -7,7 +7,7 @@ with open(path.join(this_directory, "README.md"), encoding="utf-8") as f:
     long_description = f.read()
 
 requirements = [
-    "numpy",
+    "cellfinder-core" "numpy",
     "scikit-learn",
     "configparser",
     "pandas",
