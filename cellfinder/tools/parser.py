@@ -15,7 +15,10 @@ from cellfinder import __version__
 from imlib.general.numerical import check_positive_float, check_positive_int
 from imlib.source import source_files
 
-from cellfinder.download.cli import model_parser, download_directory_parser
+from cellfinder_core.download.cli import (
+    model_parser,
+    download_directory_parser,
+)
 
 from brainreg.cli import atlas_parse, geometry_parser, niftyreg_parse
 from brainreg.cli import backend_parse as brainreg_backend_parse

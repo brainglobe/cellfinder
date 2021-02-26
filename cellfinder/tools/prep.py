@@ -14,7 +14,6 @@ from pathlib import Path, PurePath
 
 from imlib.general.system import ensure_directory_exists, get_num_processes
 
-# from imlib.image.metadata import define_pixel_sizes
 from imlib.general.exceptions import CommandLineInputError
 from imlib.general.config import get_config_obj
 from imlib.IO.cells import get_cells
@@ -26,8 +25,8 @@ from cellfinder.tools.parser import cellfinder_parser
 import cellfinder.tools.tf as tf_tools
 import cellfinder as program_for_log
 import cellfinder.tools.parser as parser
-from cellfinder.download import models as model_download
-from cellfinder.download.download import amend_cfg
+from cellfinder_core.download import models as model_download
+from cellfinder_core.download.download import amend_cfg
 from cellfinder.tools import tools, system
 from argparse import Namespace
 from brainreg.paths import Paths as BrainRegPaths
