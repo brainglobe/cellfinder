@@ -22,6 +22,7 @@ requirements = [
     "tensorflow>=2.4.0",
     "fancylog>=0.0.7",
     "imlib>=0.0.26",
+    "slurmio>=0.0.4",
     "imio",
     "dask[array]",
 ]
@@ -103,6 +104,14 @@ setup(
         structure_detection_extension,
         base_tile_filter_extension,
     ],
+    entry_points={
+        "console_scripts": [
+            "cellfinder_download = cellfinder_core.download.cli:main",
+            "cellfinder_train = cellfinder_core.train.train_yml:main",
+            # "cellfinder_curate_new = cellfinder_core.train.curation:main",
+            # "cellfinder_curate = cellfinder_core.train.curation_old:main",
+        ]
+    },
     url="https://cellfinder.info",
     project_urls={
         "Source Code": "https://github.com/brainglobe/cellfinder_core",

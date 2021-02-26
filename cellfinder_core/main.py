@@ -1,9 +1,4 @@
 """
-main
-===============
-
-Runs each part of the cellfinder pipeline in turn.
-
 N.B imports are within functions to prevent tensorflow being imported before
 it's warnings are silenced
 """
@@ -46,11 +41,7 @@ def main(
 
     from cellfinder_core.detect import detect
     from cellfinder_core.classify import classify
-
     from cellfinder_core.tools import prep
-
-    #################
-
     from pathlib import Path
 
     home = Path.home()

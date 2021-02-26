@@ -3,8 +3,6 @@ from imlib.general.system import ensure_directory_exists
 
 from cellfinder_core.download.download import download
 
-default_atlas_name = "brain.nii"
-
 
 model_weight_urls = {
     "resnet50_all": "https://gin.g-node.org/cellfinder/models/raw/"
