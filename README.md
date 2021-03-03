@@ -20,7 +20,7 @@ Whole-brain cell detection, registration and analysis.
 
 Cellfinder is a collection of tools from the 
 [Margrie Lab](https://www.sainsburywellcome.org/web/groups/margrie-lab) and
- others at the [Sainsbury Wellcome Centre](https://www.sainsburywellcome.org/web/), [UCL}](https://www.ucl.ac.uk/)
+ others at the [Sainsbury Wellcome Centre](https://www.sainsburywellcome.org/web/), [UCL](https://www.ucl.ac.uk/)
  for the analysis of whole-brain imaging data such as 
  [serial-section imaging](https://sainsburywellcomecentre.github.io/OpenSerialSection/)
  and lightsheet imaging in cleared tissue.
