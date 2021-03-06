@@ -20,7 +20,7 @@ Whole-brain cell detection, registration and analysis.
 
 Cellfinder is a collection of tools from the 
 [Margrie Lab](https://www.sainsburywellcome.org/web/groups/margrie-lab) and
- others at the [Sainsbury Wellcome Centre](https://www.sainsburywellcome.org/web/)
+ others at the [Sainsbury Wellcome Centre](https://www.sainsburywellcome.org/web/), [UCL](https://www.ucl.ac.uk/)
  for the analysis of whole-brain imaging data such as 
  [serial-section imaging](https://sainsburywellcomecentre.github.io/OpenSerialSection/)
  and lightsheet imaging in cleared tissue.
@@ -110,7 +110,7 @@ Data courtesy of Sepiedeh Keshavarzi and Chryssanthi Tsitoura. [Details here](ht
 ## Citing cellfinder
 
 If you find cellfinder useful, and use it in your research, please cite the preprint outlining the cell detection algorithm:
-> Tyson, A. L., Rousseau, C. V., Niedworok, C. J., Keshavarzi, S., Tsitoura, C. and Margrie, T. W. (2020) “A deep learning algorithm for 3D cell detection in whole mouse brain image datasets’ bioRxiv, [doi.org/10.1101/2020.10.21.348771](https://doi.org/10.1101/2020.10.21.348771)
+> Tyson, A. L., Rousseau, C. V., Niedworok, C. J., Keshavarzi, S., Tsitoura, C., Cossell, L., Strom, M. and Margrie, T. W. (2021) “A deep learning algorithm for 3D cell detection in whole mouse brain image datasets’ bioRxiv, [doi.org/10.1101/2020.10.21.348771](https://doi.org/10.1101/2020.10.21.348771)
 
 If you use any of the image registration functions in cellfinder, please also cite [brainreg](https://github.com/brainglobe/brainreg#citing-brainreg).
 
