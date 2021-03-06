@@ -39,8 +39,8 @@ jobs:
           pip install setuptools tox tox-gh-actions
       - name: Test with tox
         run: tox
-      - name: Coverage
-        uses: codecov/codecov-action@v1
+      - name: Coveralls GitHub Action
+        uses: coverallsapp/github-action@v1.1.2
 
   # On windows, only test 3.8
   win:
