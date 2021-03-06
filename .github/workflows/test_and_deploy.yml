@@ -41,7 +41,8 @@ jobs:
         run: tox
       - name: Coveralls GitHub Action
         uses: coverallsapp/github-action@v1.1.2
-
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
   # On windows, only test 3.8
   win:
     needs: lint
