@@ -3,6 +3,8 @@ import multiprocessing
 from multiprocessing import Queue as MultiprocessingQueue
 from multiprocessing import Lock
 
+import numpy as np
+
 from imlib.general.system import (
     get_num_processes,
 )
@@ -129,7 +131,7 @@ def main(
             target=mp_tile_processor.process,
             args=(
                 plane_id,
-                plane,
+                np.array(plane),
                 prev_lock,
                 lock,
                 clipping_val,
