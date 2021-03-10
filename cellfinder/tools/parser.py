@@ -13,7 +13,7 @@ from argparse import (
 )
 from cellfinder import __version__
 from imlib.general.numerical import check_positive_float, check_positive_int
-from imlib.source import source_files
+from cellfinder_core.tools.source_files import source_custom_config_cellfinder
 
 from cellfinder_core.download.cli import (
     model_parser,
@@ -385,7 +385,7 @@ def config_parse(parser):
         "--config",
         dest="registration_config",
         type=str,
-        default=source_files.source_custom_config_cellfinder(),
+        default=source_custom_config_cellfinder(),
         help="To supply your own, custom configuration file.",
     )
 
