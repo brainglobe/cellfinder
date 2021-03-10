@@ -11,6 +11,7 @@ import json
 
 from fancylog import fancylog
 from pathlib import Path, PurePath
+from pkg_resources import resource_filename
 
 from imlib.general.system import ensure_directory_exists, get_num_processes
 
@@ -19,7 +20,6 @@ from imlib.general.config import get_config_obj
 from imlib.IO.cells import get_cells
 from imlib.cells.cells import MissingCellsError
 
-from imlib.source import source_files
 
 from cellfinder.tools.parser import cellfinder_parser
 import cellfinder.tools.tf as tf_tools
@@ -353,7 +353,9 @@ def prep_models(args):
     if args.trained_model is None and args.model_weights is None:
         logging.debug("No model or weights supplied, so using the default")
 
-        config_file = source_files.source_custom_config_cellfinder()
+        config_file = resource_filename(
+            "cellfinder_core", "config/cellfinder.conf.custom"
+        )
         if not Path(config_file).exists():
             logging.debug("Custom config does not exist, downloading models")
             model_path = model_download.main(args.model, args.install_path)
