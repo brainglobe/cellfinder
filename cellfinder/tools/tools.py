@@ -1,5 +1,4 @@
 from natsort import natsorted
-from random import getrandbits, uniform
 
 
 def get_max_value(obj_in):
@@ -125,48 +124,3 @@ def is_any_list_overlap(list_a, list_b):
     :return: True if lists have shared elements
     """
     return any({*list_a} & {*list_b})
-
-
-def random_bool(likelihood=None):
-    """
-    Return a random boolean (True/False). If "likelihood" is not None, this
-    is biased.
-    :param likelihood: Only return True if a random number in the range (0,1)
-    is greater than this. Default: None.
-    :return: Random (or biased) boolean
-    """
-    if likelihood is None:
-        return bool(getrandbits(1))
-    else:
-        if uniform(0, 1) > likelihood:
-            return True
-        else:
-            return False
-
-
-def random_sign():
-    """
-    Returns a random sign (-1 or 1) with a 50/50 chance of each.
-    :return: Random sign (-1 or 1)
-    """
-    if random_bool():
-        return 1
-    else:
-        return -1
-
-
-def random_probability():
-    """
-    Return a random probability in the range (0, 1)
-    :return: Random probability in the range (0, 1)
-    """
-    return uniform(0, 1)
-
-
-def all_elements_equal(x):
-    """
-    Return True is all the elements in a series are equal
-    :param x: Series of values (e.g. list or numpy array)
-    :return: True if all elements are equal, False otherwise.
-    """
-    return len(set(x)) <= 1

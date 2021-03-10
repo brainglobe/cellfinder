@@ -3,7 +3,7 @@ import sys
 import pytest
 
 from imlib.general.config import get_config_obj
-from cellfinder.download.cli import main as cellfinder_download
+from cellfinder_core.download.cli import main as cellfinder_download
 
 data_dir = os.path.join(
     os.getcwd(),

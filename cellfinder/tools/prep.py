@@ -10,24 +10,16 @@ import logging
 import json
 
 from fancylog import fancylog
-from pathlib import Path, PurePath
+from pathlib import PurePath
 
-from imlib.general.system import ensure_directory_exists, get_num_processes
+from imlib.general.system import ensure_directory_exists
 
-# from imlib.image.metadata import define_pixel_sizes
 from imlib.general.exceptions import CommandLineInputError
-from imlib.general.config import get_config_obj
-from imlib.IO.cells import get_cells
-from imlib.cells.cells import MissingCellsError
 
-from imlib.source import source_files
 
 from cellfinder.tools.parser import cellfinder_parser
-import cellfinder.tools.tf as tf_tools
 import cellfinder as program_for_log
 import cellfinder.tools.parser as parser
-from cellfinder.download import models as model_download
-from cellfinder.download.download import amend_cfg
 from cellfinder.tools import tools, system
 from argparse import Namespace
 from brainreg.paths import Paths as BrainRegPaths
@@ -119,7 +111,6 @@ def prep_cellfinder_general():
     args = parser.cellfinder_parser().parse_args()
     arg_groups = get_arg_groups(args, cellfinder_parser())
 
-    # args = define_pixel_sizes(args)
     check_input_arg_existance(args)
 
     if not os.path.exists(args.output_dir):
@@ -320,64 +311,6 @@ def prep_registration(args):
         channel = args.signal_ch_ids[idx]
         additional_images_downsample[f"channel_{channel}"] = images
     return args, additional_images_downsample
-
-
-def prep_classification(args, what_to_run):
-    try:
-        get_cells(args.paths.detected_points)
-        n_processes = get_num_processes(min_free_cpu_cores=args.n_free_cpus)
-        prep_tensorflow(n_processes)
-        args = prep_models(args)
-    except MissingCellsError:
-        what_to_run.cells_exist = False
-        what_to_run.candidates_exist = False
-        what_to_run.update_if_cells_required()
-    what_to_run.update_if_candidates_required()
-
-    return args
-
-
-def prep_training(args):
-    n_processes = get_num_processes(min_free_cpu_cores=args.n_free_cpus)
-    prep_tensorflow(n_processes)
-    args = prep_models(args)
-    return args
-
-
-def prep_tensorflow(max_threads):
-    tf_tools.set_tf_threads(max_threads)
-    tf_tools.allow_gpu_memory_growth()
-
-
-def prep_models(args):
-    # if no model or weights, set default weights
-    if args.trained_model is None and args.model_weights is None:
-        logging.debug("No model or weights supplied, so using the default")
-
-        config_file = source_files.source_custom_config_cellfinder()
-        if not Path(config_file).exists():
-            logging.debug("Custom config does not exist, downloading models")
-            model_path = model_download.main(args.model, args.install_path)
-            amend_cfg(new_model_path=model_path)
-
-        model_weights = get_model_weights(config_file)
-        if model_weights != "" and Path(model_weights).exists():
-            args.model_weights = model_weights
-        else:
-            logging.debug("Model weights do not exist, downloading")
-            model_path = model_download.main(args.model, args.install_path)
-            amend_cfg(new_model_path=model_path)
-            model_weights = get_model_weights(config_file)
-            args.model_weights = model_weights
-    return args
-
-
-def get_model_weights(config_file):
-    logging.debug(f"Reading config file: {config_file}")
-    config_obj = get_config_obj(config_file)
-    model_conf = config_obj["model"]
-    model_weights = model_conf["model_path"]
-    return model_weights
 
 
 def prep_channel_specific_general(args, what_to_run):
