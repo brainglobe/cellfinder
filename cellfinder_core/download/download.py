@@ -5,7 +5,11 @@ import urllib.request
 
 from imlib.general.system import disk_free_gb
 from imlib.general.config import get_config_obj
-from pkg_resources import resource_filename
+
+from cellfinder_core.tools.source_files import (
+    source_config_cellfinder,
+    source_custom_config_cellfinder,
+)
 
 
 class DownloadError(Exception):
@@ -74,12 +78,8 @@ def download(
 def amend_cfg(new_model_path=None):
     print("Ensuring custom config file is correct")
 
-    original_config = resource_filename(
-        "cellfinder_core", "config/cellfinder.conf"
-    )
-    new_config = resource_filename(
-        "cellfinder_core", "config/cellfinder.conf.custom"
-    )
+    original_config = source_config_cellfinder()
+    new_config = source_custom_config_cellfinder()
     if new_model_path is not None:
         write_model_to_cfg(new_model_path, original_config, new_config)
 

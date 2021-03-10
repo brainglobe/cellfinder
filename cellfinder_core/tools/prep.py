@@ -13,11 +13,10 @@ from imlib.general.system import get_num_processes
 
 from imlib.general.config import get_config_obj
 
-from pkg_resources import resource_filename
-
 import cellfinder_core.tools.tf as tf_tools
 from cellfinder_core.download import models as model_download
 from cellfinder_core.download.download import amend_cfg
+from cellfinder_core.tools.source_files import source_custom_config_cellfinder
 
 
 def prep_classification(
@@ -32,11 +31,13 @@ def prep_classification(
     return model_weights
 
 
-def prep_training(args):
-    n_processes = get_num_processes(min_free_cpu_cores=args.n_free_cpus)
+def prep_training(
+    n_free_cpus, trained_model, model_weights, install_path, model
+):
+    n_processes = get_num_processes(min_free_cpu_cores=n_free_cpus)
     prep_tensorflow(n_processes)
     model_weights = prep_models(
-        args.trained_model, args.model_weights, args.install_path, args.model
+        trained_model, model_weights, install_path, model
     )
     return model_weights
 
@@ -51,10 +52,8 @@ def prep_models(trained_model, model_weights, install_path, model):
     if trained_model is None and model_weights is None:
         logging.debug("No model or weights supplied, so using the default")
 
-        # config_file = source_files.source_custom_config_cellfinder()
-        config_file = resource_filename(
-            "cellfinder_core", "config/cellfinder.conf.custom"
-        )
+        config_file = source_custom_config_cellfinder()
+
         if not Path(config_file).exists():
             logging.debug("Custom config does not exist, downloading models")
             model_path = model_download.main(model, install_path)

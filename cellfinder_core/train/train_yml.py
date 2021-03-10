@@ -28,6 +28,8 @@ from imlib.IO.yaml import read_yaml_section
 
 import cellfinder_core as program_for_log
 
+home = Path.home()
+install_path = home / ".cellfinder"
 
 tf_suppress_log_messages = [
     "sample_weight modes were coerced from",
@@ -260,7 +262,60 @@ def get_tiff_files(yaml_contents):
     return tiff_files
 
 
-def main():
+def cli():
+    args = training_parse()
+
+    fancylog.start_logging(
+        args.output_dir,
+        program_for_log,
+        variables=[args],
+        log_header="CELLFINDER TRAINING LOG",
+    )
+
+    output_dir = Path(args.output_dir)
+    run(
+        output_dir,
+        args.yaml_file,
+        n_free_cpus=args.n_free_cpus,
+        trained_model=args.trained_model,
+        model_weights=args.model_weights,
+        install_path=args.install_path,
+        model=args.model,
+        network_depth=args.network_depth,
+        learning_rate=args.learning_rate,
+        continue_training=args.continue_training,
+        test_fraction=args.test_fraction,
+        batch_size=args.batch_size,
+        no_augment=args.no_augment,
+        tensorboard=args.tensorboard,
+        save_weights=args.save_weights,
+        no_save_checkpoints=args.no_save_checkpoints,
+        save_progress=args.save_progress,
+        epochs=args.epochs,
+    )
+
+
+def run(
+    output_dir,
+    yaml_file,
+    n_free_cpus=2,
+    trained_model=None,
+    model_weights=None,
+    install_path=install_path,
+    model="resnet50_tv",
+    network_depth="50",
+    learning_rate=0.0001,
+    continue_training=False,
+    test_fraction=0.1,
+    batch_size=16,
+    no_augment=False,
+    tensorboard=False,
+    save_weights=False,
+    no_save_checkpoints=False,
+    save_progress=False,
+    epochs=100,
+):
+
     from cellfinder_core.main import suppress_tf_logging
 
     suppress_tf_logging(tf_suppress_log_messages)
@@ -276,38 +331,32 @@ def main():
     from cellfinder_core.classify.cube_generator import CubeGeneratorFromDisk
 
     start_time = datetime.now()
-    args = training_parse()
-    output_dir = Path(args.output_dir)
-    ensure_directory_exists(output_dir)
-    model_weights = prep_training(args)
 
-    fancylog.start_logging(
-        args.output_dir,
-        program_for_log,
-        variables=[args],
-        log_header="CELLFINDER TRAINING LOG",
+    ensure_directory_exists(output_dir)
+    model_weights = prep_training(
+        n_free_cpus, trained_model, model_weights, install_path, model
     )
 
-    yaml_contents = parse_yaml(args.yaml_file)
+    yaml_contents = parse_yaml(yaml_file)
 
     tiff_files = get_tiff_files(yaml_contents)
     logging.info(
         f"Found {sum(len(imlist) for imlist in tiff_files)} images "
         f"from {len(yaml_contents)} datasets "
-        f"in {len(args.yaml_file)} yaml files"
+        f"in {len(yaml_file)} yaml files"
     )
 
     model = get_model(
-        existing_model=args.trained_model,
+        existing_model=trained_model,
         model_weights=model_weights,
-        network_depth=models[args.network_depth],
-        learning_rate=args.learning_rate,
-        continue_training=args.continue_training,
+        network_depth=models[network_depth],
+        learning_rate=learning_rate,
+        continue_training=continue_training,
     )
 
     signal_train, background_train, labels_train = make_lists(tiff_files)
 
-    if args.test_fraction > 0:
+    if test_fraction > 0:
         logging.info("Splitting data into training and validation datasets")
         (
             signal_train,
@@ -320,7 +369,7 @@ def main():
             signal_train,
             background_train,
             labels_train,
-            test_size=args.test_fraction,
+            test_size=test_fraction,
         )
 
         logging.info(
@@ -331,7 +380,7 @@ def main():
             signal_test,
             background_test,
             labels=labels_test,
-            batch_size=args.batch_size,
+            batch_size=batch_size,
             train=True,
         )
 
@@ -347,14 +396,14 @@ def main():
         signal_train,
         background_train,
         labels=labels_train,
-        batch_size=args.batch_size,
+        batch_size=batch_size,
         shuffle=True,
         train=True,
-        augment=not args.no_augment,
+        augment=not no_augment,
     )
     callbacks = []
 
-    if args.tensorboard:
+    if tensorboard:
         logdir = output_dir / "tensorboard"
         ensure_directory_exists(logdir)
         tensorboard = TensorBoard(
@@ -365,19 +414,19 @@ def main():
         )
         callbacks.append(tensorboard)
 
-    if not args.no_save_checkpoints:
-        if args.save_weights:
+    if not no_save_checkpoints:
+        if save_weights:
             filepath = str(output_dir / ("weight" + base_checkpoint_file_name))
         else:
             filepath = str(output_dir / ("model" + base_checkpoint_file_name))
 
         checkpoints = ModelCheckpoint(
             filepath,
-            save_weights_only=args.save_weights,
+            save_weights_only=save_weights,
         )
         callbacks.append(checkpoints)
 
-    if args.save_progress:
+    if save_progress:
         filepath = str(output_dir / "training.csv")
         csv_logger = CSVLogger(filepath)
         callbacks.append(csv_logger)
@@ -387,11 +436,11 @@ def main():
         training_generator,
         validation_data=validation_generator,
         use_multiprocessing=False,
-        epochs=args.epochs,
+        epochs=epochs,
         callbacks=callbacks,
     )
 
-    if args.save_weights:
+    if save_weights:
         logging.info("Saving model weights")
         model.save_weights(str(output_dir / "model_weights.h5"))
     else:
@@ -405,4 +454,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    cli()

@@ -24,7 +24,6 @@ class MpTileProcessor(object):
         n_sds_above_mean_thresh,
     ):
         laplace_gaussian_sigma = log_sigma_size * soma_diameter
-        plane = np.array(plane)
         plane = plane.T
         np.clip(plane, 0, clipping_value, out=plane)
 

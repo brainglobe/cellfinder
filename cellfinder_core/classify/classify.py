@@ -24,10 +24,6 @@ def main(
     network_depth,
     max_workers=3,
 ):
-    # signal_images = get_sorted_file_paths(signal_paths, file_extension="tif")
-    # background_images = get_sorted_file_paths(
-    #     background_planes_path, file_extension="tif"
-    # )
 
     # Too many workers doesn't increase speed, and uses huge amounts of RAM
     workers = get_num_processes(

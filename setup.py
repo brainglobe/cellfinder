@@ -103,7 +103,7 @@ setup(
     entry_points={
         "console_scripts": [
             "cellfinder_download = cellfinder_core.download.cli:main",
-            "cellfinder_train = cellfinder_core.train.train_yml:main",
+            "cellfinder_train = cellfinder_core.train.train_yml:cli",
             # "cellfinder_curate_new = cellfinder_core.train.curation:main",
             # "cellfinder_curate = cellfinder_core.train.curation_old:main",
         ]

@@ -197,7 +197,6 @@ class CubeGeneratorFromFile(Sequence):
         :param index:
         :return:
         """
-
         cell_batch = self.batches[index]
         signal_stack, background_stack = self.__get_stacks(index)
         images = self.__generate_cubes(
@@ -215,7 +214,6 @@ class CubeGeneratorFromFile(Sequence):
 
     def __get_stacks(self, index):
         centre_z = self.batches[index][0].z
-
         half_cube_depth = self.num_planes_needed_for_cube // 2
         min_plane = centre_z - half_cube_depth
 
@@ -226,23 +224,8 @@ class CubeGeneratorFromFile(Sequence):
             # centered
             max_plane = centre_z + half_cube_depth + 1
 
-        signal_stack = np.empty(
-            (
-                self.num_planes_needed_for_cube,
-                self.image_height,
-                self.image_width,
-            )
-        )
-        background_stack = np.empty_like(signal_stack)
-        for plane, image_plane in enumerate(
-            self.signal_array[min_plane:max_plane]
-        ):
-            signal_stack[plane] = np.array(image_plane)
-
-        for plane, image_plane in enumerate(
-            self.background_array[min_plane:max_plane]
-        ):
-            background_stack[plane] = np.array(image_plane)
+        signal_stack = np.array(self.signal_array[min_plane:max_plane])
+        background_stack = np.array(self.background_array[min_plane:max_plane])
 
         return signal_stack, background_stack
 
