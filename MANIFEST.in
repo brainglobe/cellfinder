@@ -1,2 +1,5 @@
 include cellfinder_core/config/*
 global-include *.pxd
+prune tests
+prune resources
+prune .github

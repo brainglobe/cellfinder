@@ -1,5 +1,5 @@
 import platform
-from setuptools import setup, find_namespace_packages, Extension
+from setuptools import setup, find_packages, Extension
 from os import path
 
 this_directory = path.abspath(path.dirname(__file__))
@@ -74,7 +74,7 @@ else:
 
 setup(
     name="cellfinder-core",
-    version="0.0.7",
+    version="0.1.0-rc1",
     description="Automated 3D cell detection in large microscopy images",
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -93,7 +93,7 @@ setup(
     },
     setup_requires=["cython"],
     python_requires=">=3.7",
-    packages=find_namespace_packages(exclude=("docs", "doc_build", "tests")),
+    packages=find_packages(),
     include_package_data=True,
     ext_modules=[
         ball_filter_extension,
