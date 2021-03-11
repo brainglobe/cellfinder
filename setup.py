@@ -32,7 +32,7 @@ requirements = [
 
 setup(
     name="cellfinder",
-    version="0.6.1rc2",
+    version="0.6.1rc3",
     description="Automated 3D cell detection and registration of "
     "whole-brain images",
     long_description=long_description,
