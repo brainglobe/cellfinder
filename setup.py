@@ -52,7 +52,7 @@ setup(
     },
     setup_requires=["cython"],
     python_requires=">=3.7",
-    packages=find_namespace_packages(exclude=("docs", "doc_build", "tests")),
+    packages=find_namespace_packages(),
     include_package_data=True,
     entry_points={
         "console_scripts": [
