@@ -1,2 +1,4 @@
 include cellfinder/config/*
 global-include *.pxd
+exclude tests/*
+exclude resources/*
