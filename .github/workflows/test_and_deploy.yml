@@ -48,25 +48,6 @@ jobs:
             pip install coveralls
             coveralls --service=github
 
-  deploy-source:
-    needs: test
-    if: contains(github.ref, 'tags')
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v2
-    - name: Set up Python
-      uses: actions/setup-python@v1
-      with:
-        python-version: "3.x"
-    - name: Publish source distribution dist to PyPI
-      env:
-        TWINE_USERNAME: __token__
-        TWINE_PASSWORD: ${{ secrets.TWINE_API_KEY }}
-      run: |
-        pip install twine
-        python setup.py sdist
-        twine upload dist/*
-
   deploy:
     needs: test
     runs-on: ubuntu-latest
