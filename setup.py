@@ -1,4 +1,4 @@
-from setuptools import setup, find_namespace_packages
+from setuptools import setup, find_packages
 from os import path
 
 this_directory = path.abspath(path.dirname(__file__))
@@ -32,7 +32,7 @@ requirements = [
 
 setup(
     name="cellfinder",
-    version="0.4.9",
+    version="0.4.11-rc6",
     description="Automated 3D cell detection and registration of "
     "whole-brain images",
     long_description=long_description,
@@ -52,7 +52,7 @@ setup(
     },
     setup_requires=["cython"],
     python_requires=">=3.7",
-    packages=find_namespace_packages(exclude=("docs", "doc_build", "tests")),
+    packages=find_packages(),
     include_package_data=True,
     entry_points={
         "console_scripts": [
