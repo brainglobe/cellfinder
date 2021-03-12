@@ -106,6 +106,31 @@ with RSP.
 
 Data courtesy of Sepiedeh Keshavarzi and Chryssanthi Tsitoura. [Details here](https://www.youtube.com/watch?v=pMHP0o-KsoQ)
 
+## Visualisation
+
+cellfinder comes with a plugin ([brainglobe-napari-io](https://github.com/brainglobe/brainglobe-napari-io)) for [napari](https://github.com/napari/napari) to view your data
+
+#### Usage
+* Open napari (however you normally do it, but typically just type `napari` into your terminal, or click on your desktop icon)
+
+#### Load cellfinder XML file
+* Load your raw data (drag and drop the data directories into napari, one at a time)
+* Drag and drop your cellfinder XML file (e.g. `cell_classification.xml`) into napari.
+
+#### Load cellfinder directory
+* Load your raw data (drag and drop the data directories into napari, one at a time)
+* Drag and drop your cellfinder output directory into napari.
+
+The plugin will then load your detected cells (in yellow) and the rejected cell 
+candidates (in blue). If you carried out registration, then these results will be 
+overlaid (similarly to the loading brainreg data, but transformed to the 
+coordinate space of your raw data).
+
+![load_data](https://raw.githubusercontent.com/brainglobe/brainglobe-napari-io/master/resources/load_data.gif)
+**Loading raw data**
+
+![load_data](https://raw.githubusercontent.com/brainglobe/brainglobe-napari-io/master/resources/load_results.gif)
+**Loading cellfinder results**
 
 ## Citing cellfinder
 
