@@ -5,15 +5,15 @@ from cellfinder_core.download.download import download
 
 
 model_weight_urls = {
-    "resnet50_all": "https://gin.g-node.org/cellfinder/models/raw/"
-    "master/resnet50_weights.h5",
     "resnet50_tv": "https://gin.g-node.org/cellfinder/models/raw/"
     "master/resnet50_tv.h5",
+    "resnet50_all": "https://gin.g-node.org/cellfinder/models/raw/"
+    "master/resnet50_weights.h5",
 }
 
 download_requirements_gb = {
-    "resnet50_all": 0.18,
     "resnet50_tv": 0.18,
+    "resnet50_all": 0.18,
 }
 
 

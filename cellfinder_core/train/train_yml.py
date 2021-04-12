@@ -264,6 +264,7 @@ def get_tiff_files(yaml_contents):
 
 def cli():
     args = training_parse()
+    ensure_directory_exists(args.output_dir)
 
     fancylog.start_logging(
         args.output_dir,

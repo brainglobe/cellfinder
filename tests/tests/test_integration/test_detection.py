@@ -23,9 +23,8 @@ DETECTION_TOLERANCE = 2
 
 
 @pytest.mark.slow
-def test_detection_full(tmpdir):
+def test_detection_full():
 
-    # cells_test_xml = os.path.join(tmpdir, "cell_classification.xml")
     signal_array = read_with_dask(signal_data_path)
     background_array = read_with_dask(background_data_path)
 
@@ -35,7 +34,6 @@ def test_detection_full(tmpdir):
         voxel_sizes,
     )
     cells_validation = cell_io.get_cells(cells_validation_xml)
-    # cells_test = cell_io.get_cells(cells_test_xml)
 
     num_non_cells_validation = sum(
         [cell.type == 1 for cell in cells_validation]

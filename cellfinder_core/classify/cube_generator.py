@@ -8,8 +8,14 @@ from tensorflow.python.keras.utils.data_utils import Sequence
 from imlib.cells.cells import group_cells_by_z
 from imlib.general.numerical import is_even
 
-from cellfinder_core.extract.extract_cubes import StackSizeError
 from cellfinder_core.classify.augment import AugmentationParameters, augment
+
+# TODO: rename, as now using dask arrays -
+#  actually should combine to one generator
+
+
+class StackSizeError(Exception):
+    pass
 
 
 class CubeGeneratorFromFile(Sequence):
@@ -37,6 +43,7 @@ class CubeGeneratorFromFile(Sequence):
         cube_depth=20,
         channels=2,  # No other option currently
         classes=2,
+        extract=False,
         train=False,
         augment=False,
         augment_likelihood=0.1,
@@ -62,6 +69,9 @@ class CubeGeneratorFromFile(Sequence):
         self.cube_depth = cube_depth
         self.channels = channels
         self.classes = classes
+
+        # saving training data to file
+        self.extract = extract
 
         self.train = train
         self.augment = augment
@@ -209,20 +219,18 @@ class CubeGeneratorFromFile(Sequence):
                 batch_labels, num_classes=self.classes
             )
             return images, batch_labels
+        elif self.extract:
+            batch_info = self.__get_batch_dict(cell_batch)
+            return images, batch_info
         else:
             return images
 
     def __get_stacks(self, index):
-        centre_z = self.batches[index][0].z
-        half_cube_depth = self.num_planes_needed_for_cube // 2
-        min_plane = centre_z - half_cube_depth
+        centre_plane = self.batches[index][0].z
 
-        if is_even(self.num_planes_needed_for_cube):
-            # WARNING: not centered because even
-            max_plane = centre_z + half_cube_depth
-        else:
-            # centered
-            max_plane = centre_z + half_cube_depth + 1
+        min_plane, max_plane = get_cube_depth_min_max(
+            centre_plane, self.num_planes_needed_for_cube
+        )
 
         signal_stack = np.array(self.signal_array[min_plane:max_plane])
         background_stack = np.array(self.background_array[min_plane:max_plane])
@@ -286,6 +294,10 @@ class CubeGeneratorFromFile(Sequence):
         # TODO: ensure this is always the correct size
         image = zoom(image, pixel_scalings, order=self.interpolation_order)
         return image
+
+    @staticmethod
+    def __get_batch_dict(cell_batch):
+        return [cell.to_dict() for cell in cell_batch]
 
     def on_epoch_end(self):
         """
@@ -421,3 +433,17 @@ class CubeGeneratorFromDisk(Sequence):
         if self.augment:
             image = augment(self.augmentation_parameters, image)
         return image
+
+
+def get_cube_depth_min_max(centre_plane, num_planes_needed_for_cube):
+    half_cube_depth = num_planes_needed_for_cube // 2
+    min_plane = centre_plane - half_cube_depth
+
+    if is_even(num_planes_needed_for_cube):
+        # WARNING: not centered because even
+        max_plane = centre_plane + half_cube_depth
+    else:
+        # centered
+        max_plane = centre_plane + half_cube_depth + 1
+
+    return min_plane, max_plane
