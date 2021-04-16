@@ -45,7 +45,7 @@ found [here](https://docs.brainglobe.info/cellfinder).
 This software is at a very early stage, and was written with our data in mind. 
 Over time we hope to support other data types/formats. If you have any 
 questions or issues, please get in touch by 
-[email](mailto:adam.tyson@ucl.ac.uk?subject=cellfinder), 
+[email](mailto:code@adamltyson.com?subject=cellfinder), 
 [gitter](https://gitter.im/BrainGlobe/cellfinder) or by 
 [raising an issue](https://github.com/brainglobe/cellfinder/issues/new/choose).
 
