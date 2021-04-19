@@ -110,6 +110,8 @@ def run_all(args, what_to_run, atlas):
         prep_channel_specific_general,
     )
 
+    points = None
+    signal_array = None
     args, what_to_run = prep_channel_specific_general(args, what_to_run)
 
     if what_to_run.detect:
@@ -145,6 +147,7 @@ def run_all(args, what_to_run, atlas):
 
     else:
         logging.info("Skipping cell detection")
+        points = get_cells(args.paths.detected_points)
 
     if what_to_run.classify:
         model_weights = prep.prep_classification(
@@ -155,6 +158,12 @@ def run_all(args, what_to_run, atlas):
             args.n_free_cpus,
         )
         if what_to_run.classify:
+            if points is None:
+                points = get_cells(args.paths.detected_points)
+            if signal_array is None:
+                signal_array = read_with_dask(
+                    args.signal_planes_paths[args.signal_channel]
+                )
             logging.info("Running cell classification")
             background_array = read_with_dask(args.background_planes_path[0])
 
