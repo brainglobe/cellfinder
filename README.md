@@ -13,4 +13,16 @@
 [![Twitter](https://img.shields.io/twitter/follow/findingcells?style=social)](https://twitter.com/findingcells)
 # cellfinder-core
 Standalone cellfinder cell detection algorithm 
+
+This package implements the cell detection algorithm from 
+[Tyson, Rousseau & Niedworok et al. (2021)](https://www.biorxiv.org/content/10.1101/2020.10.21.348771v2) 
+without any dependency on data type (i.e. it can be used outside of 
+whole-brain microscopy). 
+
+`cellfinder-core` supports the 
+[cellfinder](https://github.com/brainglobe/cellfinder) software for 
+whole-brain microscopy analysis, and the algorithm can also be implemented in 
+[napari](https://napari.org/index.html) using the 
+[cellfinder napari plugin](https://github.com/brainglobe/cellfinder-napari).
+
 ---

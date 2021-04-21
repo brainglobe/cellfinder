@@ -115,7 +115,7 @@ setup(
         "Documentation": "https://docs.brainglobe.info/cellfinder",
     },
     author="Adam Tyson, Christian Niedworok, Charly Rousseau",
-    author_email="adam.tyson@ucl.ac.uk",
+    author_email="code@adamltyson.com",
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Operating System :: POSIX :: Linux",
