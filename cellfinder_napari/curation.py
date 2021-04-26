@@ -1,27 +1,22 @@
+import tifffile
+import napari
 import numpy as np
 from qtpy import QtCore
 from pathlib import Path
-
-
+from napari.qt.threading import thread_worker
 from qtpy.QtWidgets import (
-    QPushButton,
     QLabel,
-    QComboBox,
     QWidget,
     QFileDialog,
     QGridLayout,
     QGroupBox,
 )
-import tifffile
 from brainglobe_napari_io.cellfinder.utils import convert_layer_to_cells
 from imlib.cells.cells import Cell
-from imlib.general.system import get_sorted_file_paths, ensure_directory_exists
+from imlib.general.system import ensure_directory_exists
 from imlib.IO.yaml import save_yaml
 
-from .utils import add_combobox, add_button, display_info, display_question
-from cellfinder_core.classify.cube_generator import CubeGeneratorFromFile
-
-import napari
+from .utils import add_combobox, add_button, display_info
 
 
 # Constants used throughout
@@ -42,6 +37,7 @@ class CurationWidget(QWidget):
         save_empty_cubes=False,
         max_ram=None,
     ):
+
         super(CurationWidget, self).__init__()
 
         self.non_cells_to_extract = None
@@ -226,15 +222,16 @@ class CurationWidget(QWidget):
 
     def add_training_data(
         self,
-        cell_name="Training data (cells)",
-        non_cell_name="Training data (non cells)",
     ):
+        cell_name = "Training data (cells)"
+        non_cell_name = "Training data (non cells)"
         if not (
             self.training_data_cell_layer and self.training_data_non_cell_layer
         ):
             if not self.training_data_cell_layer:
                 self.training_data_cell_layer = self.viewer.add_points(
-                    np.empty((0, 3)),
+                    None,
+                    ndim=3,
                     symbol="ring",
                     n_dimensional=True,
                     size=15,
@@ -247,7 +244,8 @@ class CurationWidget(QWidget):
 
             if not self.training_data_non_cell_layer:
                 self.training_data_non_cell_layer = self.viewer.add_points(
-                    np.empty((0, 3)),
+                    None,
+                    ndim=3,
                     symbol="ring",
                     n_dimensional=True,
                     size=15,
@@ -296,13 +294,17 @@ class CurationWidget(QWidget):
                     else:
                         destination_layer = self.training_data_non_cell_layer
                     print(
-                        f"Adding {len(layer.data)} points to layer: "
-                        f"{destination_layer.name}"
+                        f"Adding {len(layer.selected_data)} "
+                        f"points to layer: {destination_layer.name}"
                     )
 
-                    destination_layer.data = np.vstack(
-                        (destination_layer.data, layer.data)
-                    )
+                    for selected_point in layer.selected_data:
+                        destination_layer.data = np.vstack(
+                            (
+                                destination_layer.data,
+                                layer.data[selected_point],
+                            )
+                        )
 
                 else:
                     display_info(
@@ -338,40 +340,31 @@ class CurationWidget(QWidget):
         if self.is_data_extractable():
             self.get_output_directory()
             if self.output_directory != "":
-                self.extract_cubes()
-                self.save_yaml_file()
+                self.__extract_cubes()
+                self.__save_yaml_file()
                 print("Done")
 
             self.status_label.setText("Ready")
 
-    def extract_cubes(self):
+    def __extract_cubes(self):
         self.status_label.setText("Extracting cubes")
         self.convert_layers_to_cells()
-        to_extract = {
-            "cells": self.cells_to_extract,
-            "non_cells": self.non_cells_to_extract,
-        }
 
-        for cell_type, cell_list in to_extract.items():
-            print(f"Extracting type: {cell_type}")
-            cell_type_output_directory = self.output_directory / cell_type
-            print(f"Saving to: {cell_type_output_directory}")
-            ensure_directory_exists(str(cell_type_output_directory))
-
-            cube_generator = CubeGeneratorFromFile(
-                cell_list,
-                self.signal_layer.data,
-                self.background_layer.data,
-                self.voxel_sizes,
-                self.network_voxel_sizes,
-                batch_size=self.batch_size,
-                cube_width=self.cube_width,
-                cube_height=self.cube_height,
-                cube_depth=self.cube_depth,
-                extract=True,
-            )
-
-            self.extract_batches(cube_generator, cell_type_output_directory)
+        worker = extract_cubes(
+            self.cells_to_extract,
+            self.non_cells_to_extract,
+            self.output_directory,
+            self.signal_layer.data,
+            self.background_layer.data,
+            self.voxel_sizes,
+            self.network_voxel_sizes,
+            self.batch_size,
+            self.cube_width,
+            self.cube_height,
+            self.cube_depth,
+        )
+        worker.start()
+        self.status_label.setText("Ready")
 
     def is_data_extractable(self):
         if (
@@ -460,26 +453,7 @@ class CurationWidget(QWidget):
         self.cells_to_extract = list(set(self.cells_to_extract))
         self.non_cells_to_extract = list(set(self.non_cells_to_extract))
 
-    def extract_batches(self, cube_generator, output_directory):
-        for batch_idx, (image_batch, batch_info) in enumerate(cube_generator):
-            image_batch = image_batch.astype(np.int16)
-            for point, point_info in zip(image_batch, batch_info):
-                point = np.moveaxis(point, 2, 0)
-
-                for channel in range(0, point.shape[-1]):
-                    self.__save_cube(
-                        point, point_info, channel, output_directory
-                    )
-
-    @staticmethod
-    def __save_cube(array, point_info, channel, output_directory):
-        filename = (
-            f"pCellz{point_info['z']}y{point_info['y']}"
-            f"x{point_info['x']}Ch{channel}.tif"
-        )
-        tifffile.imsave(output_directory / filename, array[:, :, :, channel])
-
-    def save_yaml_file(self):
+    def __save_yaml_file(self):
         # TODO: implement this in a portable way
         yaml_filename = self.output_directory / "training.yml"
         yaml_section = [
@@ -501,3 +475,67 @@ class CurationWidget(QWidget):
 
         yaml_contents = {"data": yaml_section}
         save_yaml(yaml_contents, yaml_filename)
+
+
+@thread_worker
+def extract_cubes(
+    cells_to_extract,
+    non_cells_to_extract,
+    output_directory,
+    signal_array,
+    background_array,
+    voxel_sizes,
+    network_voxel_sizes,
+    batch_size,
+    cube_width,
+    cube_height,
+    cube_depth,
+):
+    from cellfinder_core.classify.cube_generator import (
+        CubeGeneratorFromFile,
+    )
+
+    to_extract = {
+        "cells": cells_to_extract,
+        "non_cells": non_cells_to_extract,
+    }
+
+    for cell_type, cell_list in to_extract.items():
+        print(f"Extracting type: {cell_type}")
+        cell_type_output_directory = output_directory / cell_type
+        print(f"Saving to: {cell_type_output_directory}")
+        ensure_directory_exists(str(cell_type_output_directory))
+
+        cube_generator = CubeGeneratorFromFile(
+            cell_list,
+            signal_array,
+            background_array,
+            voxel_sizes,
+            network_voxel_sizes,
+            batch_size=batch_size,
+            cube_width=cube_width,
+            cube_height=cube_height,
+            cube_depth=cube_depth,
+            extract=True,
+        )
+
+        extract_batches(cube_generator, cell_type_output_directory)
+        print("Done")
+
+
+def extract_batches(cube_generator, output_directory):
+    for batch_idx, (image_batch, batch_info) in enumerate(cube_generator):
+        image_batch = image_batch.astype(np.int16)
+        for point, point_info in zip(image_batch, batch_info):
+            point = np.moveaxis(point, 2, 0)
+
+            for channel in range(0, point.shape[-1]):
+                save_cube(point, point_info, channel, output_directory)
+
+
+def save_cube(array, point_info, channel, output_directory):
+    filename = (
+        f"pCellz{point_info['z']}y{point_info['y']}"
+        f"x{point_info['x']}Ch{channel}.tif"
+    )
+    tifffile.imsave(output_directory / filename, array[:, :, :, channel])

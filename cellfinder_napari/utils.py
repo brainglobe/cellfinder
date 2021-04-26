@@ -4,10 +4,6 @@ from qtpy.QtWidgets import (
     QPushButton,
     QLabel,
     QComboBox,
-    QWidget,
-    QFileDialog,
-    QGridLayout,
-    QGroupBox,
     QMessageBox,
 )
 
