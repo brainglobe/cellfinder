@@ -15,8 +15,8 @@ CUBE_WIDTH = 50
 CUBE_HEIGHT = 20
 CUBE_DEPTH = 20
 
-# If using ROI, how much in z to analyse
-MIN_PLANES_ANALYSE = 10
+# If using ROI, how many extra planes to analyse
+MIN_PLANES_ANALYSE = 0
 
 brainglobe_logo = resource_filename(
     "cellfinder_napari", "resources/brainglobe.png"
@@ -25,9 +25,10 @@ brainglobe_logo = resource_filename(
 
 def detect():
     from math import ceil
-    from fancylog import fancylog
+
+    # from fancylog import fancylog
+    # import cellfinder_napari as program_for_log
     from napari.qt.threading import thread_worker
-    import cellfinder_napari as program_for_log
     from cellfinder_core.main import main as cellfinder_run
     from cellfinder_core.classify.cube_generator import get_cube_depth_min_max
     from .utils import cells_to_array
@@ -48,7 +49,7 @@ def detect():
         Start_plane=0,
         End_plane=0,
         Number_of_free_cpus=2,
-        Analyse_field_of_view=False,
+        Analyse_local=False,
         Debug=False,
     )
 
@@ -118,9 +119,7 @@ def detect():
         Number_of_free_cpus=dict(
             value=DEFAULT_PARAMETERS["Number_of_free_cpus"]
         ),
-        Analyse_field_of_view=dict(
-            value=DEFAULT_PARAMETERS["Analyse_field_of_view"]
-        ),
+        Analyse_local=dict(value=DEFAULT_PARAMETERS["Analyse_local"]),
         Debug=dict(value=DEFAULT_PARAMETERS["Debug"]),
         # Classification_batch_size=dict(max=4096),
         call_button=True,
@@ -152,7 +151,7 @@ def detect():
         Start_plane: int,
         End_plane: int,
         Number_of_free_cpus: int,
-        Analyse_field_of_view: bool,
+        Analyse_local: bool,
         Debug: bool,
         reset_button,
     ) -> List[napari.types.LayerDataTuple]:
@@ -190,16 +189,10 @@ def detect():
             should be attempted
         Number_of_free_cpus : int
             How many CPU cores to leave free
-        Analyse_field_of_view : Only analyse the visible part of the image,
-            with the minimum amount of 3D information
+        Analyse_local : Only analyse planes around the current position
         """
 
         def add_layers(points):
-            if Analyse_field_of_view:
-                for point in points:
-                    point.x = point.x + Signal_image.corner_pixels[0][2]
-                    point.y = point.y + Signal_image.corner_pixels[0][1]
-
             points, rejected = cells_to_array(points)
 
             viewer.add_points(
@@ -269,16 +262,7 @@ def detect():
         if Trained_model == Path.home():
             Trained_model = None
 
-        if Analyse_field_of_view:
-            index = list(
-                slice(int(i[0]), int(i[1]))
-                for i in Signal_image.corner_pixels.T
-            )
-            index[0] = slice(0, len(Signal_image.data))
-
-            signal_data = Signal_image.data[tuple(index)]
-            background_data = Background_image.data[tuple(index)]
-
+        if Analyse_local:
             current_plane = viewer.dims.current_step[0]
 
             # so a reasonable number of cells in the plane are detected
@@ -292,13 +276,9 @@ def detect():
             Start_plane = max(0, Start_plane)
             End_plane = min(len(Signal_image.data), End_plane)
 
-        else:
-            signal_data = Signal_image.data
-            background_data = Background_image.data
-
         worker = run(
-            signal_data,
-            background_data,
+            Signal_image.data,
+            Background_image.data,
             voxel_sizes,
             Soma_diameter,
             ball_xy_size,
