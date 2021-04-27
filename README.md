@@ -8,7 +8,6 @@
 [![Coverage Status](https://coveralls.io/repos/github/brainglobe/cellfinder/badge.svg?branch=master)](https://coveralls.io/github/brainglobe/cellfinder?branch=master)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/python/black)
 [![Gitter](https://badges.gitter.im/brainglobe.svg)](https://gitter.im/BrainGlobe/cellfinder/?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3891338.svg)](https://doi.org/10.5281/zenodo.3891338)
 [![Contributions](https://img.shields.io/badge/Contributions-Welcome-brightgreen.svg)](https://docs.brainglobe.info/cellfinder/contributing)
 [![Website](https://img.shields.io/website?up_message=online&url=https%3A%2F%2Fcellfinder.info)](https://cellfinder.info)
 [![Twitter](https://img.shields.io/twitter/follow/findingcells?style=social)](https://twitter.com/findingcells)
@@ -142,5 +141,5 @@ If you find cellfinder useful, and use it in your research, please cite the prep
 If you use any of the image registration functions in cellfinder, please also cite [brainreg](https://github.com/brainglobe/brainreg#citing-brainreg).
 
 **If you use this, or any other tools in the brainglobe suite, please
- [let us know](mailto:adam.tyson@ucl.ac.uk?subject=cellfinder), and 
+ [let us know](mailto:code@adamltyson.com?subject=cellfinder), and 
  we'd be happy to promote your paper/talk etc.**
