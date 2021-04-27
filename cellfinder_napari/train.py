@@ -75,12 +75,22 @@ def train():
             value=DEFAULT_PARAMETERS["Pretrained_model"],
             choices=PRETRAINED_MODELS,
         ),
-        Continue_training=dict(value=DEFAULT_PARAMETERS["Continue_training"]),
+        Continue_training=dict(
+            value=DEFAULT_PARAMETERS["Continue_training"],
+            label="Continue training",
+        ),
         Augment=dict(value=DEFAULT_PARAMETERS["Augment"]),
         Tensorboard=dict(value=DEFAULT_PARAMETERS["Tensorboard"]),
-        Save_weights=dict(value=DEFAULT_PARAMETERS["Save_weights"]),
-        Save_checkpoints=dict(value=DEFAULT_PARAMETERS["Save_checkpoints"]),
-        Save_progress=dict(value=DEFAULT_PARAMETERS["Save_progress"]),
+        Save_weights=dict(
+            value=DEFAULT_PARAMETERS["Save_weights"], label="Save weights"
+        ),
+        Save_checkpoints=dict(
+            value=DEFAULT_PARAMETERS["Save_checkpoints"],
+            label="Save checkpoints",
+        ),
+        Save_progress=dict(
+            value=DEFAULT_PARAMETERS["Save_progress"], label="Save progress"
+        ),
         Epochs=dict(value=DEFAULT_PARAMETERS["Epochs"]),
         Learning_rate=dict(
             value=DEFAULT_PARAMETERS["Learning_rate"], step=0.0001
@@ -168,6 +178,8 @@ def train():
             Fraction of training data to use for validation
         Number_of_free_cpus : int
             How many CPU cores to leave free
+        reset_button :
+            Reset parameters to default
         """
         if Trained_model == Path.home():
             Trained_model = None

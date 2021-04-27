@@ -120,7 +120,9 @@ def detect():
         Number_of_free_cpus=dict(
             value=DEFAULT_PARAMETERS["Number_of_free_cpus"]
         ),
-        Analyse_local=dict(value=DEFAULT_PARAMETERS["Analyse_local"]),
+        Analyse_local=dict(
+            value=DEFAULT_PARAMETERS["Analyse_local"], label="Analyse local"
+        ),
         Debug=dict(value=DEFAULT_PARAMETERS["Debug"]),
         # Classification_batch_size=dict(max=4096),
         call_button=True,
@@ -160,22 +162,22 @@ def detect():
 
         Parameters
         ----------
+        Signal_image : napari.layers.Image
+             Image layer containing the labelled cells
+        Background_image : napari.layers.Image
+             Image layer withoutlabelled cells
         voxel_size_z : float
             Size of your voxels in the axial dimension
         voxel_size_y : float
-            Size of your voxels in x (left to right)
-        voxel_size_z : float
-            Size of your voxels in the y (top to bottom)
+            Size of your voxels in the y direction (top to bottom)
+        voxel_size_x : float
+            Size of your voxels in the x direction (left to right)
         Soma_diameter : float
             The expected in-plane soma diameter (microns)
         ball_xy_size : float
             Elliptical morphological in-plane filter size (microns)
         ball_z_size : float
             Elliptical morphological axial filter size (microns)
-        Start_plane : int
-            First plane to process (to process a subset of the data)
-        End_plane : int
-            Last plane to process (to process a subset of the data)
         Ball_overlap : float
             Fraction of the morphological filter needed to be filled
             to retain a voxel
@@ -188,9 +190,20 @@ def detect():
         Max_cluster : int
             Largest putative cell cluster (in cubic um) where splitting
             should be attempted
+        Trained_model : Path
+            Trained model file path
+        Start_plane : int
+            First plane to process (to process a subset of the data)
+        End_plane : int
+            Last plane to process (to process a subset of the data)
         Number_of_free_cpus : int
             How many CPU cores to leave free
-        Analyse_local : Only analyse planes around the current position
+        Analyse_local : bool
+            Only analyse planes around the current position
+        Debug : bool
+            Increase logging
+        reset_button :
+            Reset parameters to default
         """
 
         def add_layers(points):
