@@ -45,7 +45,7 @@ pip install cellfinder-napari
 
 ### Usage
 Full documentation can be 
-found [here](https://docs.brainglobe.info/cellfinder/napari-plugin). 
+found [here](https://docs.brainglobe.info/cellfinder-napari). 
  
 This software is at a very early stage, and was written with our data in mind. 
 Over time we hope to support other data types/formats. If you have any 

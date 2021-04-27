@@ -41,7 +41,7 @@ setup(
     project_urls={
         "Source Code": "https://github.com/brainglobe/cellfinder-napari",
         "Bug Tracker": "https://github.com/brainglobe/cellfinder-napari-issues",
-        "Documentation": "https://docs.brainglobe.info/cellfinder/napari-plugin",
+        "Documentation": "https://docs.brainglobe.info/cellfinder-napari/",
     },
     classifiers=[
         "Development Status :: 4 - Beta",
