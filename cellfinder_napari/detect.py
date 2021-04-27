@@ -319,6 +319,7 @@ def detect():
         '<p><a href="https://docs.brainglobe.info/cellfinder/napari-plugin" style="color:gray;">Documentation</a></p>'
         '<p><a href="https://github.com/brainglobe/cellfinder-napari" style="color:gray;">Source</a></p>'
         '<p><a href="https://www.biorxiv.org/content/10.1101/2020.10.21.348771v2" style="color:gray;">Citation</a></p>'
+        "<p><small>For help, hover the cursor over each parameter.</small>"
     )
     widget.header.native.setOpenExternalLinks(True)
 
