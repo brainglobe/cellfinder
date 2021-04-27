@@ -31,6 +31,7 @@ def detect():
     from napari.qt.threading import thread_worker
     from cellfinder_core.main import main as cellfinder_run
     from cellfinder_core.classify.cube_generator import get_cube_depth_min_max
+    from imlib.cells.cells import Cell
     from .utils import cells_to_array
 
     DEFAULT_PARAMETERS = dict(
@@ -204,6 +205,7 @@ def detect():
                 symbol="ring",
                 face_color="lightskyblue",
                 visible=False,
+                metadata=dict(point_type=Cell.UNKNOWN),
             )
             viewer.add_points(
                 points,
@@ -213,6 +215,7 @@ def detect():
                 opacity=0.6,
                 symbol="ring",
                 face_color="lightgoldenrodyellow",
+                metadata=dict(point_type=Cell.CELL),
             )
 
         @thread_worker
