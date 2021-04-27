@@ -1,3 +1,3 @@
-__version__ = "0.0.4-rc1"
+__version__ = "0.0.4"
 __author__ = "Adam Tyson"
 __license__ = "GPL-3.0"
