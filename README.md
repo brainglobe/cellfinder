@@ -59,7 +59,7 @@ questions or issues, please get in touch by
 ## Illustration
 
 ### Introduction
-cellfinder takes a stitched, but otherwise raw whole-brain dataset with at least 
+cellfinder takes a stitched, but otherwise raw dataset with at least 
 two channels:
  * Background channel (i.e. autofluorescence)
  * Signal channel, the one with the cells to be detected:
