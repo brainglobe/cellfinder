@@ -97,6 +97,21 @@ print(Cell.NO_CELL)
 # 1
 ```
 
+#### Saving the results
+If you want to save the detected cells for use in other BrainGlobe software (e.g. the 
+[cellfinder napari plugin](https://docs.brainglobe.info/cellfinder-napari/introduction)),
+you can save in the cellfinder XML standard:
+```python
+from imlib.IO.cells import save_cells
+save_cells(detected_cells, "/path/to/cells.xml")
+```
+You can load these back with:
+```python
+from imlib.IO.cells import get_cells
+cells = get_cells("/path/to/cells.xml")
+```
+
+
 #### Using dask for lazy loading
 `cellfinder-core` supports most array-like objects. Using 
 [Dask arrays](https://docs.dask.org/en/latest/array.html) allows for lazy 
@@ -131,7 +146,7 @@ background_array = tifffile.imread("/path/to/background_image.tif")
 voxel_sizes = [5, 2, 2] # in microns
 
 home = Path.home()
-install_path = home / ".cellfinder"
+install_path = home / ".cellfinder" # default
 
 start_plane=0
 end_plane=-1
@@ -187,6 +202,47 @@ if len(cell_candidates) > 0: # Don't run if there's nothing to classify
         network_depth,
     )
 ```
+#### Training the network
+The training data needed are matched pairs (signal & background) of small 
+(usually 50 x 50 x 100um) images centered on the coordinate of candidate cells.
+These can be generated however you like, but I recommend using the 
+[Napari plugin](https://docs.brainglobe.info/cellfinder-napari/user-guide/training-data-generation).
+
+`cellfinder-core` comes with a 50-layer ResNet trained on ~100,000 data points
+from serial two-photon microscopy images of mouse brains 
+(available [here](https://gin.g-node.org/cellfinder/training_data)).
+
+Training the network is likely simpler using the 
+[command-line interface](https://docs.brainglobe.info/cellfinder/user-guide/training#start-training) 
+or the [Napari plugin](https://docs.brainglobe.info/cellfinder-napari/user-guide/training-the-network),
+but it is possible through the Python API.
+
+```python
+from pathlib import Path
+from cellfinder_core.train.train_yml import run as run_training
+
+# list of training yml files
+yaml_files = [Path("/path/to/training_yml.yml)]
+
+# where to save the output
+output_directory = Path("/path/to/saved_training_data")
+
+home = Path.home()
+install_path = home / ".cellfinder"  # default
+
+run_training(
+    output_directory,
+    yaml_files,
+    install_path=install_path,
+    learning_rate=0.0001,
+    continue_training=True, # by default use supplied model
+    test_fraction=0.1,
+    batch_size=32,
+    save_progress=True,
+    epochs=10,
+)
+```
+
 ---
 ### More info
 
