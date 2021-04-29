@@ -22,6 +22,7 @@ requirements = [
     "tensorflow>=2.4.0",
     "napari[pyside2]>=0.3.7",
     "brainglobe-napari-io",
+    "cellfinder-napari",
     "slurmio>=0.0.4",
     "fancylog>=0.0.7",
     "imlib>=0.0.26",
