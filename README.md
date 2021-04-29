@@ -14,7 +14,7 @@
 # Cellfinder
 Whole-brain cell detection, registration and analysis.
 
----
+
 **N.B. If you just want to use the cell detection part of cellfinder, please 
 see the standalone [cellfinder-core](https://github.com/brainglobe/cellfinder-core)
 package, or the [cellfinder plugin](https://github.com/brainglobe/cellfinder-napari)
