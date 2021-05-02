@@ -7,7 +7,6 @@ import pandas as pd
 import bg_space as bgs
 
 from pathlib import Path
-from imlib.IO.cells import get_cells
 from imlib.pandas.misc import sanitise_df
 from imlib.general.system import ensure_directory_exists
 
@@ -217,14 +216,13 @@ def transform_points_downsampled_to_atlas_space(
     return transformed_points
 
 
-def run(args, atlas, downsampled_space):
+def run(args, cells, atlas, downsampled_space):
     deformation_field_paths = [
         args.brainreg_paths.deformation_field_0,
         args.brainreg_paths.deformation_field_1,
         args.brainreg_paths.deformation_field_2,
     ]
 
-    cells = get_cells(args.paths.classified_points, cells_only=True)
     cell_list = []
     for cell in cells:
         cell_list.append([cell.z, cell.y, cell.x])

@@ -204,14 +204,22 @@ def run_all(args, what_to_run, atlas):
         )
 
     if what_to_run.analyse:
-        logging.info("Analysing cell positions")
-        analyse.run(args, atlas, downsampled_space)
+        points = get_cells(args.paths.detected_points, cells_only=True)
+        if len(points) == 0:
+            logging.info("No cells detected, skipping")
+        else:
+            logging.info("Analysing cell positions")
+            analyse.run(args, points, atlas, downsampled_space)
     else:
         logging.info("Skipping cell position analysis")
 
     if what_to_run.figures:
-        logging.info("Generating figures")
-        figures.run(args, atlas, downsampled_space.shape)
+        points = get_cells(args.paths.detected_points, cells_only=True)
+        if len(points) == 0:
+            logging.info("No cells detected, skipping")
+        else:
+            logging.info("Generating figures")
+            figures.run(args, atlas, downsampled_space.shape)
     else:
         logging.info("Skipping figure generation")
 
