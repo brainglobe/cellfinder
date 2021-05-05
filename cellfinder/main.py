@@ -204,9 +204,9 @@ def run_all(args, what_to_run, atlas):
         )
 
     if what_to_run.analyse:
-        points = get_cells(args.paths.detected_points, cells_only=True)
+        points = get_cells(args.paths.classified_points, cells_only=True)
         if len(points) == 0:
-            logging.info("No cells detected, skipping")
+            logging.info("No cells detected, skipping cell position analysis")
         else:
             logging.info("Analysing cell positions")
             analyse.run(args, points, atlas, downsampled_space)
