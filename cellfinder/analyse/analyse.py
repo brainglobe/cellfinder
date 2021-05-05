@@ -10,16 +10,22 @@ from pathlib import Path
 from imlib.pandas.misc import sanitise_df
 from imlib.general.system import ensure_directory_exists
 
-from cellfinder.export.to_brainrender import export_points
+from cellfinder.export.export import export_points
 
 
 class Point:
     def __init__(
-        self, raw_coordinate, atlas_coordinate, structure, hemisphere
+        self,
+        raw_coordinate,
+        atlas_coordinate,
+        structure,
+        structure_id,
+        hemisphere,
     ):
         self.raw_coordinate = raw_coordinate
         self.atlas_coordinate = atlas_coordinate
         self.structure = structure
+        self.structure_id = structure_id
         self.hemisphere = hemisphere
 
 
@@ -70,10 +76,14 @@ def summarise_points(
     structures_with_points = set()
     for idx, point in enumerate(transformed_points):
         try:
-            structure = atlas.structure_from_coords(point)
-            structure = atlas.structures[structure]["name"]
+            structure_id = atlas.structure_from_coords(point)
+            structure = atlas.structures[structure_id]["name"]
             hemisphere = atlas.hemisphere_from_coords(point, as_string=True)
-            points.append(Point(raw_points[idx], point, structure, hemisphere))
+            points.append(
+                Point(
+                    raw_points[idx], point, structure, structure_id, hemisphere
+                )
+            )
             structures_with_points.add(structure)
         except:
             continue
@@ -85,6 +95,8 @@ def summarise_points(
     get_region_totals(
         points, structures_with_points, volume_csv_path, summary_filename
     )
+
+    return points
 
 
 def create_all_cell_csv(points, all_points_filename):
@@ -239,6 +251,7 @@ def run(args, cells, atlas, downsampled_space):
         args.paths.downsampled_points,
         args.paths.atlas_points,
         args.paths.brainrender_points,
+        args.paths.abc4d_points,
         args.brainreg_paths.volume_csv_path,
         args.paths.all_points_csv,
         args.paths.summary_csv,
@@ -256,6 +269,7 @@ def run_analysis(
     downsampled_points_path,
     atlas_points_path,
     brainrender_points_path,
+    abc4d_points_path,
     volume_csv_path,
     all_points_csv_path,
     summary_csv_path,
@@ -282,19 +296,20 @@ def run_analysis(
         atlas_points_path=atlas_points_path,
     )
 
-    logging.info("Exporting cells to brainrender")
-    export_points(
-        transformed_cells,
-        atlas.resolution[0],
-        brainrender_points_path,
-    )
-
     logging.info("Summarising cell positions")
-    summarise_points(
+    points = summarise_points(
         cells,
         transformed_cells,
         atlas,
         volume_csv_path,
         all_points_csv_path,
         summary_csv_path,
+    )
+    logging.info("Exporting data")
+    export_points(
+        points,
+        transformed_cells,
+        atlas.resolution[0],
+        brainrender_points_path,
+        abc4d_points_path,
     )
