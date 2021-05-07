@@ -7,7 +7,6 @@
     https://github.com/brainglobe/cellfinder-core/actions)
 [![Coverage Status](https://coveralls.io/repos/github/brainglobe/cellfinder-core/badge.svg?branch=main)](https://coveralls.io/github/brainglobe/cellfinder-core?branch=main)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/python/black)
-[![Gitter](https://badges.gitter.im/brainglobe.svg)](https://gitter.im/BrainGlobe/cellfinder/?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 [![Contributions](https://img.shields.io/badge/Contributions-Welcome-brightgreen.svg)](https://docs.brainglobe.info/cellfinder/contributing)
 [![Website](https://img.shields.io/website?up_message=online&url=https%3A%2F%2Fcellfinder.info)](https://cellfinder.info)
 [![Twitter](https://img.shields.io/twitter/follow/findingcells?style=social)](https://twitter.com/findingcells)
@@ -253,7 +252,7 @@ This software is at a very early stage, and was written with our data in mind.
 Over time we hope to support other data types/formats. If you have any 
 questions or issues, please get in touch by 
 [email](mailto:code@adamltyson.com?subject=cellfinder-core), 
-[gitter](https://gitter.im/BrainGlobe/cellfinder) or by 
+[on the forum](https://forum.image.sc/tag/brainglobe) or by 
 [raising an issue](https://github.com/brainglobe/cellfinder-core/issues).
 
 ---
