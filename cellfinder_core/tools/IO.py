@@ -8,6 +8,7 @@ from dask import array as da
 from dask import delayed
 from tifffile import TiffFile, imread
 
+from imlib.general.system import get_sorted_file_paths
 
 def get_tiff_meta(
     path: str,
@@ -34,7 +35,7 @@ def read_with_dask(path):
     filenames = glob.glob(os.path.join(path, "*.tif"))
 
     shape, dtype = get_tiff_meta(filenames[0])
-    lazy_arrays = [lazy_imread(fn) for fn in sorted(filenames)]
+    lazy_arrays = [lazy_imread(fn) for fn in get_sorted_file_paths(filenames)]
     dask_arrays = [
         da.from_delayed(delayed_reader, shape=shape, dtype=dtype)
         for delayed_reader in lazy_arrays
