@@ -10,6 +10,7 @@ from tifffile import TiffFile, imread
 
 from imlib.general.system import get_sorted_file_paths
 
+
 def get_tiff_meta(
     path: str,
 ) -> Tuple[Tuple[int, int], np.dtype]:
