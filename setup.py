@@ -15,7 +15,7 @@ requirements = [
 
 setup(
     name="cellfinder-napari",
-    version="0.0.9",
+    version="0.0.10-rc5",
     author="Adam Tyson",
     author_email="code@adamltyson.com",
     license="GPL-3.0",
@@ -23,6 +23,7 @@ setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     packages=find_packages(),
+    include_package_data=True,
     python_requires=">=3.6",
     install_requires=requirements,
     extras_require={
@@ -35,6 +36,7 @@ setup(
             "bump2version",
             "pre-commit",
             "flake8",
+            "check-manifest",
         ]
     },
     url="https://cellfinder.info",

@@ -1,4 +1,5 @@
 import pandas as pd
+from pkg_resources import resource_filename
 
 from qtpy.QtWidgets import (
     QPushButton,
@@ -8,6 +9,11 @@ from qtpy.QtWidgets import (
 )
 
 from imlib.cells.cells import Cell
+
+
+brainglobe_logo = resource_filename(
+    "cellfinder_napari", "images/brainglobe.png"
+)
 
 
 def cells_df_as_np(cells_df, new_order=[2, 1, 0], type_column="type"):

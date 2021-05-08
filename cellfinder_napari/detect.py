@@ -1,10 +1,9 @@
 import napari
 from pathlib import Path
-
 from magicgui import magicgui
-
 from typing import List
-from pkg_resources import resource_filename
+
+from cellfinder_napari.utils import brainglobe_logo
 
 # TODO:
 # how to store & fetch pre-trained models?
@@ -17,10 +16,6 @@ CUBE_DEPTH = 20
 
 # If using ROI, how many extra planes to analyse
 MIN_PLANES_ANALYSE = 0
-
-brainglobe_logo = resource_filename(
-    "cellfinder_napari", "resources/brainglobe.png"
-)
 
 
 def detect():

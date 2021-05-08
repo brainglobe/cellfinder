@@ -1,12 +1,7 @@
 from pathlib import Path
 from magicgui import magicgui
-from pkg_resources import resource_filename
 from napari.qt.threading import thread_worker
-
-
-brainglobe_logo = resource_filename(
-    "cellfinder_napari", "resources/brainglobe.png"
-)
+from cellfinder_napari.utils import brainglobe_logo
 
 
 def train():
