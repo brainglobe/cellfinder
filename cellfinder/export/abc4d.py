@@ -16,4 +16,4 @@ def export_points(
             np.append(point.atlas_coordinate, point.structure_id)
         )
 
-    np.save(output_filename, np.vstack(point_arrays).astype(np.int16))
+    np.save(output_filename, np.vstack(point_arrays).astype(np.uint32))
