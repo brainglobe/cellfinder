@@ -29,11 +29,11 @@ whole-brain microscopy analysis, and the algorithm can also be implemented in
 ## Instructions
 
 ### Installation
-`cellfinder-core` supports Python 3.7, 3.8 (3.9 when supported by TensorFlow), 
+`cellfinder-core` supports Python >=3.7, 
 and works across Linux, Windows, and should work on most versions of macOS 
 (although this is not tested).
 
-Assuming you have a Python 3.7 or 3.8 environment set up 
+Assuming you have a Python environment set up 
 (e.g. [using conda](https://docs.brainglobe.info/cellfinder/using-conda)), 
 you can install `cellfinder-core` with:
 ```bash
