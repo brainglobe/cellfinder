@@ -108,7 +108,7 @@ setup(
             # "cellfinder_curate = cellfinder_core.train.curation_old:main",
         ]
     },
-    url="https://cellfinder.info",
+    url="https://brainglobe.info/cellfinder",
     project_urls={
         "Source Code": "https://github.com/brainglobe/cellfinder-core",
         "Bug Tracker": "https://github.com/brainglobe/cellfinder-core/issues",
