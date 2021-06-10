@@ -10,7 +10,7 @@ requirements = [
     "napari-plugin-engine >= 0.1.4",
     "napari-ndtiffs",
     "brainglobe-napari-io",
-    "cellfinder-core",
+    "cellfinder-core>=0.2.4",
 ]
 
 setup(
