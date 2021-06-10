@@ -6,7 +6,7 @@ with open(path.join(this_directory, "README.md"), encoding="utf-8") as f:
     long_description = f.read()
 
 requirements = [
-    "cellfinder-core>=0.2.3",
+    "cellfinder-core>=0.2.4",
     "numpy",
     "scikit-learn",
     "configparser",
@@ -19,7 +19,7 @@ requirements = [
     "multiprocessing-logging",
     "psutil",
     "configobj",
-    "tensorflow>=2.4.0",
+    "tensorflow>=2.5.0",
     "napari[pyside2]>=0.3.7",
     "brainglobe-napari-io",
     "cellfinder-napari",
@@ -77,6 +77,7 @@ setup(
         "Programming Language :: Python",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
         "Topic :: Scientific/Engineering :: Image Recognition",
         "Intended Audience :: Developers",
         "Intended Audience :: Science/Research",
