@@ -16,7 +16,7 @@ from imlib.cells.cells import Cell
 from imlib.general.system import ensure_directory_exists
 from imlib.IO.yaml import save_yaml
 
-from .utils import add_combobox, add_button, display_info
+from .utils import add_combobox, add_button, display_question, display_info
 
 
 # Constants used throughout
@@ -225,46 +225,56 @@ class CurationWidget(QWidget):
     ):
         cell_name = "Training data (cells)"
         non_cell_name = "Training data (non cells)"
-        if not (
-            self.training_data_cell_layer and self.training_data_non_cell_layer
-        ):
-            if not self.training_data_cell_layer:
-                self.training_data_cell_layer = self.viewer.add_points(
-                    None,
-                    ndim=3,
-                    symbol="ring",
-                    n_dimensional=True,
-                    size=15,
-                    opacity=0.6,
-                    face_color="lightgoldenrodyellow",
-                    name=cell_name,
-                    metadata=dict(point_type=Cell.CELL, training_data=True),
-                )
-                self.training_data_cell_choice.setCurrentText(cell_name)
 
-            if not self.training_data_non_cell_layer:
-                self.training_data_non_cell_layer = self.viewer.add_points(
-                    None,
-                    ndim=3,
-                    symbol="ring",
-                    n_dimensional=True,
-                    size=15,
-                    opacity=0.6,
-                    face_color="lightskyblue",
-                    name=non_cell_name,
-                    metadata=dict(point_type=Cell.UNKNOWN, training_data=True),
-                )
-                self.training_data_non_cell_choice.setCurrentText(
-                    non_cell_name
-                )
-
-        else:
-            display_info(
+        overwrite = False
+        if self.training_data_cell_layer or self.training_data_non_cell_layer:
+            overwrite = display_question(
                 self,
                 "Training data layers exist",
                 "Training data layers already exist,  "
-                "no more layers will be added.",
+                "overwrite with empty layers?.",
             )
+        else:
+            if self.training_data_cell_layer:
+                self.training_data_cell_layer.remove()
+            self._add_training_data_layers(cell_name, non_cell_name)
+
+        if overwrite:
+            try:
+                self.viewer.layers.remove(cell_name)
+                self.viewer.layers.remove(non_cell_name)
+            except ValueError:
+                pass
+
+            self._add_training_data_layers(cell_name, non_cell_name)
+
+    def _add_training_data_layers(self, cell_name, non_cell_name):
+
+        self.training_data_cell_layer = self.viewer.add_points(
+            None,
+            ndim=3,
+            symbol="ring",
+            n_dimensional=True,
+            size=15,
+            opacity=0.6,
+            face_color="lightgoldenrodyellow",
+            name=cell_name,
+            metadata=dict(point_type=Cell.CELL, training_data=True),
+        )
+        self.training_data_cell_choice.setCurrentText(cell_name)
+
+        self.training_data_non_cell_layer = self.viewer.add_points(
+            None,
+            ndim=3,
+            symbol="ring",
+            n_dimensional=True,
+            size=15,
+            opacity=0.6,
+            face_color="lightskyblue",
+            name=non_cell_name,
+            metadata=dict(point_type=Cell.UNKNOWN, training_data=True),
+        )
+        self.training_data_non_cell_choice.setCurrentText(non_cell_name)
 
     def mark_as_cell(self):
         self.mark_point_as_type("cell")
