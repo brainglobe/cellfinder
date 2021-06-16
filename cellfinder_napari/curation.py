@@ -284,8 +284,8 @@ class CurationWidget(QWidget):
             )
             return
 
-        if len(self.viewer.layers.selected) == 1:
-            layer = self.viewer.layers.selected[0]
+        if len(self.viewer.layers.selection) == 1:
+            layer = list(self.viewer.layers.selection)[0]
             if type(layer) == napari.layers.Points:
 
                 if len(layer.data) > 0:
