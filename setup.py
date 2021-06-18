@@ -118,8 +118,7 @@ setup(
     author_email="code@adamltyson.com",
     classifiers=[
         "Development Status :: 3 - Alpha",
-        "Operating System :: POSIX :: Linux",
-        "Operating System :: Microsoft :: Windows :: Windows 10",
+        "Operating System :: OS Independent",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
