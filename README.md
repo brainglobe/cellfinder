@@ -138,6 +138,7 @@ from pathlib import Path
 
 from cellfinder_core.detect import detect
 from cellfinder_core.classify import classify
+from cellfinder_core.tools.prep import prep_classification
 
 signal_array = tifffile.imread("/path/to/signal_image.tif")
 background_array = tifffile.imread("/path/to/background_image.tif")
@@ -167,6 +168,10 @@ cube_height=50
 cube_depth=20
 network_depth="50"
 
+model_weights = prep_classification(
+    trained_model, model_weights, install_path, model, n_free_cpus
+)
+    
 cell_candidates = detect.main(
     signal_array,
     start_plane,
