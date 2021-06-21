@@ -208,7 +208,7 @@ class CubeGeneratorFromFile(Sequence):
         :return:
         """
         if not self.batches:
-            raise IndexError('Empty batch. Were any cell detected?')
+            raise IndexError("Empty batch. Were any cells detected?")
 
         cell_batch = self.batches[index]
         signal_stack, background_stack = self.__get_stacks(index)

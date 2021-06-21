@@ -90,7 +90,7 @@ def main(
         workers_queue.put(None)
 
     if signal_array.ndim != 3:
-        raise IOError('Input data must be 3D')
+        raise IOError("Input data must be 3D")
 
     setup_params = [
         signal_array[0, :, :],

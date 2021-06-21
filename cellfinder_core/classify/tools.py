@@ -43,8 +43,7 @@ def get_model(
                 f"Setting model weights according to: {model_weights}"
             )
             if model_weights is None:
-                raise IOError('`model_weights` must be provided for inference or '
-                              'continue_training')
+                raise IOError("`model_weights` must be provided")
             model.load_weights(model_weights)
         return model
 
