@@ -89,6 +89,9 @@ def main(
         # place holder for the queue to have the right size on first run
         workers_queue.put(None)
 
+    if signal_array.ndim != 3:
+        raise IOError('Input data must be 3D')
+
     setup_params = [
         signal_array[0, :, :],
         soma_diameter,

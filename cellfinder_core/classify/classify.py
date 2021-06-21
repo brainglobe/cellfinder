@@ -25,6 +25,11 @@ def main(
     max_workers=3,
 ):
 
+    if signal_array.ndim != 3:
+        raise IOError('Signal data must be 3D')
+    if background_array.ndim != 3:
+        raise IOError('Background data must be 3D')
+
     # Too many workers doesn't increase speed, and uses huge amounts of RAM
     workers = get_num_processes(
         min_free_cpu_cores=n_free_cpus, n_max_processes=max_workers

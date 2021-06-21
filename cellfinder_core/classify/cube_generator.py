@@ -207,6 +207,9 @@ class CubeGeneratorFromFile(Sequence):
         :param index:
         :return:
         """
+        if not self.batches:
+            raise IndexError('Empty batch. Were any cell detected?')
+
         cell_batch = self.batches[index]
         signal_stack, background_stack = self.__get_stacks(index)
         images = self.__generate_cubes(
