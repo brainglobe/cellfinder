@@ -39,7 +39,7 @@ setup(
             "check-manifest",
         ]
     },
-    url="https://cellfinder.info",
+    url="https://brainglobe.info/cellfinder",
     project_urls={
         "Source Code": "https://github.com/brainglobe/cellfinder-napari",
         "Bug Tracker": "https://github.com/brainglobe/cellfinder-napari-issues",
