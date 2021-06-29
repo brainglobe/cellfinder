@@ -15,7 +15,7 @@ requirements = [
 
 setup(
     name="cellfinder-napari",
-    version="0.0.17",
+    version="0.0.16",
     author="Adam Tyson",
     author_email="code@adamltyson.com",
     license="BSD-3-Clause",
@@ -41,9 +41,9 @@ setup(
     },
     url="https://brainglobe.info/cellfinder",
     project_urls={
-        "Source Code": "https://github.com/brainglobe/brainreg-segment",
-        "Bug Tracker": "https://github.com/brainglobe/brainreg-segment/issues",
-        "Documentation": "https://docs.brainglobe.info/brainreg-segment",
+        "Source Code": "https://github.com/brainglobe/cellfinder-napari",
+        "Bug Tracker": "https://github.com/brainglobe/cellfinder-napari/issues",
+        "Documentation": "https://docs.brainglobe.info/cellfinder-napari/",
         "User Support": "https://forum.image.sc/tag/brainglobe",
     },
     classifiers=[
