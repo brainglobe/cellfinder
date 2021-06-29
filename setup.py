@@ -57,7 +57,6 @@ setup(
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Operating System :: OS Independent",
-        "License :: OSI Approved :: BSD License",
     ],
     entry_points={"napari.plugin": ["cellfinder = cellfinder_napari.plugins"]},
 )
