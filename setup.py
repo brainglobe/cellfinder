@@ -42,14 +42,15 @@ setup(
     url="https://brainglobe.info/cellfinder",
     project_urls={
         "Source Code": "https://github.com/brainglobe/cellfinder-napari",
-        "Bug Tracker": "https://github.com/brainglobe/cellfinder-napari-issues",
+        "Bug Tracker": "https://github.com/brainglobe/cellfinder-napari/issues",
         "Documentation": "https://docs.brainglobe.info/cellfinder-napari/",
     },
     classifiers=[
         "Development Status :: 4 - Beta",
-        "Intended Audience :: Developers",
         "Framework :: napari",
-        "Topic :: Software Development :: Testing",
+        "Topic :: Scientific/Engineering :: Image Recognition",
+        "Intended Audience :: Developers",
+        "Intended Audience :: Science/Research",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.7",
