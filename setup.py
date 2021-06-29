@@ -41,9 +41,10 @@ setup(
     },
     url="https://brainglobe.info/cellfinder",
     project_urls={
-        "Source Code": "https://github.com/brainglobe/cellfinder-napari",
-        "Bug Tracker": "https://github.com/brainglobe/cellfinder-napari/issues",
-        "Documentation": "https://docs.brainglobe.info/cellfinder-napari/",
+        "Source Code": "https://github.com/brainglobe/brainreg-segment",
+        "Bug Tracker": "https://github.com/brainglobe/brainreg-segment/issues",
+        "Documentation": "https://docs.brainglobe.info/brainreg-segment",
+        "User Support": "https://forum.image.sc/tag/brainglobe",
     },
     classifiers=[
         "Development Status :: 4 - Beta",
