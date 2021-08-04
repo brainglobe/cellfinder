@@ -160,7 +160,7 @@ def detect():
         Signal_image : napari.layers.Image
              Image layer containing the labelled cells
         Background_image : napari.layers.Image
-             Image layer withoutlabelled cells
+             Image layer without labelled cells
         voxel_size_z : float
             Size of your voxels in the axial dimension
         voxel_size_y : float
