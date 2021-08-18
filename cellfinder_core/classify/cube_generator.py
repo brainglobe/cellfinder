@@ -4,7 +4,7 @@ import tensorflow as tf
 from random import shuffle
 from skimage.io import imread
 from scipy.ndimage import zoom
-from tensorflow.python.keras.utils.data_utils import Sequence
+from tensorflow.keras.utils import Sequence
 from imlib.cells.cells import group_cells_by_z
 from imlib.general.numerical import is_even
 
