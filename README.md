@@ -19,24 +19,22 @@ package, or the [cellfinder plugin](https://github.com/brainglobe/cellfinder-nap
 for [napari](https://napari.org/).**
 
 ---
+`cellfinder` is a collection of tools developed by [Adam Tyson](https://github.com/adamltyson), [Charly Rousseau](https://github.com/crousseau) and [Christian Niedworok](https://github.com/cniedwor) in the [Margrie Lab](https://www.sainsburywellcome.org/web/groups/margrie-lab), generously supported by the [Sainsbury Wellcome Centre](https://www.sainsburywellcome.org/web/).
 
-Cellfinder is a collection of tools from the 
-[Margrie Lab](https://www.sainsburywellcome.org/web/groups/margrie-lab) and
- others at the [Sainsbury Wellcome Centre](https://www.sainsburywellcome.org/web/), [UCL](https://www.ucl.ac.uk/)
- for the analysis of whole-brain imaging data such as 
+`cellfinder` is a designed for the analysis of whole-brain imaging data such as 
  [serial-section imaging](https://sainsburywellcomecentre.github.io/OpenSerialSection/)
- and lightsheet imaging in cleared tissue.
- 
- The aim is to provide a single solution for:
+ and lightsheet imaging in cleared tissue. The aim is to provide a single solution for:
  
  * Cell detection (initial cell candidate detection and refinement using 
- deep learning).
+ deep learning) (using [cellfinder-core](https://github.com/brainglobe/cellfinder-core))
  * Atlas registration (using [brainreg](https://github.com/brainglobe/brainreg))
  * Analysis of cell positions in a common space
  
+ ---
 Installation is with 
 `pip install cellfinder`.
 
+---
 Basic usage:
 ```bash
 cellfinder -s signal_images -b background_images -o output_dir --metadata metadata
