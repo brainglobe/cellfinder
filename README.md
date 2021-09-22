@@ -19,7 +19,7 @@
 [cellfinder](https://github.com/brainglobe/cellfinder) software for 
 whole-brain microscopy analysis.
 
-`cellfinder-napari`, `cellfinder` and `cellfinder-core` were developed by [Christian Niedworok](https://github.com/cniedwor), [Charly Rousseau](https://github.com/crousseau) and [Adam Tyson](https://github.com/adamltyson) in the [Margrie Lab](https://www.sainsburywellcome.org/web/groups/margrie-lab), generously supported by the [Sainsbury Wellcome Centre](https://www.sainsburywellcome.org/web/).
+`cellfinder-napari`, `cellfinder` and `cellfinder-core` were developed by [Charly Rousseau](https://github.com/crousseau) and [Adam Tyson](https://github.com/adamltyson) in the [Margrie Lab](https://www.sainsburywellcome.org/web/groups/margrie-lab), based on previous work by [Christian Niedworok](https://github.com/cniedwor), generously supported by the [Sainsbury Wellcome Centre](https://www.sainsburywellcome.org/web/).
 
 ----
 ![raw](https://raw.githubusercontent.com/brainglobe/cellfinder-napari/master/resources/cellfinder-napari.gif)
