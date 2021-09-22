@@ -15,15 +15,11 @@
 
 ### Efficient cell detection in large images (e.g. whole mouse brain images)
 
-This package implements the cell detection algorithm from 
-[Tyson, Rousseau & Niedworok et al. (2021)](https://www.biorxiv.org/content/10.1101/2020.10.21.348771v2) 
-for [napari](https://napari.org/index.html), based on the 
-[cellfinder-core](https://github.com/brainglobe/cellfinder-core) package.
-
-This algorithm can also be used within the original 
+`cellfinder-napari` is a front-end to [cellfinder-core](https://github.com/brainglobe/cellfinder-core) to allow ease of use within the [napari](https://napari.org/index.html) multidimensional image viewer. For more details on this approach, please see [Tyson, Rousseau & Niedworok et al. (2021)](https://doi.org/10.1371/journal.pcbi.1009074). This algorithm can also be used within the original 
 [cellfinder](https://github.com/brainglobe/cellfinder) software for 
 whole-brain microscopy analysis.
 
+`cellfinder-napari`, `cellfinder` and `cellfinder-core` were developed by [Christian Niedworok](https://github.com/cniedwor), [Charly Rousseau](https://github.com/crousseau) and [Adam Tyson](https://github.com/adamltyson) in the [Margrie Lab](https://www.sainsburywellcome.org/web/groups/margrie-lab), genrously supported by the [Sainsbury Wellcome Centre](https://www.sainsburywellcome.org/web/).
 ----
 ![raw](https://raw.githubusercontent.com/brainglobe/cellfinder-napari/master/resources/cellfinder-napari.gif)
 
