@@ -1,3 +1,10 @@
+"""
+Cell position analysis (based on atlas registration).
+
+Based on https://github.com/SainsburyWellcomeCentre/cell_count_analysis by
+Charly Rousseau (https://github.com/crousseau).
+"""
+
 import imio
 import tifffile
 import logging

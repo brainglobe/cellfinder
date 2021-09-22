@@ -1,3 +1,11 @@
+"""
+Cube extraction for CNN-based classification.
+
+Based on, and mostly copied from,
+https://github.com/SainsburyWellcomeCentre/cell_count_analysis by
+Charly Rousseau (https://github.com/crousseau).
+"""
+
 import os
 from collections import deque
 from concurrent.futures import ProcessPoolExecutor
