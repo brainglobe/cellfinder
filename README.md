@@ -296,3 +296,10 @@ If you find this plugin useful, and use it in your research, please cite the pre
 **If you use this, or any other tools in the brainglobe suite, please
  [let us know](mailto:code@adamltyson.com?subject=cellfinder-core), and 
  we'd be happy to promote your paper/talk etc.**
+ 
+ 
+ ---
+The BrainGlobe project is generously supported by the Sainsbury Wellcome Centre and the Institute of Neuroscience, Technical University of Munich, with funding from Wellcome, the Gatsby Charitable Foundation and the Munich Cluster for Systems Neurology - Synergy.
+
+<img src='https://brainglobe.info/images/logos_combined.png' width="550">
+
