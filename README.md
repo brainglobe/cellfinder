@@ -13,7 +13,7 @@
 Standalone cellfinder cell detection algorithm 
 
 This package implements the cell detection algorithm from 
-[Tyson, Rousseau & Niedworok et al. (2021)](https://www.biorxiv.org/content/10.1101/2020.10.21.348771v2) 
+[Tyson, Rousseau & Niedworok et al. (2021)](https://doi.org/10.1371/journal.pcbi.1009074) 
 without any dependency on data type (i.e. it can be used outside of 
 whole-brain microscopy). 
 
