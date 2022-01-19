@@ -32,7 +32,7 @@ for [napari](https://napari.org/).**
  
  ---
 Installation is with 
-`pip install cellfinder`.
+`pip install cellfinder` or by [using the supplied docker image](https://docs.brainglobe.info/cellfinder/installation/installation-with-docker).
 
 ---
 Basic usage:
