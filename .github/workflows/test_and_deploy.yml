@@ -74,8 +74,8 @@ jobs:
           python setup.py sdist bdist_wheel
           twine upload dist/*
 
-  build-and-push-image:
-    needs: test
+  build-and-push-docker:
+    needs: deploy
     runs-on: ubuntu-latest
     permissions:
       contents: read
