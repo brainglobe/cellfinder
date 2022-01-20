@@ -1,0 +1,20 @@
+name: cellfinder-napari
+schema_version: 0.1.0
+contributions:
+  commands:
+  - id: cellfinder-napari.detect
+    title: Create Cell detection
+    python_name: cellfinder_napari.plugins:detect
+  - id: cellfinder-napari.train
+    title: Create Train network
+    python_name: cellfinder_napari.plugins:train
+  - id: cellfinder-napari.CurationWidget
+    title: Create Curation
+    python_name: cellfinder_napari.plugins:CurationWidget
+  widgets:
+  - command: cellfinder-napari.detect
+    display_name: Cell detection
+  - command: cellfinder-napari.train
+    display_name: Train network
+  - command: cellfinder-napari.CurationWidget
+    display_name: Curation
