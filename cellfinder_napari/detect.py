@@ -186,7 +186,7 @@ def detect():
             Largest putative cell cluster (in cubic um) where splitting
             should be attempted
         Trained_model : Path
-            Trained model file path
+            Trained model file path (home directory (default) -> pretrained weights)
         Start_plane : int
             First plane to process (to process a subset of the data)
         End_plane : int
