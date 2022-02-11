@@ -230,7 +230,7 @@ def detect():
     widget.header.native.setOpenExternalLinks(True)
 
     @widget.reset_button.changed.connect
-    def restore_defaults(event=None):
+    def restore_defaults():
         for name, value in DEFAULT_PARAMETERS.items():
             getattr(widget, name).value = value
 
