@@ -1,14 +1,18 @@
-import napari
+from math import ceil
 from pathlib import Path
-from magicgui import magicgui
 from typing import List
+
+import napari
+from cellfinder_core.classify.cube_generator import get_cube_depth_min_max
+from cellfinder_core.main import main as cellfinder_run
+from imlib.cells.cells import Cell
+from magicgui import magicgui
+from napari.qt.threading import thread_worker
 
 from cellfinder_napari.utils import brainglobe_logo
 
-# TODO:
-# how to store & fetch pre-trained models?
+from .utils import cells_to_array
 
-# TODO: params to add
 NETWORK_VOXEL_SIZES = [5, 1, 1]
 CUBE_WIDTH = 50
 CUBE_HEIGHT = 20
@@ -17,18 +21,7 @@ CUBE_DEPTH = 20
 # If using ROI, how many extra planes to analyse
 MIN_PLANES_ANALYSE = 0
 
-
 def detect():
-    from math import ceil
-
-    # from fancylog import fancylog
-    # import cellfinder_napari as program_for_log
-    from napari.qt.threading import thread_worker
-    from cellfinder_core.main import main as cellfinder_run
-    from cellfinder_core.classify.cube_generator import get_cube_depth_min_max
-    from imlib.cells.cells import Cell
-    from .utils import cells_to_array
-
     DEFAULT_PARAMETERS = dict(
         voxel_size_z=5,
         voxel_size_y=2,

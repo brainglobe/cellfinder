@@ -1,6 +1,8 @@
 from pathlib import Path
+
 from magicgui import magicgui
 from napari.qt.threading import thread_worker
+
 from cellfinder_napari.utils import brainglobe_logo
 
 
