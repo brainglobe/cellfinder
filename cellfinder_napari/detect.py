@@ -4,13 +4,10 @@ from typing import List
 
 import napari
 from cellfinder_core.classify.cube_generator import get_cube_depth_min_max
-from cellfinder_core.main import main as cellfinder_run
 from magicgui import magicgui
-from napari.qt.threading import thread_worker
 
-from cellfinder_napari.detect_utils import add_layers
+from cellfinder_napari.detect_utils import add_layers, run
 from cellfinder_napari.utils import brainglobe_logo
-
 
 NETWORK_VOXEL_SIZES = [5, 1, 1]
 CUBE_WIDTH = 50
@@ -192,46 +189,7 @@ def detect():
         reset_button :
             Reset parameters to default
         """
-        @thread_worker
-        def run(
-            signal,
-            background,
-            voxel_sizes,
-            Soma_diameter,
-            ball_xy_size,
-            ball_z_size,
-            Start_plane,
-            End_plane,
-            Ball_overlap,
-            Filter_width,
-            Threshold,
-            Cell_spread,
-            Max_cluster,
-            Trained_model,
-            Number_of_free_cpus,
-            # Classification_batch_size,
-        ):
 
-            points = cellfinder_run(
-                signal,
-                background,
-                voxel_sizes,
-                soma_diameter=Soma_diameter,
-                ball_xy_size=ball_xy_size,
-                ball_z_size=ball_z_size,
-                start_plane=Start_plane,
-                end_plane=End_plane,
-                ball_overlap_fraction=Ball_overlap,
-                log_sigma_size=Filter_width,
-                n_sds_above_mean_thresh=Threshold,
-                soma_spread_factor=Cell_spread,
-                max_cluster_size=Max_cluster,
-                trained_model=Trained_model,
-                n_free_cpus=Number_of_free_cpus,
-                # batch_size=Classification_batch_size,
-            )
-            return points
-            
         if End_plane == 0:
             End_plane = len(Signal_image.data)
 

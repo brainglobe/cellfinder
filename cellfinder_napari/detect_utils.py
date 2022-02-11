@@ -1,6 +1,9 @@
-import napari
-from cellfinder_napari.utils import cells_to_array
+from cellfinder_core.main import main as cellfinder_run
 from imlib.cells.cells import Cell
+from napari.qt.threading import thread_worker
+
+from cellfinder_napari.utils import cells_to_array
+
 
 def add_layers(points, viewer):
     """
@@ -29,3 +32,43 @@ def add_layers(points, viewer):
         face_color="lightgoldenrodyellow",
         metadata=dict(point_type=Cell.CELL),
     )
+
+@thread_worker
+def run(
+    signal,
+    background,
+    voxel_sizes,
+    Soma_diameter,
+    ball_xy_size,
+    ball_z_size,
+    Start_plane,
+    End_plane,
+    Ball_overlap,
+    Filter_width,
+    Threshold,
+    Cell_spread,
+    Max_cluster,
+    Trained_model,
+    Number_of_free_cpus,
+    # Classification_batch_size,
+):
+    """Runs cellfinder in a separate thread, to prevent GUI blocking."""
+    points = cellfinder_run(
+        signal,
+        background,
+        voxel_sizes,
+        soma_diameter=Soma_diameter,
+        ball_xy_size=ball_xy_size,
+        ball_z_size=ball_z_size,
+        start_plane=Start_plane,
+        end_plane=End_plane,
+        ball_overlap_fraction=Ball_overlap,
+        log_sigma_size=Filter_width,
+        n_sds_above_mean_thresh=Threshold,
+        soma_spread_factor=Cell_spread,
+        max_cluster_size=Max_cluster,
+        trained_model=Trained_model,
+        n_free_cpus=Number_of_free_cpus,
+        # batch_size=Classification_batch_size,
+    )
+    return points
