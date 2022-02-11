@@ -6,7 +6,7 @@ import napari
 from cellfinder_core.classify.cube_generator import get_cube_depth_min_max
 from magicgui import magicgui
 
-from cellfinder_napari.detect_utils import add_layers, run
+from cellfinder_napari.detect_utils import add_layers, default_parameters, run
 from cellfinder_napari.utils import brainglobe_logo
 
 NETWORK_VOXEL_SIZES = [5, 1, 1]
@@ -18,26 +18,7 @@ CUBE_DEPTH = 20
 MIN_PLANES_ANALYSE = 0
 
 def detect():
-    DEFAULT_PARAMETERS = dict(
-        voxel_size_z=5,
-        voxel_size_y=2,
-        voxel_size_x=2,
-        Soma_diameter=16.0,
-        ball_xy_size=6,
-        ball_z_size=15,
-        Ball_overlap=0.6,
-        Filter_width=0.2,
-        Threshold=10,
-        Cell_spread=1.4,
-        Max_cluster=100000,
-        Trained_model=Path.home(),
-        Start_plane=0,
-        End_plane=0,
-        Number_of_free_cpus=2,
-        Analyse_local=False,
-        Debug=False,
-    )
-
+    DEFAULT_PARAMETERS = default_parameters()
     @magicgui(
         header=dict(
             widget_type="Label",

@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from cellfinder_core.main import main as cellfinder_run
 from imlib.cells.cells import Cell
 from napari.qt.threading import thread_worker
@@ -72,3 +74,24 @@ def run(
         # batch_size=Classification_batch_size,
     )
     return points
+
+def default_parameters():
+    return dict(
+    voxel_size_z=5,
+    voxel_size_y=2,
+    voxel_size_x=2,
+    Soma_diameter=16.0,
+    ball_xy_size=6,
+    ball_z_size=15,
+    Ball_overlap=0.6,
+    Filter_width=0.2,
+    Threshold=10,
+    Cell_spread=1.4,
+    Max_cluster=100000,
+    Trained_model=Path.home(),
+    Start_plane=0,
+    End_plane=0,
+    Number_of_free_cpus=2,
+    Analyse_local=False,
+    Debug=False,
+    )
