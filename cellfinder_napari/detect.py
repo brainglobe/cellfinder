@@ -5,13 +5,12 @@ from typing import List
 import napari
 from cellfinder_core.classify.cube_generator import get_cube_depth_min_max
 from cellfinder_core.main import main as cellfinder_run
-from imlib.cells.cells import Cell
 from magicgui import magicgui
 from napari.qt.threading import thread_worker
 
+from cellfinder_napari.detect_utils import add_layers
 from cellfinder_napari.utils import brainglobe_logo
 
-from .utils import cells_to_array
 
 NETWORK_VOXEL_SIZES = [5, 1, 1]
 CUBE_WIDTH = 50
@@ -193,32 +192,6 @@ def detect():
         reset_button :
             Reset parameters to default
         """
-
-        def add_layers(points):
-            points, rejected = cells_to_array(points)
-
-            viewer.add_points(
-                rejected,
-                name="Rejected",
-                size=15,
-                n_dimensional=True,
-                opacity=0.6,
-                symbol="ring",
-                face_color="lightskyblue",
-                visible=False,
-                metadata=dict(point_type=Cell.UNKNOWN),
-            )
-            viewer.add_points(
-                points,
-                name="Detected",
-                size=15,
-                n_dimensional=True,
-                opacity=0.6,
-                symbol="ring",
-                face_color="lightgoldenrodyellow",
-                metadata=dict(point_type=Cell.CELL),
-            )
-
         @thread_worker
         def run(
             signal,
@@ -258,7 +231,7 @@ def detect():
                 # batch_size=Classification_batch_size,
             )
             return points
-
+            
         if End_plane == 0:
             End_plane = len(Signal_image.data)
 
@@ -298,7 +271,7 @@ def detect():
             Number_of_free_cpus,
             # Classification_batch_size,
         )
-        worker.returned.connect(add_layers)
+        worker.returned.connect(lambda points : add_layers(points, viewer=viewer))
         worker.start()
 
     widget.header.value = (
