@@ -8,10 +8,11 @@ from napari.qt.threading import thread_worker
 
 from cellfinder_napari.utils import cells_to_array
 
+
 @dataclass
 class DataInputs:
-    signal : napari.layers.Image
-    background: napari.layers.Image
+    signal_array : napari.layers.Image
+    background_array: napari.layers.Image
     voxel_sizes: tuple
 
 @dataclass
@@ -65,7 +66,7 @@ def run(
 ):
     """Runs cellfinder in a separate thread, to prevent GUI blocking."""
     points = cellfinder_run(
-        *asdict(data_inputs).values(),
+        **asdict(data_inputs),
         **asdict(detection_inputs),
         trained_model=Trained_model,
         n_free_cpus=Number_of_free_cpus,
