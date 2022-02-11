@@ -6,7 +6,7 @@ import napari
 from cellfinder_core.classify.cube_generator import get_cube_depth_min_max
 from magicgui import magicgui
 
-from cellfinder_napari.detect_utils import DataInputs, add_layers, default_parameters, run
+from cellfinder_napari.detect_utils import DataInputs, DetectionInputs, add_layers, default_parameters, run
 from cellfinder_napari.utils import brainglobe_logo
 
 NETWORK_VOXEL_SIZES = [5, 1, 1]
@@ -174,7 +174,6 @@ def detect():
         if End_plane == 0:
             End_plane = len(Signal_image.data)
 
-        voxel_sizes = (voxel_size_z, voxel_size_y, voxel_size_x)
         if Trained_model == Path.home():
             Trained_model = None
 
@@ -192,19 +191,27 @@ def detect():
             Start_plane = max(0, Start_plane)
             End_plane = min(len(Signal_image.data), End_plane)
 
-        dataInputs = DataInputs(Signal_image.data, Background_image.data, voxel_sizes)
-        worker = run(
-            dataInputs,
+        # initialise input
+        voxel_sizes = (voxel_size_z, voxel_size_y, voxel_size_x)
+        dataInputs = DataInputs(Signal_image.data, \
+            Background_image.data,
+            voxel_sizes)
+
+        detectionInputs = DetectionInputs( \
+            Start_plane, 
+            End_plane,
             Soma_diameter,
             ball_xy_size,
-            ball_z_size,
-            Start_plane,
-            End_plane,
+            ball_z_size, 
             Ball_overlap,
             Filter_width,
             Threshold,
             Cell_spread,
-            Max_cluster,
+            Max_cluster)
+
+        worker = run(
+            dataInputs,
+            detectionInputs,
             Trained_model,
             Number_of_free_cpus,
             # Classification_batch_size,

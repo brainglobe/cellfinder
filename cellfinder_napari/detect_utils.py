@@ -14,6 +14,19 @@ class DataInputs:
     background: napari.layers.Image
     voxel_sizes: tuple
 
+@dataclass
+class DetectionInputs:
+    start_plane: int
+    end_plane: int
+    soma_diameter: float
+    ball_xy_size: float
+    ball_z_size: float
+    ball_overlap_fraction: float
+    log_sigma_size: float
+    n_sds_above_mean_thresh: int
+    soma_spread_factor: float
+    max_cluster_size: int
+
 def add_layers(points, viewer):
     """
     Adds classified cell candidates as two separate point layers to the napari viewer.
@@ -45,33 +58,15 @@ def add_layers(points, viewer):
 @thread_worker
 def run(
     data_inputs : DataInputs,
-    Soma_diameter,
-    ball_xy_size,
-    ball_z_size,
-    Start_plane,
-    End_plane,
-    Ball_overlap,
-    Filter_width,
-    Threshold,
-    Cell_spread,
-    Max_cluster,
+    detection_inputs: DetectionInputs,
     Trained_model,
-    Number_of_free_cpus,
+    Number_of_free_cpus : int,
     # Classification_batch_size,
 ):
     """Runs cellfinder in a separate thread, to prevent GUI blocking."""
     points = cellfinder_run(
         *asdict(data_inputs).values(),
-        soma_diameter=Soma_diameter,
-        ball_xy_size=ball_xy_size,
-        ball_z_size=ball_z_size,
-        start_plane=Start_plane,
-        end_plane=End_plane,
-        ball_overlap_fraction=Ball_overlap,
-        log_sigma_size=Filter_width,
-        n_sds_above_mean_thresh=Threshold,
-        soma_spread_factor=Cell_spread,
-        max_cluster_size=Max_cluster,
+        **asdict(detection_inputs),
         trained_model=Trained_model,
         n_free_cpus=Number_of_free_cpus,
         # batch_size=Classification_batch_size,
