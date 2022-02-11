@@ -1,11 +1,18 @@
+from dataclasses import dataclass, asdict, fields
 from pathlib import Path
 
+import napari
 from cellfinder_core.main import main as cellfinder_run
 from imlib.cells.cells import Cell
 from napari.qt.threading import thread_worker
 
 from cellfinder_napari.utils import cells_to_array
 
+@dataclass
+class DataInputs:
+    signal : napari.layers.Image
+    background: napari.layers.Image
+    voxel_sizes: tuple
 
 def add_layers(points, viewer):
     """
@@ -37,9 +44,7 @@ def add_layers(points, viewer):
 
 @thread_worker
 def run(
-    signal,
-    background,
-    voxel_sizes,
+    data_inputs : DataInputs,
     Soma_diameter,
     ball_xy_size,
     ball_z_size,
@@ -56,9 +61,7 @@ def run(
 ):
     """Runs cellfinder in a separate thread, to prevent GUI blocking."""
     points = cellfinder_run(
-        signal,
-        background,
-        voxel_sizes,
+        *asdict(data_inputs).values(),
         soma_diameter=Soma_diameter,
         ball_xy_size=ball_xy_size,
         ball_z_size=ball_z_size,

@@ -6,7 +6,7 @@ import napari
 from cellfinder_core.classify.cube_generator import get_cube_depth_min_max
 from magicgui import magicgui
 
-from cellfinder_napari.detect_utils import add_layers, default_parameters, run
+from cellfinder_napari.detect_utils import DataInputs, add_layers, default_parameters, run
 from cellfinder_napari.utils import brainglobe_logo
 
 NETWORK_VOXEL_SIZES = [5, 1, 1]
@@ -192,10 +192,9 @@ def detect():
             Start_plane = max(0, Start_plane)
             End_plane = min(len(Signal_image.data), End_plane)
 
+        dataInputs = DataInputs(Signal_image.data, Background_image.data, voxel_sizes)
         worker = run(
-            Signal_image.data,
-            Background_image.data,
-            voxel_sizes,
+            dataInputs,
             Soma_diameter,
             ball_xy_size,
             ball_z_size,
