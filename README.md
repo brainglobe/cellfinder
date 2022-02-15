@@ -48,11 +48,6 @@ This software is at a very early stage, and was written with our data in mind.
 Over time we hope to support other data types/formats. If you have any issues, please get in touch [on the forum](https://forum.image.sc/tag/brainglobe) or by 
 [raising an issue](https://github.com/brainglobe/cellfinder/issues/new/choose). 
 
-If you have any other questions, 
-please send an [email](mailto:code@adamltyson.com?subject=cellfinder).
-
-
-
 
 ---
 ## Illustration
