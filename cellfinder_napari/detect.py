@@ -6,7 +6,7 @@ import napari
 from cellfinder_core.classify.cube_generator import get_cube_depth_min_max
 from magicgui import magicgui
 
-from cellfinder_napari.detect_utils import DataInputs, DetectionInputs, add_layers, default_parameters, run
+from cellfinder_napari.detect_utils import DataInputs, DetectionInputs, MiscInputs, ClassificationInputs, add_layers, html_label_widget, run
 from cellfinder_napari.utils import brainglobe_logo
 
 NETWORK_VOXEL_SIZES = [5, 1, 1]
@@ -18,78 +18,30 @@ CUBE_DEPTH = 20
 MIN_PLANES_ANALYSE = 0
 
 def detect():
-    DEFAULT_PARAMETERS = default_parameters()
     @magicgui(
-        header=dict(
-            widget_type="Label",
-            label=f'<h1><img src="{brainglobe_logo}"width="100">cellfinder</h1>',
-        ),
-        detection_label=dict(
-            widget_type="Label",
-            label="<h3>Cell detection</h3>",
-        ),
-        data_options=dict(
-            widget_type="Label",
-            label="<b>Data:</b>",
-        ),
-        detection_options=dict(
-            widget_type="Label",
-            label="<b>Detection:</b>",
-        ),
-        classification_options=dict(
-            widget_type="Label",
-            label="<b>Classification:</b>",
-        ),
-        misc_options=dict(
-            widget_type="Label",
-            label="<b>Misc:</b>",
-        ),
-        voxel_size_z=dict(
-            value=DEFAULT_PARAMETERS["voxel_size_z"],
-            label="Voxel size (z)",
-            step=0.1,
-        ),
-        voxel_size_y=dict(
-            value=DEFAULT_PARAMETERS["voxel_size_y"],
-            label="Voxel size (y)",
-            step=0.1,
-        ),
-        voxel_size_x=dict(
-            value=DEFAULT_PARAMETERS["voxel_size_x"],
-            label="Voxel size (x)",
-            step=0.1,
-        ),
-        soma_diameter=dict(
-            value=DEFAULT_PARAMETERS["soma_diameter"], step=0.1
-        ),
-        ball_xy_size=dict(
-            value=DEFAULT_PARAMETERS["ball_xy_size"], label="Ball filter (xy)"
-        ),
-        ball_z_size=dict(
-            value=DEFAULT_PARAMETERS["ball_z_size"], label="Ball filter (z)"
-        ),
-        ball_overlap=dict(value=DEFAULT_PARAMETERS["ball_overlap"], step=0.1),
-        filter_width=dict(value=DEFAULT_PARAMETERS["filter_width"], step=0.1),
-        threshold=dict(value=DEFAULT_PARAMETERS["threshold"], step=0.1),
-        cell_spread=dict(value=DEFAULT_PARAMETERS["cell_spread"], step=0.1),
-        max_cluster=dict(
-            value=DEFAULT_PARAMETERS["max_cluster"], min=0, max=10000000
-        ),
-        trained_model=dict(value=DEFAULT_PARAMETERS["trained_model"]),
-        start_plane=dict(
-            value=DEFAULT_PARAMETERS["start_plane"], min=0, max=100000
-        ),
-        end_plane=dict(
-            value=DEFAULT_PARAMETERS["end_plane"], min=0, max=100000
-        ),
-        number_of_free_cpus=dict(
-            value=DEFAULT_PARAMETERS["number_of_free_cpus"]
-        ),
-        analyse_local=dict(
-            value=DEFAULT_PARAMETERS["analyse_local"], label="Analyse local"
-        ),
-        debug=dict(value=DEFAULT_PARAMETERS["debug"]),
-        # Classification_batch_size=dict(max=4096),
+        header=html_label_widget(f'<img src="{brainglobe_logo}"width="100">cellfinder', "h1"),
+        detection_label=html_label_widget("Cell detection", "h3"),
+        data_options=html_label_widget("Data:"),
+        detection_options=html_label_widget("Detection:"),
+        classification_options=html_label_widget("Classification:"),
+        misc_options=html_label_widget("Miscellaneous:"),
+        voxel_size_z=DataInputs.numerical_widget("voxel_size_z", custom_label="Voxel size (z)"),
+        voxel_size_y=DataInputs.numerical_widget("voxel_size_y", custom_label="Voxel size (y)"),
+        voxel_size_x=DataInputs.numerical_widget("voxel_size_x", custom_label="Voxel size (x)"),
+        soma_diameter=DetectionInputs.numerical_widget("soma_diameter"),
+        ball_xy_size=DetectionInputs.numerical_widget("ball_xy_size", custom_label="Ball filter (xy)"),
+        ball_z_size=DetectionInputs.numerical_widget("ball_z_size", custom_label="Ball filter (z)"),
+        ball_overlap=DetectionInputs.numerical_widget("ball_overlap"),
+        filter_width=DetectionInputs.numerical_widget("filter_width"),
+        threshold=DetectionInputs.numerical_widget("threshold"),
+        cell_spread=DetectionInputs.numerical_widget("cell_spread"),
+        max_cluster=DetectionInputs.numerical_widget("max_cluster", min=0, max=10000000),
+        trained_model=dict(value=ClassificationInputs.persistent_defaults["trained_model"]),
+        start_plane=MiscInputs.numerical_widget("start_plane", min=0, max=100000),
+        end_plane=MiscInputs.numerical_widget("end_plane", min=0, max=100000),
+        number_of_free_cpus=MiscInputs.numerical_widget("number_of_free_cpus"),
+        analyse_local=dict(value=MiscInputs.persistent_defaults["analyse_local"]),
+        debug=dict(value=MiscInputs.persistent_defaults["debug"]),
         call_button=True,
         persist=True,
         reset_button=dict(widget_type="PushButton", text="Reset defaults"),
@@ -170,12 +122,33 @@ def detect():
         reset_button :
             Reset parameters to default
         """
+        data_inputs = DataInputs(
+            signal_image.data,
+            background_image.data,
+            voxel_size_z, 
+            voxel_size_y, 
+            voxel_size_x
+        )
 
-        if end_plane == 0:
-            end_plane = len(signal_image.data)
+        detection_inputs = DetectionInputs(
+            soma_diameter,
+            ball_xy_size,
+            ball_z_size, 
+            ball_overlap,
+            filter_width,
+            threshold,
+            cell_spread,
+            max_cluster
+        )
 
         if trained_model == Path.home():
             trained_model = None
+        classification_inputs = ClassificationInputs(
+            trained_model
+        )
+
+        if end_plane == 0:
+            end_plane = len(signal_image.data)
 
         if analyse_local:
             current_plane = viewer.dims.current_step[0]
@@ -191,30 +164,18 @@ def detect():
             start_plane = max(0, start_plane)
             end_plane = min(len(signal_image.data), end_plane)
 
-        # initialise input
-        voxel_sizes = (voxel_size_z, voxel_size_y, voxel_size_x)
-        dataInputs = DataInputs(signal_image.data, \
-            background_image.data,
-            voxel_sizes)
-
-        detectionInputs = DetectionInputs( \
+        misc_inputs = MiscInputs(
             start_plane, 
-            end_plane,
-            soma_diameter,
-            ball_xy_size,
-            ball_z_size, 
-            ball_overlap,
-            filter_width,
-            threshold,
-            cell_spread,
-            max_cluster)
+            end_plane, 
+            number_of_free_cpus, 
+            analyse_local, 
+            debug)
 
         worker = run(
-            dataInputs,
-            detectionInputs,
-            trained_model,
-            number_of_free_cpus,
-            # Classification_batch_size,
+            data_inputs,
+            detection_inputs,
+            classification_inputs,
+            misc_inputs,
         )
         worker.returned.connect(lambda points : add_layers(points, viewer=viewer))
         worker.start()
@@ -231,7 +192,13 @@ def detect():
 
     @widget.reset_button.changed.connect
     def restore_defaults():
-        for name, value in DEFAULT_PARAMETERS.items():
+        defaults = {
+            **DataInputs.persistent_defaults, 
+            **DetectionInputs.persistent_defaults, 
+            **ClassificationInputs.persistent_defaults, 
+            **MiscInputs.persistent_defaults
+            }
+        for name, value in defaults.items():
             getattr(widget, name).value = value
 
     return widget
