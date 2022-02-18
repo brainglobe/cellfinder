@@ -1,5 +1,6 @@
-from setuptools import setup, find_packages
 from os import path
+
+from setuptools import find_packages, setup
 
 this_directory = path.abspath(path.dirname(__file__))
 with open(path.join(this_directory, "README.md"), encoding="utf-8") as f:
@@ -60,9 +61,9 @@ setup(
         "Operating System :: OS Independent",
     ],
     entry_points={
-             "napari.manifest": [
-                 "cellfinder-napari = cellfinder_napari:napari.yaml",
-             ],
-         },
-         package_data={"cellfinder_napari": ["napari.yaml"]},
+        "napari.manifest": [
+            "cellfinder-napari = cellfinder_napari:napari.yaml",
+        ],
+    },
+    package_data={"cellfinder_napari": ["napari.yaml"]},
 )

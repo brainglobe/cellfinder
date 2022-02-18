@@ -1,7 +1,8 @@
-import napari
 from pathlib import Path
-from magicgui import magicgui
 from typing import List
+
+import napari
+from magicgui import magicgui
 
 from cellfinder_napari.utils import brainglobe_logo
 
@@ -21,12 +22,14 @@ MIN_PLANES_ANALYSE = 0
 def detect():
     from math import ceil
 
+    from cellfinder_core.classify.cube_generator import get_cube_depth_min_max
+    from cellfinder_core.main import main as cellfinder_run
+    from imlib.cells.cells import Cell
+
     # from fancylog import fancylog
     # import cellfinder_napari as program_for_log
     from napari.qt.threading import thread_worker
-    from cellfinder_core.main import main as cellfinder_run
-    from cellfinder_core.classify.cube_generator import get_cube_depth_min_max
-    from imlib.cells.cells import Cell
+
     from .utils import cells_to_array
 
     DEFAULT_PARAMETERS = dict(
