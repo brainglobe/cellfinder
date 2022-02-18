@@ -17,8 +17,8 @@
 
 ### Efficient cell detection in large images (e.g. whole mouse brain images)
 
-`cellfinder-napari` is a front-end to [cellfinder-core](https://github.com/brainglobe/cellfinder-core) to allow ease of use within the [napari](https://napari.org/index.html) multidimensional image viewer. For more details on this approach, please see [Tyson, Rousseau & Niedworok et al. (2021)](https://doi.org/10.1371/journal.pcbi.1009074). This algorithm can also be used within the original 
-[cellfinder](https://github.com/brainglobe/cellfinder) software for 
+`cellfinder-napari` is a front-end to [cellfinder-core](https://github.com/brainglobe/cellfinder-core) to allow ease of use within the [napari](https://napari.org/index.html) multidimensional image viewer. For more details on this approach, please see [Tyson, Rousseau & Niedworok et al. (2021)](https://doi.org/10.1371/journal.pcbi.1009074). This algorithm can also be used within the original
+[cellfinder](https://github.com/brainglobe/cellfinder) software for
 whole-brain microscopy analysis.
 
 `cellfinder-napari`, `cellfinder` and `cellfinder-core` were developed by [Charly Rousseau](https://github.com/crousseau) and [Adam Tyson](https://github.com/adamltyson) in the [Margrie Lab](https://www.sainsburywellcome.org/web/groups/margrie-lab), based on previous work by [Christian Niedworok](https://github.com/cniedwor), generously supported by the [Sainsbury Wellcome Centre](https://www.sainsburywellcome.org/web/).
@@ -32,20 +32,20 @@ whole-brain microscopy analysis.
 ## Instructions
 
 ### Installation
-Once you have [installed napari](https://napari.org/index.html#installation). 
-You can install napari either through the napari plugin installation tool, or 
+Once you have [installed napari](https://napari.org/index.html#installation).
+You can install napari either through the napari plugin installation tool, or
 directly from PyPI with:
 ```bash
 pip install cellfinder-napari
 ```
 
 ### Usage
-Full documentation can be 
-found [here](https://docs.brainglobe.info/cellfinder-napari). 
- 
-This software is at a very early stage, and was written with our data in mind. 
-Over time we hope to support other data types/formats. If you have any 
-questions or issues, please get in touch [on the forum](https://forum.image.sc/tag/brainglobe) or by 
+Full documentation can be
+found [here](https://docs.brainglobe.info/cellfinder-napari).
+
+This software is at a very early stage, and was written with our data in mind.
+Over time we hope to support other data types/formats. If you have any
+questions or issues, please get in touch [on the forum](https://forum.image.sc/tag/brainglobe) or by
 [raising an issue](https://github.com/brainglobe/cellfinder-napari/issues).
 
 
@@ -53,17 +53,17 @@ questions or issues, please get in touch [on the forum](https://forum.image.sc/t
 ## Illustration
 
 ### Introduction
-cellfinder takes a stitched, but otherwise raw dataset with at least 
+cellfinder takes a stitched, but otherwise raw dataset with at least
 two channels:
  * Background channel (i.e. autofluorescence)
  * Signal channel, the one with the cells to be detected:
- 
+
 ![raw](https://raw.githubusercontent.com/brainglobe/cellfinder/master/resources/raw.png)
 **Raw coronal serial two-photon mouse brain image showing labelled cells**
 
 
 ### Cell candidate detection
-Classical image analysis (e.g. filters, thresholding) is used to find 
+Classical image analysis (e.g. filters, thresholding) is used to find
 cell-like objects (with false positives):
 
 ![raw](https://raw.githubusercontent.com/brainglobe/cellfinder/master/resources/detect.png)
@@ -71,7 +71,7 @@ cell-like objects (with false positives):
 
 
 ### Cell candidate classification
-A deep-learning network (ResNet) is used to classify cell candidates as true 
+A deep-learning network (ResNet) is used to classify cell candidates as true
 cells or artefacts:
 
 ![raw](https://raw.githubusercontent.com/brainglobe/cellfinder/master/resources/classify.png)
@@ -85,7 +85,7 @@ If you find this plugin useful, and use it in your research, please cite the pre
 
 
 **If you use this, or any other tools in the brainglobe suite, please
- [let us know](mailto:code@adamltyson.com?subject=cellfinder-napari), and 
+ [let us know](mailto:code@adamltyson.com?subject=cellfinder-napari), and
  we'd be happy to promote your paper/talk etc.**
 
 ---

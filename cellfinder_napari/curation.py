@@ -1,23 +1,17 @@
-import tifffile
+from pathlib import Path
+
 import napari
 import numpy as np
-from qtpy import QtCore
-from pathlib import Path
-from napari.qt.threading import thread_worker
-from qtpy.QtWidgets import (
-    QLabel,
-    QWidget,
-    QFileDialog,
-    QGridLayout,
-    QGroupBox,
-)
+import tifffile
 from brainglobe_napari_io.cellfinder.utils import convert_layer_to_cells
 from imlib.cells.cells import Cell
 from imlib.general.system import ensure_directory_exists
 from imlib.IO.yaml import save_yaml
+from napari.qt.threading import thread_worker
+from qtpy import QtCore
+from qtpy.QtWidgets import QFileDialog, QGridLayout, QGroupBox, QLabel, QWidget
 
-from .utils import add_combobox, add_button, display_question, display_info
-
+from .utils import add_button, add_combobox, display_info, display_question
 
 # Constants used throughout
 WINDOW_HEIGHT = 750
@@ -501,9 +495,7 @@ def extract_cubes(
     cube_height,
     cube_depth,
 ):
-    from cellfinder_core.classify.cube_generator import (
-        CubeGeneratorFromFile,
-    )
+    from cellfinder_core.classify.cube_generator import CubeGeneratorFromFile
 
     to_extract = {
         "cells": cells_to_extract,
