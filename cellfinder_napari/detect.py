@@ -7,10 +7,10 @@ from cellfinder_core.classify.cube_generator import get_cube_depth_min_max
 from magicgui import magicgui
 
 from cellfinder_napari.detect_utils import (
+    ClassificationInputs,
     DataInputs,
     DetectionInputs,
     MiscInputs,
-    ClassificationInputs,
     add_layers,
     html_label_widget,
     run,
