@@ -1,15 +1,14 @@
 import logging
-import tifffile
-import imio
+from pathlib import Path
 
+import imio
 import numpy as np
 import pandas as pd
-
-from pathlib import Path
-from skimage.filters import gaussian
-from imlib.image.scale import scale_and_convert_to_16_bits
-from imlib.image.masking import mask_image_threshold
+import tifffile
 from imlib.general.system import ensure_directory_exists
+from imlib.image.masking import mask_image_threshold
+from imlib.image.scale import scale_and_convert_to_16_bits
+from skimage.filters import gaussian
 
 
 def get_bins(image_size, bin_sizes):

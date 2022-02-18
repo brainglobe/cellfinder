@@ -1,20 +1,18 @@
-from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
-import napari
-import numpy as np
-from napari.utils.io import magic_imread
+from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser
 from pathlib import Path
 
+import napari
+import numpy as np
+from imlib.cells.cells import Cell
+from imlib.general.list import unique_elements_lists
+from imlib.general.system import ensure_directory_exists, get_sorted_file_paths
+from imlib.IO.cells import cells_xml_to_df, get_cells, save_cells
+from imlib.IO.yaml import save_yaml
+from napari.utils.io import magic_imread
 from qtpy.QtWidgets import QApplication
 
-from imlib.general.system import get_sorted_file_paths, ensure_directory_exists
-from imlib.general.list import unique_elements_lists
-
-from imlib.IO.cells import cells_xml_to_df, save_cells, get_cells
-from imlib.cells.cells import Cell
-from imlib.IO.yaml import save_yaml
-
-from cellfinder.extract.extract_cubes import main as extract_cubes_main
 import cellfinder.tools.parser as cellfinder_parse
+from cellfinder.extract.extract_cubes import main as extract_cubes_main
 
 OUTPUT_NAME = "curated_cells.xml"
 CURATED_POINTS = []

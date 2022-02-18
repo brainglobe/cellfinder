@@ -8,16 +8,16 @@ N.B imports are within functions to prevent tensorflow being imported before
 it's warnings are silenced
 """
 
-import os
 import logging
-import tifffile
+import os
 from datetime import datetime
+
 import bg_space as bgs
-from imlib.IO.cells import save_cells, get_cells
+import tifffile
+from cellfinder_core.main import suppress_tf_logging, tf_suppress_log_messages
 from imlib.cells.cells import MissingCellsError
 from imlib.general.system import ensure_directory_exists
-
-from cellfinder_core.main import suppress_tf_logging, tf_suppress_log_messages
+from imlib.IO.cells import get_cells, save_cells
 
 
 def get_downsampled_space(atlas, downsampled_image_path):
@@ -41,6 +41,7 @@ def cells_exist(points_file):
 def main():
     suppress_tf_logging(tf_suppress_log_messages)
     from brainreg.main import main as register
+
     from cellfinder.tools import prep
 
     start_time = datetime.now()
@@ -97,14 +98,13 @@ def main():
 
 def run_all(args, what_to_run, atlas):
 
-    from cellfinder_core.detect import detect
     from cellfinder_core.classify import classify
+    from cellfinder_core.detect import detect
     from cellfinder_core.tools import prep
     from cellfinder_core.tools.IO import read_with_dask
 
     from cellfinder.analyse import analyse
     from cellfinder.figures import figures
-
     from cellfinder.tools.prep import (
         prep_candidate_detection,
         prep_channel_specific_general,

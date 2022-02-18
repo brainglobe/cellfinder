@@ -1,18 +1,16 @@
 import os
-import pytest
+
 import imio
-
 import numpy as np
-
-from tifffile import tifffile
-
+import pytest
 from imlib.cells.cells import Cell
-from imlib.IO.cells import get_cells
-
 from imlib.general.system import (
     delete_directory_contents,
     get_sorted_file_paths,
 )
+from imlib.IO.cells import get_cells
+from tifffile import tifffile
+
 import cellfinder.extract.extract_cubes as extract_cubes
 
 data_dir = os.path.join("tests", "data")

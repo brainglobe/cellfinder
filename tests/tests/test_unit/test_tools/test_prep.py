@@ -1,12 +1,13 @@
 import os
+
 import pytest
+from imlib.general.exceptions import CommandLineInputError
+
+from cellfinder.tools import prep
 
 # import shutil
 
 # from pathlib import Path
-
-from cellfinder.tools import prep
-from imlib.general.exceptions import CommandLineInputError
 
 
 data_dir = os.path.join("tests", "data")

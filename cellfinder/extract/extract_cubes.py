@@ -6,21 +6,21 @@ https://github.com/SainsburyWellcomeCentre/cell_count_analysis by
 Charly Rousseau (https://github.com/crousseau).
 """
 
+import logging
 import os
 from collections import deque
 from concurrent.futures import ProcessPoolExecutor
-import logging
 from datetime import datetime
+from math import floor
 
 import numpy as np
-from skimage import transform
-from numpy.linalg.linalg import LinAlgError
-from math import floor
-from tifffile import tifffile
-from tqdm import tqdm
-from imlib.general.system import get_num_processes
 from imlib.cells.cells import group_cells_by_z
 from imlib.general.numerical import is_even
+from imlib.general.system import get_num_processes
+from numpy.linalg.linalg import LinAlgError
+from skimage import transform
+from tifffile import tifffile
+from tqdm import tqdm
 
 from cellfinder.tools import image_processing as img_tools
 from cellfinder.tools import system
@@ -360,10 +360,10 @@ def get_ram_requirement_per_process(
         "cube depth: {}, "
         "Therefore theoretically {:.2f} GB is needed per CPU core."
         "".format(
-            (file_size / (1024 ** 3)),
+            (file_size / (1024**3)),
             num_channels,
             cube_depth,
-            (total_mem_need / (1024 ** 3)),
+            (total_mem_need / (1024**3)),
         )
     )
 
