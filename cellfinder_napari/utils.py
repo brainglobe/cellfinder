@@ -1,15 +1,7 @@
 import pandas as pd
-from pkg_resources import resource_filename
-
-from qtpy.QtWidgets import (
-    QPushButton,
-    QLabel,
-    QComboBox,
-    QMessageBox,
-)
-
 from imlib.cells.cells import Cell
-
+from pkg_resources import resource_filename
+from qtpy.QtWidgets import QComboBox, QLabel, QMessageBox, QPushButton
 
 brainglobe_logo = resource_filename(
     "cellfinder_napari", "images/brainglobe.png"
