@@ -7,21 +7,22 @@ Defined together so they can also be called by any other entry points.
 
 
 from argparse import (
-    ArgumentParser,
     ArgumentDefaultsHelpFormatter,
+    ArgumentParser,
     ArgumentTypeError,
 )
-from cellfinder import __version__
-from imlib.general.numerical import check_positive_float, check_positive_int
-from cellfinder_core.tools.source_files import source_custom_config_cellfinder
 
-from cellfinder_core.download.cli import (
-    model_parser,
-    download_directory_parser,
-)
-
-from brainreg.cli import atlas_parse, geometry_parser, niftyreg_parse
+from brainreg.cli import atlas_parse
 from brainreg.cli import backend_parse as brainreg_backend_parse
+from brainreg.cli import geometry_parser, niftyreg_parse
+from cellfinder_core.download.cli import (
+    download_directory_parser,
+    model_parser,
+)
+from cellfinder_core.tools.source_files import source_custom_config_cellfinder
+from imlib.general.numerical import check_positive_float, check_positive_int
+
+from cellfinder import __version__
 
 # TODO: Gradually move all paths as strings to Path objects
 

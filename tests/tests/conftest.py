@@ -1,9 +1,9 @@
 import os
 import sys
-import pytest
 
-from imlib.general.config import get_config_obj
+import pytest
 from cellfinder_core.download.cli import main as cellfinder_download
+from imlib.general.config import get_config_obj
 
 data_dir = os.path.join(
     os.getcwd(),

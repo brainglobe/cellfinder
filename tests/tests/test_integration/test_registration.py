@@ -1,10 +1,10 @@
 import os
-import sys
 import platform
-import pytest
+import sys
+
 import numpy as np
 import pandas as pd
-
+import pytest
 from imio.load import load_any
 
 from cellfinder.main import main as cellfinder_run

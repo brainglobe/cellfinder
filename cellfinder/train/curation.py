@@ -1,35 +1,21 @@
 import json
-import napari
-
-import numpy as np
-
 from pathlib import Path
-from qtpy import QtCore
 
-
+import napari
+import numpy as np
 from bg_atlasapi import BrainGlobeAtlas
-from imlib.IO.cells import save_cells
-from imlib.cells.cells import Cell
-from napari_cellfinder.cellfinder import get_cell_arrays
 from brainreg.paths import Paths as BrainregPaths
-from brainreg_segment.layout.gui_elements import (
-    add_button,
-)
-from qtpy.QtWidgets import (
-    QLabel,
-    QFileDialog,
-    QGridLayout,
-    QGroupBox,
-    QWidget,
-)
-
-
-from cellfinder.main import get_downsampled_space
-from cellfinder.analyse.analyse import run_analysis
-
+from brainreg_segment.layout.gui_elements import add_button
+from imlib.cells.cells import Cell
 from imlib.general.system import get_sorted_file_paths
+from imlib.IO.cells import save_cells
 from napari.utils.io import magic_imread
+from napari_cellfinder.cellfinder import get_cell_arrays
+from qtpy import QtCore
+from qtpy.QtWidgets import QFileDialog, QGridLayout, QGroupBox, QLabel, QWidget
 
+from cellfinder.analyse.analyse import run_analysis
+from cellfinder.main import get_downsampled_space
 
 # Constants used throughout
 WINDOW_HEIGHT = 750

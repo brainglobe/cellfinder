@@ -5,17 +5,16 @@ Based on https://github.com/SainsburyWellcomeCentre/cell_count_analysis by
 Charly Rousseau (https://github.com/crousseau).
 """
 
-import imio
-import tifffile
 import logging
+from pathlib import Path
 
+import bg_space as bgs
+import imio
 import numpy as np
 import pandas as pd
-import bg_space as bgs
-
-from pathlib import Path
-from imlib.pandas.misc import sanitise_df
+import tifffile
 from imlib.general.system import ensure_directory_exists
+from imlib.pandas.misc import sanitise_df
 
 from cellfinder.export.export import export_points
 
