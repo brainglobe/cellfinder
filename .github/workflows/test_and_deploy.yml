@@ -1,6 +1,11 @@
 name: tests
 
-on: [push, pull_request]
+# in combination with the if this ensures that the jobs in
+# this file are only ran when all linting checks have passed
+on:
+  workflow_run:
+    workflows: [checks]
+    types: [completed]
 
 env:
   REGISTRY: ghcr.io
@@ -16,6 +21,7 @@ jobs:
         exclude:
           - {os: "windows-latest", python-version: "3.7"}
           - {os: "windows-latest", python-version: "3.8"}
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python
