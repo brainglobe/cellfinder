@@ -1,12 +1,12 @@
-import pytest
 import os
-
-from pathlib import Path
 from math import isclose
+from pathlib import Path
+
+import pytest
+from imlib.general.exceptions import CommandLineInputError
 from imlib.general.system import ensure_directory_exists
 
 import cellfinder.tools.system as system
-from imlib.general.exceptions import CommandLineInputError
 
 data_dir = Path("tests", "data")
 background_im_dir = os.path.join(data_dir, "background")
@@ -91,7 +91,7 @@ def test_memory_in_bytes():
     )
     assert isclose(
         system.memory_in_bytes(1000, "pb"),
-        10 ** 18,
+        10**18,
         abs_tol=memory_detection_tolerance,
     )
 

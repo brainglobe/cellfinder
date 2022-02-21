@@ -5,25 +5,22 @@ Functions to prepare files and directories needed for other functions
 """
 
 
-import os
-import logging
 import json
-
-from fancylog import fancylog
+import logging
+import os
+from argparse import Namespace
 from pathlib import PurePath
 
+from bg_atlasapi import BrainGlobeAtlas
+from brainreg.paths import Paths as BrainRegPaths
+from fancylog import fancylog
+from imlib.general.exceptions import CommandLineInputError
 from imlib.general.system import ensure_directory_exists
 
-from imlib.general.exceptions import CommandLineInputError
-
-
-from cellfinder.tools.parser import cellfinder_parser
 import cellfinder as program_for_log
 import cellfinder.tools.parser as parser
-from cellfinder.tools import tools, system
-from argparse import Namespace
-from brainreg.paths import Paths as BrainRegPaths
-from bg_atlasapi import BrainGlobeAtlas
+from cellfinder.tools import system, tools
+from cellfinder.tools.parser import cellfinder_parser
 
 
 def get_arg_groups(args, parser):
