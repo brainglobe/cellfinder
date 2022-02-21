@@ -1,12 +1,11 @@
 import os
-import pytest
-
 from math import isclose
+
+import imlib.IO.cells as cell_io
+import pytest
 
 from cellfinder_core.main import main
 from cellfinder_core.tools.IO import read_with_dask
-
-import imlib.IO.cells as cell_io
 
 data_dir = os.path.join(
     os.getcwd(), "tests", "data", "integration", "detection"

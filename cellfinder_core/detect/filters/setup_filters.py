@@ -1,8 +1,6 @@
 import math
 
-from cellfinder_core.detect.filters.volume.ball_filter import (
-    BallFilter,
-)
+from cellfinder_core.detect.filters.volume.ball_filter import BallFilter
 from cellfinder_core.detect.filters.volume.structure_detection import (
     CellDetector,
 )

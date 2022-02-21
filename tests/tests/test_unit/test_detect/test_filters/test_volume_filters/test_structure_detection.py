@@ -1,6 +1,5 @@
-import pytest
-
 import numpy as np
+import pytest
 
 from cellfinder_core.detect.filters.volume import structure_detection
 
@@ -11,7 +10,7 @@ def test_get_non_zero_ull_min():
     )
     assert (
         structure_detection.get_non_zero_ull_min_wrapper([0] * 10)
-        == (2 ** 64) - 1
+        == (2**64) - 1
     )
 
 

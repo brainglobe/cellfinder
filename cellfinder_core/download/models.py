@@ -1,8 +1,8 @@
 import os
+
 from imlib.general.system import ensure_directory_exists
 
 from cellfinder_core.download.download import download
-
 
 model_weight_urls = {
     "resnet50_tv": "https://gin.g-node.org/cellfinder/models/raw/"

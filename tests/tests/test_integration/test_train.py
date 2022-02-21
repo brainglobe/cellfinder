@@ -1,5 +1,6 @@
 import os
 import sys
+
 import pytest
 
 from cellfinder_core.train.train_yml import cli as train_run

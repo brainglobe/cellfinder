@@ -1,5 +1,6 @@
-from natsort import natsorted
 from random import getrandbits, uniform
+
+from natsort import natsorted
 
 
 def get_max_value(obj_in):

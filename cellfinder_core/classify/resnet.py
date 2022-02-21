@@ -1,16 +1,16 @@
 from tensorflow.keras import Model
-from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.layers import (
-    Input,
-    ZeroPadding3D,
-    Conv3D,
     Activation,
-    MaxPooling3D,
-    GlobalAveragePooling3D,
-    Dense,
-    BatchNormalization,
     Add,
+    BatchNormalization,
+    Conv3D,
+    Dense,
+    GlobalAveragePooling3D,
+    Input,
+    MaxPooling3D,
+    ZeroPadding3D,
 )
+from tensorflow.keras.optimizers import Adam
 
 #####################################################################
 # Define the types of ResNet

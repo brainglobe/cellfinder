@@ -6,12 +6,10 @@ Functions to prepare files and directories needed for other functions
 
 
 import logging
-
 from pathlib import Path
 
-from imlib.general.system import get_num_processes
-
 from imlib.general.config import get_config_obj
+from imlib.general.system import get_num_processes
 
 import cellfinder_core.tools.tf as tf_tools
 from cellfinder_core.download import models as model_download

@@ -1,13 +1,15 @@
 # cython: language_level=3
 
 
-cimport libc.math as cmath
 cimport cython
+cimport libc.math as cmath
 
 import numpy as np
+
 from cellfinder_core.detect.filters.typedefs cimport uint, ushort
 
 # only for __init__
+
 from cellfinder_core.tools.array_operations import bin_mean_3d
 from cellfinder_core.tools.geometry import make_sphere
 

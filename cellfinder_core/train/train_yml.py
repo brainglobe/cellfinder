@@ -9,22 +9,22 @@ it's warnings are silenced
 """
 
 
-import os
 import logging
-
-from datetime import datetime
-from pathlib import Path
-from fancylog import fancylog
+import os
 from argparse import (
-    ArgumentParser,
     ArgumentDefaultsHelpFormatter,
+    ArgumentParser,
     ArgumentTypeError,
 )
-from sklearn.model_selection import train_test_split
+from datetime import datetime
+from pathlib import Path
+
+from fancylog import fancylog
 from imlib.general.numerical import check_positive_float, check_positive_int
 from imlib.general.system import ensure_directory_exists
 from imlib.IO.cells import find_relevant_tiffs
 from imlib.IO.yaml import read_yaml_section
+from sklearn.model_selection import train_test_split
 
 import cellfinder_core as program_for_log
 
@@ -108,8 +108,8 @@ def misc_parse(parser):
 
 def training_parse():
     from cellfinder_core.download.cli import (
-        model_parser,
         download_directory_parser,
+        model_parser,
     )
 
     training_parser = ArgumentParser(
@@ -234,7 +234,7 @@ def parse_yaml(yaml_files, section="data"):
 
 
 def get_tiff_files(yaml_contents):
-    from cellfinder_core.tools.tiff import TiffList, TiffDir
+    from cellfinder_core.tools.tiff import TiffDir, TiffList
 
     tiff_lists = []
     for d in yaml_contents:
@@ -322,14 +322,14 @@ def run(
     suppress_tf_logging(tf_suppress_log_messages)
 
     from tensorflow.keras.callbacks import (
-        TensorBoard,
-        ModelCheckpoint,
         CSVLogger,
+        ModelCheckpoint,
+        TensorBoard,
     )
 
-    from cellfinder_core.tools.prep import prep_training
-    from cellfinder_core.classify.tools import make_lists, get_model
     from cellfinder_core.classify.cube_generator import CubeGeneratorFromDisk
+    from cellfinder_core.classify.tools import get_model, make_lists
+    from cellfinder_core.tools.prep import prep_training
 
     start_time = datetime.now()
 

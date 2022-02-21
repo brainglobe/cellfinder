@@ -1,10 +1,10 @@
 # distutils: language = c++
 
 from libcpp.map cimport map as CppMap
-from libcpp.vector cimport vector as CppVector
 from libcpp.pair cimport pair as CppPair
+from libcpp.vector cimport vector as CppVector
 
-from cellfinder_core.detect.filters.typedefs cimport ull, ulong, uint, ushort
+from cellfinder_core.detect.filters.typedefs cimport uint, ull, ulong, ushort
 
 
 cdef get_biggest_structure(CppVector[ulong] sizes):

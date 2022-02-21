@@ -1,12 +1,12 @@
+from random import shuffle
+
 import numpy as np
 import tensorflow as tf
-
-from random import shuffle
-from skimage.io import imread
-from scipy.ndimage import zoom
-from tensorflow.keras.utils import Sequence
 from imlib.cells.cells import group_cells_by_z
 from imlib.general.numerical import is_even
+from scipy.ndimage import zoom
+from skimage.io import imread
+from tensorflow.keras.utils import Sequence
 
 from cellfinder_core.classify.augment import AugmentationParameters, augment
 

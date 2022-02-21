@@ -7,20 +7,23 @@
     https://github.com/brainglobe/cellfinder-core/actions)
 [![Coverage Status](https://coveralls.io/repos/github/brainglobe/cellfinder-core/badge.svg?branch=main)](https://coveralls.io/github/brainglobe/cellfinder-core?branch=main)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/python/black)
+[![Imports: isort](https://img.shields.io/badge/%20imports-isort-%231674b1?style=flat&labelColor=ef8336)](https://pycqa.github.io/isort/)
+[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
 [![Contributions](https://img.shields.io/badge/Contributions-Welcome-brightgreen.svg)](https://docs.brainglobe.info/cellfinder/contributing)
 [![Twitter](https://img.shields.io/twitter/follow/brain_globe?style=social)](https://twitter.com/brain_globe)
+
 # cellfinder-core
-Standalone cellfinder cell detection algorithm 
+Standalone cellfinder cell detection algorithm
 
-This package implements the cell detection algorithm from 
-[Tyson, Rousseau & Niedworok et al. (2021)](https://doi.org/10.1371/journal.pcbi.1009074) 
-without any dependency on data type (i.e. it can be used outside of 
-whole-brain microscopy). 
+This package implements the cell detection algorithm from
+[Tyson, Rousseau & Niedworok et al. (2021)](https://doi.org/10.1371/journal.pcbi.1009074)
+without any dependency on data type (i.e. it can be used outside of
+whole-brain microscopy).
 
-`cellfinder-core` supports the 
-[cellfinder](https://github.com/brainglobe/cellfinder) software for 
-whole-brain microscopy analysis, and the algorithm can also be implemented in 
-[napari](https://napari.org/index.html) using the 
+`cellfinder-core` supports the
+[cellfinder](https://github.com/brainglobe/cellfinder) software for
+whole-brain microscopy analysis, and the algorithm can also be implemented in
+[napari](https://napari.org/index.html) using the
 [cellfinder napari plugin](https://github.com/brainglobe/cellfinder-napari).
 
 ---
@@ -28,39 +31,39 @@ whole-brain microscopy analysis, and the algorithm can also be implemented in
 ## Instructions
 
 ### Installation
-`cellfinder-core` supports Python >=3.7, 
-and works across Linux, Windows, and should work on most versions of macOS 
+`cellfinder-core` supports Python >=3.7,
+and works across Linux, Windows, and should work on most versions of macOS
 (although this is not tested).
 
-Assuming you have a Python environment set up 
-(e.g. [using conda](https://docs.brainglobe.info/cellfinder/using-conda)), 
+Assuming you have a Python environment set up
+(e.g. [using conda](https://docs.brainglobe.info/cellfinder/using-conda)),
 you can install `cellfinder-core` with:
 ```bash
 pip install cellfinder-core
 ```
 
-Once you have [installed napari](https://napari.org/index.html#installation). 
-You can install napari either through the napari plugin installation tool, or 
+Once you have [installed napari](https://napari.org/index.html#installation).
+You can install napari either through the napari plugin installation tool, or
 directly from PyPI with:
 ```bash
 pip install cellfinder-napari
 ```
 
-N.B. To speed up cellfinder, you need CUDA & cuDNN installed. Instructions 
+N.B. To speed up cellfinder, you need CUDA & cuDNN installed. Instructions
 [here](https://docs.brainglobe.info/cellfinder/installation/using-gpu).
 
 ### Usage
-Before using cellfinder-core, it may be useful to take a look at the 
+Before using cellfinder-core, it may be useful to take a look at the
 [preprint](https://www.biorxiv.org/content/10.1101/2020.10.21.348771v2) which
 outlines the algorithm.
 
-The API is not yet fully documented. For an idea of what the parameters do, 
-see the documentation for the cellfinder whole-brain microscopy image analysis 
+The API is not yet fully documented. For an idea of what the parameters do,
+see the documentation for the cellfinder whole-brain microscopy image analysis
 command-line tool ([cell candidate detection](https://docs.brainglobe.info/cellfinder/user-guide/command-line/candidate-detection),
 [cell candidate classification](https://docs.brainglobe.info/cellfinder/user-guide/command-line/classification)).
 It may also be useful to try the
 [cellfinder napari plugin](https://github.com/brainglobe/cellfinder-napari)
-so you can adjust the parameters in a GUI. 
+so you can adjust the parameters in a GUI.
 
 #### To run the full pipeline (cell candidate detection and classification)
 ```python
@@ -83,7 +86,7 @@ print(detected_cells[0])
 # Cell: x: 132, y: 308, z: 10, type: 2
 ```
 
-Cell type 2 is a "real" cell, and Cell type 1 is a "rejected" object (i.e. 
+Cell type 2 is a "real" cell, and Cell type 1 is a "rejected" object (i.e.
 not classified as a cell):
 
 ```python
@@ -96,7 +99,7 @@ print(Cell.NO_CELL)
 ```
 
 #### Saving the results
-If you want to save the detected cells for use in other BrainGlobe software (e.g. the 
+If you want to save the detected cells for use in other BrainGlobe software (e.g. the
 [cellfinder napari plugin](https://docs.brainglobe.info/cellfinder-napari/introduction)),
 you can save in the cellfinder XML standard:
 ```python
@@ -111,12 +114,12 @@ cells = get_cells("/path/to/cells.xml")
 
 
 #### Using dask for lazy loading
-`cellfinder-core` supports most array-like objects. Using 
-[Dask arrays](https://docs.dask.org/en/latest/array.html) allows for lazy 
-loading of data, allowing large (e.g. TB) datasets to be processed. 
-`cellfinder-core` comes with a function 
-(based on [napari-ndtiffs](https://github.com/tlambert03/napari-ndtiffs)) to 
-load a series of image files (e.g. a directory of 2D tiff files) as a Dask 
+`cellfinder-core` supports most array-like objects. Using
+[Dask arrays](https://docs.dask.org/en/latest/array.html) allows for lazy
+loading of data, allowing large (e.g. TB) datasets to be processed.
+`cellfinder-core` comes with a function
+(based on [napari-ndtiffs](https://github.com/tlambert03/napari-ndtiffs)) to
+load a series of image files (e.g. a directory of 2D tiff files) as a Dask
 array. `cellfinder-core` can then be used in the same way as with a numpy array.
 
 ```python
@@ -171,7 +174,7 @@ network_depth="50"
 model_weights = prep_classification(
     trained_model, model_weights, install_path, model, n_free_cpus
 )
-    
+
 cell_candidates = detect.main(
     signal_array,
     start_plane,
@@ -206,17 +209,17 @@ if len(cell_candidates) > 0: # Don't run if there's nothing to classify
     )
 ```
 #### Training the network
-The training data needed are matched pairs (signal & background) of small 
+The training data needed are matched pairs (signal & background) of small
 (usually 50 x 50 x 100um) images centered on the coordinate of candidate cells.
-These can be generated however you like, but I recommend using the 
+These can be generated however you like, but I recommend using the
 [Napari plugin](https://docs.brainglobe.info/cellfinder-napari/user-guide/training-data-generation).
 
 `cellfinder-core` comes with a 50-layer ResNet trained on ~100,000 data points
-from serial two-photon microscopy images of mouse brains 
+from serial two-photon microscopy images of mouse brains
 (available [here](https://gin.g-node.org/cellfinder/training_data)).
 
-Training the network is likely simpler using the 
-[command-line interface](https://docs.brainglobe.info/cellfinder/user-guide/training#start-training) 
+Training the network is likely simpler using the
+[command-line interface](https://docs.brainglobe.info/cellfinder/user-guide/training#start-training)
 or the [Napari plugin](https://docs.brainglobe.info/cellfinder-napari/user-guide/training-the-network),
 but it is possible through the Python API.
 
@@ -249,29 +252,29 @@ run_training(
 ---
 ### More info
 
-More documentation about cellfinder and other BrainGlobe tools can be 
-found [here](https://docs.brainglobe.info). 
- 
-This software is at a very early stage, and was written with our data in mind. 
-Over time we hope to support other data types/formats. If you have any 
-questions or issues, please get in touch [on the forum](https://forum.image.sc/tag/brainglobe) or by 
+More documentation about cellfinder and other BrainGlobe tools can be
+found [here](https://docs.brainglobe.info).
+
+This software is at a very early stage, and was written with our data in mind.
+Over time we hope to support other data types/formats. If you have any
+questions or issues, please get in touch [on the forum](https://forum.image.sc/tag/brainglobe) or by
 [raising an issue](https://github.com/brainglobe/cellfinder-core/issues).
 
 ---
 ## Illustration
 
 ### Introduction
-cellfinder takes a stitched, but otherwise raw dataset with at least 
+cellfinder takes a stitched, but otherwise raw dataset with at least
 two channels:
  * Background channel (i.e. autofluorescence)
  * Signal channel, the one with the cells to be detected:
- 
+
 ![raw](https://raw.githubusercontent.com/brainglobe/cellfinder/master/resources/raw.png)
 **Raw coronal serial two-photon mouse brain image showing labelled cells**
 
 
 ### Cell candidate detection
-Classical image analysis (e.g. filters, thresholding) is used to find 
+Classical image analysis (e.g. filters, thresholding) is used to find
 cell-like objects (with false positives):
 
 ![raw](https://raw.githubusercontent.com/brainglobe/cellfinder/master/resources/detect.png)
@@ -279,7 +282,7 @@ cell-like objects (with false positives):
 
 
 ### Cell candidate classification
-A deep-learning network (ResNet) is used to classify cell candidates as true 
+A deep-learning network (ResNet) is used to classify cell candidates as true
 cells or artefacts:
 
 ![raw](https://raw.githubusercontent.com/brainglobe/cellfinder/master/resources/classify.png)
@@ -292,12 +295,11 @@ If you find this plugin useful, and use it in your research, please cite the pre
 [https://doi.org/10.1371/journal.pcbi.1009074](https://doi.org/10.1371/journal.pcbi.1009074)
 
 **If you use this, or any other tools in the brainglobe suite, please
- [let us know](mailto:code@adamltyson.com?subject=cellfinder-core), and 
+ [let us know](mailto:code@adamltyson.com?subject=cellfinder-core), and
  we'd be happy to promote your paper/talk etc.**
- 
- 
+
+
  ---
 The BrainGlobe project is generously supported by the Sainsbury Wellcome Centre and the Institute of Neuroscience, Technical University of Munich, with funding from Wellcome, the Gatsby Charitable Foundation and the Munich Cluster for Systems Neurology - Synergy.
 
 <img src='https://brainglobe.info/images/logos_combined.png' width="550">
-

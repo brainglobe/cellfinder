@@ -5,18 +5,15 @@
 import cython
 
 cimport libc.math as cmath
-
-from libcpp.vector cimport vector as CppVector
 from libcpp.map cimport map as CppMap
 from libcpp.pair cimport pair as CppPair
+from libcpp.vector cimport vector as CppVector
 
 import numpy as np
 
-from cellfinder_core.detect.filters.typedefs cimport ull, uint, Point
+from cellfinder_core.detect.filters.typedefs cimport Point, uint, ull
 
 from imlib.cells.cells import Cell
-
-
 
 DEF ULLONG_MAX = 18446744073709551615 # (2**64) -1
 DEF N_NEIGHBOURS_4_CONNECTED = 3  # top left, below
@@ -269,11 +266,11 @@ cdef class StructureManager:
         Once the correct structure id is found, append a point with the current coordinates to the coordinates map
         entry for the correct structure. Hence each entry of the map will be a vector of all the pertaining points.
 
-        :param x: 
-        :param y: 
-        :param z: 
-        :param neighbour_ids: 
-        :return: 
+        :param x:
+        :param y:
+        :param z:
+        :param neighbour_ids:
+        :return:
         """
         cdef ull updated_id
 

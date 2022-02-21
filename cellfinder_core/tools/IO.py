@@ -1,14 +1,12 @@
 import glob
 import os
-
 from typing import Tuple
 
 import numpy as np
 from dask import array as da
 from dask import delayed
-from tifffile import TiffFile, imread
-
 from imlib.general.system import get_sorted_file_paths
+from tifffile import TiffFile, imread
 
 
 def get_tiff_meta(

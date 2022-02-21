@@ -1,21 +1,16 @@
-from datetime import datetime
 import multiprocessing
-from multiprocessing import Queue as MultiprocessingQueue
+from datetime import datetime
 from multiprocessing import Lock
+from multiprocessing import Queue as MultiprocessingQueue
 
 import numpy as np
-
-from imlib.general.system import (
-    get_num_processes,
-)
+from imlib.general.system import get_num_processes
 
 from cellfinder_core.detect.filters.plane.multiprocessing import (
     MpTileProcessor,
 )
 from cellfinder_core.detect.filters.setup_filters import setup_tile_filtering
-from cellfinder_core.detect.filters.volume.multiprocessing import (
-    Mp3DFilter,
-)
+from cellfinder_core.detect.filters.volume.multiprocessing import Mp3DFilter
 
 
 def calculate_parameters_in_pixels(

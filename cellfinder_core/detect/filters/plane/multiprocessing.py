@@ -1,8 +1,6 @@
 import numpy as np
 
-from cellfinder_core.detect.filters.plane.classical_filter import (
-    enhance_peaks,
-)
+from cellfinder_core.detect.filters.plane.classical_filter import enhance_peaks
 from cellfinder_core.detect.filters.plane.tile_walker import TileWalker
 
 

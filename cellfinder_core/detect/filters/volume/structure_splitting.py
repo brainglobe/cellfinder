@@ -1,9 +1,8 @@
-import numpy as np
 import logging
 
-from cellfinder_core.detect.filters.volume.ball_filter import (
-    BallFilter,
-)
+import numpy as np
+
+from cellfinder_core.detect.filters.volume.ball_filter import BallFilter
 from cellfinder_core.detect.filters.volume.structure_detection import (
     CellDetector,
     get_structure_centre_wrapper,

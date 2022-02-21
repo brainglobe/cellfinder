@@ -1,6 +1,7 @@
 import platform
-from setuptools import setup, find_packages, Extension
 from os import path
+
+from setuptools import Extension, find_packages, setup
 
 this_directory = path.abspath(path.dirname(__file__))
 with open(path.join(this_directory, "README.md"), encoding="utf-8") as f:

@@ -3,8 +3,9 @@ N.B imports are within functions to prevent tensorflow being imported before
 it's warnings are silenced
 """
 
-import os
 import logging
+import os
+
 from imlib.general.logging import suppress_specific_logs
 
 tf_suppress_log_messages = [
@@ -39,10 +40,11 @@ def main(
 ):
     suppress_tf_logging(tf_suppress_log_messages)
 
-    from cellfinder_core.detect import detect
-    from cellfinder_core.classify import classify
-    from cellfinder_core.tools import prep
     from pathlib import Path
+
+    from cellfinder_core.classify import classify
+    from cellfinder_core.detect import detect
+    from cellfinder_core.tools import prep
 
     home = Path.home()
     install_path = home / ".cellfinder"

@@ -1,8 +1,7 @@
-import natsort
-
 from os import listdir
 from os.path import isfile, join
 
+import natsort
 from imlib.cells.cells import Cell, UntypedCell
 
 

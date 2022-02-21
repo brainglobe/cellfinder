@@ -1,5 +1,4 @@
 import numpy as np
-
 from imlib.general.numerical import is_even
 
 

@@ -1,10 +1,10 @@
 import logging
+
 import numpy as np
 from imlib.general.system import get_num_processes
 
-
-from cellfinder_core.classify.tools import get_model
 from cellfinder_core.classify.cube_generator import CubeGeneratorFromFile
+from cellfinder_core.classify.tools import get_model
 from cellfinder_core.train.train_yml import models
 
 

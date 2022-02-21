@@ -1,12 +1,11 @@
 import numpy as np
-
 from scipy.ndimage import rotate, zoom
 
 from cellfinder_core.tools.tools import (
+    all_elements_equal,
     random_bool,
     random_probability,
     random_sign,
-    all_elements_equal,
 )
 
 all_axes = np.array((0, 1, 2))

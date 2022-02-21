@@ -1,21 +1,19 @@
-import os
-import math
 import logging
-
-from tqdm import tqdm
+import math
+import os
 
 from imlib.cells.cells import Cell
 from tifffile import tifffile
+from tqdm import tqdm
 
+from cellfinder_core.detect.filters.setup_filters import setup
 from cellfinder_core.detect.filters.volume.structure_detection import (
     get_structure_centre_wrapper,
 )
-
 from cellfinder_core.detect.filters.volume.structure_splitting import (
-    split_cells,
     StructureSplitException,
+    split_cells,
 )
-from cellfinder_core.detect.filters.setup_filters import setup
 
 
 class Mp3DFilter(object):
@@ -169,4 +167,4 @@ class Mp3DFilter(object):
 
 
 def sphere_volume(radius):
-    return (4 / 3) * math.pi * radius ** 3
+    return (4 / 3) * math.pi * radius**3
