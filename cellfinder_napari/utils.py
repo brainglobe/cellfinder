@@ -2,10 +2,46 @@ import pandas as pd
 from imlib.cells.cells import Cell
 from pkg_resources import resource_filename
 from qtpy.QtWidgets import QComboBox, QLabel, QMessageBox, QPushButton
+from imlib.cells.cells import Cell
 
 brainglobe_logo = resource_filename(
     "cellfinder_napari", "images/brainglobe.png"
 )
+
+def html_label_widget(label : str, tag : str = 'b'):
+    return dict(
+            widget_type="Label",
+            label=f"<{tag}>{label}</{tag}>",
+        )
+
+
+def add_layers(points, viewer):
+    """
+    Adds classified cell candidates as two separate point layers to the napari viewer.
+    """
+    detected, rejected = cells_to_array(points)
+
+    viewer.add_points(
+        rejected,
+        name="Rejected",
+        size=15,
+        n_dimensional=True,
+        opacity=0.6,
+        symbol="ring",
+        face_color="lightskyblue",
+        visible=False,
+        metadata=dict(point_type=Cell.UNKNOWN),
+    )
+    viewer.add_points(
+        detected,
+        name="Detected",
+        size=15,
+        n_dimensional=True,
+        opacity=0.6,
+        symbol="ring",
+        face_color="lightgoldenrodyellow",
+        metadata=dict(point_type=Cell.CELL),
+    )
 
 
 def cells_df_as_np(cells_df, new_order=[2, 1, 0], type_column="type"):
