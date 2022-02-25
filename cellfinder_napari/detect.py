@@ -29,62 +29,16 @@ CUBE_DEPTH = 20
 MIN_PLANES_ANALYSE = 0
 
 
-<<<<<<< HEAD
 def detect() -> FunctionGui:
-=======
-def detect():
->>>>>>> origin/reformat-restructure
     @magicgui(
         header=html_label_widget(
             f'<img src="{brainglobe_logo}"width="100">cellfinder', "h1"
         ),
         detection_label=html_label_widget("Cell detection", "h3"),
-<<<<<<< HEAD
         **DataInputs.widget_representation(),
         **DetectionInputs.widget_representation(),
         **ClassificationInputs.widget_representation(),
         **MiscInputs.widget_representation(),
-=======
-        data_options=html_label_widget("Data:"),
-        detection_options=html_label_widget("Detection:"),
-        classification_options=html_label_widget("Classification:"),
-        misc_options=html_label_widget("Miscellaneous:"),
-        voxel_size_z=DataInputs.numerical_widget(
-            "voxel_size_z", custom_label="Voxel size (z)"
-        ),
-        voxel_size_y=DataInputs.numerical_widget(
-            "voxel_size_y", custom_label="Voxel size (y)"
-        ),
-        voxel_size_x=DataInputs.numerical_widget(
-            "voxel_size_x", custom_label="Voxel size (x)"
-        ),
-        soma_diameter=DetectionInputs.numerical_widget("soma_diameter"),
-        ball_xy_size=DetectionInputs.numerical_widget(
-            "ball_xy_size", custom_label="Ball filter (xy)"
-        ),
-        ball_z_size=DetectionInputs.numerical_widget(
-            "ball_z_size", custom_label="Ball filter (z)"
-        ),
-        ball_overlap=DetectionInputs.numerical_widget("ball_overlap"),
-        filter_width=DetectionInputs.numerical_widget("filter_width"),
-        threshold=DetectionInputs.numerical_widget("threshold"),
-        cell_spread=DetectionInputs.numerical_widget("cell_spread"),
-        max_cluster=DetectionInputs.numerical_widget(
-            "max_cluster", min=0, max=10000000
-        ),
-        trained_model=dict(
-            value=ClassificationInputs.persistent_defaults["trained_model"]
-        ),
-        start_plane=MiscInputs.numerical_widget(
-            "start_plane", min=0, max=100000
-        ),
-        end_plane=MiscInputs.numerical_widget("end_plane", min=0, max=100000),
-        number_of_free_cpus=MiscInputs.numerical_widget("number_of_free_cpus"),
-        analyse_local=dict(
-            value=MiscInputs.persistent_defaults["analyse_local"]
-        ),
-        debug=dict(value=MiscInputs.persistent_defaults["debug"]),
->>>>>>> origin/reformat-restructure
         call_button=True,
         persist=True,
         reset_button=dict(widget_type="PushButton", text="Reset defaults"),
@@ -177,7 +131,6 @@ def detect():
             soma_diameter,
             ball_xy_size,
             ball_z_size,
-<<<<<<< HEAD
             ball_overlap_fraction,
             log_sigma_size,
             n_sds_above_mean_thresh,
@@ -186,17 +139,6 @@ def detect():
         )
 
         trained_model = None if trained_model == Path.home() else trained_model
-=======
-            ball_overlap,
-            filter_width,
-            threshold,
-            cell_spread,
-            max_cluster,
-        )
-
-        if trained_model == Path.home():
-            trained_model = None
->>>>>>> origin/reformat-restructure
         classification_inputs = ClassificationInputs(trained_model)
 
         end_plane = len(signal_image.data) if end_plane == 0 else end_plane
@@ -216,11 +158,7 @@ def detect():
             end_plane = min(len(signal_image.data), end_plane)
 
         misc_inputs = MiscInputs(
-<<<<<<< HEAD
             start_plane, end_plane, n_free_cpus, analyse_local, debug
-=======
-            start_plane, end_plane, number_of_free_cpus, analyse_local, debug
->>>>>>> origin/reformat-restructure
         )
 
         worker = run(
@@ -247,17 +185,10 @@ def detect():
     @widget.reset_button.changed.connect
     def restore_defaults() -> None:
         defaults = {
-<<<<<<< HEAD
             **DataInputs.defaults(),
             **DetectionInputs.defaults(),
             **ClassificationInputs.defaults(),
             **MiscInputs.defaults(),
-=======
-            **DataInputs.persistent_defaults,
-            **DetectionInputs.persistent_defaults,
-            **ClassificationInputs.persistent_defaults,
-            **MiscInputs.persistent_defaults,
->>>>>>> origin/reformat-restructure
         }
         for name, value in defaults.items():
             if value is not None:  # ignore fields with no default
