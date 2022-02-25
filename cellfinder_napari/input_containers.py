@@ -38,19 +38,25 @@ class InputContainer:
 
     @classmethod
     def _numerical_widget(
-        cls, key : str, custom_label : str = None, step=None, min=None, max=None
+        cls, key: str, custom_label: str = None, step=None, min=None, max=None
     ) -> dict:
         """Represents a numerical field, given by key, as a formatted widget with the field's default value.
 
         The widget's label, step, min, and max can be adjusted.
         """
-        if custom_label is None:
-            label = key.replace("_", " ").capitalize()
-        else:
-            label = custom_label
+        label = (
+            key.replace("_", " ").capitalize()
+            if custom_label is None
+            else custom_label
+        )
+        if step is None:  # pass default step size to napari
+            if type(step) == int:
+                step = 1
+            elif type(step) == float:
+                step = 0.1
+            else:
+                raise TypeError("Invalid type for step.")
         value = cls.defaults()[key]
-        if step is None:
-             step=1 if type(step)==int else 0.1
         if min is None and max is None:
             return dict(value=value, label=label, step=step)
         else:
@@ -87,6 +93,8 @@ class DataInputs(InputContainer):
             self.voxel_size_y,
             self.voxel_size_x,
         )
+        data_input_dict["signal_image"]
+        # del operator doesn't affect self, because asdict creates a copy of fields.
         del data_input_dict["voxel_size_z"]
         del data_input_dict["voxel_size_y"]
         del data_input_dict["voxel_size_x"]
@@ -193,7 +201,9 @@ class MiscInputs(InputContainer):
     def widget_representation(cls) -> dict:
         return dict(
             misc_options=html_label_widget("Miscellaneous:"),
-            start_plane=cls._numerical_widget("start_plane", min=0, max=100000),
+            start_plane=cls._numerical_widget(
+                "start_plane", min=0, max=100000
+            ),
             end_plane=cls._numerical_widget("end_plane", min=0, max=100000),
             n_free_cpus=cls._numerical_widget(
                 "n_free_cpus", custom_label="Number of free CPUs"

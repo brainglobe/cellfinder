@@ -138,12 +138,10 @@ def detect() -> FunctionGui:
             max_cluster_size,
         )
 
-        if trained_model == Path.home():
-            trained_model = None
+        trained_model = None if trained_model == Path.home() else trained_model
         classification_inputs = ClassificationInputs(trained_model)
 
-        if end_plane == 0:
-            end_plane = len(signal_image.data)
+        end_plane = len(signal_image.data) if end_plane == 0 else end_plane
 
         if analyse_local:
             current_plane = viewer.dims.current_step[0]
@@ -193,7 +191,7 @@ def detect() -> FunctionGui:
             **MiscInputs.defaults(),
         }
         for name, value in defaults.items():
-            if hasattr(widget, name):
+            if value is not None:  # ignore fields with no default
                 getattr(widget, name).value = value
 
     return widget

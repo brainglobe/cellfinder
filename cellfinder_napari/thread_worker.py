@@ -17,10 +17,9 @@ def run(
     misc_inputs: MiscInputs,
 ) -> list:
     """Runs cellfinder in a separate thread, to prevent GUI blocking."""
-    points = cellfinder_run(
+    return cellfinder_run(
         **data_inputs.as_core_arguments(),
         **detection_inputs.as_core_arguments(),
         **classification_inputs.as_core_arguments(),
         **misc_inputs.as_core_arguments(),
     )
-    return points
