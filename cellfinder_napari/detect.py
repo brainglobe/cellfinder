@@ -5,6 +5,7 @@ from typing import List
 import napari
 from cellfinder_core.classify.cube_generator import get_cube_depth_min_max
 from magicgui import magicgui
+from magicgui.widgets import FunctionGui
 
 from cellfinder_napari.input_containers import (
     DataInputs,
@@ -28,7 +29,7 @@ CUBE_DEPTH = 20
 MIN_PLANES_ANALYSE = 0
 
 
-def detect():
+def detect() -> FunctionGui:
     @magicgui(
         header=html_label_widget(
             f'<img src="{brainglobe_logo}"width="100">cellfinder', "h1"
@@ -184,7 +185,7 @@ def detect():
     widget.header.native.setOpenExternalLinks(True)
 
     @widget.reset_button.changed.connect
-    def restore_defaults():
+    def restore_defaults() -> None:
         defaults = {
             **DataInputs.defaults(),
             **DetectionInputs.defaults(),

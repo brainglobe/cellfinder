@@ -15,7 +15,7 @@ def run(
     detection_inputs: DetectionInputs,
     classification_inputs: ClassificationInputs,
     misc_inputs: MiscInputs,
-):
+) -> list:
     """Runs cellfinder in a separate thread, to prevent GUI blocking."""
     points = cellfinder_run(
         **data_inputs.as_core_arguments(),

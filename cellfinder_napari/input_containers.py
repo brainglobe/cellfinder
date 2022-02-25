@@ -19,7 +19,7 @@ class InputContainer:
     """
 
     @classmethod
-    def defaults(cls):
+    def defaults(cls) -> dict:
         """Returns default values of this class's fields as a dict."""
         # Derived classes are not expected to be particularly
         # slow to instantiate, so use the default constructor
@@ -38,7 +38,7 @@ class InputContainer:
 
     @classmethod
     def numerical_widget(
-        cls, key, custom_label=None, step=0.1, min=None, max=None
+        cls, key : str, custom_label : str = None, step=0.1, min=None, max=None
     ) -> dict:
         """Represents a numerical field, given by key, as a formatted widget with the field's default value.
 

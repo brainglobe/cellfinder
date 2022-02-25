@@ -9,14 +9,14 @@ brainglobe_logo = resource_filename(
 )
 
 
-def html_label_widget(label: str, tag: str = "b"):
+def html_label_widget(label: str, tag: str = "b") -> dict:
     return dict(
         widget_type="Label",
         label=f"<{tag}>{label}</{tag}>",
     )
 
 
-def add_layers(points, viewer):
+def add_layers(points, viewer) -> None:
     """
     Adds classified cell candidates as two separate point layers to the napari viewer.
     """
@@ -101,7 +101,7 @@ def add_button(
     visibility=True,
     minimum_width=0,
     alignment="center",
-):
+) -> QPushButton:
     button = QPushButton(label)
     if alignment == "center":
         pass
