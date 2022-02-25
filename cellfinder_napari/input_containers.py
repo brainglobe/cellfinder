@@ -37,8 +37,8 @@ class InputContainer:
         return asdict(self)
 
     @classmethod
-    def numerical_widget(
-        cls, key : str, custom_label : str = None, step=0.1, min=None, max=None
+    def _numerical_widget(
+        cls, key : str, custom_label : str = None, step=None, min=None, max=None
     ) -> dict:
         """Represents a numerical field, given by key, as a formatted widget with the field's default value.
 
@@ -48,11 +48,14 @@ class InputContainer:
             label = key.replace("_", " ").capitalize()
         else:
             label = custom_label
+        value = cls.defaults()[key]
+        if step is None:
+             step=1 if type(step)==int else 0.1
         if min is None and max is None:
-            return dict(value=cls.defaults()[key], label=label, step=step)
+            return dict(value=value, label=label, step=step)
         else:
             return dict(
-                value=cls.defaults()[key],
+                value=value,
                 label=label,
                 step=step,
                 min=min,
@@ -93,13 +96,13 @@ class DataInputs(InputContainer):
     def widget_representation(cls) -> dict:
         return dict(
             data_options=html_label_widget("Data:"),
-            voxel_size_z=cls.numerical_widget(
+            voxel_size_z=cls._numerical_widget(
                 "voxel_size_z", custom_label="Voxel size (z)"
             ),
-            voxel_size_y=cls.numerical_widget(
+            voxel_size_y=cls._numerical_widget(
                 "voxel_size_y", custom_label="Voxel size (y)"
             ),
-            voxel_size_x=cls.numerical_widget(
+            voxel_size_x=cls._numerical_widget(
                 "voxel_size_x", custom_label="Voxel size (x)"
             ),
         )
@@ -125,26 +128,26 @@ class DetectionInputs(InputContainer):
     def widget_representation(cls) -> dict:
         return dict(
             detection_options=html_label_widget("Detection:"),
-            soma_diameter=cls.numerical_widget("soma_diameter"),
-            ball_xy_size=cls.numerical_widget(
+            soma_diameter=cls._numerical_widget("soma_diameter"),
+            ball_xy_size=cls._numerical_widget(
                 "ball_xy_size", custom_label="Ball filter (xy)"
             ),
-            ball_z_size=cls.numerical_widget(
+            ball_z_size=cls._numerical_widget(
                 "ball_z_size", custom_label="Ball filter (z)"
             ),
-            ball_overlap_fraction=cls.numerical_widget(
+            ball_overlap_fraction=cls._numerical_widget(
                 "ball_overlap_fraction", custom_label="Ball overlap"
             ),
-            log_sigma_size=cls.numerical_widget(
+            log_sigma_size=cls._numerical_widget(
                 "log_sigma_size", custom_label="Filter width"
             ),
-            n_sds_above_mean_thresh=cls.numerical_widget(
+            n_sds_above_mean_thresh=cls._numerical_widget(
                 "n_sds_above_mean_thresh", custom_label="Threshold"
             ),
-            soma_spread_factor=cls.numerical_widget(
+            soma_spread_factor=cls._numerical_widget(
                 "soma_spread_factor", custom_label="Cell spread"
             ),
-            max_cluster_size=cls.numerical_widget(
+            max_cluster_size=cls._numerical_widget(
                 "max_cluster_size",
                 custom_label="Max cluster",
                 min=0,
@@ -190,9 +193,9 @@ class MiscInputs(InputContainer):
     def widget_representation(cls) -> dict:
         return dict(
             misc_options=html_label_widget("Miscellaneous:"),
-            start_plane=cls.numerical_widget("start_plane", min=0, max=100000),
-            end_plane=cls.numerical_widget("end_plane", min=0, max=100000),
-            n_free_cpus=cls.numerical_widget(
+            start_plane=cls._numerical_widget("start_plane", min=0, max=100000),
+            end_plane=cls._numerical_widget("end_plane", min=0, max=100000),
+            n_free_cpus=cls._numerical_widget(
                 "n_free_cpus", custom_label="Number of free CPUs"
             ),
             analyse_local=dict(value=cls.defaults()["analyse_local"]),
