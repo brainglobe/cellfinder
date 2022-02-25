@@ -8,11 +8,12 @@ brainglobe_logo = resource_filename(
     "cellfinder_napari", "images/brainglobe.png"
 )
 
-def html_label_widget(label : str, tag : str = 'b'):
+
+def html_label_widget(label: str, tag: str = "b"):
     return dict(
-            widget_type="Label",
-            label=f"<{tag}>{label}</{tag}>",
-        )
+        widget_type="Label",
+        label=f"<{tag}>{label}</{tag}>",
+    )
 
 
 def add_layers(points, viewer):

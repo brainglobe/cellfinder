@@ -6,8 +6,17 @@ import napari
 from cellfinder_core.classify.cube_generator import get_cube_depth_min_max
 from magicgui import magicgui
 
-from cellfinder_napari.input_containers import DataInputs, DetectionInputs, MiscInputs, ClassificationInputs
-from cellfinder_napari.utils import brainglobe_logo, add_layers, html_label_widget
+from cellfinder_napari.input_containers import (
+    DataInputs,
+    DetectionInputs,
+    MiscInputs,
+    ClassificationInputs,
+)
+from cellfinder_napari.utils import (
+    brainglobe_logo,
+    add_layers,
+    html_label_widget,
+)
 from cellfinder_napari.thread_worker import run
 
 NETWORK_VOXEL_SIZES = [5, 1, 1]
@@ -18,9 +27,12 @@ CUBE_DEPTH = 20
 # If using ROI, how many extra planes to analyse
 MIN_PLANES_ANALYSE = 0
 
+
 def detect():
     @magicgui(
-        header=html_label_widget(f'<img src="{brainglobe_logo}"width="100">cellfinder', "h1"),
+        header=html_label_widget(
+            f'<img src="{brainglobe_logo}"width="100">cellfinder', "h1"
+        ),
         detection_label=html_label_widget("Cell detection", "h3"),
         **DataInputs.widget_representation(),
         **DetectionInputs.widget_representation(),
@@ -109,27 +121,25 @@ def detect():
         data_inputs = DataInputs(
             signal_image.data,
             background_image.data,
-            voxel_size_z, 
-            voxel_size_y, 
-            voxel_size_x
+            voxel_size_z,
+            voxel_size_y,
+            voxel_size_x,
         )
 
         detection_inputs = DetectionInputs(
             soma_diameter,
             ball_xy_size,
-            ball_z_size, 
+            ball_z_size,
             ball_overlap_fraction,
             log_sigma_size,
             n_sds_above_mean_thresh,
             soma_spread_factor,
-            max_cluster_size
+            max_cluster_size,
         )
 
         if trained_model == Path.home():
             trained_model = None
-        classification_inputs = ClassificationInputs(
-            trained_model
-        )
+        classification_inputs = ClassificationInputs(trained_model)
 
         if end_plane == 0:
             end_plane = len(signal_image.data)
@@ -149,11 +159,8 @@ def detect():
             end_plane = min(len(signal_image.data), end_plane)
 
         misc_inputs = MiscInputs(
-            start_plane, 
-            end_plane, 
-            n_free_cpus, 
-            analyse_local, 
-            debug)
+            start_plane, end_plane, n_free_cpus, analyse_local, debug
+        )
 
         worker = run(
             data_inputs,
@@ -161,7 +168,9 @@ def detect():
             classification_inputs,
             misc_inputs,
         )
-        worker.returned.connect(lambda points : add_layers(points, viewer=viewer))
+        worker.returned.connect(
+            lambda points: add_layers(points, viewer=viewer)
+        )
         worker.start()
 
     widget.header.value = (
@@ -177,11 +186,11 @@ def detect():
     @widget.reset_button.changed.connect
     def restore_defaults():
         defaults = {
-            **DataInputs.defaults(), 
-            **DetectionInputs.defaults(), 
-            **ClassificationInputs.defaults(), 
-            **MiscInputs.defaults()
-            }
+            **DataInputs.defaults(),
+            **DetectionInputs.defaults(),
+            **ClassificationInputs.defaults(),
+            **MiscInputs.defaults(),
+        }
         for name, value in defaults.items():
             if hasattr(widget, name):
                 getattr(widget, name).value = value
