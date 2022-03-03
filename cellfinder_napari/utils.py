@@ -8,6 +8,42 @@ brainglobe_logo = resource_filename(
 )
 
 
+def html_label_widget(label: str, tag: str = "b") -> dict:
+    return dict(
+        widget_type="Label",
+        label=f"<{tag}>{label}</{tag}>",
+    )
+
+
+def add_layers(points, viewer) -> None:
+    """
+    Adds classified cell candidates as two separate point layers to the napari viewer.
+    """
+    detected, rejected = cells_to_array(points)
+
+    viewer.add_points(
+        rejected,
+        name="Rejected",
+        size=15,
+        n_dimensional=True,
+        opacity=0.6,
+        symbol="ring",
+        face_color="lightskyblue",
+        visible=False,
+        metadata=dict(point_type=Cell.UNKNOWN),
+    )
+    viewer.add_points(
+        detected,
+        name="Detected",
+        size=15,
+        n_dimensional=True,
+        opacity=0.6,
+        symbol="ring",
+        face_color="lightgoldenrodyellow",
+        metadata=dict(point_type=Cell.CELL),
+    )
+
+
 def cells_df_as_np(cells_df, new_order=[2, 1, 0], type_column="type"):
     cells_df = cells_df.drop(columns=[type_column])
     cells = cells_df[cells_df.columns[new_order]]
@@ -64,7 +100,7 @@ def add_button(
     visibility=True,
     minimum_width=0,
     alignment="center",
-):
+) -> QPushButton:
     button = QPushButton(label)
     if alignment == "center":
         pass
