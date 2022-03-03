@@ -184,7 +184,7 @@ def train():
         if Model_weights == Path.home():
             Model_weights = None
 
-        if YAML_files[0] == Path.home():
+        if YAML_files[0] == Path.home():  # type: ignore
             print("Please select a YAML file for training")
         else:
             worker = run_training(
