@@ -8,17 +8,17 @@ from magicgui import magicgui
 from magicgui.widgets import FunctionGui
 
 from cellfinder_napari.input_containers import (
+    ClassificationInputs,
     DataInputs,
     DetectionInputs,
     MiscInputs,
-    ClassificationInputs,
-)
-from cellfinder_napari.utils import (
-    brainglobe_logo,
-    add_layers,
-    html_label_widget,
 )
 from cellfinder_napari.thread_worker import run
+from cellfinder_napari.utils import (
+    add_layers,
+    brainglobe_logo,
+    html_label_widget,
+)
 
 NETWORK_VOXEL_SIZES = [5, 1, 1]
 CUBE_WIDTH = 50

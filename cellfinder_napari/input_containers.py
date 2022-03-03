@@ -1,7 +1,8 @@
-import napari
 from abc import abstractmethod
-from dataclasses import dataclass, asdict
+from dataclasses import asdict, dataclass
 from pathlib import Path
+
+import napari
 
 from cellfinder_napari.utils import html_label_widget
 
