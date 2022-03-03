@@ -1,6 +1,7 @@
 from abc import abstractmethod
 from dataclasses import asdict, dataclass
 from pathlib import Path
+from typing import Optional
 
 import napari
 
@@ -162,7 +163,7 @@ class DetectionInputs(InputContainer):
 class ClassificationInputs(InputContainer):
     """Container for classification inputs."""
 
-    trained_model: Path = Path.home()
+    trained_model: Optional[Path] = Path.home()
 
     def as_core_arguments(self) -> dict:
         return super().as_core_arguments()
