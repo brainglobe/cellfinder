@@ -71,7 +71,7 @@ def detect() -> FunctionGui:
         analyse_local: bool,
         debug: bool,
         reset_button,
-    ) -> List[napari.types.LayerDataTuple]:
+    ) -> None:
         """
 
         Parameters
