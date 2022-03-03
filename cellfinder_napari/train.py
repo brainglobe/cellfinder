@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Optional
 
 from magicgui import magicgui
 from napari.qt.threading import thread_worker
@@ -112,8 +113,8 @@ def train():
         YAML_files: Path,
         Output_directory: Path,
         network_options,
-        Trained_model: Path,
-        Model_weights: Path,
+        Trained_model: Optional[Path],
+        Model_weights: Optional[Path],
         Model_depth: str,
         Pretrained_model: str,
         training_options,
@@ -139,9 +140,9 @@ def train():
             YAML files containing paths to training data
         Output_directory : Path
             Directory to save the output trained model
-        Trained_model : Path
+        Trained_model : Optional[Path]
             Existing pre-trained model
-        Model_weights : Path
+        Model_weights : Optional[Path]
             Existing pre-trained model weights
             Should be set along with "Model depth"
         Model_depth : str
