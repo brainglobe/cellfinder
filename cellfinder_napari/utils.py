@@ -124,6 +124,13 @@ def display_info(widget, title, message):
     QMessageBox.information(widget, title, message, QMessageBox.Ok)
 
 
+def display_error_box(message):
+    msg = QMessageBox()
+    msg.setWindowTitle("Error")
+    msg.setText(message)
+    msg.exec()
+
+
 def display_question(widget, title, message):
     """
     Display a warning in a pop up that informs
