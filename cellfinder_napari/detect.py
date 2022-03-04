@@ -1,6 +1,6 @@
 from math import ceil
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 
 import napari
 from cellfinder_core.classify.cube_generator import get_cube_depth_min_max
@@ -8,17 +8,17 @@ from magicgui import magicgui
 from magicgui.widgets import FunctionGui
 
 from cellfinder_napari.input_containers import (
+    ClassificationInputs,
     DataInputs,
     DetectionInputs,
     MiscInputs,
-    ClassificationInputs,
-)
-from cellfinder_napari.utils import (
-    brainglobe_logo,
-    add_layers,
-    html_label_widget,
 )
 from cellfinder_napari.thread_worker import run
+from cellfinder_napari.utils import (
+    add_layers,
+    brainglobe_logo,
+    html_label_widget,
+)
 
 NETWORK_VOXEL_SIZES = [5, 1, 1]
 CUBE_WIDTH = 50
@@ -63,7 +63,7 @@ def detect() -> FunctionGui:
         soma_spread_factor: float,
         max_cluster_size: int,
         classification_options,
-        trained_model: Path,
+        trained_model: Optional[Path],
         misc_options,
         start_plane: int,
         end_plane: int,
@@ -71,7 +71,7 @@ def detect() -> FunctionGui:
         analyse_local: bool,
         debug: bool,
         reset_button,
-    ) -> List[napari.types.LayerDataTuple]:
+    ) -> None:
         """
 
         Parameters
@@ -104,7 +104,7 @@ def detect() -> FunctionGui:
         max_cluster_size : int
             Largest putative cell cluster (in cubic um) where splitting
             should be attempted
-        trained_model : Path
+        trained_model : Optional[Path]
             Trained model file path (home directory (default) -> pretrained weights)
         start_plane : int
             First plane to process (to process a subset of the data)

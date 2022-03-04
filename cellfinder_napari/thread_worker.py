@@ -1,10 +1,10 @@
 from cellfinder_core.main import main as cellfinder_run
-
 from napari.qt.threading import thread_worker
+
 from cellfinder_napari.input_containers import (
+    ClassificationInputs,
     DataInputs,
     DetectionInputs,
-    ClassificationInputs,
     MiscInputs,
 )
 

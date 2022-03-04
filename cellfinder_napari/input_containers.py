@@ -1,7 +1,9 @@
-import napari
 from abc import abstractmethod
-from dataclasses import dataclass, asdict
+from dataclasses import asdict, dataclass
 from pathlib import Path
+from typing import Optional
+
+import napari
 
 from cellfinder_napari.utils import html_label_widget
 
@@ -161,7 +163,7 @@ class DetectionInputs(InputContainer):
 class ClassificationInputs(InputContainer):
     """Container for classification inputs."""
 
-    trained_model: Path = Path.home()
+    trained_model: Optional[Path] = Path.home()
 
     def as_core_arguments(self) -> dict:
         return super().as_core_arguments()
