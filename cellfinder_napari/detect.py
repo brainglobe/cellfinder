@@ -17,6 +17,7 @@ from cellfinder_napari.thread_worker import run
 from cellfinder_napari.utils import (
     add_layers,
     brainglobe_logo,
+    display_error_box,
     html_label_widget,
 )
 
@@ -122,6 +123,11 @@ def detect() -> FunctionGui:
         reset_button :
             Reset parameters to default
         """
+        if signal_image is None or background_image is None:
+            display_error_box(
+                "Both signal and background images must be specified"
+            )
+            return
         data_inputs = DataInputs(
             signal_image.data,
             background_image.data,
