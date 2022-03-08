@@ -64,6 +64,7 @@ def detect() -> FunctionGui:
         max_cluster_size: int,
         classification_options,
         trained_model: Optional[Path],
+        use_pre_trained_weights: bool,
         misc_options,
         start_plane: int,
         end_plane: int,
@@ -104,6 +105,8 @@ def detect() -> FunctionGui:
         max_cluster_size : int
             Largest putative cell cluster (in cubic um) where splitting
             should be attempted
+        use_pre_trained_weights : bool
+            Select to use pre-trained model weights
         trained_model : Optional[Path]
             Trained model file path (home directory (default) -> pretrained weights)
         start_plane : int
@@ -138,8 +141,11 @@ def detect() -> FunctionGui:
             max_cluster_size,
         )
 
-        trained_model = None if trained_model == Path.home() else trained_model
-        classification_inputs = ClassificationInputs(trained_model)
+        if use_pre_trained_weights:
+            trained_model = None
+        classification_inputs = ClassificationInputs(
+            use_pre_trained_weights, trained_model
+        )
 
         end_plane = len(signal_image.data) if end_plane == 0 else end_plane
 

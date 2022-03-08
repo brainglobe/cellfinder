@@ -163,15 +163,21 @@ class DetectionInputs(InputContainer):
 class ClassificationInputs(InputContainer):
     """Container for classification inputs."""
 
+    use_pre_trained_weights: bool = True
     trained_model: Optional[Path] = Path.home()
 
     def as_core_arguments(self) -> dict:
-        return super().as_core_arguments()
+        args = super().as_core_arguments()
+        del args["use_pre_trained_weights"]
+        return args
 
     @classmethod
     def widget_representation(cls) -> dict:
         return dict(
             classification_options=html_label_widget("Classification:"),
+            use_pre_trained_weights=dict(
+                value=cls.defaults()["use_pre_trained_weights"]
+            ),
             trained_model=dict(value=cls.defaults()["trained_model"]),
         )
 
