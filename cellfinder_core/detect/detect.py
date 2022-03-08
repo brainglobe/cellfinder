@@ -56,7 +56,15 @@ def main(
     artifact_keep=False,
     save_planes=False,
     plane_directory=None,
+    callback=None,
 ):
+    """
+    Parameters
+    ----------
+    callback : Callable[int], optional
+        A callback function that is called every time a plane has finished
+        being processed. Called with the plane number that has finished.
+    """
     n_processes = get_num_processes(min_free_cpu_cores=n_free_cpus)
     start_time = datetime.now()
 
@@ -76,6 +84,7 @@ def main(
     if end_plane == -1:
         end_plane = len(signal_array)
     signal_array = signal_array[start_plane:end_plane]
+    callback = callback or (lambda *args, **kwargs: None)
 
     workers_queue = MultiprocessingQueue(maxsize=n_processes)
     # WARNING: needs to be AT LEAST ball_z_size
@@ -96,11 +105,13 @@ def main(
         start_plane,
     ]
     output_queue = MultiprocessingQueue()
+    planes_done_queue = MultiprocessingQueue()
 
     # Create 3D analysis filter
     mp_3d_filter = Mp3DFilter(
         mp_3d_filter_queue,
         output_queue,
+        planes_done_queue,
         soma_diameter,
         setup_params=setup_params,
         soma_size_spread_factor=soma_spread_factor,
@@ -147,8 +158,14 @@ def main(
         processes.append(p)
         p.start()
 
-    # Wait for the final 2D filter process to finish
-    processes[-1].join()
+    # Trigger callback when 3D filtering is done on a plane
+    nplanes_done = 0
+    while nplanes_done < len(signal_array):
+        callback(planes_done_queue.get(block=True))
+        nplanes_done += 1
+
+    # Wait for all the 2D filters to process
+    [p.join() for p in processes]
     # Tell 3D filter that there are no more planes left
     mp_3d_filter_queue.put((None, None, None))
     cells = output_queue.get()

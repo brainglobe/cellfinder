@@ -2,6 +2,7 @@ import os
 from math import isclose
 
 import imlib.IO.cells as cell_io
+import numpy as np
 import pytest
 
 from cellfinder_core.main import main
@@ -17,6 +18,15 @@ cells_validation_xml = os.path.join(data_dir, "cell_classification.xml")
 voxel_sizes = [5, 2, 2]
 DETECTION_TOLERANCE = 2
 
+
+@pytest.fixture
+def signal_array():
+    return read_with_dask(signal_data_path)
+
+
+@pytest.fixture
+def background_array():
+    return read_with_dask(background_data_path)
 
 # FIXME: This isn't a very good example
 
@@ -50,3 +60,22 @@ def test_detection_full():
     assert isclose(
         num_cells_validation, num_cells_test, abs_tol=DETECTION_TOLERANCE
     )
+
+
+def test_callbacks(signal_array, background_array):
+
+    signal_array = signal_array[0:1]
+    background_array = background_array[0:1]
+    planes_done = []
+
+    def detect_callback(plane):
+        planes_done.append(plane)
+
+    main(
+        signal_array,
+        background_array,
+        voxel_sizes,
+        detect_callback=detect_callback,
+    )
+
+    np.testing.assert_equal(planes_done, [0])

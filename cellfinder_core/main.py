@@ -37,7 +37,17 @@ def main(
     cube_height=50,
     cube_depth=20,
     network_depth="50",
+    *,
+    detect_callback=None,
 ):
+    """
+    Parameters
+    ----------
+    detect_callback : Callable[int], optional
+        A callback function that is called every time a plane has finished
+        being processed during the detection stage.
+        Called with the plane number that has finished.
+    """
     suppress_tf_logging(tf_suppress_log_messages)
 
     from pathlib import Path
@@ -64,6 +74,7 @@ def main(
         n_free_cpus,
         log_sigma_size,
         n_sds_above_mean_thresh,
+        callback=detect_callback,
     )
 
     model_weights = prep.prep_classification(
