@@ -2,6 +2,7 @@ import logging
 
 import numpy as np
 from imlib.general.system import get_num_processes
+from tensorflow import keras
 
 from cellfinder_core.classify.cube_generator import CubeGeneratorFromFile
 from cellfinder_core.classify.tools import get_model
@@ -23,12 +24,23 @@ def main(
     model_weights,
     network_depth,
     max_workers=3,
+    *,
+    callback=None,
 ):
-
+    """
+    Parameters
+    ----------
+    callback : Callable[int], optional
+        A callback function that is called during classification. Called with
+        the batch number once that batch has been classified.
+    """
     if signal_array.ndim != 3:
         raise IOError("Signal data must be 3D")
     if background_array.ndim != 3:
         raise IOError("Background data must be 3D")
+
+    if callback is not None:
+        callback = [BatchEndCallback(callback)]
 
     # Too many workers doesn't increase speed, and uses huge amounts of RAM
     workers = get_num_processes(
@@ -61,6 +73,7 @@ def main(
         use_multiprocessing=True,
         workers=workers,
         verbose=True,
+        callbacks=callback,
     )
     predictions = predictions.round()
     predictions = predictions.astype("uint16")
@@ -74,3 +87,11 @@ def main(
         points_list.append(cell)
 
     return points_list
+
+
+class BatchEndCallback(keras.callbacks.Callback):
+    def __init__(self, callback):
+        self._callback = callback
+
+    def on_predict_batch_end(self, batch, logs=None):
+        self._callback(batch)

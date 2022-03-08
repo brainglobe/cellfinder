@@ -39,6 +39,7 @@ def main(
     network_depth="50",
     *,
     detect_callback=None,
+    classify_callback=None,
 ):
     """
     Parameters
@@ -47,6 +48,10 @@ def main(
         A callback function that is called every time a plane has finished
         being processed during the detection stage.
         Called with the plane number that has finished.
+    classify_callback : Callable[int], optional
+        A callback function that is called every time tensorflow has finished
+        classifying a batch. Called with the batch number that has just
+        finished.
     """
     suppress_tf_logging(tf_suppress_log_messages)
 
@@ -96,6 +101,7 @@ def main(
             trained_model,
             model_weights,
             network_depth,
+            callback=classify_callback,
         )
     else:
         logging.info("No candidates, skipping classification")

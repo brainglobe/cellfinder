@@ -63,19 +63,25 @@ def test_detection_full():
 
 
 def test_callbacks(signal_array, background_array):
-
-    signal_array = signal_array[0:1]
-    background_array = background_array[0:1]
+    # 20 is minimum number of planes needed to find > 0 cells
+    signal_array = signal_array[0:20]
+    background_array = background_array[0:20]
     planes_done = []
+    batches_classified = []
 
     def detect_callback(plane):
         planes_done.append(plane)
 
-    main(
+    def classify_callback(batch):
+        batches_classified.append(batch)
+
+    cells = main(
         signal_array,
         background_array,
         voxel_sizes,
         detect_callback=detect_callback,
+        classify_callback=classify_callback,
     )
 
-    np.testing.assert_equal(planes_done, [0])
+    np.testing.assert_equal(planes_done, np.arange(len(signal_array)))
+    np.testing.assert_equal(batches_classified, [0])
