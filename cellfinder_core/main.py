@@ -40,18 +40,19 @@ def main(
     *,
     detect_callback=None,
     classify_callback=None,
+    detect_finished_callback=None,
 ):
     """
     Parameters
     ----------
     detect_callback : Callable[int], optional
-        A callback function that is called every time a plane has finished
-        being processed during the detection stage.
-        Called with the plane number that has finished.
+        Called every time a plane has finished being processed during the
+        detection stage. Called with the plane number that has finished.
     classify_callback : Callable[int], optional
-        A callback function that is called every time tensorflow has finished
-        classifying a batch. Called with the batch number that has just
-        finished.
+        Called every time tensorflow has finished classifying a point.
+        Called with the batch number that has just finished.
+    detect_finished_callback : Callable[list], optional
+        Called after detection is finished with the list of detected points.
     """
     suppress_tf_logging(tf_suppress_log_messages)
 
@@ -81,6 +82,9 @@ def main(
         n_sds_above_mean_thresh,
         callback=detect_callback,
     )
+
+    if detect_finished_callback is not None:
+        detect_finished_callback(points)
 
     model_weights = prep.prep_classification(
         trained_model, model_weights, install_path, model, n_free_cpus

@@ -28,6 +28,7 @@ def signal_array():
 def background_array():
     return read_with_dask(background_data_path)
 
+
 # FIXME: This isn't a very good example
 
 
@@ -66,8 +67,10 @@ def test_callbacks(signal_array, background_array):
     # 20 is minimum number of planes needed to find > 0 cells
     signal_array = signal_array[0:20]
     background_array = background_array[0:20]
+
     planes_done = []
     batches_classified = []
+    points_found = []
 
     def detect_callback(plane):
         planes_done.append(plane)
@@ -75,13 +78,22 @@ def test_callbacks(signal_array, background_array):
     def classify_callback(batch):
         batches_classified.append(batch)
 
-    cells = main(
+    def detect_finished_callback(points):
+        points_found.append(points)
+
+    main(
         signal_array,
         background_array,
         voxel_sizes,
         detect_callback=detect_callback,
         classify_callback=classify_callback,
+        detect_finished_callback=detect_finished_callback,
     )
 
     np.testing.assert_equal(planes_done, np.arange(len(signal_array)))
     np.testing.assert_equal(batches_classified, [0])
+
+    ncalls = len(points_found)
+    assert ncalls == 1, f'Expected 1 call to callback, got {ncalls}'
+    npoints = len(points_found[0])
+    assert npoints == 120, f'Expected 120 points, found {npoints}'
