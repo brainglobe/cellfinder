@@ -5,7 +5,7 @@ from typing import List, Optional
 import napari
 from cellfinder_core.classify.cube_generator import get_cube_depth_min_max
 from magicgui import magicgui
-from magicgui.widgets import FunctionGui
+from magicgui.widgets import FunctionGui, ProgressBar
 
 from cellfinder_napari.input_containers import (
     ClassificationInputs,
@@ -13,7 +13,7 @@ from cellfinder_napari.input_containers import (
     DetectionInputs,
     MiscInputs,
 )
-from cellfinder_napari.thread_worker import run
+from cellfinder_napari.thread_worker import Worker
 from cellfinder_napari.utils import (
     add_layers,
     brainglobe_logo,
@@ -30,6 +30,8 @@ MIN_PLANES_ANALYSE = 0
 
 
 def detect() -> FunctionGui:
+    progress_bar = ProgressBar()
+
     @magicgui(
         header=html_label_widget(
             f'<img src="{brainglobe_logo}"width="100">cellfinder', "h1"
@@ -161,7 +163,7 @@ def detect() -> FunctionGui:
             start_plane, end_plane, n_free_cpus, analyse_local, debug
         )
 
-        worker = run(
+        worker = Worker(
             data_inputs,
             detection_inputs,
             classification_inputs,
@@ -170,6 +172,13 @@ def detect() -> FunctionGui:
         worker.returned.connect(
             lambda points: add_layers(points, viewer=viewer)
         )
+
+        def update_progress_bar(label: str, max: int, value: int):
+            progress_bar.label = label
+            progress_bar.max = max
+            progress_bar.value = value
+
+        worker.update_progress_bar.connect(update_progress_bar)
         worker.start()
 
     widget.header.value = (
@@ -193,5 +202,8 @@ def detect() -> FunctionGui:
         for name, value in defaults.items():
             if value is not None:  # ignore fields with no default
                 getattr(widget, name).value = value
+
+    # Insert progress bar before the run and reset buttons
+    widget.insert(-3, progress_bar)
 
     return widget
