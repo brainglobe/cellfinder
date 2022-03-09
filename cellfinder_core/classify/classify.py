@@ -1,4 +1,5 @@
 import logging
+from typing import Callable, Optional
 
 import numpy as np
 from imlib.general.system import get_num_processes
@@ -25,7 +26,7 @@ def main(
     network_depth,
     max_workers=3,
     *,
-    callback=None,
+    callback: Optional[Callable[[int], None]] = None,
 ):
     """
     Parameters
@@ -40,7 +41,9 @@ def main(
         raise IOError("Background data must be 3D")
 
     if callback is not None:
-        callback = [BatchEndCallback(callback)]
+        callbacks = [BatchEndCallback(callback)]
+    else:
+        callbacks = None
 
     # Too many workers doesn't increase speed, and uses huge amounts of RAM
     workers = get_num_processes(
@@ -73,7 +76,7 @@ def main(
         use_multiprocessing=True,
         workers=workers,
         verbose=True,
-        callbacks=callback,
+        callbacks=callbacks,
     )
     predictions = predictions.round()
     predictions = predictions.astype("uint16")

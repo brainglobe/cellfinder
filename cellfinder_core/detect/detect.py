@@ -2,6 +2,7 @@ import multiprocessing
 from datetime import datetime
 from multiprocessing import Lock
 from multiprocessing import Queue as MultiprocessingQueue
+from typing import Callable
 
 import numpy as np
 from imlib.general.system import get_num_processes
@@ -56,7 +57,8 @@ def main(
     artifact_keep=False,
     save_planes=False,
     plane_directory=None,
-    callback=None,
+    *,
+    callback: Callable[[int], None] = None,
 ):
     """
     Parameters
@@ -86,9 +88,13 @@ def main(
     signal_array = signal_array[start_plane:end_plane]
     callback = callback or (lambda *args, **kwargs: None)
 
-    workers_queue = MultiprocessingQueue(maxsize=n_processes)
+    workers_queue: MultiprocessingQueue = MultiprocessingQueue(
+        maxsize=n_processes
+    )
     # WARNING: needs to be AT LEAST ball_z_size
-    mp_3d_filter_queue = MultiprocessingQueue(maxsize=ball_z_size)
+    mp_3d_filter_queue: MultiprocessingQueue = MultiprocessingQueue(
+        maxsize=ball_z_size
+    )
     for _ in range(n_processes):
         # place holder for the queue to have the right size on first run
         workers_queue.put(None)
@@ -104,8 +110,8 @@ def main(
         ball_overlap_fraction,
         start_plane,
     ]
-    output_queue = MultiprocessingQueue()
-    planes_done_queue = MultiprocessingQueue()
+    output_queue: MultiprocessingQueue = MultiprocessingQueue()
+    planes_done_queue: MultiprocessingQueue = MultiprocessingQueue()
 
     # Create 3D analysis filter
     mp_3d_filter = Mp3DFilter(
@@ -165,7 +171,8 @@ def main(
         nplanes_done += 1
 
     # Wait for all the 2D filters to process
-    [p.join() for p in processes]
+    for p in processes:
+        p.join()
     # Tell 3D filter that there are no more planes left
     mp_3d_filter_queue.put((None, None, None))
     cells = output_queue.get()

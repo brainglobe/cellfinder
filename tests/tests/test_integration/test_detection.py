@@ -94,6 +94,6 @@ def test_callbacks(signal_array, background_array):
     np.testing.assert_equal(batches_classified, [0])
 
     ncalls = len(points_found)
-    assert ncalls == 1, f'Expected 1 call to callback, got {ncalls}'
+    assert ncalls == 1, f"Expected 1 call to callback, got {ncalls}"
     npoints = len(points_found[0])
-    assert npoints == 120, f'Expected 120 points, found {npoints}'
+    assert npoints == 120, f"Expected 120 points, found {npoints}"
