@@ -142,9 +142,10 @@ class CubeGeneratorFromFile(Sequence):
 
         if self.num_planes_needed_for_cube > self.image_z_size:
             raise StackSizeError(
-                "The number of planes provided is not sufficient "
-                "for any cubes to be extracted. Please check the "
-                "input data"
+                f"The number of planes provided ({self.image_z_size}) "
+                "is not sufficient for any cubes to be extracted "
+                f"(need at least {self.num_planes_needed_for_cube}). "
+                "Please check the input data"
             )
 
     def __remove_outlier_points(self):

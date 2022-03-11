@@ -2,6 +2,7 @@ import multiprocessing
 from datetime import datetime
 from multiprocessing import Lock
 from multiprocessing import Queue as MultiprocessingQueue
+from typing import Callable
 
 import numpy as np
 from imlib.general.system import get_num_processes
@@ -56,7 +57,16 @@ def main(
     artifact_keep=False,
     save_planes=False,
     plane_directory=None,
+    *,
+    callback: Callable[[int], None] = None,
 ):
+    """
+    Parameters
+    ----------
+    callback : Callable[int], optional
+        A callback function that is called every time a plane has finished
+        being processed. Called with the plane number that has finished.
+    """
     n_processes = get_num_processes(min_free_cpu_cores=n_free_cpus)
     start_time = datetime.now()
 
@@ -76,11 +86,16 @@ def main(
     if end_plane == -1:
         end_plane = len(signal_array)
     signal_array = signal_array[start_plane:end_plane]
+    callback = callback or (lambda *args, **kwargs: None)
 
-    workers_queue = MultiprocessingQueue(maxsize=n_processes)
+    workers_queue: MultiprocessingQueue = MultiprocessingQueue(
+        maxsize=n_processes
+    )
     # WARNING: needs to be AT LEAST ball_z_size
-    mp_3d_filter_queue = MultiprocessingQueue(maxsize=ball_z_size)
-    for plane_id in range(n_processes):
+    mp_3d_filter_queue: MultiprocessingQueue = MultiprocessingQueue(
+        maxsize=ball_z_size
+    )
+    for _ in range(n_processes):
         # place holder for the queue to have the right size on first run
         workers_queue.put(None)
 
@@ -95,11 +110,14 @@ def main(
         ball_overlap_fraction,
         start_plane,
     ]
-    output_queue = MultiprocessingQueue()
+    output_queue: MultiprocessingQueue = MultiprocessingQueue()
+    planes_done_queue: MultiprocessingQueue = MultiprocessingQueue()
 
+    # Create 3D analysis filter
     mp_3d_filter = Mp3DFilter(
         mp_3d_filter_queue,
         output_queue,
+        planes_done_queue,
         soma_diameter,
         setup_params=setup_params,
         soma_size_spread_factor=soma_spread_factor,
@@ -116,11 +134,14 @@ def main(
     bf_process = multiprocessing.Process(target=mp_3d_filter.process, args=())
     bf_process.start()  # needs to be started before the loop
     clipping_val, threshold_value = setup_tile_filtering(signal_array[0, :, :])
+
+    # Create 2D analysis filter
     mp_tile_processor = MpTileProcessor(workers_queue, mp_3d_filter_queue)
     prev_lock = Lock()
-    processes = []
 
     # start 2D tile filter (output goes into queue for 3D analysis)
+    # Creates a list of (running) processes for each 2D plane
+    processes = []
     for plane_id, plane in enumerate(signal_array):
         workers_queue.get()
         lock = Lock()
@@ -143,9 +164,19 @@ def main(
         processes.append(p)
         p.start()
 
-    processes[-1].join()
-    mp_3d_filter_queue.put((None, None, None))  # Signal the end
+    # Trigger callback when 3D filtering is done on a plane
+    nplanes_done = 0
+    while nplanes_done < len(signal_array):
+        callback(planes_done_queue.get(block=True))
+        nplanes_done += 1
+
+    # Wait for all the 2D filters to process
+    for p in processes:
+        p.join()
+    # Tell 3D filter that there are no more planes left
+    mp_3d_filter_queue.put((None, None, None))
     cells = output_queue.get()
+    # Wait for 3D filter to finish
     bf_process.join()
 
     print(

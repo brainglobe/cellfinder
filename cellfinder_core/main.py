@@ -37,7 +37,23 @@ def main(
     cube_height=50,
     cube_depth=20,
     network_depth="50",
+    *,
+    detect_callback=None,
+    classify_callback=None,
+    detect_finished_callback=None,
 ):
+    """
+    Parameters
+    ----------
+    detect_callback : Callable[int], optional
+        Called every time a plane has finished being processed during the
+        detection stage. Called with the plane number that has finished.
+    classify_callback : Callable[int], optional
+        Called every time tensorflow has finished classifying a point.
+        Called with the batch number that has just finished.
+    detect_finished_callback : Callable[list], optional
+        Called after detection is finished with the list of detected points.
+    """
     suppress_tf_logging(tf_suppress_log_messages)
 
     from pathlib import Path
@@ -64,7 +80,11 @@ def main(
         n_free_cpus,
         log_sigma_size,
         n_sds_above_mean_thresh,
+        callback=detect_callback,
     )
+
+    if detect_finished_callback is not None:
+        detect_finished_callback(points)
 
     model_weights = prep.prep_classification(
         trained_model, model_weights, install_path, model, n_free_cpus
@@ -85,6 +105,7 @@ def main(
             trained_model,
             model_weights,
             network_depth,
+            callback=classify_callback,
         )
     else:
         logging.info("No candidates, skipping classification")

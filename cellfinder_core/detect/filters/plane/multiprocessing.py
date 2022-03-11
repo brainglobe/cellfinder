@@ -21,6 +21,14 @@ class MpTileProcessor(object):
         log_sigma_size,
         n_sds_above_mean_thresh,
     ):
+        """
+        Parameters
+        ----------
+        previous_lock : multiprocessing.Lock
+            Lock for the previous tile in the processing queue.
+        self_lock : multiprocessing.Lock
+            Lock for the current tile.
+        """
         laplace_gaussian_sigma = log_sigma_size * soma_diameter
         plane = plane.T
         np.clip(plane, 0, clipping_value, out=plane)
@@ -44,8 +52,10 @@ class MpTileProcessor(object):
         ] = threshold_value
         tile_mask = walker.good_tiles_mask.astype(np.uint8)
 
-        with previous_lock:
-            pass
+        # Wait for previous plane to be done
+        previous_lock.acquire()
+        previous_lock.release()
+
         self.ball_filter_q.put((plane_id, plane, tile_mask))
         self.thread_q.put(plane_id)
         self_lock.release()
