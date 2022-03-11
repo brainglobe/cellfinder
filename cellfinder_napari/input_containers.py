@@ -78,7 +78,7 @@ class DataInputs(InputContainer):
     signal_array: napari.layers.Image = None
     background_array: napari.layers.Image = None
     voxel_size_z: float = 5
-    voxel_size_y: float = 5
+    voxel_size_y: float = 2
     voxel_size_x: float = 2
 
     def as_core_arguments(self) -> dict:
