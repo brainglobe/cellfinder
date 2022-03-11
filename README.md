@@ -4,7 +4,7 @@
 [![PyPI](https://img.shields.io/pypi/v/cellfinder-napari.svg?color=green)](https://pypi.org/project/cellfinder-napari)
 [![Python Version](https://img.shields.io/pypi/pyversions/cellfinder-napari.svg?color=green)](https://python.org)
 [![tests](https://github.com/brainglobe/cellfinder-napari/workflows/tests/badge.svg)](https://github.com/brainglobe/cellfinder-napari/actions)
-[![codecov](https://codecov.io/gh/brainglobe/cellfinder-napari/branch/master/graph/badge.svg)](https://codecov.io/gh/brainglobe/cellfinder-napari)
+[![codecov](https://codecov.io/gh/brainglobe/cellfinder-napari/branch/main/graph/badge.svg?token=C4uzd0cm2u)](https://codecov.io/gh/brainglobe/cellfinder-napari)
 [![Downloads](https://pepy.tech/badge/cellfinder-napari)](https://pepy.tech/project/cellfinder-napari)
 [![Wheel](https://img.shields.io/pypi/wheel/cellfinder.svg)](https://pypi.org/project/cellfinder)
 [![Development Status](https://img.shields.io/pypi/status/cellfinder-napari.svg)](https://github.com/brainglobe/cellfinder-napari)
