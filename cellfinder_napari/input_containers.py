@@ -95,6 +95,10 @@ class DataInputs(InputContainer):
         del data_input_dict["voxel_size_x"]
         return data_input_dict
 
+    @property
+    def nplanes(self):
+        return len(self.signal_array)
+
     @classmethod
     def widget_representation(cls) -> dict:
         return dict(
