@@ -6,6 +6,7 @@ import napari
 from cellfinder_core.classify.cube_generator import get_cube_depth_min_max
 from magicgui import magicgui
 from magicgui.widgets import FunctionGui, ProgressBar
+from qtpy.QtWidgets import QScrollArea
 
 from cellfinder_napari.input_containers import (
     ClassificationInputs,
@@ -217,5 +218,9 @@ def detect() -> FunctionGui:
 
     # Insert progress bar before the run and reset buttons
     widget.insert(-3, progress_bar)
+
+    scroll = QScrollArea()
+    scroll.setWidget(widget._widget._qwidget)
+    widget._widget._qwidget = scroll
 
     return widget
