@@ -1,22 +1,13 @@
-import os
+import pathlib
 import sys
 
 import pytest
 from cellfinder_core.download.cli import main as cellfinder_download
 from imlib.general.config import get_config_obj
 
-data_dir = os.path.join(
-    os.getcwd(),
-    "tests",
-    "data",
-    "brain",
-)
-test_output_dir = os.path.join(
-    os.getcwd(),
-    "tests",
-    "data",
-    "registration_output",
-)
+test_data_dir = pathlib.Path(__file__) / ".." / ".." / "data"
+data_dir = test_data_dir / "brain"
+test_output_dir = test_data_dir / "registration_output"
 
 TEST_ATLAS = "allen_2017_100um"
 
@@ -37,7 +28,7 @@ def download_atlas(directory):
 
 
 def generate_test_config(atlas_dir):
-    config = os.path.join(os.getcwd(), "tests", "data", "config", "test.conf")
+    config = test_data_dir / "config" / "test.conf"
     config_obj = get_config_obj(config)
     atlas_conf = config_obj["atlas"]
     orig_base_directory = atlas_conf["base_folder"]
@@ -47,9 +38,9 @@ def generate_test_config(atlas_dir):
     for i, line in enumerate(data):
         data[i] = line.replace(
             f"base_folder = '{orig_base_directory}",
-            f"base_folder = '{os.path.join(atlas_dir, 'atlas', TEST_ATLAS)}",
+            f"base_folder = '{atlas_dir / 'atlas' / TEST_ATLAS}",
         )
-    test_config = os.path.join(atlas_dir, "config.conf")
+    test_config = atlas_dir / "config.conf"
     with open(test_config, "w") as out_conf:
         out_conf.writelines(data)
 
