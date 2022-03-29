@@ -12,6 +12,7 @@ requirements = [
     "napari-ndtiffs",
     "brainglobe-napari-io",
     "cellfinder-core>=0.2.4",
+    "pooch>=1",  # For downloading sample data
 ]
 
 setup(

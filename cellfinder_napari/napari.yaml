@@ -11,6 +11,10 @@ contributions:
   - id: cellfinder-napari.CurationWidget
     title: Create Curation
     python_name: cellfinder_napari.plugins:CurationWidget
+  - id: cellfinder-napari.SampleData
+    title: Sample data
+    python_name: cellfinder_napari.sample_data:load_sample
+
   widgets:
   - command: cellfinder-napari.detect
     display_name: Cell detection
@@ -18,3 +22,8 @@ contributions:
     display_name: Train network
   - command: cellfinder-napari.CurationWidget
     display_name: Curation
+
+  sample_data:
+  - key: sample
+    display_name: Sample data
+    command: cellfinder-napari.SampleData
