@@ -8,19 +8,20 @@ from magicgui import magicgui
 from magicgui.widgets import FunctionGui, ProgressBar
 from qtpy.QtWidgets import QScrollArea
 
-from cellfinder_napari.input_containers import (
-    ClassificationInputs,
-    DataInputs,
-    DetectionInputs,
-    MiscInputs,
-)
-from cellfinder_napari.thread_worker import Worker
 from cellfinder_napari.utils import (
     add_layers,
     brainglobe_logo,
     display_error_box,
     html_label_widget,
 )
+
+from .input_containers import (
+    ClassificationInputs,
+    DataInputs,
+    DetectionInputs,
+    MiscInputs,
+)
+from .thread_worker import Worker
 
 NETWORK_VOXEL_SIZES = [5, 1, 1]
 CUBE_WIDTH = 50

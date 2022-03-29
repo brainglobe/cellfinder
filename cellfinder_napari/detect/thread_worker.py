@@ -2,7 +2,7 @@ from cellfinder_core.main import main as cellfinder_run
 from napari.qt.threading import WorkerBase, WorkerBaseSignals, thread_worker
 from qtpy.QtCore import QObject, Signal
 
-from cellfinder_napari.input_containers import (
+from .input_containers import (
     ClassificationInputs,
     DataInputs,
     DetectionInputs,
