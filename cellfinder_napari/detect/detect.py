@@ -33,6 +33,9 @@ MIN_PLANES_ANALYSE = 0
 
 
 def detect() -> FunctionGui:
+    """
+    Create a detection plugin GUI.
+    """
     progress_bar = ProgressBar()
 
     @magicgui(
@@ -79,6 +82,7 @@ def detect() -> FunctionGui:
         reset_button,
     ) -> None:
         """
+        Run detection and classification.
 
         Parameters
         ----------
@@ -206,7 +210,10 @@ def detect() -> FunctionGui:
     widget.header.native.setOpenExternalLinks(True)
 
     @widget.reset_button.changed.connect
-    def restore_defaults() -> None:
+    def restore_defaults():
+        """
+        Restore default widget values.
+        """
         defaults = {
             **DataInputs.defaults(),
             **DetectionInputs.defaults(),

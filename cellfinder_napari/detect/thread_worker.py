@@ -1,3 +1,5 @@
+from typing import Iterable
+
 from cellfinder_core.main import main as cellfinder_run
 from napari.qt.threading import WorkerBase, WorkerBaseSignals, thread_worker
 from qtpy.QtCore import QObject, Signal
@@ -11,6 +13,10 @@ from .input_containers import (
 
 
 class MyWorkerSignals(WorkerBaseSignals):
+    """
+    Signals used by the Worker class below.
+    """
+
     # Emits (label, max, value) for the progress bar
     update_progress_bar = Signal(str, int, int)
 
@@ -36,8 +42,6 @@ class Worker(WorkerBase):
         self.classification_inputs = classification_inputs
         self.misc_inputs = misc_inputs
 
-        self.npoints_detected = None
-
     def work(self) -> list:
         def detect_callback(plane):
             self.update_progress_bar.emit(
@@ -46,10 +50,10 @@ class Worker(WorkerBase):
                 plane + 1,
             )
 
-        def detect_finished_callback(points):
+        def detect_finished_callback(points: list) -> None:
             self.npoints_detected = len(points)
 
-        def classify_callback(batch):
+        def classify_callback(batch: int) -> None:
             self.update_progress_bar.emit(
                 "Classifying cells",
                 # Default cellfinder-core batch size is 32. This seems to give

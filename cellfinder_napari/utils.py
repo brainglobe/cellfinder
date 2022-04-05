@@ -1,7 +1,18 @@
+from typing import Callable, List, Optional, Tuple
+
+import napari
+import numpy as np
 import pandas as pd
 from imlib.cells.cells import Cell
 from pkg_resources import resource_filename
-from qtpy.QtWidgets import QComboBox, QLabel, QMessageBox, QPushButton
+from qtpy.QtWidgets import (
+    QComboBox,
+    QLabel,
+    QLayout,
+    QMessageBox,
+    QPushButton,
+    QWidget,
+)
 
 brainglobe_logo = resource_filename(
     "cellfinder_napari", "images/brainglobe.png"
@@ -9,13 +20,16 @@ brainglobe_logo = resource_filename(
 
 
 def html_label_widget(label: str, tag: str = "b") -> dict:
+    """
+    Create a HMTL label for use with magicgui.
+    """
     return dict(
         widget_type="Label",
         label=f"<{tag}>{label}</{tag}>",
     )
 
 
-def add_layers(points, viewer) -> None:
+def add_layers(points, viewer: napari.Viewer) -> None:
     """
     Adds classified cell candidates as two separate point layers to the napari viewer.
     """
@@ -44,14 +58,22 @@ def add_layers(points, viewer) -> None:
     )
 
 
-def cells_df_as_np(cells_df, new_order=[2, 1, 0], type_column="type"):
+def cells_df_as_np(
+    cells_df: pd.DataFrame,
+    new_order: List[int] = [2, 1, 0],
+    type_column: str = "type",
+) -> np.ndarray:
+    """
+    Convert a dataframe to an array, dropping *type_column* and re-ordering
+    the columns with *new_order*.
+    """
     cells_df = cells_df.drop(columns=[type_column])
     cells = cells_df[cells_df.columns[new_order]]
     cells = cells.to_numpy()
     return cells
 
 
-def cells_to_array(cells):
+def cells_to_array(cells: List[Cell]) -> Tuple[np.ndarray, np.ndarray]:
     df = pd.DataFrame([c.to_dict() for c in cells])
     points = cells_df_as_np(df[df["type"] == Cell.CELL])
     rejected = cells_df_as_np(df[df["type"] == Cell.UNKNOWN])
@@ -59,15 +81,18 @@ def cells_to_array(cells):
 
 
 def add_combobox(
-    layout,
-    label,
-    items,
-    row,
-    column=0,
-    label_stack=False,
+    layout: QLayout,
+    label: str,
+    items: List[str],
+    row: int,
+    column: int = 0,
+    label_stack: bool = False,
     callback=None,
-    width=150,
-):
+    width: int = 150,
+) -> Tuple[QComboBox, Optional[QLabel]]:
+    """
+    Add a selection box to *layout*.
+    """
     if label_stack:
         combobox_row = row + 1
         combobox_column = column
@@ -92,15 +117,18 @@ def add_combobox(
 
 
 def add_button(
-    label,
-    layout,
-    connected_function,
-    row,
-    column=0,
-    visibility=True,
-    minimum_width=0,
-    alignment="center",
+    label: str,
+    layout: QLayout,
+    connected_function: Callable,
+    row: int,
+    column: int = 0,
+    visibility: bool = True,
+    minimum_width: int = 0,
+    alignment: str = "center",
 ) -> QPushButton:
+    """
+    Add a button to *layout*.
+    """
     button = QPushButton(label)
     if alignment == "center":
         pass
@@ -116,7 +144,7 @@ def add_button(
     return button
 
 
-def display_info(widget, title, message):
+def display_info(widget: QWidget, title: str, message: str) -> None:
     """
     Display a warning in a pop up that informs
     about overwriting files
@@ -124,17 +152,19 @@ def display_info(widget, title, message):
     QMessageBox.information(widget, title, message, QMessageBox.Ok)
 
 
-def display_error_box(message):
+def display_error_box(message: str) -> None:
+    """
+    Display a pop up window with an error.
+    """
     msg = QMessageBox()
     msg.setWindowTitle("Error")
     msg.setText(message)
     msg.exec()
 
 
-def display_question(widget, title, message):
+def display_question(widget: QWidget, title: str, message: str) -> bool:
     """
-    Display a warning in a pop up that informs
-    about overwriting files
+    Display a warning in a pop up that informs about overwriting files.
     """
     message_reply = QMessageBox.question(
         widget,

@@ -9,6 +9,9 @@ base_url = "https://raw.githubusercontent.com/brainglobe/cellfinder/master/tests
 
 
 def load_sample() -> List[LayerData]:
+    """
+    Load some sample data.
+    """
     layers = []
     for ch, name in zip([0, 1], ["Signal", "Background"]):
         data = []
