@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import List, Optional, Tuple, Union
 
 import napari
 import numpy as np
@@ -9,7 +10,14 @@ from imlib.general.system import ensure_directory_exists
 from imlib.IO.yaml import save_yaml
 from napari.qt.threading import thread_worker
 from qtpy import QtCore
-from qtpy.QtWidgets import QFileDialog, QGridLayout, QGroupBox, QLabel, QWidget
+from qtpy.QtWidgets import (
+    QComboBox,
+    QFileDialog,
+    QGridLayout,
+    QGroupBox,
+    QLabel,
+    QWidget,
+)
 
 from .utils import add_button, add_combobox, display_info, display_question
 
@@ -23,12 +31,12 @@ class CurationWidget(QWidget):
     def __init__(
         self,
         viewer: napari.viewer.Viewer,
-        cube_depth=20,
-        cube_width=50,
-        cube_height=50,
-        network_voxel_sizes=[5, 1, 1],
-        n_free_cpus=2,
-        save_empty_cubes=False,
+        cube_depth: int = 20,
+        cube_width: int = 50,
+        cube_height: int = 50,
+        network_voxel_sizes: Tuple[int, int, int] = (5, 1, 1),
+        n_free_cpus: int = 2,
+        save_empty_cubes: bool = False,
         max_ram=None,
     ):
 
@@ -58,12 +66,16 @@ class CurationWidget(QWidget):
             layer_type=napari.layers.Points
         )
 
-        self.output_directory = None
+        self.output_directory: Optional[Path] = None
 
         self.setup_main_layout()
 
         @self.viewer.layers.events.connect
-        def update_layer_list(v):
+        def update_layer_list(v: napari.viewer.Viewer):
+            """
+            Update internal list of layers whenever the napari layers list
+            is updated.
+            """
             self.image_layer_names = self._get_layer_names()
             self.point_layer_names = self._get_layer_names(
                 layer_type=napari.layers.Points
@@ -82,13 +94,20 @@ class CurationWidget(QWidget):
             )
 
     @staticmethod
-    def _update_combobox_options(combobox, options_list):
+    def _update_combobox_options(combobox: QComboBox, options_list: List[str]):
         original_text = combobox.currentText()
         combobox.clear()
         combobox.addItems(options_list)
         combobox.setCurrentText(original_text)
 
-    def _get_layer_names(self, layer_type=napari.layers.Image, default=""):
+    def _get_layer_names(
+        self,
+        layer_type: napari.layers.Layer = napari.layers.Image,
+        default: str = "",
+    ) -> List[str]:
+        """
+        Get list of layer names of a given layer type.
+        """
         layer_names = [
             layer.name
             for layer in self.viewer.layers
@@ -102,7 +121,7 @@ class CurationWidget(QWidget):
 
     def setup_main_layout(self):
         """
-        Construct main layout of widget
+        Construct main layout of widget.
         """
         self.layout = QGridLayout()
         self.layout.setContentsMargins(10, 10, 10, 10)
@@ -117,7 +136,7 @@ class CurationWidget(QWidget):
 
         self.setLayout(self.layout)
 
-    def add_loading_panel(self, row, column=0):
+    def add_loading_panel(self, row: int, column: int = 0):
 
         self.load_data_panel = QGroupBox("Load data")
         self.load_data_layout = QGridLayout()
@@ -185,18 +204,27 @@ class CurationWidget(QWidget):
         self.layout.addWidget(self.load_data_panel, row, column, 1, 1)
 
     def set_signal_image(self):
+        """
+        Set signal layer from current signal text box selection.
+        """
         if self.signal_image_choice.currentText() != "":
             self.signal_layer = self.viewer.layers[
                 self.signal_image_choice.currentText()
             ]
 
     def set_background_image(self):
+        """
+        Set background layer from current background text box selection.
+        """
         if self.background_image_choice.currentText() != "":
             self.background_layer = self.viewer.layers[
                 self.background_image_choice.currentText()
             ]
 
     def set_training_data_cell(self):
+        """
+        Set cell training data from current training data text box selection.
+        """
         if self.training_data_cell_choice.currentText() != "":
             self.training_data_cell_layer = self.viewer.layers[
                 self.training_data_cell_choice.currentText()
@@ -205,6 +233,9 @@ class CurationWidget(QWidget):
             self.training_data_cell_layer.metadata["training_data"] = True
 
     def set_training_data_non_cell(self):
+        """
+        Set non-cell training data from current training data text box selection.
+        """
         if self.training_data_non_cell_choice.currentText() != "":
             self.training_data_non_cell_layer = self.viewer.layers[
                 self.training_data_non_cell_choice.currentText()
@@ -214,9 +245,7 @@ class CurationWidget(QWidget):
             ] = Cell.UNKNOWN
             self.training_data_non_cell_layer.metadata["training_data"] = True
 
-    def add_training_data(
-        self,
-    ):
+    def add_training_data(self):
         cell_name = "Training data (cells)"
         non_cell_name = "Training data (non cells)"
 
@@ -242,7 +271,7 @@ class CurationWidget(QWidget):
 
             self._add_training_data_layers(cell_name, non_cell_name)
 
-    def _add_training_data_layers(self, cell_name, non_cell_name):
+    def _add_training_data_layers(self, cell_name: str, non_cell_name: str):
 
         self.training_data_cell_layer = self.viewer.add_points(
             None,
@@ -276,7 +305,7 @@ class CurationWidget(QWidget):
     def mark_as_non_cell(self):
         self.mark_point_as_type("non-cell")
 
-    def mark_point_as_type(self, point_type):
+    def mark_point_as_type(self, point_type: str):
         if not (
             self.training_data_cell_layer and self.training_data_non_cell_layer
         ):
@@ -370,7 +399,7 @@ class CurationWidget(QWidget):
         worker.start()
         self.status_label.setText("Ready")
 
-    def is_data_extractable(self):
+    def is_data_extractable(self) -> bool:
         if (
             self.check_training_data_exists()
             and self.check_image_data_for_extraction()
@@ -379,7 +408,7 @@ class CurationWidget(QWidget):
         else:
             return False
 
-    def check_image_data_for_extraction(self):
+    def check_image_data_for_extraction(self) -> bool:
         if self.signal_layer and self.background_layer:
             if (
                 self.signal_layer.data.shape
@@ -404,7 +433,7 @@ class CurationWidget(QWidget):
             )
             return False
 
-    def check_training_data_exists(self):
+    def check_training_data_exists(self) -> bool:
         if not (
             self.training_data_cell_layer or self.training_data_non_cell_layer
         ):
@@ -483,17 +512,17 @@ class CurationWidget(QWidget):
 
 @thread_worker
 def extract_cubes(
-    cells_to_extract,
-    non_cells_to_extract,
-    output_directory,
-    signal_array,
-    background_array,
-    voxel_sizes,
-    network_voxel_sizes,
-    batch_size,
-    cube_width,
-    cube_height,
-    cube_depth,
+    cells_to_extract: List[Cell],
+    non_cells_to_extract: List[Cell],
+    output_directory: Path,
+    signal_array: np.ndarray,
+    background_array: np.ndarray,
+    voxel_sizes: Tuple[int, int, int],
+    network_voxel_sizes: Tuple[int, int, int],
+    batch_size: int,
+    cube_width: int,
+    cube_height: int,
+    cube_depth: int,
 ):
     from cellfinder_core.classify.cube_generator import CubeGeneratorFromFile
 
@@ -525,7 +554,7 @@ def extract_cubes(
         print("Done")
 
 
-def extract_batches(cube_generator, output_directory):
+def extract_batches(cube_generator, output_directory: Path):
     for batch_idx, (image_batch, batch_info) in enumerate(cube_generator):
         image_batch = image_batch.astype(np.int16)
         for point, point_info in zip(image_batch, batch_info):
@@ -535,7 +564,9 @@ def extract_batches(cube_generator, output_directory):
                 save_cube(point, point_info, channel, output_directory)
 
 
-def save_cube(array, point_info, channel, output_directory):
+def save_cube(
+    array: np.ndarray, point_info: dict, channel: int, output_directory: Path
+):
     filename = (
         f"pCellz{point_info['z']}y{point_info['y']}"
         f"x{point_info['x']}Ch{channel}.tif"
