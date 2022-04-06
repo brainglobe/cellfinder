@@ -9,50 +9,14 @@ jobs:
   linting:
     runs-on: ubuntu-latest
     steps:
-      - name: checkout source
-        uses: actions/checkout@v2
-      - name: set up python
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.8
-      - name: set PY
-        run: echo "PY=$(python -VV | sha256sum | cut -d' ' -f1)" >> $GITHUB_ENV
-      - name: cache stuff
-        uses: actions/cache@v2
-        with:
-          path: |
-            ${{ env.pythonLocation }}
-            ~/.cache/pre-commit
-          key: |
-            pre-commit-${{ env.PY }}-${{ hashFiles('.pre-commit-config.yaml') }}
-      - name: install dependencies
-        run: pip install pre-commit
-      - name: Install pre-commit hooks
-        run: pre-commit install
-      # This will run on all files in the repo not just those that have been
-      # committed. Once formatting has been applied once globally, from then on
-      # the files being changed by pre-commit should be just those that are
-      # being committed - provided that people are using the pre-commit hook to
-      # format their code.
-      - name: run pre-commit
-        run: pre-commit run --all-files --color always
+      - uses: brainglobe/actions/lint@v1
 
   manifest:
     needs: linting
     name: Check Manifest
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - name: Set up Python 3.8
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.8
-      - name: Install dependencies
-        run: |
-          pip install --upgrade pip
-          pip install check-manifest
-      - name: Check Manifest
-        run: check-manifest
+      - uses: brainglobe/actions/check_manifest@v1
 
   test:
     needs: manifest
@@ -64,33 +28,12 @@ jobs:
         python-version: [3.7, 3.8]
 
     steps:
-      - uses: actions/checkout@v2
-
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
+      # Setup pyqt libraries
+      - uses: tlambert03/setup-qt-libs@v1
+      # Run tests
+      - uses: brainglobe/actions/test@v1
         with:
           python-version: ${{ matrix.python-version }}
-
-      # these libraries enable testing on Qt on linux
-      - uses: tlambert03/setup-qt-libs@v1
-
-      # note: if you need dependencies from conda, considering using
-      # setup-miniconda: https://github.com/conda-incubator/setup-miniconda
-      # and
-      # tox-conda: https://github.com/tox-dev/tox-conda
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install setuptools tox tox-gh-actions
-
-      # this runs the platform-specific tests declared in tox.ini
-      - name: Test with tox
-        run: tox
-        env:
-          PLATFORM: ${{ matrix.platform }}
-
-      - name: Coverage
-        uses: codecov/codecov-action@v2
 
   deploy:
     # this will run when you have tagged a commit, starting with "v*"
