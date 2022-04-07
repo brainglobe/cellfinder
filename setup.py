@@ -1,7 +1,8 @@
 import platform
 from os import path
 
-from setuptools import Extension, find_packages, setup
+import Cython.Build
+from setuptools import Extension, setup
 
 this_directory = path.abspath(path.dirname(__file__))
 with open(path.join(this_directory, "README.md"), encoding="utf-8") as f:
@@ -38,40 +39,44 @@ if platform.system() == "Windows":
     # FIXME: There must be a better way of doing this.
     base_tile_filter_extension = Extension(
         name="cellfinder_core.detect.filters.plane.base_tile_filter",
-        sources=["cellfinder_core/detect/filters/plane/base_tile_filter.pyx"],
+        sources=[
+            "src/cellfinder_core/detect/filters/plane/base_tile_filter.pyx"
+        ],
         language="c++",
     )
 
     ball_filter_extension = Extension(
         name="cellfinder_core.detect.filters.volume.ball_filter",
-        sources=["cellfinder_core/detect/filters/volume/ball_filter.pyx"],
+        sources=["src/cellfinder_core/detect/filters/volume/ball_filter.pyx"],
     )
 
     structure_detection_extension = Extension(
         name="cellfinder_core.detect.filters.volume.structure_detection",
         sources=[
-            "cellfinder_core/detect/filters/volume/structure_detection.pyx"
+            "src/cellfinder_core/detect/filters/volume/structure_detection.pyx"
         ],
         language="c++",
     )
 else:
     base_tile_filter_extension = Extension(
         name="cellfinder_core.detect.filters.plane.base_tile_filter",
-        sources=["cellfinder_core/detect/filters/plane/base_tile_filter.pyx"],
+        sources=[
+            "src/cellfinder_core/detect/filters/plane/base_tile_filter.pyx"
+        ],
         libraries=["m"],
         language="c++",
     )
 
     ball_filter_extension = Extension(
         name="cellfinder_core.detect.filters.volume.ball_filter",
-        sources=["cellfinder_core/detect/filters/volume/ball_filter.pyx"],
+        sources=["src/cellfinder_core/detect/filters/volume/ball_filter.pyx"],
         libraries=["m"],
     )
 
     structure_detection_extension = Extension(
         name="cellfinder_core.detect.filters.volume.structure_detection",
         sources=[
-            "cellfinder_core/detect/filters/volume/structure_detection.pyx"
+            "src/cellfinder_core/detect/filters/volume/structure_detection.pyx"
         ],
         libraries=["m"],
         language="c++",
@@ -99,13 +104,14 @@ setup(
     },
     setup_requires=["cython"],
     python_requires=">=3.7",
-    packages=find_packages(),
     include_package_data=True,
-    ext_modules=[
-        ball_filter_extension,
-        structure_detection_extension,
-        base_tile_filter_extension,
-    ],
+    ext_modules=Cython.Build.cythonize(
+        [
+            ball_filter_extension,
+            structure_detection_extension,
+            base_tile_filter_extension,
+        ]
+    ),
     entry_points={
         "console_scripts": [
             "cellfinder_download = cellfinder_core.download.cli:main",

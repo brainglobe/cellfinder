@@ -1,3 +1,7 @@
+[build-system]
+requires = ['setuptools', 'wheel', 'cython']
+build-backend = 'setuptools.build_meta'
+
 [tool.black]
 target-version = ['py36', 'py37', 'py38']
 skip-string-normalization = false
