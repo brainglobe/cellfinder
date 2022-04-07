@@ -144,24 +144,6 @@ def add_button(
     return button
 
 
-def display_info(widget: QWidget, title: str, message: str) -> None:
-    """
-    Display a warning in a pop up that informs
-    about overwriting files
-    """
-    QMessageBox.information(widget, title, message, QMessageBox.Ok)
-
-
-def display_error_box(message: str) -> None:
-    """
-    Display a pop up window with an error.
-    """
-    msg = QMessageBox()
-    msg.setWindowTitle("Error")
-    msg.setText(message)
-    msg.exec()
-
-
 def display_question(widget: QWidget, title: str, message: str) -> bool:
     """
     Display a warning in a pop up that informs about overwriting files.

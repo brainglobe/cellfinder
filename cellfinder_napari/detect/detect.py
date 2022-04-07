@@ -6,12 +6,12 @@ import napari
 from cellfinder_core.classify.cube_generator import get_cube_depth_min_max
 from magicgui import magicgui
 from magicgui.widgets import FunctionGui, ProgressBar
+from napari.utils.notifications import show_info
 from qtpy.QtWidgets import QScrollArea
 
 from cellfinder_napari.utils import (
     add_layers,
     brainglobe_logo,
-    display_error_box,
     html_label_widget,
 )
 
@@ -132,9 +132,7 @@ def detect() -> FunctionGui:
             Reset parameters to default
         """
         if signal_image is None or background_image is None:
-            display_error_box(
-                "Both signal and background images must be specified"
-            )
+            show_info("Both signal and background images must be specified.")
             return
         data_inputs = DataInputs(
             signal_image.data,

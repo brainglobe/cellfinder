@@ -9,6 +9,7 @@ from imlib.cells.cells import Cell
 from imlib.general.system import ensure_directory_exists
 from imlib.IO.yaml import save_yaml
 from napari.qt.threading import thread_worker
+from napari.utils.notifications import show_info
 from qtpy import QtCore
 from qtpy.QtWidgets import (
     QComboBox,
@@ -19,7 +20,7 @@ from qtpy.QtWidgets import (
     QWidget,
 )
 
-from .utils import add_button, add_combobox, display_info, display_question
+from .utils import add_button, add_combobox, display_question
 
 # Constants used throughout
 WINDOW_HEIGHT = 750
@@ -309,9 +310,7 @@ class CurationWidget(QWidget):
         if not (
             self.training_data_cell_layer and self.training_data_non_cell_layer
         ):
-            display_info(
-                self,
-                "No training data layers",
+            show_info(
                 "No training data layers have been chosen. "
                 "Please add training data layers. ",
             )
@@ -340,31 +339,23 @@ class CurationWidget(QWidget):
                         )
 
                 else:
-                    display_info(
-                        self,
-                        "Not points selected",
+                    show_info(
                         "No points are selected in the current layer. "
                         "Please select some points.",
                     )
 
             else:
-                display_info(
-                    self,
-                    "Not a points layer",
+                show_info(
                     "This is not a points layer. "
                     "Please choose a points layer, and select some points.",
                 )
         elif len(self.viewer.layers.selected) == 0:
-            display_info(
-                self,
-                "No layers selected",
+            show_info(
                 "No layers are selected. "
                 "Please choose a single points layer, and select some points.",
             )
         else:
-            display_info(
-                self,
-                "Too many layers selected",
+            show_info(
                 "More than one layer is selected. "
                 "Please choose a single points layer, and select some points.",
             )
@@ -416,18 +407,14 @@ class CurationWidget(QWidget):
             ):
                 return True
             else:
-                display_info(
-                    self,
-                    "Images not the same shape",
+                show_info(
                     "Please ensure both signal and background images are the "
                     "same size and shape.",
                 )
                 return False
 
         else:
-            display_info(
-                self,
-                "No image data for cube extraction",
+            show_info(
                 "Please ensure both signal and background images are loaded "
                 "into napari, and selected in the sidebar. ",
             )
@@ -437,9 +424,7 @@ class CurationWidget(QWidget):
         if not (
             self.training_data_cell_layer or self.training_data_non_cell_layer
         ):
-            display_info(
-                self,
-                "No training data",
+            show_info(
                 "No training data layers have been added. "
                 "Please add a layer and annotate some points.",
             )
@@ -451,9 +436,7 @@ class CurationWidget(QWidget):
             ):
                 return True
             else:
-                display_info(
-                    self,
-                    "No training data",
+                show_info(
                     "No training data points have been added. "
                     "Please annotate some points.",
                 )
