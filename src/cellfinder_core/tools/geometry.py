@@ -30,4 +30,4 @@ def make_sphere(ball_shape, radius, position):
 
 
 def four_connected_kernel():
-    return np.array([[0, 1, 0], [1, 1, 1], [0, 1, 0]], dtype=np.bool)
+    return np.array([[0, 1, 0], [1, 1, 1], [0, 1, 0]], dtype=bool)
