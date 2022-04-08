@@ -9,29 +9,21 @@ with open(path.join(this_directory, "README.md"), encoding="utf-8") as f:
     long_description = f.read()
 
 requirements = [
-    "numpy",
-    "scikit-learn",
-    "configparser",
-    "pandas",
-    "packaging",
-    "scikit-image",
-    "tifffile",
+    "dask[array]",
+    "fancylog>=0.0.7",
+    "imlib>=0.0.26",
     "natsort",
-    "tqdm",
-    "multiprocessing-logging",
-    "psutil",
-    "configobj",
+    "numpy",
+    "scikit-image",
+    "scikit-learn",
     "tensorflow>=2.5.0; "
     + "platform_system!='Darwin' or "
     + "platform_machine!='arm64'",
     "tensorflow-macos>=2.5.0; "
     + "platform_system=='Darwin' and "
     + "platform_machine=='arm64'",
-    "fancylog>=0.0.7",
-    "imlib>=0.0.26",
-    "slurmio>=0.0.4",
-    "imio",
-    "dask[array]",
+    "tifffile",
+    "tqdm",
 ]
 
 
