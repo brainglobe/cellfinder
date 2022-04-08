@@ -82,8 +82,8 @@ cdef class BallFilter:
         if not self.ready:
             self.__current_z += 1
         else:
-            self.volume = np.roll(self.volume, self.volume.shape[2] - 1, axis=2)  # WARNING: not in place
-            self.good_tiles_mask = np.roll(self.good_tiles_mask, self.good_tiles_mask.shape[2] - 1, axis=2)
+            self.volume = np.roll(self.volume, -1, axis=2)  # WARNING: not in place
+            self.good_tiles_mask = np.roll(self.good_tiles_mask, -1, axis=2)
         self.volume[:, :, self.__current_z] = layer[:,:]
         self.good_tiles_mask[:, :, self.__current_z] = mask[:,:]
 
