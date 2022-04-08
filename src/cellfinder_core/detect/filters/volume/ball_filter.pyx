@@ -74,7 +74,7 @@ cdef class BallFilter:
         """
         Return `True` if there are enough layers appended to filter with.
         """
-        return self.__current_z == self.volume.shape[2] - 1
+        return self.__current_z == self.ball_z_size - 1
 
     cpdef append(self, ushort[:,:] layer, unsigned char[:,:] mask):
         """
@@ -143,7 +143,7 @@ cdef class BallFilter:
 
         cdef uint x, y, z
         for z in range(cube.shape[2]):  # TODO: OPTIMISE: step from middle to outer boundaries to check more data first
-            if z == cmath.floor(self.volume.shape[2] / 2) + 1 and current_overlap_value < self.overlap_threshold * 0.4:  # FIXME: do not hard code value
+            if z == cmath.floor(self.ball_z_size / 2) + 1 and current_overlap_value < self.overlap_threshold * 0.4:  # FIXME: do not hard code value
                 return False  # DEBUG: optimisation attempt
             for y in range(cube.shape[1]):
                 for x in range(cube.shape[0]):
