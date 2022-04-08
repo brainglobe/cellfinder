@@ -36,6 +36,7 @@ cdef class BallFilter:
                  tile_step_width=None, tile_step_height=None,
                  threshold_value=None, soma_centre_value=None):
         self.ball_xy_size = ball_xy_size
+        self.ball_z_size = ball_z_size
         self.overlap_fraction = overlap_fraction
         self.tile_step_width = tile_step_width
         self.tile_step_height = tile_step_height
@@ -58,11 +59,12 @@ cdef class BallFilter:
 
         self.overlap_threshold = self.overlap_fraction * np.array(self.kernel, dtype=np.float64).sum()
 
-        self.volume = np.empty((layer_width, layer_height, self.kernel.shape[2]), dtype=np.uint16)
+        self.volume = np.empty((layer_width, layer_height, ball_z_size), dtype=np.uint16)
+        self.middle_z_idx = <uint> cmath.floor(self.volume.shape[2] / 2)
 
         self.good_tiles_mask = np.empty((int(cmath.ceil(layer_width / tile_step_width)),  # TODO: lazy initialisation
                                          int(cmath.ceil(layer_height / tile_step_height)),
-                                         self.kernel.shape[2]), dtype=np.uint8)
+                                         ball_z_size), dtype=np.uint8)
         self.__current_z = -1
 
     @property
@@ -85,20 +87,13 @@ cdef class BallFilter:
         self.volume[:, :, self.__current_z] = layer[:,:]
         self.good_tiles_mask[:, :, self.__current_z] = mask[:,:]
 
-    cdef get_middle_plane_idx(self):
-        cdef uint middle
-        middle = <uint> cmath.floor(self.volume.shape[2] / 2)
-        return middle
-
     def get_middle_plane(self):
-        cdef uint middle_plane_idx = self.get_middle_plane_idx()
-        return np.array(self.volume[:, :, middle_plane_idx], dtype=np.uint16)
+        return np.array(self.volume[:, :, self.middle_z_idx], dtype=np.uint16)
 
     @cython.initializedcheck(False)
     @cython.cdivision(True)
     @cython.boundscheck(False)
     cpdef walk(self):  # Highly optimised because most time critical
-        cdef uint stack_middle = <uint> cmath.floor(self.volume.shape[2] / 2)
         cdef uint ball_centre_x, ball_centre_y
         cdef uint ball_radius = self.ball_xy_size // 2
         cdef ushort[:,:,:] cube
@@ -116,7 +111,7 @@ cdef class BallFilter:
                 if self.__is_tile_to_check(ball_centre_x, ball_centre_y):
                     cube = self.volume[x:x + self.kernel.shape[0], y:y + self.kernel.shape[1], :]
                     if self.__cube_overlaps(cube):
-                        self.volume[ball_centre_x, ball_centre_y, stack_middle] = self.SOMA_CENTRE_VALUE
+                        self.volume[ball_centre_x, ball_centre_y, self.middle_z_idx] = self.SOMA_CENTRE_VALUE
 
     @cython.initializedcheck(False)
     @cython.cdivision(True)
@@ -150,5 +145,4 @@ cdef class BallFilter:
         cdef uint x_in_mask, y_in_mask, middle_plane_idx
         x_in_mask = x // self.tile_step_width  # TEST: test bounds (-1 range)
         y_in_mask = y // self.tile_step_height  # TEST: test bounds (-1 range)
-        middle_plane_idx = <uint> cmath.floor(self.volume.shape[2] / 2)
-        return <bint> self.good_tiles_mask[x_in_mask, y_in_mask, middle_plane_idx]
+        return <bint> self.good_tiles_mask[x_in_mask, y_in_mask, self.middle_z_idx]
