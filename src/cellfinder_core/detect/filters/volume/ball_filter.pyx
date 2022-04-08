@@ -101,7 +101,8 @@ cdef class BallFilter:
         """
         Get the plane in the middle of self.volume.
         """
-        return np.array(self.volume[:, :, self.middle_z_idx], dtype=np.uint16)
+        cdef uint z = self.middle_z_idx
+        return np.array(self.volume[:, :, z], dtype=np.uint16)
 
     @cython.initializedcheck(False)
     @cython.cdivision(True)
@@ -110,6 +111,7 @@ cdef class BallFilter:
         cdef uint ball_centre_x, ball_centre_y
         cdef uint ball_radius = self.ball_xy_size // 2
         cdef ushort[:,:,:] cube
+        cdef uint middle_z = self.middle_z_idx
 
         cdef uint max_width, max_height
         tile_mask_covered_img_width = self.good_tiles_mask.shape[0] * self.tile_step_width
@@ -124,7 +126,7 @@ cdef class BallFilter:
                 if self.__is_tile_to_check(ball_centre_x, ball_centre_y):
                     cube = self.volume[x:x + self.kernel.shape[0], y:y + self.kernel.shape[1], :]
                     if self.__cube_overlaps(cube):
-                        self.volume[ball_centre_x, ball_centre_y, self.middle_z_idx] = self.SOMA_CENTRE_VALUE
+                        self.volume[ball_centre_x, ball_centre_y, middle_z] = self.SOMA_CENTRE_VALUE
 
     @cython.initializedcheck(False)
     @cython.cdivision(True)
@@ -156,6 +158,8 @@ cdef class BallFilter:
     @cython.boundscheck(False)
     cdef __is_tile_to_check(self, uint x, uint y):  # Highly optimised because most time critical
         cdef uint x_in_mask, y_in_mask, middle_plane_idx
+        cdef uint middle_z = self.middle_z_idx
+
         x_in_mask = x // self.tile_step_width  # TEST: test bounds (-1 range)
         y_in_mask = y // self.tile_step_height  # TEST: test bounds (-1 range)
-        return <bint> self.good_tiles_mask[x_in_mask, y_in_mask, self.middle_z_idx]
+        return <bint> self.good_tiles_mask[x_in_mask, y_in_mask, middle_z]
