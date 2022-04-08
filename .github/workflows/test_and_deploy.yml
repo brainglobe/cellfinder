@@ -6,33 +6,7 @@ jobs:
   linting:
     runs-on: ubuntu-latest
     steps:
-      - name: checkout source
-        uses: actions/checkout@v2
-      - name: set up python
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.8
-      - name: set PY
-        run: echo "PY=$(python -VV | sha256sum | cut -d' ' -f1)" >> $GITHUB_ENV
-      - name: cache stuff
-        uses: actions/cache@v2
-        with:
-          path: |
-            ${{ env.pythonLocation }}
-            ~/.cache/pre-commit
-          key: |
-            pre-commit-${{ env.PY }}-${{ hashFiles('.pre-commit-config.yaml') }}
-      - name: install dependencies
-        run: pip install pre-commit
-      - name: Install pre-commit hooks
-        run: pre-commit install
-      # This will run on all files in the repo not just those that have been
-      # committed. Once formatting has been applied once globally, from then on
-      # the files being changed by pre-commit should be just those that are
-      # being committed - provided that people are using the pre-commit hook to
-      # format their code.
-      - name: run pre-commit
-        run: pre-commit run --all-files --color always
+      - uses: brainglobe/actions/lint@main
 
   test:
     needs: linting
@@ -51,23 +25,9 @@ jobs:
           - os: windows-latest
             python-version: 3.8
     steps:
-      - uses: actions/checkout@v2
-      - name: Set up Python
-        uses: actions/setup-python@v2
+      - uses: brainglobe/actions/test@main
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -e .[dev]
-      - name: Test
-        run: pytest
-      - name: Coveralls
-        env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-            pip install coveralls
-            coveralls --service=github
 
   deploy-source:
     needs: test

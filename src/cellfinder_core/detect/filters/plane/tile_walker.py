@@ -19,7 +19,7 @@ class TileWalker(object):
         n_tiles_width = math.ceil(self.img_width / self.tile_width)
         n_tiles_height = math.ceil(self.img_height / self.tile_height)
         self.good_tiles_mask = np.zeros(
-            (n_tiles_width, n_tiles_height), dtype=np.bool
+            (n_tiles_width, n_tiles_height), dtype=bool
         )
 
         self.x = 0

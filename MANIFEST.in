@@ -1,5 +1,3 @@
-include cellfinder_core/config/*
+include src/cellfinder_core/config/*
 global-include *.pxd
-prune tests
-prune resources
-prune .github
+global-include *.pyx
