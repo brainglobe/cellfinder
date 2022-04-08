@@ -59,7 +59,9 @@ cdef class BallFilter:
 
         self.overlap_threshold = self.overlap_fraction * np.array(self.kernel, dtype=np.float64).sum()
 
+        # Stores the current planes that are being filtered
         self.volume = np.empty((layer_width, layer_height, ball_z_size), dtype=np.uint16)
+        # Index of the middle plane in the volume
         self.middle_z_idx = <uint> cmath.floor(self.volume.shape[2] / 2)
 
         self.good_tiles_mask = np.empty((int(cmath.ceil(layer_width / tile_step_width)),  # TODO: lazy initialisation
@@ -69,9 +71,15 @@ cdef class BallFilter:
 
     @property
     def ready(self):
+        """
+        Return `True` if there are enough layers appended to filter with.
+        """
         return self.__current_z == self.volume.shape[2] - 1
 
     cpdef append(self, ushort[:,:] layer, unsigned char[:,:] mask):
+        """
+        Add a new 2D layer to the filter.
+        """
         if DEBUG:
             assert [e for e in layer.shape[:2]] == [e for e in self.volume.shape[:2]],\
                 'layer shape mismatch, expected "{}", got "{}"'\
@@ -82,12 +90,17 @@ cdef class BallFilter:
         if not self.ready:
             self.__current_z += 1
         else:
+            # Shift everything down by one to make way for the new layer
             self.volume = np.roll(self.volume, -1, axis=2)  # WARNING: not in place
             self.good_tiles_mask = np.roll(self.good_tiles_mask, -1, axis=2)
+        # Add the new layer to the top of volume and good_tiles_mask
         self.volume[:, :, self.__current_z] = layer[:,:]
         self.good_tiles_mask[:, :, self.__current_z] = mask[:,:]
 
     def get_middle_plane(self):
+        """
+        Get the plane in the middle of self.volume.
+        """
         return np.array(self.volume[:, :, self.middle_z_idx], dtype=np.uint16)
 
     @cython.initializedcheck(False)
