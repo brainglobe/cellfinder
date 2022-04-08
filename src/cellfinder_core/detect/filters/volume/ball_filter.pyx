@@ -31,8 +31,10 @@ cdef class BallFilter:
         unsigned char[:,:,:] good_tiles_mask
 
 
-    def __init__(self, layer_width, layer_height, ball_xy_size, ball_z_size, overlap_fraction=0.8,
-                 tile_step_width=None, tile_step_height=None, threshold_value=None, soma_centre_value=None):
+    def __init__(self, layer_width, layer_height,
+                 ball_xy_size, ball_z_size, overlap_fraction=0.8,
+                 tile_step_width=None, tile_step_height=None,
+                 threshold_value=None, soma_centre_value=None):
         self.ball_xy_size = ball_xy_size
         self.overlap_fraction = overlap_fraction
         self.tile_step_width = tile_step_width
