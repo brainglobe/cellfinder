@@ -5,11 +5,11 @@ from typing import Callable
 import numpy as np
 from imlib.general.system import get_num_processes
 
-from cellfinder_core.detect.filters.plane.multiprocessing import (
-    MpTileProcessor,
+from cellfinder_core.detect.filters.plane import (
+    TileProcessor,
 )
 from cellfinder_core.detect.filters.setup_filters import setup_tile_filtering
-from cellfinder_core.detect.filters.volume.multiprocessing import Mp3DFilter
+from cellfinder_core.detect.filters.volume.volume_filter import VolumeFilter
 
 
 def calculate_parameters_in_pixels(
@@ -100,7 +100,7 @@ def main(
     ]
 
     # Create 3D analysis filter
-    mp_3d_filter = Mp3DFilter(
+    mp_3d_filter = VolumeFilter(
         soma_diameter,
         setup_params=setup_params,
         soma_size_spread_factor=soma_spread_factor,
@@ -115,7 +115,7 @@ def main(
 
     clipping_val, threshold_value = setup_tile_filtering(signal_array[0, :, :])
     # Create 2D analysis filter
-    mp_tile_processor = MpTileProcessor(
+    mp_tile_processor = TileProcessor(
         clipping_val,
         threshold_value,
         soma_diameter,

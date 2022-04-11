@@ -8,7 +8,7 @@ from cellfinder_core.detect.filters.plane.tile_walker import TileWalker
 
 
 @dataclass
-class MpTileProcessor:
+class TileProcessor:
     clipping_value: float
     threshold_value: float
     soma_diameter: float

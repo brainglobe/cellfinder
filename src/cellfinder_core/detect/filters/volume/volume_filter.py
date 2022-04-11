@@ -19,7 +19,7 @@ from cellfinder_core.detect.filters.volume.structure_splitting import (
 )
 
 
-class Mp3DFilter(object):
+class VolumeFilter(object):
     def __init__(
         self,
         soma_diameter,
