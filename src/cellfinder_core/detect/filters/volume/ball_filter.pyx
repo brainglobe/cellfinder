@@ -63,7 +63,7 @@ cdef class BallFilter:
         # Stores the current planes that are being filtered
         self.volume = np.empty((layer_width, layer_height, ball_z_size), dtype=np.uint16)
         # Index of the middle plane in the volume
-        self.middle_z_idx = cmath.floor(ball_z_size / 2)
+        self.middle_z_idx = <uint> cmath.floor(ball_z_size / 2)
 
         self.good_tiles_mask = np.empty((int(cmath.ceil(layer_width / tile_step_width)),  # TODO: lazy initialisation
                                          int(cmath.ceil(layer_height / tile_step_height)),
