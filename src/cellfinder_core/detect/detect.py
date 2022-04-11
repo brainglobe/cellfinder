@@ -86,6 +86,8 @@ def main(
     if end_plane == -1:
         end_plane = len(signal_array)
     signal_array = signal_array[start_plane:end_plane]
+    n_planes = len(signal_array)
+
     callback = callback or (lambda *args, **kwargs: None)
 
     workers_queue: MultiprocessingQueue = MultiprocessingQueue(
@@ -145,31 +147,29 @@ def main(
         log_sigma_size,
         n_sds_above_mean_thresh,
     )
-    prev_lock = Lock()
+
+    locks = [Lock() for _ in range(n_planes)]
 
     # start 2D tile filter (output goes into queue for 3D analysis)
     # Creates a list of (running) processes for each 2D plane
     processes = []
-    for plane_id, plane in enumerate(signal_array):
+    for id, plane in enumerate(signal_array):
         workers_queue.get()
-        lock = Lock()
-        lock.acquire()
         p = multiprocessing.Process(
             target=mp_tile_processor.process,
             args=(
-                plane_id,
+                id,
                 np.array(plane),
-                prev_lock,
-                lock,
+                locks[id - 1] if id > 0 else None,
+                locks[id],
             ),
         )
-        prev_lock = lock
         processes.append(p)
         p.start()
 
     # Trigger callback when 3D filtering is done on a plane
     nplanes_done = 0
-    while nplanes_done < len(signal_array):
+    while nplanes_done < n_planes:
         callback(planes_done_queue.get(block=True))
         nplanes_done += 1
 

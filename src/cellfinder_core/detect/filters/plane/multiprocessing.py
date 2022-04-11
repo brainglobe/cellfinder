@@ -1,6 +1,7 @@
 import multiprocessing
 from dataclasses import dataclass
 from multiprocessing.synchronize import Lock as LockBase
+from typing import Optional
 
 import numpy as np
 
@@ -46,7 +47,7 @@ class MpTileProcessor:
         self,
         plane_id: int,
         plane: np.ndarray,
-        previous_lock: LockBase,
+        previous_lock: Optional[LockBase],
         self_lock: LockBase,
     ):
         """
@@ -57,11 +58,13 @@ class MpTileProcessor:
         self_lock :
             Lock for the current tile.
         """
+        self_lock.acquire()
         tile_mask = self.get_tile_mask(plane)
 
         # Wait for previous plane to be done
-        previous_lock.acquire()
-        previous_lock.release()
+        if previous_lock is not None:
+            previous_lock.acquire()
+            previous_lock.release()
 
         self.ball_filter_q.put((plane_id, plane, tile_mask))
         self.thread_q.put(plane_id)
