@@ -21,7 +21,7 @@ cdef class BallFilter:
 
     cdef:
         uint THRESHOLD_VALUE, SOMA_CENTRE_VALUE
-        uint ball_xy_size, tile_step_width, tile_step_height
+        uint ball_xy_size, ball_z_size, tile_step_width, tile_step_height
         int __current_z
         double overlap_fraction, overlap_threshold
 
