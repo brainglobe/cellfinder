@@ -2,7 +2,7 @@ import logging
 import math
 import os
 from multiprocessing.pool import AsyncResult
-from typing import Callable, List
+from typing import Callable, List, Sequence, Tuple
 
 import numpy as np
 from imlib.cells.cells import Cell
@@ -22,20 +22,20 @@ from cellfinder_core.detect.filters.volume.structure_splitting import (
 class VolumeFilter(object):
     def __init__(
         self,
-        soma_diameter,
-        soma_size_spread_factor=1.4,
-        setup_params=None,
-        planes_paths_range=None,
-        save_planes=False,
-        plane_directory=None,
-        start_plane=0,
-        max_cluster_size=5000,
-        outlier_keep=False,
-        artifact_keep=True,
+        *,
+        soma_diameter: float,
+        soma_size_spread_factor: float = 1.4,
+        setup_params: Tuple,
+        planes_paths_range: Sequence,
+        save_planes: bool = False,
+        plane_directory: str = None,
+        start_plane: int = 0,
+        max_cluster_size: int = 5000,
+        outlier_keep: bool = False,
+        artifact_keep: bool = True,
     ):
         self.soma_diameter = soma_diameter
         self.soma_size_spread_factor = soma_size_spread_factor
-        self.progress_bar = None
         self.planes_paths_range = planes_paths_range
         self.z = start_plane
         self.save_planes = save_planes
@@ -47,19 +47,7 @@ class VolumeFilter(object):
 
         self.clipping_val = None
         self.threshold_value = None
-        self.ball_filter = None
-        self.cell_detector = None
         self.setup_params = setup_params
-
-    def process(
-        self,
-        async_results: List[AsyncResult],
-        signal_array: np.ndarray,
-        callback: Callable[[int], None],
-    ):
-        self.progress_bar = tqdm(
-            total=len(self.planes_paths_range), desc="Processing planes"
-        )
 
         self.ball_filter, self.cell_detector = setup(
             self.setup_params[0],
@@ -68,6 +56,16 @@ class VolumeFilter(object):
             self.setup_params[3],
             ball_overlap_fraction=self.setup_params[4],
             z_offset=self.setup_params[5],
+        )
+
+    def process(
+        self,
+        async_results: List[AsyncResult],
+        signal_array: np.ndarray,
+        callback: Callable[[int], None],
+    ):
+        progress_bar = tqdm(
+            total=len(self.planes_paths_range), desc="Processing planes"
         )
 
         for plane_id, res in enumerate(async_results):
@@ -97,10 +95,9 @@ class VolumeFilter(object):
 
             callback(self.z)
             self.z += 1
-            if self.progress_bar is not None:
-                self.progress_bar.update()
+            progress_bar.update()
 
-        self.progress_bar.close()
+        progress_bar.close()
         logging.debug("3D filter done")
         return self.get_results()
 

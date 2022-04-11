@@ -101,7 +101,7 @@ def main(
 
     # Create 3D analysis filter
     mp_3d_filter = VolumeFilter(
-        soma_diameter,
+        soma_diameter=soma_diameter,
         setup_params=setup_params,
         soma_size_spread_factor=soma_spread_factor,
         planes_paths_range=signal_array,
