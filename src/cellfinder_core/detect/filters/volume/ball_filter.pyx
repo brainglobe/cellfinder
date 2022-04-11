@@ -22,6 +22,7 @@ cdef class BallFilter:
     cdef:
         uint THRESHOLD_VALUE, SOMA_CENTRE_VALUE
         uint ball_xy_size, ball_z_size, tile_step_width, tile_step_height
+        uint middle_z_idx
         int __current_z
         double overlap_fraction, overlap_threshold
 
@@ -62,7 +63,7 @@ cdef class BallFilter:
         # Stores the current planes that are being filtered
         self.volume = np.empty((layer_width, layer_height, ball_z_size), dtype=np.uint16)
         # Index of the middle plane in the volume
-        self.middle_z_idx = <uint> cmath.floor(self.volume.shape[2] / 2)
+        self.middle_z_idx = cmath.floor(ball_z_size / 2)
 
         self.good_tiles_mask = np.empty((int(cmath.ceil(layer_width / tile_step_width)),  # TODO: lazy initialisation
                                          int(cmath.ceil(layer_height / tile_step_height)),
@@ -72,7 +73,7 @@ cdef class BallFilter:
     @property
     def ready(self):
         """
-        Return `True` if there are enough layers appended to filter with.
+        Return `True` if enough layers have been appended to run the filter.
         """
         return self.__current_z == self.ball_z_size - 1
 
