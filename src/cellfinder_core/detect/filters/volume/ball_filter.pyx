@@ -68,6 +68,8 @@ cdef class BallFilter:
         self.good_tiles_mask = np.empty((int(cmath.ceil(layer_width / tile_step_width)),  # TODO: lazy initialisation
                                          int(cmath.ceil(layer_height / tile_step_height)),
                                          ball_z_size), dtype=np.uint8)
+        # Stores the z-index in volume at which new layers are inserted when
+        # append() is called
         self.__current_z = -1
 
     @property
