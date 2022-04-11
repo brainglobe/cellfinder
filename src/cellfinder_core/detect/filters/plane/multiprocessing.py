@@ -1,45 +1,35 @@
+import multiprocessing
+from dataclasses import dataclass
+from multiprocessing.synchronize import Lock as LockBase
+
 import numpy as np
 
 from cellfinder_core.detect.filters.plane.classical_filter import enhance_peaks
 from cellfinder_core.detect.filters.plane.tile_walker import TileWalker
 
 
-class MpTileProcessor(object):
-    def __init__(self, thread_q, ball_filter_q):
-        self.thread_q = thread_q
-        self.ball_filter_q = ball_filter_q
+@dataclass
+class MpTileProcessor:
+    thread_q: multiprocessing.Queue
+    ball_filter_q: multiprocessing.Queue
+    clipping_value: float
+    threshold_value: float
+    soma_diameter: float
+    log_sigma_size: float
+    n_sds_above_mean_thresh: float
 
-    def process(
-        self,
-        plane_id,
-        plane,
-        previous_lock,
-        self_lock,
-        clipping_value,
-        threshold_value,
-        soma_diameter,
-        log_sigma_size,
-        n_sds_above_mean_thresh,
-    ):
-        """
-        Parameters
-        ----------
-        previous_lock : multiprocessing.Lock
-            Lock for the previous tile in the processing queue.
-        self_lock : multiprocessing.Lock
-            Lock for the current tile.
-        """
-        laplace_gaussian_sigma = log_sigma_size * soma_diameter
+    def get_tile_mask(self, plane: np.ndarray):
+        laplace_gaussian_sigma = self.log_sigma_size * self.soma_diameter
         plane = plane.T
-        np.clip(plane, 0, clipping_value, out=plane)
+        np.clip(plane, 0, self.clipping_value, out=plane)
 
-        walker = TileWalker(plane, soma_diameter)
+        walker = TileWalker(plane, self.soma_diameter)
 
         walker.walk_out_of_brain_only()
 
         thresholded_img = enhance_peaks(
             walker.thresholded_img,
-            clipping_value,
+            self.clipping_value,
             gaussian_sigma=laplace_gaussian_sigma,
         )
 
@@ -48,9 +38,26 @@ class MpTileProcessor(object):
         sd = thresholded_img.ravel().std()
 
         plane[
-            thresholded_img > avg + n_sds_above_mean_thresh * sd
-        ] = threshold_value
-        tile_mask = walker.good_tiles_mask.astype(np.uint8)
+            thresholded_img > avg + self.n_sds_above_mean_thresh * sd
+        ] = self.threshold_value
+        return walker.good_tiles_mask.astype(np.uint8)
+
+    def process(
+        self,
+        plane_id: int,
+        plane: np.ndarray,
+        previous_lock: LockBase,
+        self_lock: LockBase,
+    ):
+        """
+        Parameters
+        ----------
+        previous_lock :
+            Lock for the previous tile in the processing queue.
+        self_lock :
+            Lock for the current tile.
+        """
+        tile_mask = self.get_tile_mask(plane)
 
         # Wait for previous plane to be done
         previous_lock.acquire()

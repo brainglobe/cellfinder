@@ -136,7 +136,15 @@ def main(
     clipping_val, threshold_value = setup_tile_filtering(signal_array[0, :, :])
 
     # Create 2D analysis filter
-    mp_tile_processor = MpTileProcessor(workers_queue, mp_3d_filter_queue)
+    mp_tile_processor = MpTileProcessor(
+        workers_queue,
+        mp_3d_filter_queue,
+        clipping_val,
+        threshold_value,
+        soma_diameter,
+        log_sigma_size,
+        n_sds_above_mean_thresh,
+    )
     prev_lock = Lock()
 
     # start 2D tile filter (output goes into queue for 3D analysis)
@@ -153,11 +161,6 @@ def main(
                 np.array(plane),
                 prev_lock,
                 lock,
-                clipping_val,
-                threshold_value,
-                soma_diameter,
-                log_sigma_size,
-                n_sds_above_mean_thresh,
             ),
         )
         prev_lock = lock
