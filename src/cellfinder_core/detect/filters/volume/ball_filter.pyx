@@ -21,7 +21,8 @@ cdef class BallFilter:
 
     cdef:
         uint THRESHOLD_VALUE, SOMA_CENTRE_VALUE
-        uint ball_xy_size, tile_step_width, tile_step_height
+        uint ball_xy_size, ball_z_size, tile_step_width, tile_step_height
+        uint middle_z_idx
         int __current_z
         double overlap_fraction, overlap_threshold
 
@@ -31,9 +32,12 @@ cdef class BallFilter:
         unsigned char[:,:,:] good_tiles_mask
 
 
-    def __init__(self, layer_width, layer_height, ball_xy_size, ball_z_size, overlap_fraction=0.8,
-                 tile_step_width=None, tile_step_height=None, threshold_value=None, soma_centre_value=None):
+    def __init__(self, layer_width, layer_height,
+                 ball_xy_size, ball_z_size, overlap_fraction=0.8,
+                 tile_step_width=None, tile_step_height=None,
+                 threshold_value=None, soma_centre_value=None):
         self.ball_xy_size = ball_xy_size
+        self.ball_z_size = ball_z_size
         self.overlap_fraction = overlap_fraction
         self.tile_step_width = tile_step_width
         self.tile_step_height = tile_step_height
@@ -56,18 +60,29 @@ cdef class BallFilter:
 
         self.overlap_threshold = self.overlap_fraction * np.array(self.kernel, dtype=np.float64).sum()
 
-        self.volume = np.empty((layer_width, layer_height, self.kernel.shape[2]), dtype=np.uint16)
+        # Stores the current planes that are being filtered
+        self.volume = np.empty((layer_width, layer_height, ball_z_size), dtype=np.uint16)
+        # Index of the middle plane in the volume
+        self.middle_z_idx = <uint> cmath.floor(ball_z_size / 2)
 
         self.good_tiles_mask = np.empty((int(cmath.ceil(layer_width / tile_step_width)),  # TODO: lazy initialisation
                                          int(cmath.ceil(layer_height / tile_step_height)),
-                                         self.kernel.shape[2]), dtype=np.uint8)
+                                         ball_z_size), dtype=np.uint8)
+        # Stores the z-index in volume at which new layers are inserted when
+        # append() is called
         self.__current_z = -1
 
     @property
     def ready(self):
-        return self.__current_z == self.volume.shape[2] - 1
+        """
+        Return `True` if enough layers have been appended to run the filter.
+        """
+        return self.__current_z == self.ball_z_size - 1
 
     cpdef append(self, ushort[:,:] layer, unsigned char[:,:] mask):
+        """
+        Add a new 2D layer to the filter.
+        """
         if DEBUG:
             assert [e for e in layer.shape[:2]] == [e for e in self.volume.shape[:2]],\
                 'layer shape mismatch, expected "{}", got "{}"'\
@@ -78,28 +93,28 @@ cdef class BallFilter:
         if not self.ready:
             self.__current_z += 1
         else:
-            self.volume = np.roll(self.volume, self.volume.shape[2] - 1, axis=2)  # WARNING: not in place
-            self.good_tiles_mask = np.roll(self.good_tiles_mask, self.good_tiles_mask.shape[2] - 1, axis=2)
+            # Shift everything down by one to make way for the new layer
+            self.volume = np.roll(self.volume, -1, axis=2)  # WARNING: not in place
+            self.good_tiles_mask = np.roll(self.good_tiles_mask, -1, axis=2)
+        # Add the new layer to the top of volume and good_tiles_mask
         self.volume[:, :, self.__current_z] = layer[:,:]
         self.good_tiles_mask[:, :, self.__current_z] = mask[:,:]
 
-    cdef get_middle_plane_idx(self):
-        cdef uint middle
-        middle = <uint> cmath.floor(self.volume.shape[2] / 2)
-        return middle
-
     def get_middle_plane(self):
-        cdef uint middle_plane_idx = self.get_middle_plane_idx()
-        return np.array(self.volume[:, :, middle_plane_idx], dtype=np.uint16)
+        """
+        Get the plane in the middle of self.volume.
+        """
+        cdef uint z = self.middle_z_idx
+        return np.array(self.volume[:, :, z], dtype=np.uint16)
 
     @cython.initializedcheck(False)
     @cython.cdivision(True)
     @cython.boundscheck(False)
     cpdef walk(self):  # Highly optimised because most time critical
-        cdef uint stack_middle = <uint> cmath.floor(self.volume.shape[2] / 2)
         cdef uint ball_centre_x, ball_centre_y
         cdef uint ball_radius = self.ball_xy_size // 2
         cdef ushort[:,:,:] cube
+        cdef uint middle_z = self.middle_z_idx
 
         cdef uint max_width, max_height
         tile_mask_covered_img_width = self.good_tiles_mask.shape[0] * self.tile_step_width
@@ -114,7 +129,7 @@ cdef class BallFilter:
                 if self.__is_tile_to_check(ball_centre_x, ball_centre_y):
                     cube = self.volume[x:x + self.kernel.shape[0], y:y + self.kernel.shape[1], :]
                     if self.__cube_overlaps(cube):
-                        self.volume[ball_centre_x, ball_centre_y, stack_middle] = self.SOMA_CENTRE_VALUE
+                        self.volume[ball_centre_x, ball_centre_y, middle_z] = self.SOMA_CENTRE_VALUE
 
     @cython.initializedcheck(False)
     @cython.cdivision(True)
@@ -133,7 +148,7 @@ cdef class BallFilter:
 
         cdef uint x, y, z
         for z in range(cube.shape[2]):  # TODO: OPTIMISE: step from middle to outer boundaries to check more data first
-            if z == cmath.floor(self.volume.shape[2] / 2) + 1 and current_overlap_value < self.overlap_threshold * 0.4:  # FIXME: do not hard code value
+            if z == cmath.floor(self.ball_z_size / 2) + 1 and current_overlap_value < self.overlap_threshold * 0.4:  # FIXME: do not hard code value
                 return False  # DEBUG: optimisation attempt
             for y in range(cube.shape[1]):
                 for x in range(cube.shape[0]):
@@ -146,7 +161,8 @@ cdef class BallFilter:
     @cython.boundscheck(False)
     cdef __is_tile_to_check(self, uint x, uint y):  # Highly optimised because most time critical
         cdef uint x_in_mask, y_in_mask, middle_plane_idx
+        cdef uint middle_z = self.middle_z_idx
+
         x_in_mask = x // self.tile_step_width  # TEST: test bounds (-1 range)
         y_in_mask = y // self.tile_step_height  # TEST: test bounds (-1 range)
-        middle_plane_idx = <uint> cmath.floor(self.volume.shape[2] / 2)
-        return <bint> self.good_tiles_mask[x_in_mask, y_in_mask, middle_plane_idx]
+        return <bint> self.good_tiles_mask[x_in_mask, y_in_mask, middle_z]
