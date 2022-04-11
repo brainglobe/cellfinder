@@ -1,7 +1,5 @@
-import multiprocessing
 from datetime import datetime
-from multiprocessing import Lock
-from multiprocessing import Queue as MultiprocessingQueue
+from multiprocessing.pool import Pool
 from typing import Callable
 
 import numpy as np
@@ -86,20 +84,8 @@ def main(
     if end_plane == -1:
         end_plane = len(signal_array)
     signal_array = signal_array[start_plane:end_plane]
-    n_planes = len(signal_array)
 
     callback = callback or (lambda *args, **kwargs: None)
-
-    workers_queue: MultiprocessingQueue = MultiprocessingQueue(
-        maxsize=n_processes
-    )
-    # WARNING: needs to be AT LEAST ball_z_size
-    mp_3d_filter_queue: MultiprocessingQueue = MultiprocessingQueue(
-        maxsize=ball_z_size
-    )
-    for _ in range(n_processes):
-        # place holder for the queue to have the right size on first run
-        workers_queue.put(None)
 
     if signal_array.ndim != 3:
         raise IOError("Input data must be 3D")
@@ -112,14 +98,9 @@ def main(
         ball_overlap_fraction,
         start_plane,
     ]
-    output_queue: MultiprocessingQueue = MultiprocessingQueue()
-    planes_done_queue: MultiprocessingQueue = MultiprocessingQueue()
 
     # Create 3D analysis filter
     mp_3d_filter = Mp3DFilter(
-        mp_3d_filter_queue,
-        output_queue,
-        planes_done_queue,
         soma_diameter,
         setup_params=setup_params,
         soma_size_spread_factor=soma_spread_factor,
@@ -132,15 +113,9 @@ def main(
         artifact_keep=artifact_keep,
     )
 
-    # start 3D analysis (waits for planes in queue)
-    bf_process = multiprocessing.Process(target=mp_3d_filter.process, args=())
-    bf_process.start()  # needs to be started before the loop
     clipping_val, threshold_value = setup_tile_filtering(signal_array[0, :, :])
-
     # Create 2D analysis filter
     mp_tile_processor = MpTileProcessor(
-        workers_queue,
-        mp_3d_filter_queue,
         clipping_val,
         threshold_value,
         soma_diameter,
@@ -148,39 +123,25 @@ def main(
         n_sds_above_mean_thresh,
     )
 
-    locks = [Lock() for _ in range(n_planes)]
+    worker_pool = Pool(n_processes)
 
-    # start 2D tile filter (output goes into queue for 3D analysis)
-    # Creates a list of (running) processes for each 2D plane
-    processes = []
+    # Start 2D filter
+    # Submits each plane to the worker pool, and sets up a list of
+    # asyncronous results
+    async_results = []
     for id, plane in enumerate(signal_array):
-        workers_queue.get()
-        p = multiprocessing.Process(
-            target=mp_tile_processor.process,
-            args=(
-                id,
-                np.array(plane),
-                locks[id - 1] if id > 0 else None,
-                locks[id],
+        (res,) = (
+            worker_pool.apply_async(
+                mp_tile_processor.get_tile_mask, args=(np.array(plane),)
             ),
         )
-        processes.append(p)
-        p.start()
+        async_results.append(res)
 
-    # Trigger callback when 3D filtering is done on a plane
-    nplanes_done = 0
-    while nplanes_done < n_planes:
-        callback(planes_done_queue.get(block=True))
-        nplanes_done += 1
-
-    # Wait for all the 2D filters to process
-    for p in processes:
-        p.join()
-    # Tell 3D filter that there are no more planes left
-    mp_3d_filter_queue.put((None, None, None))
-    cells = output_queue.get()
-    # Wait for 3D filter to finish
-    bf_process.join()
+    # Start 3D filter
+    # This runs in the main thread
+    cells = mp_3d_filter.process(
+        async_results, signal_array, callback=callback
+    )
 
     print(
         "Detection complete - all planes done in : {}".format(

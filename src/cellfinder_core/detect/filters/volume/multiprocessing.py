@@ -1,7 +1,10 @@
 import logging
 import math
 import os
+from multiprocessing.pool import AsyncResult
+from typing import Callable, List
 
+import numpy as np
 from imlib.cells.cells import Cell
 from tifffile import tifffile
 from tqdm import tqdm
@@ -19,9 +22,6 @@ from cellfinder_core.detect.filters.volume.structure_splitting import (
 class Mp3DFilter(object):
     def __init__(
         self,
-        data_queue,
-        output_queue,
-        planes_done_queue,
         soma_diameter,
         soma_size_spread_factor=1.4,
         setup_params=None,
@@ -33,9 +33,6 @@ class Mp3DFilter(object):
         outlier_keep=False,
         artifact_keep=True,
     ):
-        self.data_queue = data_queue
-        self.output_queue = output_queue
-        self.planes_done_queue = planes_done_queue
         self.soma_diameter = soma_diameter
         self.soma_size_spread_factor = soma_size_spread_factor
         self.progress_bar = None
@@ -54,7 +51,12 @@ class Mp3DFilter(object):
         self.cell_detector = None
         self.setup_params = setup_params
 
-    def process(self):
+    def process(
+        self,
+        async_results: List[AsyncResult],
+        signal_array: np.ndarray,
+        callback: Callable[[int], None],
+    ):
         self.progress_bar = tqdm(
             total=len(self.planes_paths_range), desc="Processing planes"
         )
@@ -68,17 +70,10 @@ class Mp3DFilter(object):
             z_offset=self.setup_params[5],
         )
 
-        while True:
-            plane_id, plane, mask = self.data_queue.get()
+        for plane_id, res in enumerate(async_results):
+            plane, mask = res.get()
             logging.debug(f"Plane {plane_id} received for 3D filtering")
             print(f"Plane {plane_id} received for 3D filtering")
-
-            if plane_id is None:
-                self.progress_bar.close()
-                logging.debug("3D filter done")
-                cells = self.get_results()
-                self.output_queue.put(cells)
-                break
 
             logging.debug(f"Adding plane {plane_id} for 3D filtering")
             self.ball_filter.append(plane, mask)
@@ -100,10 +95,14 @@ class Mp3DFilter(object):
                     " (out of bounds)"
                 )
 
-            self.planes_done_queue.put(self.z)
+            callback(self.z)
             self.z += 1
             if self.progress_bar is not None:
                 self.progress_bar.update()
+
+        self.progress_bar.close()
+        logging.debug("3D filter done")
+        return self.get_results()
 
     def save_plane(self, plane):
         plane_name = f"plane_{str(self.z).zfill(4)}.tif"
