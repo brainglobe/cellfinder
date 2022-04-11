@@ -5,9 +5,7 @@ from typing import Callable
 import numpy as np
 from imlib.general.system import get_num_processes
 
-from cellfinder_core.detect.filters.plane import (
-    TileProcessor,
-)
+from cellfinder_core.detect.filters.plane import TileProcessor
 from cellfinder_core.detect.filters.setup_filters import setup_tile_filtering
 from cellfinder_core.detect.filters.volume.volume_filter import VolumeFilter
 
@@ -130,10 +128,8 @@ def main(
     # asyncronous results
     async_results = []
     for id, plane in enumerate(signal_array):
-        (res,) = (
-            worker_pool.apply_async(
-                mp_tile_processor.get_tile_mask, args=(np.array(plane),)
-            ),
+        res = worker_pool.apply_async(
+            mp_tile_processor.get_tile_mask, args=(np.array(plane),)
         )
         async_results.append(res)
 

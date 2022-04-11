@@ -2,7 +2,7 @@ import logging
 import math
 import os
 from multiprocessing.pool import AsyncResult
-from typing import Callable, List, Sequence, Tuple
+from typing import Callable, List, Sequence
 
 import numpy as np
 from imlib.cells.cells import Cell
@@ -25,7 +25,7 @@ class VolumeFilter(object):
         *,
         soma_diameter: float,
         soma_size_spread_factor: float = 1.4,
-        setup_params: Tuple,
+        setup_params: Sequence,
         planes_paths_range: Sequence,
         save_planes: bool = False,
         plane_directory: str = None,
