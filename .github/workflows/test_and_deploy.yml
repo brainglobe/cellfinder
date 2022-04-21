@@ -48,7 +48,7 @@ jobs:
     name: Publish build distributions
     needs: [build_sdist, build_wheels]
     runs-on: ubuntu-latest
-    if: github.event_name == 'release'
+    if: github.event.ref_type == 'tag'
     steps:
     - uses: brainglobe/actions/upload_pypi@v1
       with:
