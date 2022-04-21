@@ -17,6 +17,9 @@ repos:
             args: [--fix=lf]
           - id: requirements-txt-fixer
           - id: trailing-whitespace
+            # bump2version produces whitespace in setup.cfg, so exclude to
+            # not inferfere with versioning
+            exclude: setup.cfg
     - repo: https://gitlab.com/pycqa/flake8
       rev: 3.9.2
       hooks:
