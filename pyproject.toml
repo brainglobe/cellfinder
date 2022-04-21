@@ -27,3 +27,7 @@ exclude = '''
 [tool.isort]
 profile = "black"
 line_length = 79
+
+
+[tool.cibuildwheel]
+build = "cp38-* cp39-* cp310-*"

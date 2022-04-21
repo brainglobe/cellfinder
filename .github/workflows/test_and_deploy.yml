@@ -1,4 +1,4 @@
-name: tests
+name: Test and publish packages
 
 on: [push, pull_request]
 
@@ -6,7 +6,7 @@ jobs:
   linting:
     runs-on: ubuntu-latest
     steps:
-      - uses: brainglobe/actions/lint@main
+      - uses: brainglobe/actions/lint@v1
 
   test:
     needs: linting
@@ -23,90 +23,33 @@ jobs:
         - os: windows-latest
           python-version: "3.9"
     steps:
-      - uses: brainglobe/actions/test@main
+      - uses: brainglobe/actions/test@v1
         with:
           python-version: ${{ matrix.python-version }}
 
-  deploy-source:
+  build_sdist:
+    name: Build source distribution
     needs: test
-    if: contains(github.ref, 'tags')
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up Python
-      uses: actions/setup-python@v1
-      with:
-        python-version: "3.x"
-    - name: Publish source distribution dist to PyPI
-      env:
-        TWINE_USERNAME: __token__
-        TWINE_PASSWORD: ${{ secrets.TWINE_API_KEY }}
-      run: |
-        pip install twine
-        python setup.py sdist
-        twine upload dist/*
+    - uses: brainglobe/actions/build_sdist@v1
 
-
-  deploy-linux-wheels:
+  build_wheels:
+    name: Build wheels on ${{ matrix.os }}
     needs: test
-    if: contains(github.ref, 'tags')
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-20.04, windows-2019, macos-11]
+    steps:
+    - uses: brainglobe/actions/build_wheels@v1
+
+  upload_all:
+    name: Publish build distributions
+    needs: [build_sdist, build_wheels]
     runs-on: ubuntu-latest
+    if: github.event_name == 'release' && github.event.action == 'published'
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up Python
-      uses: actions/setup-python@v1
-    - name: Build manylinux Python wheels
-      uses: RalfG/python-wheels-manylinux-build@v0.3.2-manylinux2014_x86_64
+    - uses: brainglobe/actions/upload_pypi@v1
       with:
-        python-versions: 'cp37-cp37m cp38-cp38 cp39-cp39'
-    - name: Publish wheels to PyPI
-      env:
-        TWINE_USERNAME: __token__
-        TWINE_PASSWORD: ${{ secrets.TWINE_API_KEY }}
-      run: |
-        pip install twine
-        twine upload dist/*-manylinux*.whl
-
-  deploy-windows-wheels:
-    needs: test
-    if: contains(github.ref, 'tags')
-    runs-on: windows-latest
-    strategy:
-      matrix:
-        python-version: [3.7, 3.8, 3.9]
-    steps:
-    - uses: actions/checkout@v2
-    - name: Set up Python
-      uses: actions/setup-python@v1
-      with:
-          python-version: ${{ matrix.python-version }}
-    - name: Publish wheels to PyPI
-      env:
-        TWINE_USERNAME: __token__
-        TWINE_PASSWORD: ${{ secrets.TWINE_API_KEY }}
-      run: |
-        pip install twine wheel
-        python setup.py bdist_wheel
-        twine upload dist\*
-
-  deploy-macos-wheels:
-    needs: test
-    if: contains(github.ref, 'tags')
-    runs-on: macos-latest
-    strategy:
-      matrix:
-        python-version: [3.7, 3.8, 3.9]
-    steps:
-    - uses: actions/checkout@v2
-    - name: Set up Python
-      uses: actions/setup-python@v1
-      with:
-          python-version: ${{ matrix.python-version }}
-    - name: Publish wheels to PyPI
-      env:
-        TWINE_USERNAME: __token__
-        TWINE_PASSWORD: ${{ secrets.TWINE_API_KEY }}
-      run: |
-        pip install twine wheel
-        python setup.py bdist_wheel
-        twine upload dist/*
+        twine-api-key: ${{ secrets.TWINE_API_KEY }}
