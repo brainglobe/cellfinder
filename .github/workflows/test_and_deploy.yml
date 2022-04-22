@@ -12,14 +12,13 @@ jobs:
       - uses: brainglobe/actions/lint@v1
 
   manifest:
-    needs: linting
     name: Check Manifest
     runs-on: ubuntu-latest
     steps:
       - uses: brainglobe/actions/check_manifest@v1
 
   test:
-    needs: manifest
+    needs: [linting, manifest]
     name: ${{ matrix.platform }} py${{ matrix.python-version }}
     runs-on: ${{ matrix.platform }}
     strategy:
