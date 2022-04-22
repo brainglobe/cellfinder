@@ -19,8 +19,8 @@ jobs:
 
   test:
     needs: [linting, manifest]
-    name: ${{ matrix.platform }} py${{ matrix.python-version }}
-    runs-on: ${{ matrix.platform }}
+    name: ${{ matrix.os }} py${{ matrix.python-version }}
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         # Run all supported Python versions on linux
