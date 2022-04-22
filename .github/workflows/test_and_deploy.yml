@@ -3,9 +3,17 @@ name: Test and publish packages
 on: [push, pull_request]
 
 jobs:
+  event_pring:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Echo github event type
+        run: |
+          echo ${{ github.ref_type }}
+          echo ${{ github.event_name }}
+
   linting:
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && startsWith(github.ref_name, 'refs/tags')
+    if: github.event_name == 'push' && github.ref_type == 'tag'
     steps:
       - uses: brainglobe/actions/lint@v1
 
