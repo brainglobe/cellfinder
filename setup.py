@@ -54,7 +54,7 @@ extensions = [
 
 setup(
     name="cellfinder-core",
-    version="0.3.0-rc9",
+    version="0.3.0",
     description="Automated 3D cell detection in large microscopy images",
     long_description=long_description,
     long_description_content_type="text/markdown",
