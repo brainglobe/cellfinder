@@ -12,20 +12,26 @@ jobs:
       - uses: brainglobe/actions/lint@v1
 
   manifest:
-    needs: linting
     name: Check Manifest
     runs-on: ubuntu-latest
     steps:
       - uses: brainglobe/actions/check_manifest@v1
 
   test:
-    needs: manifest
-    name: ${{ matrix.platform }} py${{ matrix.python-version }}
-    runs-on: ${{ matrix.platform }}
+    needs: [linting, manifest]
+    name: ${{ matrix.os }} py${{ matrix.python-version }}
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        platform: [ubuntu-latest, windows-latest, macos-latest]
-        python-version: [3.7, 3.8]
+        # Run all supported Python versions on linux
+        python-version: ["3.8", "3.9"]
+        os: [ubuntu-latest]
+        # Include one windows and macos run
+        include:
+        - os: macos-latest
+          python-version: "3.9"
+        - os: windows-latest
+          python-version: "3.9"
 
     steps:
       # Setup pyqt libraries
