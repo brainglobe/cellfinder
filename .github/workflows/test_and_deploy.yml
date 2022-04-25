@@ -51,6 +51,11 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref_type == 'tag'
     steps:
-    - uses: brainglobe/actions/upload_pypi@v1
+    - uses: actions/download-artifact@v3
       with:
-        twine-api-key: ${{ secrets.TWINE_API_KEY }}
+        name: artifact
+        path: dist
+    - uses: pypa/gh-action-pypi-publish@v1.5.0
+      with:
+        user: __token__
+        password: ${{ secrets.TWINE_API_KEY }}
