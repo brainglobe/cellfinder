@@ -24,6 +24,8 @@ jobs:
   test:
     needs: linting
     runs-on: ${{ matrix.os }}
+    env:
+      INPUT_COREDEV: ${{ github.event.inputs.coredev }}
     strategy:
       matrix:
         # Run all supported Python versions on linux
