@@ -1,19 +1,23 @@
 name: tests
 
+inputs:
+  coredev:
+    description: 'Tests with development version of cellfinder-core?'
+    required: true
+    default: 'false'
+
 on:
   push:
   pull_request:
   # Enable manual runs
   workflow_dispatch:
-    inputs:
-      coredev:
-        description: 'Tests with development version of cellfinder-core?'
-        required: true
-        default: 'false'
+
 
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
+  INPUT_COREDEV: 'true'
+
 
 jobs:
   linting:
@@ -24,6 +28,8 @@ jobs:
   test:
     needs: linting
     runs-on: ${{ matrix.os }}
+    env:
+      INPUT_COREDEV: ${{ github.event.inputs.coredev }}
     strategy:
       matrix:
         # Run all supported Python versions on linux
