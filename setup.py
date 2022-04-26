@@ -31,14 +31,12 @@ setup(
     extras_require={
         "dev": [
             "black",
-            "pytest-cov",
-            "pytest",
-            "gitpython",
-            "coverage>=5.0.3",
             "bump2version",
+            "gitpython",
             "pre-commit",
-            "flake8",
-            "check-manifest",
+            "pytest",
+            "pytest-cov",
+            "pytest-qt",
         ]
     },
     url="https://brainglobe.info/cellfinder",
