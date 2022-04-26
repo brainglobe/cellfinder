@@ -11,7 +11,7 @@ requirements = [
     "napari-plugin-engine >= 0.1.4",
     "napari-ndtiffs",
     "brainglobe-napari-io",
-    "cellfinder-core>=0.2.4",
+    "cellfinder-core>=0.3",
     "pooch>=1",  # For downloading sample data
 ]
 

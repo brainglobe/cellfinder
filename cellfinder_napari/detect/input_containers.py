@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Optional
 
 import napari
+import numpy
 
 from cellfinder_napari.utils import html_label_widget
 
@@ -75,8 +76,8 @@ class InputContainer:
 class DataInputs(InputContainer):
     """Container for image-related ("Data") inputs."""
 
-    signal_array: napari.layers.Image = None
-    background_array: napari.layers.Image = None
+    signal_array: numpy.ndarray = None
+    background_array: numpy.ndarray = None
     voxel_size_z: float = 5
     voxel_size_y: float = 2
     voxel_size_x: float = 2
