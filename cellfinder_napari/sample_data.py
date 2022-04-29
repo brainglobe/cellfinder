@@ -13,7 +13,7 @@ def load_sample() -> List[LayerData]:
     Load some sample data.
     """
     layers = []
-    for ch, name in zip([0, 1], ["Signal", "Background"]):
+    for ch, name in zip([1, 0], ["Background", "Signal"]):
         data = []
         for i in range(30):
             url = f"{base_url}/ch{ch}/ch{ch}{str(i).zfill(4)}.tif"
