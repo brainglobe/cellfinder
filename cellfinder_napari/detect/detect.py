@@ -12,7 +12,9 @@ from qtpy.QtWidgets import QScrollArea
 from cellfinder_napari.utils import (
     add_layers,
     brainglobe_logo,
+    header_label_widget,
     html_label_widget,
+    widget_header,
 )
 
 from .input_containers import (
@@ -39,9 +41,7 @@ def detect() -> FunctionGui:
     progress_bar = ProgressBar()
 
     @magicgui(
-        header=html_label_widget(
-            f'<img src="{brainglobe_logo}"width="100">cellfinder', "h1"
-        ),
+        header=header_label_widget,
         detection_label=html_label_widget("Cell detection", "h3"),
         **DataInputs.widget_representation(),
         **DetectionInputs.widget_representation(),
@@ -197,14 +197,7 @@ def detect() -> FunctionGui:
         worker.update_progress_bar.connect(update_progress_bar)
         worker.start()
 
-    widget.header.value = (
-        "<p>Efficient cell detection in large images.</p>"
-        '<p><a href="https://cellfinder.info" style="color:gray;">Website</a></p>'
-        '<p><a href="https://docs.brainglobe.info/cellfinder/napari-plugin" style="color:gray;">Documentation</a></p>'
-        '<p><a href="https://github.com/brainglobe/cellfinder-napari" style="color:gray;">Source</a></p>'
-        '<p><a href="https://www.biorxiv.org/content/10.1101/2020.10.21.348771v2" style="color:gray;">Citation</a></p>'
-        "<p><small>For help, hover the cursor over each parameter.</small>"
-    )
+    widget.header.value = widget_header
     widget.header.native.setOpenExternalLinks(True)
 
     @widget.reset_button.changed.connect

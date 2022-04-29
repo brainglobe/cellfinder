@@ -19,6 +19,16 @@ brainglobe_logo = resource_filename(
 )
 
 
+widget_header = """
+<p>Efficient cell detection in large images.</p>
+<p><a href="https://cellfinder.info" style="color:gray;">Website</a></p>
+<p><a href="https://docs.brainglobe.info/cellfinder-napari/introduction" style="color:gray;">Documentation</a></p>
+<p><a href="https://github.com/brainglobe/cellfinder-napari" style="color:gray;">Source</a></p>
+<p><a href="https://www.biorxiv.org/content/10.1101/2020.10.21.348771v2" style="color:gray;">Citation</a></p>
+<p><small>For help, hover the cursor over each parameter.</small>
+"""
+
+
 def html_label_widget(label: str, tag: str = "b") -> dict:
     """
     Create a HMTL label for use with magicgui.
@@ -27,6 +37,15 @@ def html_label_widget(label: str, tag: str = "b") -> dict:
         widget_type="Label",
         label=f"<{tag}>{label}</{tag}>",
     )
+
+
+header_label_widget = html_label_widget(
+    f"""
+<img src="{brainglobe_logo}"width="100">
+<p>cellfinder</p>
+""",
+    "h1",
+)
 
 
 def add_layers(points, viewer: napari.Viewer) -> None:
