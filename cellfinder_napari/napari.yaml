@@ -4,13 +4,16 @@ contributions:
   commands:
   - id: cellfinder-napari.detect
     title: Create Cell detection
-    python_name: cellfinder_napari.plugins:detect
+    python_name: cellfinder_napari.detect:detect
+
   - id: cellfinder-napari.train
     title: Create Train network
-    python_name: cellfinder_napari.plugins:train
+    python_name: cellfinder_napari.train:train
+
   - id: cellfinder-napari.CurationWidget
     title: Create Curation
-    python_name: cellfinder_napari.plugins:CurationWidget
+    python_name: cellfinder_napari.curation:CurationWidget
+
   - id: cellfinder-napari.SampleData
     title: Sample data
     python_name: cellfinder_napari.sample_data:load_sample
