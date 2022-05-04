@@ -4,7 +4,11 @@ from typing import Optional
 from magicgui import magicgui
 from napari.qt.threading import thread_worker
 
-from cellfinder_napari.utils import brainglobe_logo
+from cellfinder_napari.utils import (
+    header_label_widget,
+    html_label_widget,
+    widget_header,
+)
 
 
 def train():
@@ -34,10 +38,7 @@ def train():
     )
 
     @magicgui(
-        header=dict(
-            widget_type="Label",
-            label=f'<h1><img src="{brainglobe_logo}"width="100">cellfinder</h1>',
-        ),
+        header=header_label_widget,
         training_label=dict(
             widget_type="Label",
             label="<h3>Network training</h3>",
@@ -208,14 +209,7 @@ def train():
             )
             worker.start()
 
-    widget.header.value = (
-        "<p>Efficient cell detection in large images.</p>"
-        '<p><a href="https://cellfinder.info" style="color:gray;">Website</a></p>'
-        '<p><a href="https://docs.brainglobe.info/cellfinder/napari-plugin" style="color:gray;">Documentation</a></p>'
-        '<p><a href="https://github.com/brainglobe/cellfinder-napari" style="color:gray;">Source</a></p>'
-        '<p><a href="https://www.biorxiv.org/content/10.1101/2020.10.21.348771v2" style="color:gray;">Citation</a></p>'
-        "<p><small>For help, hover the cursor over each parameter.</small>"
-    )
+    widget.header.value = widget_header
     widget.header.native.setOpenExternalLinks(True)
 
     @widget.reset_button.changed.connect
