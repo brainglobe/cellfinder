@@ -38,6 +38,6 @@ def test_detect_worker():
         DataInputs(signal_array=signal, background_array=background),
         DetectionInputs(),
         ClassificationInputs(trained_model=None),
-        MiscInputs(end_plane=20),
+        MiscInputs(start_plane=0, end_plane=1),
     )
     worker.work()
