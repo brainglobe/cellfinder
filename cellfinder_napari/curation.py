@@ -360,17 +360,34 @@ class CurationWidget(QWidget):
                 "Please choose a single points layer, and select some points.",
             )
 
-    def save_training_data(self):
+    def save_training_data(
+        self, *, block: bool = False, prompt_for_directory: bool = True
+    ) -> None:
+        """
+        Parameters
+        ----------
+        block :
+            If `True` block execution until all cubes are saved.
+        prompt_for_directory :
+            If `True` show a file dialog for the user to select a directory.
+        """
         if self.is_data_extractable():
-            self.get_output_directory()
-            if self.output_directory != "":
-                self.__extract_cubes()
+            if prompt_for_directory:
+                self.get_output_directory()
+            if self.output_directory is not None:
+                self.__extract_cubes(block=block)
                 self.__save_yaml_file()
                 print("Done")
 
             self.status_label.setText("Ready")
 
-    def __extract_cubes(self):
+    def __extract_cubes(self, *, block=False):
+        """
+        Parameters
+        ----------
+        block :
+            If `True` block execution until all cubes are saved.
+        """
         self.status_label.setText("Extracting cubes")
         self.convert_layers_to_cells()
 
@@ -388,6 +405,8 @@ class CurationWidget(QWidget):
             self.cube_depth,
         )
         worker.start()
+        if block:
+            worker.await_workers()
         self.status_label.setText("Ready")
 
     def is_data_extractable(self) -> bool:
@@ -456,6 +475,8 @@ class CurationWidget(QWidget):
         )
         if self.output_directory != "":
             self.output_directory = Path(self.output_directory)
+        else:
+            self.output_directory = None
 
     def convert_layers_to_cells(self):
 
