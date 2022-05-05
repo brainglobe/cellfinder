@@ -14,7 +14,7 @@ from cellfinder_napari.sample_data import load_sample
 viewer = napari.Viewer()
 # Open plugin
 viewer.window.add_plugin_dock_widget(
-    plugin_name="cellfinder-napari", widget_name="Train network"
+    plugin_name="cellfinder-napari", widget_name="Cell detection"
 )
 # Add sample data layers
 for layer in load_sample():
