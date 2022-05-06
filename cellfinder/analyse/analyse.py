@@ -4,13 +4,10 @@ Cell position analysis (based on atlas registration).
 Based on https://github.com/SainsburyWellcomeCentre/cell_count_analysis by
 Charly Rousseau (https://github.com/crousseau).
 """
-
-from __future__ import annotations
-
 import logging
 import os
 from pathlib import Path
-from typing import Optional
+from typing import List, Optional
 
 import bg_space as bgs
 import imio
@@ -195,7 +192,7 @@ def transform_points_to_atlas_space(
     points: np.ndarray,
     source_space: bgs.AnatomicalSpace,
     atlas: BrainGlobeAtlas,
-    deformation_field_paths: list[os.PathLike],
+    deformation_field_paths: List[os.PathLike],
     downsampled_space: bgs.AnatomicalSpace,
     downsampled_points_path: Optional[os.PathLike] = None,
     atlas_points_path: Optional[os.PathLike] = None,
@@ -217,11 +214,11 @@ def transform_points_to_atlas_space(
 def transform_points_downsampled_to_atlas_space(
     downsampled_points: np.ndarray,
     atlas: BrainGlobeAtlas,
-    deformation_field_paths: list[os.PathLike],
+    deformation_field_paths: List[os.PathLike],
     output_filename: Optional[os.PathLike] = None,
 ) -> np.ndarray:
     field_scales = [int(1000 / resolution) for resolution in atlas.resolution]
-    points: list[list] = [[], [], []]
+    points: List[List] = [[], [], []]
     for axis, deformation_field_path in enumerate(deformation_field_paths):
         deformation_field = tifffile.imread(deformation_field_path)
         for point in downsampled_points:
