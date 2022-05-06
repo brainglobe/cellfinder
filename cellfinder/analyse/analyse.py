@@ -5,14 +5,19 @@ Based on https://github.com/SainsburyWellcomeCentre/cell_count_analysis by
 Charly Rousseau (https://github.com/crousseau).
 """
 
+from __future__ import annotations
+
 import logging
+import os
 from pathlib import Path
+from typing import Optional
 
 import bg_space as bgs
 import imio
 import numpy as np
 import pandas as pd
 import tifffile
+from bg_atlasapi import BrainGlobeAtlas
 from imlib.general.system import ensure_directory_exists
 from imlib.pandas.misc import sanitise_df
 
@@ -174,8 +179,11 @@ def get_region_totals(
 
 
 def transform_points_to_downsampled_space(
-    points, target_space, source_space, output_filename=None
-):
+    points: np.ndarray,
+    target_space: bgs.AnatomicalSpace,
+    source_space: bgs.AnatomicalSpace,
+    output_filename: Optional[os.PathLike] = None,
+) -> np.ndarray:
     points = source_space.map_points_to(target_space, points)
     if output_filename is not None:
         df = pd.DataFrame(points)
@@ -184,34 +192,36 @@ def transform_points_to_downsampled_space(
 
 
 def transform_points_to_atlas_space(
-    points,
-    source_space,
-    atlas,
-    deformation_field_paths,
-    downsampled_space,
-    downsampled_points_path=None,
-    atlas_points_path=None,
-):
+    points: np.ndarray,
+    source_space: bgs.AnatomicalSpace,
+    atlas: BrainGlobeAtlas,
+    deformation_field_paths: list[os.PathLike],
+    downsampled_space: bgs.AnatomicalSpace,
+    downsampled_points_path: Optional[os.PathLike] = None,
+    atlas_points_path: Optional[os.PathLike] = None,
+) -> np.ndarray:
     downsampled_points = transform_points_to_downsampled_space(
         points,
         downsampled_space,
         source_space,
         output_filename=downsampled_points_path,
     )
-    transformed_points = transform_points_downsampled_to_atlas_space(
+    return transform_points_downsampled_to_atlas_space(
         downsampled_points,
         atlas,
         deformation_field_paths,
         output_filename=atlas_points_path,
     )
-    return transformed_points
 
 
 def transform_points_downsampled_to_atlas_space(
-    downsampled_points, atlas, deformation_field_paths, output_filename=None
-):
+    downsampled_points: np.ndarray,
+    atlas: BrainGlobeAtlas,
+    deformation_field_paths: list[os.PathLike],
+    output_filename: Optional[os.PathLike] = None,
+) -> np.ndarray:
     field_scales = [int(1000 / resolution) for resolution in atlas.resolution]
-    points = [[], [], []]
+    points: list[list] = [[], [], []]
     for axis, deformation_field_path in enumerate(deformation_field_paths):
         deformation_field = tifffile.imread(deformation_field_path)
         for point in downsampled_points:
