@@ -181,6 +181,24 @@ def transform_points_to_downsampled_space(
     source_space: bgs.AnatomicalSpace,
     output_filename: Optional[os.PathLike] = None,
 ) -> np.ndarray:
+    """
+    Parameters
+    ----------
+    points :
+        Points in the original space.
+    target_space :
+        Target anatomical space.
+    source_space :
+        Source anatomical space of ``points``.
+    output_filename :
+        File to save downsampled points to. Points are saved as a HDF file
+        using pandas.
+
+    Returns
+    -------
+    downsampled_points
+        Points transformed to the downsampled space.
+    """
     points = source_space.map_points_to(target_space, points)
     if output_filename is not None:
         df = pd.DataFrame(points)
@@ -197,6 +215,12 @@ def transform_points_to_atlas_space(
     downsampled_points_path: Optional[os.PathLike] = None,
     atlas_points_path: Optional[os.PathLike] = None,
 ) -> np.ndarray:
+    """
+    Transform points to an atlas space.
+
+    The points are first downsampled to the atlas resolution, and then
+    transformed to the atlas space.
+    """
     downsampled_points = transform_points_to_downsampled_space(
         points,
         downsampled_space,
@@ -217,6 +241,24 @@ def transform_points_downsampled_to_atlas_space(
     deformation_field_paths: List[os.PathLike],
     output_filename: Optional[os.PathLike] = None,
 ) -> np.ndarray:
+    """
+    Parameters
+    ----------
+    downsampled_points :
+        Points already downsampled to the atlas resolution.
+    atlas :
+        Target atlas.
+    deformation_field_paths :
+        File paths to the deformation fields.
+    output_filename :
+        File to save transformed points to. Points are saved as a HDF file
+        using pandas.
+
+    Returns
+    -------
+    transformed_points
+        Points transformed to the atlas space.
+    """
     field_scales = [int(1000 / resolution) for resolution in atlas.resolution]
     points: List[List] = [[], [], []]
     for axis, deformation_field_path in enumerate(deformation_field_paths):
