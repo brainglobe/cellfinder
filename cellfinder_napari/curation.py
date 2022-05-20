@@ -575,4 +575,4 @@ def save_cube(
         f"pCellz{point_info['z']}y{point_info['y']}"
         f"x{point_info['x']}Ch{channel}.tif"
     )
-    tifffile.imsave(output_directory / filename, array[:, :, :, channel])
+    tifffile.imwrite(output_directory / filename, array[:, :, :, channel])
