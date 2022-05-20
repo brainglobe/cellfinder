@@ -8,6 +8,7 @@ from brainglobe_napari_io.cellfinder.utils import convert_layer_to_cells
 from imlib.cells.cells import Cell
 from imlib.general.system import ensure_directory_exists
 from imlib.IO.yaml import save_yaml
+from magicgui.widgets import ProgressBar
 from napari.qt.threading import thread_worker
 from napari.utils.notifications import show_info
 from qtpy import QtCore
@@ -132,8 +133,13 @@ class CurationWidget(QWidget):
         self.add_loading_panel(1)
 
         self.status_label = QLabel()
-        self.status_label.setText("Ready")
-        self.layout.addWidget(self.status_label, 7, 0)
+        row, col = 7, 0
+        self.layout.addWidget(self.status_label, row, col)
+        self.update_status_label("Ready")
+
+        self.progress_bar = ProgressBar()
+        row, col = 8, 0
+        self.layout.addWidget(self.progress_bar.native, row, col)
 
         self.setLayout(self.layout)
 
@@ -325,7 +331,7 @@ class CurationWidget(QWidget):
                         destination_layer = self.training_data_cell_layer
                     else:
                         destination_layer = self.training_data_non_cell_layer
-                    print(
+                    show_info(
                         f"Adding {len(layer.selected_data)} "
                         f"points to layer: {destination_layer.name}"
                     )
@@ -377,9 +383,9 @@ class CurationWidget(QWidget):
             if self.output_directory is not None:
                 self.__extract_cubes(block=block)
                 self.__save_yaml_file()
-                print("Done")
+                show_info("Done")
 
-            self.status_label.setText("Ready")
+            self.update_status_label("Ready")
 
     def __extract_cubes(self, *, block=False):
         """
@@ -388,26 +394,23 @@ class CurationWidget(QWidget):
         block :
             If `True` block execution until all cubes are saved.
         """
-        self.status_label.setText("Extracting cubes")
+        self.update_status_label("Extracting cubes")
         self.convert_layers_to_cells()
 
-        worker = extract_cubes(
-            self.cells_to_extract,
-            self.non_cells_to_extract,
-            self.output_directory,
-            self.signal_layer.data,
-            self.background_layer.data,
-            self.voxel_sizes,
-            self.network_voxel_sizes,
-            self.batch_size,
-            self.cube_width,
-            self.cube_height,
-            self.cube_depth,
-        )
-        worker.start()
         if block:
-            worker.await_workers()
-        self.status_label.setText("Ready")
+            cubes = self.extract_cubes()
+            while True:
+                try:
+                    next(cubes)
+                except StopIteration:
+                    break
+        else:
+
+            @thread_worker(connect={"yielded": self.update_progress})
+            def extract_cubes():
+                yield from self.extract_cubes()
+
+            extract_cubes()
 
     def is_data_extractable(self) -> bool:
         if (
@@ -465,7 +468,7 @@ class CurationWidget(QWidget):
         """
         Shows file dialog to choose output directory
         """
-        self.status_label.setText("Setting output directory...")
+        self.update_status_label("Setting output directory...")
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
         self.output_directory = QFileDialog.getExistingDirectory(
@@ -513,59 +516,74 @@ class CurationWidget(QWidget):
         yaml_contents = {"data": yaml_section}
         save_yaml(yaml_contents, yaml_filename)
 
+    def update_progress(self, attributes: dict):
+        """
+        Update progress bar with ``attributes``.
+        """
+        for attr in attributes:
+            self.progress_bar.__setattr__(attr, attributes[attr])
 
-@thread_worker
-def extract_cubes(
-    cells_to_extract: List[Cell],
-    non_cells_to_extract: List[Cell],
-    output_directory: Path,
-    signal_array: np.ndarray,
-    background_array: np.ndarray,
-    voxel_sizes: Tuple[int, int, int],
-    network_voxel_sizes: Tuple[int, int, int],
-    batch_size: int,
-    cube_width: int,
-    cube_height: int,
-    cube_depth: int,
-):
-    from cellfinder_core.classify.cube_generator import CubeGeneratorFromFile
+    def update_status_label(self, label: str):
+        self.status_label.setText(label)
 
-    to_extract = {
-        "cells": cells_to_extract,
-        "non_cells": non_cells_to_extract,
-    }
-
-    for cell_type, cell_list in to_extract.items():
-        print(f"Extracting type: {cell_type}")
-        cell_type_output_directory = output_directory / cell_type
-        print(f"Saving to: {cell_type_output_directory}")
-        ensure_directory_exists(str(cell_type_output_directory))
-
-        cube_generator = CubeGeneratorFromFile(
-            cell_list,
-            signal_array,
-            background_array,
-            voxel_sizes,
-            network_voxel_sizes,
-            batch_size=batch_size,
-            cube_width=cube_width,
-            cube_height=cube_height,
-            cube_depth=cube_depth,
-            extract=True,
+    def extract_cubes(self):
+        """
+        Yields
+        ------
+        dict
+            Attributes used to update a progress bar. The keys can be any of
+            the properties of `magicgui.widgets.ProgressBar`.
+        """
+        from cellfinder_core.classify.cube_generator import (
+            CubeGeneratorFromFile,
         )
 
-        extract_batches(cube_generator, cell_type_output_directory)
-        print("Done")
+        to_extract = {
+            "cells": self.cells_to_extract,
+            "non_cells": self.non_cells_to_extract,
+        }
 
+        for cell_type, cell_list in to_extract.items():
+            cell_type_output_directory = self.output_directory / cell_type
+            ensure_directory_exists(str(cell_type_output_directory))
+            self.update_status_label(f"Saving {cell_type}...")
 
-def extract_batches(cube_generator, output_directory: Path):
-    for batch_idx, (image_batch, batch_info) in enumerate(cube_generator):
-        image_batch = image_batch.astype(np.int16)
-        for point, point_info in zip(image_batch, batch_info):
-            point = np.moveaxis(point, 2, 0)
+            cube_generator = CubeGeneratorFromFile(
+                cell_list,
+                self.signal_layer.data,
+                self.background_layer.data,
+                self.voxel_sizes,
+                self.network_voxel_sizes,
+                batch_size=self.batch_size,
+                cube_width=self.cube_width,
+                cube_height=self.cube_height,
+                cube_depth=self.cube_depth,
+                extract=True,
+            )
+            # Set up progress bar
+            yield {
+                "value": 0,
+                "min": 0,
+                "max": len(cube_generator),
+            }
 
-            for channel in range(0, point.shape[-1]):
-                save_cube(point, point_info, channel, output_directory)
+            for i, (image_batch, batch_info) in enumerate(cube_generator):
+                image_batch = image_batch.astype(np.int16)
+
+                for point, point_info in zip(image_batch, batch_info):
+                    point = np.moveaxis(point, 2, 0)
+                    for channel in range(0, point.shape[-1]):
+                        save_cube(
+                            point,
+                            point_info,
+                            channel,
+                            cell_type_output_directory,
+                        )
+
+                # Update progress bar
+                yield {"value": i + 1}
+
+            self.update_status_label("Finished saving cubes")
 
 
 def save_cube(
