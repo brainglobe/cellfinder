@@ -21,7 +21,7 @@ requirements = [
     "psutil",
     "configobj",
     "tensorflow>=2.5.0",
-    "napari[pyside2]>=0.3.7",
+    "napari>=0.3.7",
     "brainglobe-napari-io",
     "cellfinder-napari",
     "slurmio>=0.0.4",
