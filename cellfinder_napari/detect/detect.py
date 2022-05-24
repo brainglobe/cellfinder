@@ -17,7 +17,7 @@ from cellfinder_napari.utils import (
     widget_header,
 )
 
-from .input_containers import (
+from .detect_containers import (
     ClassificationInputs,
     DataInputs,
     DetectionInputs,

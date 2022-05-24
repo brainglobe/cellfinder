@@ -6,70 +6,8 @@ from typing import Optional
 import napari
 import numpy
 
+from cellfinder_napari.input_container import InputContainer
 from cellfinder_napari.utils import html_label_widget
-
-
-class InputContainer:
-    """Base for classes that contain inputs
-
-    Intended to be derived to group specific related widget inputs (e.g from the same widget section)
-    into a container. Derived classes should be Python data classes.
-
-    Enforces common interfaces for
-    - how to get default values for the inputs
-    - how inputs are passed to cellfinder core
-    - how the inputs are shown in the widget
-    """
-
-    @classmethod
-    def defaults(cls) -> dict:
-        """Returns default values of this class's fields as a dict."""
-        # Derived classes are not expected to be particularly
-        # slow to instantiate, so use the default constructor
-        # to avoid code repetition.
-        return asdict(cls())
-
-    @abstractmethod
-    def as_core_arguments(self) -> dict:
-        """Determines how dataclass fields are passed to cellfinder-core.
-
-        The implementation provided here can be re-used in derived classes, if convenient.
-        """
-        # note that asdict returns a new instance of a dict,
-        # so any subsequent modifications of this dict won't affect the class instance
-        return asdict(self)
-
-    @classmethod
-    def _numerical_widget(
-        cls, key: str, custom_label: str = None, step=0.1, min=None, max=None
-    ) -> dict:
-        """Represents a numerical field, given by key, as a formatted widget with the field's default value.
-
-        The widget's label, step, min, and max can be adjusted.
-        """
-        label = (
-            key.replace("_", " ").capitalize()
-            if custom_label is None
-            else custom_label
-        )
-        value = cls.defaults()[key]
-        step = 1 if type(value) == int else step
-        if min is None and max is None:
-            return dict(value=value, label=label, step=step)
-        else:
-            return dict(
-                value=value,
-                label=label,
-                step=step,
-                min=min,
-                max=max,
-            )
-
-    @classmethod
-    @abstractmethod
-    def widget_representation(cls) -> dict:
-        """What the class will look like as a napari widget"""
-        pass
 
 
 @dataclass
@@ -104,13 +42,13 @@ class DataInputs(InputContainer):
     def widget_representation(cls) -> dict:
         return dict(
             data_options=html_label_widget("Data:"),
-            voxel_size_z=cls._numerical_widget(
+            voxel_size_z=cls._custom_widget(
                 "voxel_size_z", custom_label="Voxel size (z)"
             ),
-            voxel_size_y=cls._numerical_widget(
+            voxel_size_y=cls._custom_widget(
                 "voxel_size_y", custom_label="Voxel size (y)"
             ),
-            voxel_size_x=cls._numerical_widget(
+            voxel_size_x=cls._custom_widget(
                 "voxel_size_x", custom_label="Voxel size (x)"
             ),
         )
@@ -136,26 +74,26 @@ class DetectionInputs(InputContainer):
     def widget_representation(cls) -> dict:
         return dict(
             detection_options=html_label_widget("Detection:"),
-            soma_diameter=cls._numerical_widget("soma_diameter"),
-            ball_xy_size=cls._numerical_widget(
+            soma_diameter=cls._custom_widget("soma_diameter"),
+            ball_xy_size=cls._custom_widget(
                 "ball_xy_size", custom_label="Ball filter (xy)"
             ),
-            ball_z_size=cls._numerical_widget(
+            ball_z_size=cls._custom_widget(
                 "ball_z_size", custom_label="Ball filter (z)"
             ),
-            ball_overlap_fraction=cls._numerical_widget(
+            ball_overlap_fraction=cls._custom_widget(
                 "ball_overlap_fraction", custom_label="Ball overlap"
             ),
-            log_sigma_size=cls._numerical_widget(
+            log_sigma_size=cls._custom_widget(
                 "log_sigma_size", custom_label="Filter width"
             ),
-            n_sds_above_mean_thresh=cls._numerical_widget(
+            n_sds_above_mean_thresh=cls._custom_widget(
                 "n_sds_above_mean_thresh", custom_label="Threshold"
             ),
-            soma_spread_factor=cls._numerical_widget(
+            soma_spread_factor=cls._custom_widget(
                 "soma_spread_factor", custom_label="Cell spread"
             ),
-            max_cluster_size=cls._numerical_widget(
+            max_cluster_size=cls._custom_widget(
                 "max_cluster_size",
                 custom_label="Max cluster",
                 min=0,
@@ -207,11 +145,9 @@ class MiscInputs(InputContainer):
     def widget_representation(cls) -> dict:
         return dict(
             misc_options=html_label_widget("Miscellaneous:"),
-            start_plane=cls._numerical_widget(
-                "start_plane", min=0, max=100000
-            ),
-            end_plane=cls._numerical_widget("end_plane", min=0, max=100000),
-            n_free_cpus=cls._numerical_widget(
+            start_plane=cls._custom_widget("start_plane", min=0, max=100000),
+            end_plane=cls._custom_widget("end_plane", min=0, max=100000),
+            n_free_cpus=cls._custom_widget(
                 "n_free_cpus", custom_label="Number of free CPUs"
             ),
             analyse_local=dict(value=cls.defaults()["analyse_local"]),
