@@ -7,7 +7,7 @@ import pytest
 from PIL import Image
 
 from cellfinder_napari.detect import detect
-from cellfinder_napari.detect.input_containers import (
+from cellfinder_napari.detect.detect_containers import (
     ClassificationInputs,
     DataInputs,
     DetectionInputs,
