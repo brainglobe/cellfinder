@@ -134,6 +134,11 @@ coordinate space of your raw data).
 ![load_data](https://raw.githubusercontent.com/brainglobe/brainglobe-napari-io/master/resources/load_results.gif)
 **Loading cellfinder results**
 
+
+## Contributing
+Contributions to cellfinder are more than welcome. Please see the [contributing guide](https://github.com/brainglobe/.github/blob/main/CONTRIBUTING.md).
+
+
 ## Citing cellfinder
 
 If you find cellfinder useful, and use it in your research, please cite the preprint outlining the cell detection algorithm:
