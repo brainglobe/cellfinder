@@ -288,6 +288,9 @@ cells or artefacts:
 ![raw](https://raw.githubusercontent.com/brainglobe/cellfinder/master/resources/classify.png)
 **Cassified cell candidates. Yellow - cells, Blue - artefacts**
 
+## Contributing
+Contributions to cellfinder-core are more than welcome. Please see the [contributing guide](https://github.com/brainglobe/.github/blob/main/CONTRIBUTING.md).
+
 ---
 ## Citing cellfinder
 If you find this plugin useful, and use it in your research, please cite the preprint outlining the cell detection algorithm:
