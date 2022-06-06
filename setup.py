@@ -17,7 +17,6 @@ requirements = [
     "tifffile",
     "natsort",
     "tqdm",
-    "multiprocessing-logging",
     "psutil",
     "configobj",
     "tensorflow>=2.5.0",
