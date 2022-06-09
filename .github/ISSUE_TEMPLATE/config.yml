@@ -1,9 +1,0 @@
-# Ref: https://help.github.com/en/github/building-a-strong-community/configuring-issue-templates-for-your-repository#configuring-the-template-chooser
-blank_issues_enabled: true  # default
-contact_links:
-- name: 🤷💻 Troubleshooting
-  url: https://docs.brainglobe.info/cellfinder/troubleshooting
-  about: See here for common issues
-- name: 🤷💻 cellfinder forum
-  url: https://gitter.im/BrainGlobe/cellfinder
-  about: Please ask general questions (how do I, what is this? etc.) here
