@@ -29,12 +29,12 @@ jobs:
     strategy:
       matrix:
         # Run all supported Python versions on linux
-        python-version: ["3.7", "3.8", "3.9"]
+        python-version: ["3.7", "3.8", "3.9.12"]
         os: [ubuntu-latest]
         include:
           # Include one windows run
           - os: windows-latest
-            python-version: "3.9"
+            python-version: "3.9.12"
     steps:
       - uses: brainglobe/actions/test@v1
         with:
