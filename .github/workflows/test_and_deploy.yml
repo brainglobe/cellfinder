@@ -39,6 +39,7 @@ jobs:
       - uses: brainglobe/actions/test@v1
         with:
           python-version: ${{ matrix.python-version }}
+          tox-args: "--notest"
 
 
   deploy:
