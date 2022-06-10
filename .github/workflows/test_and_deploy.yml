@@ -5,7 +5,6 @@ on: [push, pull_request]
 jobs:
   linting:
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref_type == 'tag'
     steps:
       - uses: brainglobe/actions/lint@v1
 
