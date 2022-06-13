@@ -6,7 +6,6 @@ import numpy as np
 import tifffile
 from brainglobe_napari_io.cellfinder.utils import convert_layer_to_cells
 from imlib.cells.cells import Cell
-from imlib.general.system import ensure_directory_exists
 from imlib.IO.yaml import save_yaml
 from magicgui.widgets import ProgressBar
 from napari.qt.threading import thread_worker
@@ -545,7 +544,7 @@ class CurationWidget(QWidget):
 
         for cell_type, cell_list in to_extract.items():
             cell_type_output_directory = self.output_directory / cell_type
-            ensure_directory_exists(str(cell_type_output_directory))
+            cell_type_output_directory.mkdir(exist_ok=True, parents=True)
             self.update_status_label(f"Saving {cell_type}...")
 
             cube_generator = CubeGeneratorFromFile(
@@ -572,7 +571,7 @@ class CurationWidget(QWidget):
 
                 for point, point_info in zip(image_batch, batch_info):
                     point = np.moveaxis(point, 2, 0)
-                    for channel in range(0, point.shape[-1]):
+                    for channel in range(point.shape[-1]):
                         save_cube(
                             point,
                             point_info,
