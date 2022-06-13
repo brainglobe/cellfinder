@@ -60,12 +60,14 @@ class VolumeFilter(object):
     def process(
         self,
         async_results: Queue,
+        n_planes: int,
+        *,
         callback: Callable[[int], None],
     ):
         progress_bar = tqdm(
             total=len(self.planes_paths_range), desc="Processing planes"
         )
-        while not async_results.empty():
+        for _ in range(n_planes):
             # Get result from the queue.
             #
             # It is important to remove the result from the queue here
