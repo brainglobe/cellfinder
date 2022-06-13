@@ -27,9 +27,7 @@ from imlib.IO.yaml import read_yaml_section
 from sklearn.model_selection import train_test_split
 
 import cellfinder_core as program_for_log
-
-home = Path.home()
-install_path = home / ".cellfinder"
+from cellfinder_core.tools.prep import DEFAULT_INSTALL_PATH
 
 tf_suppress_log_messages = [
     "sample_weight modes were coerced from",
@@ -302,7 +300,7 @@ def run(
     n_free_cpus=2,
     trained_model=None,
     model_weights=None,
-    install_path=install_path,
+    install_path=DEFAULT_INSTALL_PATH,
     model="resnet50_tv",
     network_depth="50",
     learning_rate=0.0001,
@@ -335,7 +333,11 @@ def run(
 
     ensure_directory_exists(output_dir)
     model_weights = prep_training(
-        n_free_cpus, trained_model, model_weights, install_path, model
+        n_free_cpus,
+        trained_model,
+        model_weights,
+        model,
+        install_path=install_path,
     )
 
     yaml_contents = parse_yaml(yaml_file)
