@@ -26,8 +26,8 @@ jobs:
       - name: Cache tensorflow model
         uses: actions/cache@v3
         with:
-          path: ".cellfinder"
-          key: models-${{ hashFiles('.cellfinder/**') }}
+          path: "~/.cellfinder"
+          key: models-${{ hashFiles('~/.cellfinder/**') }}
       - uses: brainglobe/actions/test@v1
         with:
           python-version: ${{ matrix.python-version }}
