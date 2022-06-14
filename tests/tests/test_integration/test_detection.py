@@ -42,6 +42,7 @@ def test_detection_full():
         signal_array,
         background_array,
         voxel_sizes,
+        n_free_cpus=0,
     )
     cells_validation = cell_io.get_cells(cells_validation_xml)
 
@@ -88,6 +89,7 @@ def test_callbacks(signal_array, background_array):
         detect_callback=detect_callback,
         classify_callback=classify_callback,
         detect_finished_callback=detect_finished_callback,
+        n_free_cpus=0,
     )
 
     np.testing.assert_equal(planes_done, np.arange(len(signal_array)))

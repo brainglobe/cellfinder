@@ -64,6 +64,7 @@ setup(
             "black",
             "pytest-cov",
             "pytest",
+            "pytest-timeout",
             "gitpython",
             "coverage>=5.0.3",
             "bump2version",

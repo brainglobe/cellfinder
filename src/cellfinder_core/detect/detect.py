@@ -121,23 +121,22 @@ def main(
         n_sds_above_mean_thresh,
     )
 
-    worker_pool = Pool(n_processes)
+    with Pool(n_processes) as worker_pool:
+        # Start 2D filter
+        # Submits each plane to the worker pool, and sets up a list of
+        # asyncronous results
+        async_results = []
+        for id, plane in enumerate(signal_array):
+            res = worker_pool.apply_async(
+                mp_tile_processor.get_tile_mask, args=(np.array(plane),)
+            )
+            async_results.append(res)
 
-    # Start 2D filter
-    # Submits each plane to the worker pool, and sets up a list of
-    # asyncronous results
-    async_results = []
-    for id, plane in enumerate(signal_array):
-        res = worker_pool.apply_async(
-            mp_tile_processor.get_tile_mask, args=(np.array(plane),)
+        # Start 3D filter
+        # This runs in the main thread
+        cells = mp_3d_filter.process(
+            async_results, signal_array, callback=callback
         )
-        async_results.append(res)
-
-    # Start 3D filter
-    # This runs in the main thread
-    cells = mp_3d_filter.process(
-        async_results, signal_array, callback=callback
-    )
 
     print(
         "Detection complete - all planes done in : {}".format(
