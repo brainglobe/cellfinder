@@ -1,5 +1,5 @@
+import multiprocessing
 from datetime import datetime
-from multiprocessing.pool import Pool
 from queue import Queue
 from typing import Callable
 
@@ -121,7 +121,8 @@ def main(
         n_sds_above_mean_thresh,
     )
 
-    with Pool(n_processes) as worker_pool:
+    mp_ctx = multiprocessing.get_context("spawn")
+    with mp_ctx.Pool(n_processes) as worker_pool:
         # Start 2D filter
         # Submits each plane to the worker pool, and sets up a queue of
         # asyncronous results
