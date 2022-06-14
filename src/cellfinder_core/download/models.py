@@ -25,7 +25,7 @@ def main(model_name: str, download_path: os.PathLike) -> Path:
     download_path = Path(download_path)
 
     model_weight_dir = download_path / "model_weights"
-    model_path = model_weight_dir / (model_name + ".h5")
+    model_path = model_weight_dir / f"{model_name}.h5"
     if not model_path.exists():
         model_weight_dir.mkdir(parents=True)
 

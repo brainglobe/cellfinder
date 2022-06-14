@@ -64,7 +64,7 @@ def prep_models(
 ) -> Path:
     # if no model or weights, set default weights
     if model_weights_path is None:
-        logging.debug("No model or weights supplied, so using the default")
+        logging.debug("No model supplied, so using the default")
 
         config_file = source_custom_config_cellfinder()
 
