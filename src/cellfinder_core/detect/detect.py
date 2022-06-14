@@ -141,9 +141,7 @@ def main(
         # Start 3D filter
         # This runs in the main thread, and blocks until the all the 2D and
         # then 3D filtering has finished
-        cells = mp_3d_filter.process(
-            async_results, n_planes=len(signal_array), callback=callback
-        )
+        cells = mp_3d_filter.process(async_results, callback=callback)
 
     print(
         "Detection complete - all planes done in : {}".format(

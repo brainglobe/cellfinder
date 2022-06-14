@@ -59,21 +59,20 @@ class VolumeFilter(object):
 
     def process(
         self,
-        async_results: Queue,
-        n_planes: int,
+        async_result_queue: Queue,
         *,
         callback: Callable[[int], None],
     ):
         progress_bar = tqdm(
             total=len(self.planes_paths_range), desc="Processing planes"
         )
-        for _ in range(n_planes):
+        while not async_result_queue.empty():
             # Get result from the queue.
             #
             # It is important to remove the result from the queue here
             # to free up memory once this plane has been processed by
             # the 3D filter here
-            result = async_results.get()
+            result = async_result_queue.get()
             # .get() blocks until the result is available
             plane, mask = result.get()
 
