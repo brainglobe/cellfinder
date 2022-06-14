@@ -56,14 +56,10 @@ def main(
     """
     suppress_tf_logging(tf_suppress_log_messages)
 
-    from pathlib import Path
-
     from cellfinder_core.classify import classify
     from cellfinder_core.detect import detect
     from cellfinder_core.tools import prep
 
-    home = Path.home()
-    install_path = home / ".cellfinder"
     logging.info("Detecting cell candidates")
 
     points = detect.main(
@@ -87,7 +83,7 @@ def main(
         detect_finished_callback(points)
 
     model_weights = prep.prep_classification(
-        trained_model, model_weights, install_path, model, n_free_cpus
+        trained_model, model_weights, model, n_free_cpus
     )
     if len(points) > 0:
         logging.info("Running classification")
