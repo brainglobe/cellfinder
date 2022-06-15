@@ -120,4 +120,6 @@ venv.bak/
 
 pip-wheel-metadata/
 
+mprofile*.dat
+
 *.DS_Store

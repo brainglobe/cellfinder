@@ -1,8 +1,8 @@
+import multiprocessing
 from datetime import datetime
-from multiprocessing.pool import Pool
+from queue import Queue
 from typing import Callable
 
-import numpy as np
 from imlib.general.system import get_num_processes
 
 from cellfinder_core.detect.filters.plane import TileProcessor
@@ -121,22 +121,27 @@ def main(
         n_sds_above_mean_thresh,
     )
 
-    with Pool(n_processes) as worker_pool:
+    mp_ctx = multiprocessing.get_context("spawn")
+    with mp_ctx.Pool(n_processes) as worker_pool:
         # Start 2D filter
-        # Submits each plane to the worker pool, and sets up a list of
+        # Submits each plane to the worker pool, and sets up a queue of
         # asyncronous results
-        async_results = []
-        for id, plane in enumerate(signal_array):
+        async_results: Queue = Queue()
+
+        # NOTE: Need to make sure every plane isn't read into memory at this
+        # stage, as all of these jobs are submitted immediately to the pool.
+        # *plane* is a dask array, so as long as it isn't forced into memory
+        # (e.g. using np.array(plane)) here then there shouldn't be an issue
+        for plane in signal_array:
             res = worker_pool.apply_async(
-                mp_tile_processor.get_tile_mask, args=(np.array(plane),)
+                mp_tile_processor.get_tile_mask, args=(plane,)
             )
-            async_results.append(res)
+            async_results.put(res)
 
         # Start 3D filter
-        # This runs in the main thread
-        cells = mp_3d_filter.process(
-            async_results, signal_array, callback=callback
-        )
+        # This runs in the main thread, and blocks until the all the 2D and
+        # then 3D filtering has finished
+        cells = mp_3d_filter.process(async_results, callback=callback)
 
     print(
         "Detection complete - all planes done in : {}".format(

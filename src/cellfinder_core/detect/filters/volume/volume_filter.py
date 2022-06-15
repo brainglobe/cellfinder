@@ -1,10 +1,9 @@
 import logging
 import math
 import os
-from multiprocessing.pool import AsyncResult
-from typing import Callable, List, Sequence
+from queue import Queue
+from typing import Callable, Sequence
 
-import numpy as np
 from imlib.cells.cells import Cell
 from tifffile import tifffile
 from tqdm import tqdm
@@ -60,37 +59,43 @@ class VolumeFilter(object):
 
     def process(
         self,
-        async_results: List[AsyncResult],
-        signal_array: np.ndarray,
+        async_result_queue: Queue,
+        *,
         callback: Callable[[int], None],
     ):
         progress_bar = tqdm(
             total=len(self.planes_paths_range), desc="Processing planes"
         )
+        while not async_result_queue.empty():
+            # Get result from the queue.
+            #
+            # It is important to remove the result from the queue here
+            # to free up memory once this plane has been processed by
+            # the 3D filter here
+            result = async_result_queue.get()
+            # .get() blocks until the result is available
+            plane, mask = result.get()
 
-        for plane_id, res in enumerate(async_results):
-            plane, mask = res.get()
-            logging.debug(f"Plane {plane_id} received for 3D filtering")
-            print(f"Plane {plane_id} received for 3D filtering")
+            logging.debug(f"Plane {self.z} received for 3D filtering")
+            print(f"Plane {self.z} received for 3D filtering")
 
-            logging.debug(f"Adding plane {plane_id} for 3D filtering")
+            logging.debug(f"Adding plane {self.z} for 3D filtering")
             self.ball_filter.append(plane, mask)
 
             if self.ball_filter.ready:
-                logging.debug(f"Ball filtering plane {plane_id}")
+                logging.debug(f"Ball filtering plane {self.z}")
                 self.ball_filter.walk()
 
                 middle_plane = self.ball_filter.get_middle_plane()
                 if self.save_planes:
                     self.save_plane(middle_plane)
 
-                logging.debug(f"Detecting structures for plane {plane_id}")
+                logging.debug(f"Detecting structures for plane {self.z}")
                 self.cell_detector.process(middle_plane)
 
-                logging.debug(f"Structures done for plane {plane_id}")
+                logging.debug(f"Structures done for plane {self.z}")
                 logging.debug(
-                    f"Skipping plane {plane_id} for 3D filter"
-                    " (out of bounds)"
+                    f"Skipping plane {self.z} for 3D filter" " (out of bounds)"
                 )
 
             callback(self.z)
