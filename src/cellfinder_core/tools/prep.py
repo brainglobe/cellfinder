@@ -23,14 +23,14 @@ DEFAULT_INSTALL_PATH = home / ".cellfinder"
 def prep_classification(
     trained_model: Optional[os.PathLike],
     model_weights: Optional[os.PathLike],
+    install_path: Optional[os.PathLike],
     model_name: str,
     n_free_cpus: int,
-    install_path: os.PathLike = DEFAULT_INSTALL_PATH,
 ) -> Path:
     n_processes = get_num_processes(min_free_cpu_cores=n_free_cpus)
     prep_tensorflow(n_processes)
     model_weights = prep_models(
-        trained_model, model_weights, model_name, install_path
+        trained_model, model_weights, install_path, model_name
     )
 
     return model_weights
@@ -40,13 +40,13 @@ def prep_training(
     n_free_cpus: int,
     trained_model: Optional[os.PathLike],
     model_weights: Optional[os.PathLike],
+    install_path: Optional[os.PathLike],
     model_name: str,
-    install_path: os.PathLike = DEFAULT_INSTALL_PATH,
 ) -> Path:
     n_processes = get_num_processes(min_free_cpu_cores=n_free_cpus)
     prep_tensorflow(n_processes)
     model_weights = prep_models(
-        trained_model, model_weights, model_name, install_path=install_path
+        trained_model, model_weights, install_path, model_name
     )
     return model_weights
 
@@ -59,9 +59,10 @@ def prep_tensorflow(max_threads: int) -> None:
 def prep_models(
     trained_model_path: Optional[os.PathLike],
     model_weights_path: Optional[os.PathLike],
+    install_path: Optional[os.PathLike],
     model_name: str,
-    install_path: os.PathLike = DEFAULT_INSTALL_PATH,
 ) -> Path:
+    install_path = install_path or DEFAULT_INSTALL_PATH
     # if no model or weights, set default weights
     if model_weights_path is None:
         logging.debug("No model supplied, so using the default")
