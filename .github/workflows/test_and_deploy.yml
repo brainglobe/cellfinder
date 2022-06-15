@@ -35,6 +35,7 @@ jobs:
   build_sdist:
     name: Build source distribution
     needs: test
+    if: github.event_name == 'push' && github.ref_type == 'tag'
     runs-on: ubuntu-latest
     steps:
     - uses: brainglobe/actions/build_sdist@v1
@@ -42,6 +43,7 @@ jobs:
   build_wheels:
     name: Build wheels on ${{ matrix.os }}
     needs: test
+    if: github.event_name == 'push' && github.ref_type == 'tag'
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -53,7 +55,6 @@ jobs:
     name: Publish build distributions
     needs: [build_sdist, build_wheels]
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref_type == 'tag'
     steps:
     - uses: actions/download-artifact@v3
       with:
