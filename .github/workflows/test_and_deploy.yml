@@ -1,6 +1,10 @@
 name: Test and publish packages
 
-on: [push, pull_request]
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
   linting:
@@ -31,6 +35,43 @@ jobs:
       - uses: brainglobe/actions/test@v1
         with:
           python-version: ${{ matrix.python-version }}
+
+  # Run cellfinder tests to make sure cellfinder is still compatible
+  # with cellfinder-core
+  test_cellfinder:
+    name: Run cellfinder tests
+    needs: linting
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cache tensorflow model
+        uses: actions/cache@v3
+        with:
+          path: "~/.cellfinder"
+          key: models-${{ hashFiles('~/.cellfinder/**') }}
+
+      - name: Checkout cellfinder
+        uses: actions/checkout@v3
+        with:
+          repository: 'brainglobe/cellfinder'
+
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v3
+        with:
+          # Need to pin to .12 because of https://github.com/brainglobe/cellfinder/issues/207
+          python-version: "3.9.12"
+
+      - name: Install test dependencies
+        run: |
+          python -m pip install --upgrade pip wheel
+          # Install the version cellfinder-core used to open this PR with
+          python -m pip install git+${{ github.event.pull_request.head.repo.html_url }}@${{ github.event.pull_request.head.sha }}
+          # Install checked out copy of cellfinder
+          python -m pip install .[dev]
+
+
+      - name: Run cellfinder tests
+        run: |
+          python -m pytest tests/tests/test_integration/test_detection.py
 
   build_sdist:
     name: Build source distribution
