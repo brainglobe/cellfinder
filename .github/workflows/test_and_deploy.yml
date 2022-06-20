@@ -13,7 +13,6 @@ jobs:
       - uses: brainglobe/actions/lint@v1
 
   test:
-    needs: linting
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -40,7 +39,6 @@ jobs:
   # with cellfinder-core
   test_cellfinder:
     name: Run cellfinder tests
-    needs: linting
     runs-on: ubuntu-latest
     steps:
       - name: Cache tensorflow model
@@ -75,7 +73,7 @@ jobs:
 
   build_sdist:
     name: Build source distribution
-    needs: test
+    needs: [test, test_cellfinder]
     if: github.event_name == 'push' && github.ref_type == 'tag'
     runs-on: ubuntu-latest
     steps:
@@ -83,7 +81,7 @@ jobs:
 
   build_wheels:
     name: Build wheels on ${{ matrix.os }}
-    needs: test
+    needs: [test, test_cellfinder]
     if: github.event_name == 'push' && github.ref_type == 'tag'
     runs-on: ${{ matrix.os }}
     strategy:
