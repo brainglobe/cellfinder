@@ -5,8 +5,9 @@ from typing import Optional
 from cellfinder_core.download.models import model_weight_urls
 from cellfinder_core.train.train_yml import models
 from magicgui import magicgui
-from magicgui.widgets import FunctionGui
+from magicgui.widgets import FunctionGui, PushButton
 from napari.qt.threading import thread_worker
+from napari.utils.notifications import show_info
 
 from cellfinder_napari.utils import (
     header_label_widget,
@@ -34,17 +35,17 @@ def train() -> FunctionGui:
         reset_button=dict(widget_type="PushButton", text="Reset defaults"),
     )
     def widget(
-        header,
-        training_label,
+        header: dict,
+        training_label: dict,
         data_options: dict,
         yaml_files: Path,
         output_directory: Path,
-        network_options,
+        network_options: dict,
         trained_model: Optional[Path],
         model_weights: Optional[Path],
         model_depth: str,
         pretrained_model: str,
-        training_options,
+        training_options: dict,
         continue_training: bool,
         augment: bool,
         tensorboard: bool,
@@ -55,9 +56,9 @@ def train() -> FunctionGui:
         learning_rate: float,
         batch_size: int,
         test_fraction: float,
-        misc_options,
+        misc_options: dict,
         number_of_free_cpus: int,
-        reset_button,
+        reset_button: PushButton,
     ):
         """
 
@@ -103,11 +104,9 @@ def train() -> FunctionGui:
             Fraction of training data to use for validation
         number_of_free_cpus : int
             How many CPU cores to leave free
-        reset_button :
+        reset_button : PushButton
             Reset parameters to default
         """
-        if yaml_files[0] == Path.home():  # type: ignore
-            print("Please select a YAML file for training")
 
         trained_model = None if trained_model == Path.home() else trained_model
         model_weights = None if model_weights == Path.home() else model_weights
@@ -136,13 +135,16 @@ def train() -> FunctionGui:
 
         misc_training_inputs = MiscTrainingInputs(number_of_free_cpus)
 
-        worker = run_training(
-            training_data_inputs,
-            optional_network_inputs,
-            optional_training_inputs,
-            misc_training_inputs,
-        )
-        worker.start()
+        if yaml_files[0] == Path.home():  # type: ignore
+            show_info("Please select a YAML file for training")
+        else:
+            worker = run_training(
+                training_data_inputs,
+                optional_network_inputs,
+                optional_training_inputs,
+                misc_training_inputs,
+            )
+            worker.start()
 
     widget.header.value = widget_header
     widget.header.native.setOpenExternalLinks(True)

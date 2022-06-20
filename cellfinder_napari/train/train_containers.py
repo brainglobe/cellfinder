@@ -30,7 +30,7 @@ class TrainingDataInputs(InputContainer):
                 "yaml_files",
                 custom_label="YAML files",
                 mode="rm",
-                filter="*.yml",
+                filter="*.y?ml",
             ),
             output_directory=cls._custom_widget("output_directory", mode="d"),
         )
@@ -42,7 +42,7 @@ class OptionalNetworkInputs(InputContainer):
 
     trained_model: Optional[Path] = Path.home()
     model_weights: Optional[Path] = Path.home()
-    model_depth: str = "50"
+    model_depth: str = list(models.keys())[0]
     pretrained_model: str = str(list(model_weight_urls.keys())[0])
 
     def as_core_arguments(self) -> dict:
