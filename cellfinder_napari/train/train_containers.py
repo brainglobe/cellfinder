@@ -76,7 +76,7 @@ class OptionalTrainingInputs(InputContainer):
     save_checkpoints: bool = True
     save_progress: bool = True
     epochs: int = 100
-    learning_rate: float = 0.0001
+    learning_rate: float = 1e-4
     batch_size: int = 16
     test_fraction: float = 0.1
 

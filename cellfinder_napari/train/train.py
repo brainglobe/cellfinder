@@ -73,7 +73,7 @@ def train() -> FunctionGui:
             Existing pre-trained model weights
             Should be set along with "Model depth"
         model_depth : str
-            ResNet model depth (as per He et al. (2015)
+            ResNet model depth (as per He et al. (2015))
         pretrained_model : str
             Which pre-trained model to use
             (Supplied with cellfinder)
@@ -109,10 +109,8 @@ def train() -> FunctionGui:
         if yaml_files[0] == Path.home():  # type: ignore
             print("Please select a YAML file for training")
 
-        if trained_model == Path.home():
-            trained_model = None
-        if model_weights == Path.home():
-            model_weights = None
+        trained_model = None if trained_model == Path.home() else trained_model
+        model_weights = None if model_weights == Path.home() else model_weights
 
         training_data_inputs = TrainingDataInputs(yaml_files, output_directory)
 
@@ -158,7 +156,8 @@ def train() -> FunctionGui:
             **MiscTrainingInputs.defaults(),
         }
         for name, value in defaults.items():
-            if value is not None:  # ignore fields with no default
+            # ignore fields with no default
+            if value is not None:
                 getattr(widget, name).value = value
 
     return widget
