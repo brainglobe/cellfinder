@@ -26,7 +26,7 @@ from .train_containers import (
 def train() -> FunctionGui:
     @magicgui(
         header=header_label_widget,
-        training_label=html_label_widget("Network training", "h3"),
+        training_label=html_label_widget("Network training", tag="h3"),
         **TrainingDataInputs.widget_representation(),
         **OptionalNetworkInputs.widget_representation(),
         **OptionalTrainingInputs.widget_representation(),
@@ -61,7 +61,6 @@ def train() -> FunctionGui:
         reset_button: PushButton,
     ):
         """
-
         Parameters
         ----------
         yaml_files : Path
@@ -107,7 +106,6 @@ def train() -> FunctionGui:
         reset_button : PushButton
             Reset parameters to default
         """
-
         trained_model = None if trained_model == Path.home() else trained_model
         model_weights = None if model_weights == Path.home() else model_weights
 

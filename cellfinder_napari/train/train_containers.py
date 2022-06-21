@@ -102,7 +102,7 @@ class OptionalTrainingInputs(InputContainer):
             save_checkpoints=cls._custom_widget("save_checkpoints"),
             save_progress=cls._custom_widget("save_progress"),
             epochs=cls._custom_widget("epochs"),
-            learning_rate=cls._custom_widget("learning_rate", step=0.0001),
+            learning_rate=cls._custom_widget("learning_rate", step=1e-4),
             batch_size=cls._custom_widget("batch_size"),
             test_fraction=cls._custom_widget(
                 "test_fraction", step=0.05, min=0.05, max=0.95
