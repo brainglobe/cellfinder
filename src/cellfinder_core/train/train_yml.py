@@ -8,8 +8,6 @@ N.B imports are within functions to prevent tensorflow being imported before
 it's warnings are silenced
 """
 
-
-import logging
 import os
 from argparse import (
     ArgumentDefaultsHelpFormatter,
@@ -27,6 +25,7 @@ from imlib.IO.yaml import read_yaml_section
 from sklearn.model_selection import train_test_split
 
 import cellfinder_core as program_for_log
+from cellfinder_core import logger
 from cellfinder_core.tools.prep import DEFAULT_INSTALL_PATH
 
 tf_suppress_log_messages = [
@@ -343,7 +342,7 @@ def run(
     yaml_contents = parse_yaml(yaml_file)
 
     tiff_files = get_tiff_files(yaml_contents)
-    logging.info(
+    logger.info(
         f"Found {sum(len(imlist) for imlist in tiff_files)} images "
         f"from {len(yaml_contents)} datasets "
         f"in {len(yaml_file)} yaml files"
@@ -360,7 +359,7 @@ def run(
     signal_train, background_train, labels_train = make_lists(tiff_files)
 
     if test_fraction > 0:
-        logging.info("Splitting data into training and validation datasets")
+        logger.info("Splitting data into training and validation datasets")
         (
             signal_train,
             signal_test,
@@ -375,7 +374,7 @@ def run(
             test_size=test_fraction,
         )
 
-        logging.info(
+        logger.info(
             f"Using {len(signal_train)} images for training and "
             f"{len(signal_test)} images for validation"
         )
@@ -391,7 +390,7 @@ def run(
         base_checkpoint_file_name = "-epoch.{epoch:02d}-loss-{val_loss:.3f}.h5"
 
     else:
-        logging.info("No validation data selected.")
+        logger.info("No validation data selected.")
         validation_generator = None
         base_checkpoint_file_name = "-epoch.{epoch:02d}.h5"
 
@@ -434,7 +433,7 @@ def run(
         csv_logger = CSVLogger(filepath)
         callbacks.append(csv_logger)
 
-    logging.info("Beginning training.")
+    logger.info("Beginning training.")
     model.fit(
         training_generator,
         validation_data=validation_generator,
@@ -444,13 +443,13 @@ def run(
     )
 
     if save_weights:
-        logging.info("Saving model weights")
+        logger.info("Saving model weights")
         model.save_weights(str(output_dir / "model_weights.h5"))
     else:
-        logging.info("Saving model")
+        logger.info("Saving model")
         model.save(output_dir / "model.h5")
 
-    logging.info(
+    logger.info(
         "Finished training, " "Total time taken: %s",
         datetime.now() - start_time,
     )

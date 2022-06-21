@@ -1,7 +1,7 @@
-import logging
 import os
 from pathlib import Path
 
+from cellfinder_core import logger
 from cellfinder_core.download.download import download
 
 model_weight_urls = {
@@ -29,7 +29,7 @@ def main(model_name: str, download_path: os.PathLike) -> Path:
     if not model_path.exists():
         model_weight_dir.mkdir(parents=True)
 
-        logging.info(
+        logger.info(
             f"Downloading '{model_name}' model. This may take a little while."
         )
 
@@ -41,8 +41,6 @@ def main(model_name: str, download_path: os.PathLike) -> Path:
         )
 
     else:
-        logging.info(
-            f"Model already exists at {model_path}. Skipping download"
-        )
+        logger.info(f"Model already exists at {model_path}. Skipping download")
 
     return model_path

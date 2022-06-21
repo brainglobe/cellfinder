@@ -1,10 +1,10 @@
-import logging
 from typing import Callable, Optional
 
 import numpy as np
 from imlib.general.system import get_num_processes
 from tensorflow import keras
 
+from cellfinder_core import logger
 from cellfinder_core.classify.cube_generator import CubeGeneratorFromFile
 from cellfinder_core.classify.tools import get_model
 from cellfinder_core.train.train_yml import models
@@ -50,7 +50,7 @@ def main(
         min_free_cpu_cores=n_free_cpus, n_max_processes=max_workers
     )
 
-    logging.debug("Initialising cube generator")
+    logger.debug("Initialising cube generator")
     inference_generator = CubeGeneratorFromFile(
         points,
         signal_array,
@@ -70,7 +70,7 @@ def main(
         inference=True,
     )
 
-    logging.info("Running inference")
+    logger.info("Running inference")
     predictions = model.predict(
         inference_generator,
         use_multiprocessing=True,

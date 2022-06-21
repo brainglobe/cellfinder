@@ -3,7 +3,6 @@ prep
 ==================
 Functions to prepare files and directories needed for other functions
 """
-import logging
 import os
 from pathlib import Path
 from typing import Optional
@@ -12,6 +11,7 @@ from imlib.general.config import get_config_obj
 from imlib.general.system import get_num_processes
 
 import cellfinder_core.tools.tf as tf_tools
+from cellfinder_core import logger
 from cellfinder_core.download import models as model_download
 from cellfinder_core.download.download import amend_cfg
 from cellfinder_core.tools.source_files import source_custom_config_cellfinder
@@ -65,18 +65,18 @@ def prep_models(
     install_path = install_path or DEFAULT_INSTALL_PATH
     # if no model or weights, set default weights
     if model_weights_path is None:
-        logging.debug("No model supplied, so using the default")
+        logger.debug("No model supplied, so using the default")
 
         config_file = source_custom_config_cellfinder()
 
         if not Path(config_file).exists():
-            logging.debug("Custom config does not exist, downloading models")
+            logger.debug("Custom config does not exist, downloading models")
             model_path = model_download.main(model_name, install_path)
             amend_cfg(new_model_path=model_path)
 
         model_weights = get_model_weights(config_file)
         if not model_weights.exists():
-            logging.debug("Model weights do not exist, downloading")
+            logger.debug("Model weights do not exist, downloading")
             model_path = model_download.main(model_name, install_path)
             amend_cfg(new_model_path=model_path)
             model_weights = get_model_weights(config_file)
@@ -86,7 +86,7 @@ def prep_models(
 
 
 def get_model_weights(config_file: os.PathLike) -> Path:
-    logging.debug(f"Reading config file: {config_file}")
+    logger.debug(f"Reading config file: {config_file}")
     config_obj = get_config_obj(config_file)
     model_conf = config_obj["model"]
     model_weights = model_conf["model_path"]
