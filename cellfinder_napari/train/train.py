@@ -4,6 +4,7 @@ from typing import Optional
 
 from cellfinder_core.download.models import model_weight_urls
 from cellfinder_core.train.train_yml import models
+from cellfinder_core.train.train_yml import run as train_yml
 from magicgui import magicgui
 from magicgui.widgets import FunctionGui, PushButton
 from napari.qt.threading import thread_worker
@@ -170,8 +171,6 @@ def run_training(
     optional_training_inputs: OptionalTrainingInputs,
     misc_training_inputs: MiscTrainingInputs,
 ):
-    from cellfinder_core.train.train_yml import run as train_yml
-
     print("Running training")
     train_yml(
         **training_data_inputs.as_core_arguments(),
