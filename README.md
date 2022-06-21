@@ -147,6 +147,9 @@ signal_array = tifffile.imread("/path/to/signal_image.tif")
 background_array = tifffile.imread("/path/to/background_image.tif")
 voxel_sizes = [5, 2, 2] # in microns
 
+home = Path.home()
+install_path = home / ".cellfinder" # default
+
 start_plane=0
 end_plane=-1
 trained_model=None
@@ -169,7 +172,7 @@ cube_depth=20
 network_depth="50"
 
 model_weights = prep_classification(
-    trained_model, model_weights, model, n_free_cpus
+    trained_model, model_weights, install_path, model, n_free_cpus
 )
 
 cell_candidates = detect.main(
@@ -230,9 +233,13 @@ yaml_files = [Path("/path/to/training_yml.yml)]
 # where to save the output
 output_directory = Path("/path/to/saved_training_data")
 
+home = Path.home()
+install_path = home / ".cellfinder"  # default
+
 run_training(
     output_directory,
     yaml_files,
+    install_path=install_path,
     learning_rate=0.0001,
     continue_training=True, # by default use supplied model
     test_fraction=0.1,

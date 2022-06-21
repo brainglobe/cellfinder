@@ -335,9 +335,9 @@ def run(
     model_weights = prep_training(
         n_free_cpus,
         trained_model,
+        install_path,
         model_weights,
         model,
-        install_path=install_path,
     )
 
     yaml_contents = parse_yaml(yaml_file)
