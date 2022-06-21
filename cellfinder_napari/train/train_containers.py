@@ -4,6 +4,7 @@ from typing import Optional
 
 from cellfinder_core.download.models import model_weight_urls
 from cellfinder_core.train.train_yml import models
+from magicgui.types import FileDialogMode
 
 from cellfinder_napari.input_container import InputContainer
 from cellfinder_napari.utils import html_label_widget
@@ -29,10 +30,12 @@ class TrainingDataInputs(InputContainer):
             yaml_files=cls._custom_widget(
                 "yaml_files",
                 custom_label="YAML files",
-                mode="rm",
+                mode=FileDialogMode.EXISTING_FILES,
                 filter="*.y?ml",
             ),
-            output_directory=cls._custom_widget("output_directory", mode="d"),
+            output_directory=cls._custom_widget(
+                "output_directory", mode=FileDialogMode.EXISTING_DIRECTORY
+            ),
         )
 
 
