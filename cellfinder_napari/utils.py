@@ -29,7 +29,7 @@ widget_header = """
 """
 
 
-def html_label_widget(label: str, tag: str = "b") -> dict:
+def html_label_widget(label: str, *, tag: str = "b") -> dict:
     """
     Create a HMTL label for use with magicgui.
     """
@@ -44,7 +44,7 @@ header_label_widget = html_label_widget(
 <img src="{brainglobe_logo}"width="100">
 <p>cellfinder</p>
 """,
-    "h1",
+    tag="h1",
 )
 
 

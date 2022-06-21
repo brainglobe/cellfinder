@@ -42,7 +42,7 @@ def detect() -> FunctionGui:
 
     @magicgui(
         header=header_label_widget,
-        detection_label=html_label_widget("Cell detection", "h3"),
+        detection_label=html_label_widget("Cell detection", tag="h3"),
         **DataInputs.widget_representation(),
         **DetectionInputs.widget_representation(),
         **ClassificationInputs.widget_representation(),
