@@ -1,5 +1,3 @@
-# cython: language_level=3
-
 import numpy as np
 from scipy.ndimage import gaussian_filter, laplace
 from scipy.signal import medfilt2d
