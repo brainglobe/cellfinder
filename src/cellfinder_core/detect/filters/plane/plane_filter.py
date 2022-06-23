@@ -1,3 +1,5 @@
+# cython: language_level=3
+
 from dataclasses import dataclass
 from typing import Tuple
 
