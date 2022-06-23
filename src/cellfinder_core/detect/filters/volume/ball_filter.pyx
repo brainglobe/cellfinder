@@ -1,6 +1,5 @@
 # cython: language_level=3
 
-
 cimport cython
 cimport libc.math as cmath
 
