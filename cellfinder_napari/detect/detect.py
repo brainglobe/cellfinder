@@ -189,6 +189,12 @@ def detect() -> FunctionGui:
             lambda points: add_layers(points, viewer=viewer)
         )
 
+        # Make sure if the worker emits an error, it is propagated to this thread
+        def reraise(e):
+            raise Exception from e
+
+        worker.errored.connect(reraise)
+
         def update_progress_bar(label: str, max: int, value: int):
             progress_bar.label = label
             progress_bar.max = max
