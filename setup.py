@@ -62,14 +62,15 @@ setup(
     extras_require={
         "dev": [
             "black",
-            "pytest-cov",
-            "pytest",
-            "pytest-timeout",
-            "gitpython",
-            "coverage>=5.0.3",
             "bump2version",
-            "pre-commit",
+            "coverage>=5.0.3",
             "flake8",
+            "gitpython",
+            "pre-commit",
+            "pytest-cov",
+            "pytest-timeout",
+            "pytest",
+            "tox",
         ]
     },
     setup_requires=["cython"],
