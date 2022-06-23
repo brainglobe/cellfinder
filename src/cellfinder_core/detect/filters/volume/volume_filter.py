@@ -1,4 +1,3 @@
-import logging
 import math
 import os
 from queue import Queue
@@ -8,6 +7,7 @@ from imlib.cells.cells import Cell
 from tifffile import tifffile
 from tqdm import tqdm
 
+from cellfinder_core import logger
 from cellfinder_core.detect.filters.setup_filters import setup
 from cellfinder_core.detect.filters.volume.structure_detection import (
     get_structure_centre_wrapper,
@@ -76,25 +76,25 @@ class VolumeFilter(object):
             # .get() blocks until the result is available
             plane, mask = result.get()
 
-            logging.debug(f"Plane {self.z} received for 3D filtering")
+            logger.debug(f"Plane {self.z} received for 3D filtering")
             print(f"Plane {self.z} received for 3D filtering")
 
-            logging.debug(f"Adding plane {self.z} for 3D filtering")
+            logger.debug(f"Adding plane {self.z} for 3D filtering")
             self.ball_filter.append(plane, mask)
 
             if self.ball_filter.ready:
-                logging.debug(f"Ball filtering plane {self.z}")
+                logger.debug(f"Ball filtering plane {self.z}")
                 self.ball_filter.walk()
 
                 middle_plane = self.ball_filter.get_middle_plane()
                 if self.save_planes:
                     self.save_plane(middle_plane)
 
-                logging.debug(f"Detecting structures for plane {self.z}")
+                logger.debug(f"Detecting structures for plane {self.z}")
                 self.cell_detector.process(middle_plane)
 
-                logging.debug(f"Structures done for plane {self.z}")
-                logging.debug(
+                logger.debug(f"Structures done for plane {self.z}")
+                logger.debug(
                     f"Skipping plane {self.z} for 3D filter" " (out of bounds)"
                 )
 
@@ -103,7 +103,7 @@ class VolumeFilter(object):
             progress_bar.update()
 
         progress_bar.close()
-        logging.debug("3D filter done")
+        logger.debug("3D filter done")
         return self.get_results()
 
     def save_plane(self, plane):
@@ -112,7 +112,7 @@ class VolumeFilter(object):
         tifffile.imsave(f_path, plane.T)
 
     def get_results(self):
-        logging.info("Splitting cell clusters and writing results")
+        logger.info("Splitting cell clusters and writing results")
 
         max_cell_volume = sphere_volume(
             self.soma_size_spread_factor * self.soma_diameter / 2

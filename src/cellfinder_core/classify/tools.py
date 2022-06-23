@@ -1,8 +1,7 @@
-import logging
-
 import numpy as np
 import tensorflow as tf
 
+from cellfinder_core import logger
 from cellfinder_core.classify.resnet import build_model
 
 
@@ -31,15 +30,15 @@ def get_model(
 
     """
     if existing_model is not None:
-        logging.debug(f"Loading model: {existing_model}")
+        logger.debug(f"Loading model: {existing_model}")
         return tf.keras.models.load_model(existing_model)
     else:
-        logging.debug(f"Creating a new instance of model: {network_depth}")
+        logger.debug(f"Creating a new instance of model: {network_depth}")
         model = build_model(
             network_depth=network_depth, learning_rate=learning_rate
         )
         if inference or continue_training:
-            logging.debug(
+            logger.debug(
                 f"Setting model weights according to: {model_weights}"
             )
             if model_weights is None:
