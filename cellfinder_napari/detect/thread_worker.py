@@ -54,7 +54,7 @@ class Worker(WorkerBase):
 
         def detect_finished_callback(points: list) -> None:
             self.npoints_detected = len(points)
-            self.update_progress_bar.emit("Setting up classification...", 1, 1)
+            self.update_progress_bar.emit("Setting up classification...", 1, 0)
 
         def classify_callback(batch: int) -> None:
             self.update_progress_bar.emit(
