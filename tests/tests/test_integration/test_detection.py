@@ -30,13 +30,8 @@ def background_array():
 
 
 # FIXME: This isn't a very good example
-
-
 @pytest.mark.slow
-def test_detection_full():
-
-    signal_array = read_with_dask(signal_data_path)
-    background_array = read_with_dask(background_data_path)
+def test_detection_full(signal_array, background_array):
 
     cells_test = main(
         signal_array,
@@ -99,3 +94,9 @@ def test_callbacks(signal_array, background_array):
     assert ncalls == 1, f"Expected 1 call to callback, got {ncalls}"
     npoints = len(points_found[0])
     assert npoints == 120, f"Expected 120 points, found {npoints}"
+
+
+def test_floating_point_error(signal_array, background_array):
+    signal_array = signal_array.astype(float)
+    with pytest.raises(ValueError, match="signal_array must be integer"):
+        main(signal_array, background_array, voxel_sizes)

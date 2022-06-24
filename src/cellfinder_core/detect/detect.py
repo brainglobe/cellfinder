@@ -3,6 +3,7 @@ from datetime import datetime
 from queue import Queue
 from typing import Callable
 
+import numpy as np
 from imlib.general.system import get_num_processes
 
 from cellfinder_core.detect.filters.plane import TileProcessor
@@ -63,6 +64,11 @@ def main(
         A callback function that is called every time a plane has finished
         being processed. Called with the plane number that has finished.
     """
+    if not np.issubdtype(signal_array, np.integer):
+        raise ValueError(
+            "signal_array must be integer datatype, but has datatype "
+            f"{signal_array.dtype}"
+        )
     n_processes = get_num_processes(min_free_cpu_cores=n_free_cpus)
     start_time = datetime.now()
 
