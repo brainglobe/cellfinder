@@ -1,19 +1,18 @@
 from random import getrandbits, uniform
 
+import numpy as np
 from natsort import natsorted
 
 
-def get_max_value(obj_in):
+def get_max_value(obj_in: np.ndarray) -> int:
     """
-    Returns the maximum allowed value for a specific object type.
-    :param obj_in: Object
-    :return int: Maximum value of object type
+    Returns the maximum allowed value for a numpy array of integer data type.
     """
-    # TODO: Generalise, and not rely on parsing a string
-    if obj_in.dtype == "uint8":
-        return 255
+    dtype = obj_in.dtype
+    if np.issubdtype(dtype, np.integer):
+        return np.iinfo(dtype).max
     else:
-        return 2 ** int(str(obj_in.dtype)[-2:]) - 1
+        raise ValueError("obj_in must be a numpy array of integer data type.")
 
 
 def union(a, b):
