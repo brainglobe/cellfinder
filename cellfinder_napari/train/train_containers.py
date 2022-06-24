@@ -45,7 +45,7 @@ class OptionalNetworkInputs(InputContainer):
 
     trained_model: Optional[Path] = Path.home()
     model_weights: Optional[Path] = Path.home()
-    model_depth: str = list(models.keys())[0]
+    model_depth: str = list(models.keys())[2]
     pretrained_model: str = str(list(model_weight_urls.keys())[0])
 
     def as_core_arguments(self) -> dict:
