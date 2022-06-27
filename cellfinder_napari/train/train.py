@@ -1,4 +1,3 @@
-from lib2to3.pgen2.token import OP
 from pathlib import Path
 from typing import Optional
 
@@ -24,7 +23,24 @@ from .train_containers import (
 )
 
 
-def train() -> FunctionGui:
+@thread_worker
+def run_training(
+    training_data_inputs: TrainingDataInputs,
+    optional_network_inputs: OptionalNetworkInputs,
+    optional_training_inputs: OptionalTrainingInputs,
+    misc_training_inputs: MiscTrainingInputs,
+):
+    print("Running training")
+    train_yml(
+        **training_data_inputs.as_core_arguments(),
+        **optional_network_inputs.as_core_arguments(),
+        **optional_training_inputs.as_core_arguments(),
+        **misc_training_inputs.as_core_arguments(),
+    )
+    print("Finished!")
+
+
+def training_widget() -> FunctionGui:
     @magicgui(
         header=header_label_widget,
         training_label=html_label_widget("Network training", tag="h3"),
@@ -135,6 +151,7 @@ def train() -> FunctionGui:
         misc_training_inputs = MiscTrainingInputs(number_of_free_cpus)
 
         if yaml_files[0] == Path.home():  # type: ignore
+            print("invalid")
             show_info("Please select a YAML file for training")
         else:
             worker = run_training(
@@ -162,20 +179,3 @@ def train() -> FunctionGui:
                 getattr(widget, name).value = value
 
     return widget
-
-
-@thread_worker
-def run_training(
-    training_data_inputs: TrainingDataInputs,
-    optional_network_inputs: OptionalNetworkInputs,
-    optional_training_inputs: OptionalTrainingInputs,
-    misc_training_inputs: MiscTrainingInputs,
-):
-    print("Running training")
-    train_yml(
-        **training_data_inputs.as_core_arguments(),
-        **optional_network_inputs.as_core_arguments(),
-        **optional_training_inputs.as_core_arguments(),
-        **misc_training_inputs.as_core_arguments(),
-    )
-    print("Finished!")

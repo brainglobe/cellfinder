@@ -6,9 +6,9 @@ contributions:
     title: Create Cell detection
     python_name: cellfinder_napari.detect:detect
 
-  - id: cellfinder-napari.train
+  - id: cellfinder-napari.training_widget
     title: Create Train network
-    python_name: cellfinder_napari.train:train
+    python_name: cellfinder_napari.train:training_widget
 
   - id: cellfinder-napari.CurationWidget
     title: Create Curation
@@ -21,7 +21,7 @@ contributions:
   widgets:
   - command: cellfinder-napari.detect
     display_name: Cell detection
-  - command: cellfinder-napari.train
+  - command: cellfinder-napari.training_widget
     display_name: Train network
   - command: cellfinder-napari.CurationWidget
     display_name: Curation
