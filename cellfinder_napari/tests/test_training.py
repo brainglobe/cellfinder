@@ -29,6 +29,10 @@ def test_add_training_widget(get_training_widget):
 
 
 def test_reset_to_defaults(get_training_widget):
+    """
+    A simple test for the reset button.
+    Checks widgets of a few different types are reset as expected.
+    """
     # change a few widgets to non-default values
     get_training_widget.yaml_files.value = ["file_1.yml", "file_2.yml"]
     get_training_widget.continue_training.value = True
@@ -47,6 +51,9 @@ def test_reset_to_defaults(get_training_widget):
 
 
 def test_run_with_no_yaml_files(get_training_widget):
+    """
+    Checks whether expected info message will be shown to user if they don't specify YAML file(s).
+    """
     with patch("cellfinder_napari.train.train.show_info") as show_info:
         get_training_widget.call_button.clicked()
         show_info.assert_called_once_with(
@@ -55,6 +62,9 @@ def test_run_with_no_yaml_files(get_training_widget):
 
 
 def test_run_with_virtual_yaml_files(get_training_widget):
+    """
+    Checks that training is run with expected set of parameters.
+    """
     with patch("cellfinder_napari.train.train.run_training") as run_training:
         # make default input valid - need yml files (they don't technically have to exist)
         virtual_yaml_files = (
