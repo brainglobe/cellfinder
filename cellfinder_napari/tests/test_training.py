@@ -81,7 +81,7 @@ def test_run_with_virtual_yaml_files(get_training_widget):
         expected_misc_args = MiscTrainingInputs()
 
         # we expect the widget to make some changes to the defaults
-        # displayed before calling the training backed
+        # displayed before calling the training backend
         expected_training_args.yaml_files = virtual_yaml_files
         expected_network_args.trained_model = None
         expected_network_args.model_weights = None
