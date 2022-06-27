@@ -64,7 +64,7 @@ def main(
         A callback function that is called every time a plane has finished
         being processed. Called with the plane number that has finished.
     """
-    if not np.issubdtype(signal_array, np.integer):
+    if not np.issubdtype(signal_array.dtype, np.integer):
         raise ValueError(
             "signal_array must be integer datatype, but has datatype "
             f"{signal_array.dtype}"
