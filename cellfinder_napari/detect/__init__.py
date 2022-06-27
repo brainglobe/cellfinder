@@ -1,1 +1,1 @@
-from .detect import detect
+from .detect import detect_widget
