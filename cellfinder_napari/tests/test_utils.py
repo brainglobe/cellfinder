@@ -12,7 +12,9 @@ def test_add_layers(make_napari_viewer):
         Cell(pos=[4, 5, 6], cell_type=Cell.UNKNOWN),
     ]
     viewer = make_napari_viewer()
-    add_layers(points, viewer)
+    n_layers = len(viewer.layers)
+    add_layers(points, viewer)  # adds a "detected" and a "rejected layer"
+    assert len(viewer.layers) == n_layers + 2
 
 
 def test_html_label_widget():
