@@ -2,9 +2,9 @@ name: cellfinder-napari
 schema_version: 0.1.0
 contributions:
   commands:
-  - id: cellfinder-napari.detect
+  - id: cellfinder-napari.detect_widget
     title: Create Cell detection
-    python_name: cellfinder_napari.detect:detect
+    python_name: cellfinder_napari.detect:detect_widget
 
   - id: cellfinder-napari.training_widget
     title: Create Train network
@@ -19,7 +19,7 @@ contributions:
     python_name: cellfinder_napari.sample_data:load_sample
 
   widgets:
-  - command: cellfinder-napari.detect
+  - command: cellfinder-napari.detect_widget
     display_name: Cell detection
   - command: cellfinder-napari.training_widget
     display_name: Train network
