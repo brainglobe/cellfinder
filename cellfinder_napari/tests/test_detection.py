@@ -30,14 +30,6 @@ def get_detect_widget(make_napari_viewer):
     return widget
 
 
-def test_add_detect_widget(get_detect_widget):
-    """
-    Smoke test to check that adding detection widget works
-    """
-    widget = get_detect_widget
-    assert widget is not None
-
-
 def test_detect_worker():
     """
     Smoke test to check that the detection worker runs

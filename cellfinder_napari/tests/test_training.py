@@ -23,14 +23,6 @@ def get_training_widget(make_napari_viewer):
     return widget
 
 
-def test_add_training_widget(get_training_widget):
-    """
-    Smoke test to check that adding training widget works
-    """
-    widget = get_training_widget
-    assert widget is not None
-
-
 def test_reset_to_defaults(get_training_widget):
     """
     A simple test for the reset button.
