@@ -24,15 +24,8 @@ def test_html_label_widget():
     assert label_widget["label"] == "<h1>A nice label</h1>"
 
 
-@pytest.mark.parametrize(
-    argnames=["label", "label_stack"],
-    argvalues=[
-        ("a label", True),
-        ("a label", False),
-        (None, True),
-        (None, False),
-    ],
-)
+@pytest.mark.parametrize("label_stack", [True, False])
+@pytest.mark.parametrize("label", ["A label", None])
 def test_add_combobox(label, label_stack):
     """
     Smoke test for add_combobox for all conditional branches
