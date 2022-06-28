@@ -48,7 +48,7 @@ header_label_widget = html_label_widget(
 )
 
 
-def add_layers(points, viewer: napari.Viewer) -> None:
+def add_layers(points: List[Cell], viewer: napari.Viewer) -> None:
     """
     Adds classified cell candidates as two separate point layers to the napari viewer.
     """

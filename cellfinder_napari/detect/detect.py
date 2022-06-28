@@ -34,7 +34,7 @@ CUBE_DEPTH = 20
 MIN_PLANES_ANALYSE = 0
 
 
-def detect() -> FunctionGui:
+def detect_widget() -> FunctionGui:
     """
     Create a detection plugin GUI.
     """
