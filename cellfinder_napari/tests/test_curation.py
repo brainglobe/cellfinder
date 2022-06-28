@@ -150,7 +150,10 @@ def test_check_image_data_wrong_shape(valid_curation_widget):
         valid_curation_widget.signal_image_choice.setCurrentText("Wrong shape")
         valid_curation_widget.set_signal_image()
         valid_curation_widget.check_image_data_for_extraction()
-        assert show_info.called
+        show_info.assert_called_once_with(
+            "Please ensure both signal and background images are the "
+            "same size and shape."
+        )
 
 
 def test_check_image_data_missing_signal(valid_curation_widget):
