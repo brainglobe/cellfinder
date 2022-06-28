@@ -19,8 +19,9 @@ def curation_widget(make_napari_viewer):
     The viewer can be accessed using ``widget.viewer``.
     """
     viewer = make_napari_viewer()
-    widget = CurationWidget(viewer)
-    viewer.window.add_dock_widget(widget)
+    _, widget = viewer.window.add_plugin_dock_widget(
+        plugin_name="cellfinder-napari", widget_name="Curation"
+    )
     return widget
 
 
@@ -90,7 +91,7 @@ def test_cell_marking(curation_widget, tmp_path):
 
 
 @pytest.fixture
-def valid_curation_widget(make_napari_viewer):
+def valid_curation_widget(make_napari_viewer) -> CurationWidget:
     """
     Setup up a valid curation widget,
     complete with training data layers and points,
@@ -101,8 +102,11 @@ def valid_curation_widget(make_napari_viewer):
     for layer in image_layers:
         viewer.add_layer(napari.layers.Image(layer[0], **layer[1]))
 
-    curation_widget = CurationWidget(viewer)
-    viewer.window.add_dock_widget(curation_widget)
+    num_dw = len(viewer.window._dock_widgets)
+    _, curation_widget = viewer.window.add_plugin_dock_widget(
+        plugin_name="cellfinder-napari", widget_name="Curation"
+    )
+    assert len(viewer.window._dock_widgets) == num_dw + 1
 
     curation_widget.add_training_data()
     # Add a points layer to select points from

@@ -16,6 +16,9 @@ from cellfinder_napari.train.train_containers import (
 def get_training_widget(make_napari_viewer):
     viewer = make_napari_viewer()
     widget = training_widget()
+    _, widget = viewer.window.add_plugin_dock_widget(
+        plugin_name="cellfinder-napari", widget_name="Train network"
+    )
     viewer.window.add_dock_widget(widget)
     return widget
 

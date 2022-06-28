@@ -24,7 +24,9 @@ def get_detect_widget(make_napari_viewer):
     widget = detect_widget()
     for layer in load_sample():
         viewer.add_layer(napari.layers.Image(layer[0], **layer[1]))
-    viewer.window.add_dock_widget(widget)
+    _, widget = viewer.window.add_plugin_dock_widget(
+        plugin_name="cellfinder-napari", widget_name="Cell detection"
+    )
     return widget
 
 
