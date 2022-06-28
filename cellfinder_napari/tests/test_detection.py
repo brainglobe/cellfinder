@@ -67,6 +67,16 @@ def test_run_detect(get_detect_widget, analyse_local):
         assert worker.called
 
 
+def test_run_detect_without_inputs():
+    """ """
+    with patch("cellfinder_napari.detect.detect.show_info") as show_info:
+        widget = (
+            detect_widget()
+        )  # won't have image layers, so should notice and show info
+        widget.call_button.clicked()
+        assert show_info.called
+
+
 def test_reset_defaults(get_detect_widget):
     """Smoke test that restore defaults doesn't error."""
     get_detect_widget.reset_button.clicked()
