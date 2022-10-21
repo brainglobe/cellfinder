@@ -17,7 +17,7 @@ requirements = [
 
 setup(
     name="cellfinder-napari",
-    version="0.0.20-rc0",
+    version="0.0.20",
     author="Adam Tyson",
     author_email="code@adamltyson.com",
     license="BSD-3-Clause",
