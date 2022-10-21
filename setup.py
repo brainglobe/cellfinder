@@ -20,7 +20,6 @@ requirements = [
     "multiprocessing-logging",
     "psutil",
     "configobj",
-    "tensorflow>=2.5.0",
     "napari[pyside2]>=0.3.7",
     "brainglobe-napari-io",
     "cellfinder-napari",
