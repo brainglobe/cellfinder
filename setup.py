@@ -20,10 +20,6 @@ requirements = [
     "multiprocessing-logging",
     "psutil",
     "configobj",
-    "tensorflow>=2.5.0",
-    "napari[pyside2]>=0.3.7",
-    "brainglobe-napari-io",
-    "cellfinder-napari",
     "slurmio>=0.0.4",
     "fancylog>=0.0.7",
     "imlib>=0.0.26",
@@ -41,6 +37,11 @@ setup(
     long_description_content_type="text/markdown",
     install_requires=requirements,
     extras_require={
+        "napari": [
+            "napari[pyside2]",
+            "brainglobe-napari-io",
+            "cellfinder-napari",
+        ],
         "dev": [
             "black",
             "pytest-cov",
@@ -50,7 +51,7 @@ setup(
             "bump2version",
             "pre-commit",
             "flake8",
-        ]
+        ],
     },
     python_requires=">=3.7",
     packages=find_packages(),
