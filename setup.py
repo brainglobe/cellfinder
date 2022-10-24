@@ -12,6 +12,12 @@ requirements = [
     "napari-ndtiffs",
     "brainglobe-napari-io",
     "cellfinder-core>=0.3",
+    "imlib",
+    "magicgui",
+    "numpy",
+    "qtpy",
+    "skimage",
+    "tifffile",
     "pooch>=1",  # For downloading sample data
 ]
 
