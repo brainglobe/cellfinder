@@ -53,7 +53,7 @@ setup(
             "flake8",
         ],
     },
-    python_requires=">=3.7",
+    python_requires=">=3.8",
     packages=find_packages(),
     include_package_data=True,
     entry_points={
@@ -79,6 +79,7 @@ setup(
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
         "Topic :: Scientific/Engineering :: Image Recognition",
         "Intended Audience :: Developers",
         "Intended Audience :: Science/Research",
