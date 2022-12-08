@@ -1,16 +1,18 @@
-name: Test and publish packages
+name: tests
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - '*'
+    tags:
+      - '*'
   pull_request:
-    branches: [ main ]
 
 jobs:
   linting:
     runs-on: ubuntu-latest
     steps:
-      - uses: brainglobe/actions/lint@v1
+      - uses: neuroinformatics-unit/actions/lint@v1.2.0
 
   test:
     runs-on: ${{ matrix.os }}
@@ -31,7 +33,7 @@ jobs:
         with:
           path: "~/.cellfinder"
           key: models-${{ hashFiles('~/.cellfinder/**') }}
-      - uses: brainglobe/actions/test@v1
+      - uses: neuroinformatics-unit/actions/test@v1.0.4
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -52,11 +54,10 @@ jobs:
         with:
           repository: 'brainglobe/cellfinder'
 
-      - name: Set up Python 3.9
+      - name: Set up Python 3.10
         uses: actions/setup-python@v3
         with:
-          # Need to pin to .12 because of https://github.com/brainglobe/cellfinder/issues/207
-          python-version: "3.9.12"
+          python-version: "3.10"
 
       - name: Install test dependencies
         run: |

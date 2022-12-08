@@ -1,7 +1,7 @@
 import multiprocessing
 from datetime import datetime
 from queue import Queue
-from typing import Callable
+from typing import Callable, Optional
 
 import numpy as np
 from imlib.general.system import get_num_processes
@@ -55,7 +55,7 @@ def main(
     save_planes=False,
     plane_directory=None,
     *,
-    callback: Callable[[int], None] = None,
+    callback: Optional[Callable[[int], None]] = None,
 ):
     """
     Parameters

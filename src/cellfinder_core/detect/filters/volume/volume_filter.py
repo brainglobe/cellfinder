@@ -1,7 +1,7 @@
 import math
 import os
 from queue import Queue
-from typing import Callable, Sequence
+from typing import Callable, Optional, Sequence
 
 from imlib.cells.cells import Cell
 from tifffile import tifffile
@@ -27,7 +27,7 @@ class VolumeFilter(object):
         setup_params: Sequence,
         planes_paths_range: Sequence,
         save_planes: bool = False,
-        plane_directory: str = None,
+        plane_directory: Optional[str] = None,
         start_plane: int = 0,
         max_cluster_size: int = 5000,
         outlier_keep: bool = False,

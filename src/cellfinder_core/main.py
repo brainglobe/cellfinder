@@ -108,8 +108,6 @@ def main(
     else:
         logger.info("No candidates, skipping classification")
     return points
-    # logger.info("Saving classified cells")
-    # save_cells(points, classified_points_path)
 
 
 def suppress_tf_logging(tf_suppress_log_messages):
