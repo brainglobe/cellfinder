@@ -74,7 +74,7 @@ jobs:
 
   build_sdist:
     name: Build source distribution
-    needs: [test, test_cellfinder]
+    needs: [test]
     if: github.event_name == 'push' && github.ref_type == 'tag'
     runs-on: ubuntu-latest
     steps:
@@ -82,7 +82,7 @@ jobs:
 
   build_wheels:
     name: Build wheels on ${{ matrix.os }}
-    needs: [test, test_cellfinder]
+    needs: [test]
     if: github.event_name == 'push' && github.ref_type == 'tag'
     runs-on: ${{ matrix.os }}
     strategy:
