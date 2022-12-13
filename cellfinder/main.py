@@ -19,6 +19,8 @@ from imlib.cells.cells import MissingCellsError
 from imlib.general.system import ensure_directory_exists
 from imlib.IO.cells import get_cells, save_cells
 
+BRAINREG_PRE_PROCESSING_ARGS = None
+
 
 def get_downsampled_space(atlas, downsampled_image_path):
     target_shape = tifffile.imread(downsampled_image_path).shape
@@ -58,6 +60,7 @@ def main():
             args.brainreg_paths,
             args.voxel_sizes,
             arg_groups["NiftyReg registration backend options"],
+            BRAINREG_PRE_PROCESSING_ARGS,
             sort_input_file=args.sort_input_file,
             n_free_cpus=args.n_free_cpus,
             additional_images_downsample=additional_images_downsample,
