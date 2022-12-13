@@ -1,4 +1,4 @@
-__version__ = "0.3.0"
+__version__ = "0.3.1-rc0"
 __author__ = "Adam Tyson, Christian Niedworok, Charly Rousseau"
 __license__ = "BSD-3-Clause"
 
