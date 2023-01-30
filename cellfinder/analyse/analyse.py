@@ -120,20 +120,19 @@ def create_all_cell_csv(points, all_points_filename):
             "hemisphere",
         )
     )
-    for point in points:
-        df = df.append(
-            {
-                "coordinate_raw_axis_0": point.raw_coordinate[0],
-                "coordinate_raw_axis_1": point.raw_coordinate[1],
-                "coordinate_raw_axis_2": point.raw_coordinate[2],
-                "coordinate_atlas_axis_0": point.atlas_coordinate[0],
-                "coordinate_atlas_axis_1": point.atlas_coordinate[1],
-                "coordinate_atlas_axis_2": point.atlas_coordinate[2],
-                "structure_name": point.structure,
-                "hemisphere": point.hemisphere,
-            },
-            ignore_index=True,
-        )
+
+    temp_matrix = [[] for i in range(len(points))]
+    for i, point in enumerate(points):
+        temp_matrix[i].append(point.raw_coordinate[0])
+        temp_matrix[i].append(point.raw_coordinate[1])
+        temp_matrix[i].append(point.raw_coordinate[2])
+        temp_matrix[i].append(point.atlas_coordinate[0])
+        temp_matrix[i].append(point.atlas_coordinate[1])
+        temp_matrix[i].append(point.atlas_coordinate[2])
+        temp_matrix[i].append(point.structure)
+        temp_matrix[i].append(point.hemisphere)
+
+    df = pd.DataFrame(temp_matrix, columns=df.columns, index=None)
     df.to_csv(all_points_filename, index=False)
 
 
