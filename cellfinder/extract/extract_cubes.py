@@ -410,7 +410,7 @@ def main(
     center_planes = sorted(list(set([cell.z for cell in cells])))
 
     # REFACTOR: rename (clashes with different meaning of planes_to_read below)
-    planes_to_read = np.zeros(brain_depth, dtype=np.bool)
+    planes_to_read = np.zeros(brain_depth, dtype=bool)
 
     if is_even(num_planes_needed_for_cube):
         half_nz = num_planes_needed_for_cube // 2
