@@ -16,7 +16,7 @@ requirements = [
     "magicgui",
     "numpy",
     "qtpy",
-    "skimage",
+    "scikit-image",
     "tifffile",
     "pooch>=1",  # For downloading sample data
 ]

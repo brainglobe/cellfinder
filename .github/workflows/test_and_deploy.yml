@@ -22,6 +22,7 @@ jobs:
     name: ${{ matrix.os }} py${{ matrix.python-version }}
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         # Run all supported Python versions on linux
         python-version: ["3.8", "3.9", "3.10"]
@@ -37,9 +38,10 @@ jobs:
       # Setup pyqt libraries
       - uses: tlambert03/setup-qt-libs@v1
       # Run tests
-      - uses: brainglobe/actions/test@v1
+      - uses:  neuroinformatics-unit/actions/test@v1
         with:
           python-version: ${{ matrix.python-version }}
+          use-xvfb: true
 
   deploy:
     # this will run when you have tagged a commit, starting with "v*"
