@@ -27,6 +27,7 @@ jobs:
     env:
       INPUT_COREDEV: ${{ github.event.inputs.coredev }}
     strategy:
+      fail-fast: false
       matrix:
         # Run across a mixture of Python versions and operating systems
         include:
