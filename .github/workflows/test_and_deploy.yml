@@ -19,7 +19,7 @@ jobs:
   linting:
     runs-on: ubuntu-latest
     steps:
-      - uses: brainglobe/actions/lint@v1
+      - uses: neuroinformatics-unit/actions/lint@v1
 
   test:
     needs: linting
@@ -38,7 +38,7 @@ jobs:
         - os: ubuntu-latest
           python-version: "3.8"
     steps:
-      - uses: brainglobe/actions/test@v1
+      - uses: neuroinformatics-unit/actions/test@v1
         with:
           python-version: ${{ matrix.python-version }}
 
