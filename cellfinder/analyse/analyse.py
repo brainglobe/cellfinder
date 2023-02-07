@@ -328,7 +328,6 @@ def run_analysis(
     all_points_csv_path,
     summary_csv_path,
 ):
-
     source_shape = tuple(
         imio.get_size_image_from_file_paths(signal_planes).values()
     )
