@@ -93,7 +93,7 @@ def summarise_points(
                 )
             )
             structures_with_points.add(structure)
-        except:
+        except Exception:
             continue
 
     logging.debug("Ensuring output directory exists")
