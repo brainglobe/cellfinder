@@ -1,25 +1,10 @@
 [tool.black]
-target-version = ['py36', 'py37', 'py38']
+target-version = ['py38', 'py39', 'py310']
 skip-string-normalization = false
 line-length = 79
-exclude = '''
-(
-  /(
-      \.eggs
-    | \.git
-    | \.hg
-    | \.mypy_cache
-    | \.tox
-    | \.venv
-    | _build
-    | buck-out
-    | build
-    | dist
-    | examples
-  )/
-)
-'''
 
-[tool.isort]
-profile = "black"
-line_length = 79
+[tool.ruff]
+line-length = 79
+exclude = ["__init__.py","build",".eggs"]
+select = ["I", "E", "F"]
+fix = true
