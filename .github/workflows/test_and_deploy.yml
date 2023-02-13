@@ -19,7 +19,7 @@ jobs:
   linting:
     runs-on: ubuntu-latest
     steps:
-      - uses: brainglobe/actions/lint@v1
+      - uses: neuroinformatics-unit/actions/lint@v1
 
   test:
     needs: linting
@@ -27,16 +27,18 @@ jobs:
     env:
       INPUT_COREDEV: ${{ github.event.inputs.coredev }}
     strategy:
+      fail-fast: false
       matrix:
-        # Run all supported Python versions on linux
-        python-version: ["3.8", "3.9", "3.10"]
-        os: [ubuntu-latest]
+        # Run across a mixture of Python versions and operating systems
         include:
-          # Include one windows run
-          - os: windows-latest
-            python-version: "3.10"
+        - os: macos-latest
+          python-version: "3.10"
+        - os: windows-latest
+          python-version: "3.9"
+        - os: ubuntu-latest
+          python-version: "3.8"
     steps:
-      - uses: brainglobe/actions/test@v1
+      - uses: neuroinformatics-unit/actions/test@v1
         with:
           python-version: ${{ matrix.python-version }}
 
