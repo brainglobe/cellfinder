@@ -17,7 +17,7 @@ requirements = [
     "tifffile",
     "natsort",
     "tqdm",
-    "multiprocessing-logging",
+    "multiprocessing-logging>=0.3.4",
     "psutil",
     "configobj",
     "slurmio>=0.0.4",

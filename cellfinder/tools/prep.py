@@ -122,6 +122,7 @@ def prep_cellfinder_general():
         variables=[args, args.paths],
         verbose=args.debug,
         log_header="CELLFINDER LOG",
+        multiprocessing_aware=True,
     )
 
     log_metadata(args.paths.metadata_path, args)
