@@ -1,14 +1,18 @@
 import math
 import os
 from queue import Queue
-from typing import Callable, Optional, Sequence
+from typing import Any, Callable, Optional, Sequence, Tuple
 
+import numpy as np
 from imlib.cells.cells import Cell
 from tifffile import tifffile
 from tqdm import tqdm
 
 from cellfinder_core import logger
-from cellfinder_core.detect.filters.setup_filters import setup
+from cellfinder_core.detect.filters.setup_filters import (
+    get_ball_filter,
+    get_cell_detector,
+)
 from cellfinder_core.detect.filters.volume.structure_detection import (
     get_structure_centre_wrapper,
 )
@@ -24,7 +28,7 @@ class VolumeFilter(object):
         *,
         soma_diameter: float,
         soma_size_spread_factor: float = 1.4,
-        setup_params: Sequence,
+        setup_params: Tuple[np.ndarray, Any, int, int, float, Any],
         planes_paths_range: Sequence,
         save_planes: bool = False,
         plane_directory: Optional[str] = None,
@@ -48,12 +52,17 @@ class VolumeFilter(object):
         self.threshold_value = None
         self.setup_params = setup_params
 
-        self.ball_filter, self.cell_detector = setup(
-            self.setup_params[0],
-            self.setup_params[1],
-            self.setup_params[2],
-            self.setup_params[3],
+        self.ball_filter = get_ball_filter(
+            plane=self.setup_params[0],
+            soma_diameter=self.setup_params[1],
+            ball_xy_size=self.setup_params[2],
+            ball_z_size=self.setup_params[3],
             ball_overlap_fraction=self.setup_params[4],
+        )
+
+        self.cell_detector = get_cell_detector(
+            plane_shape=self.setup_params[0].shape,
+            ball_z_size=self.setup_params[3],
             z_offset=self.setup_params[5],
         )
 
