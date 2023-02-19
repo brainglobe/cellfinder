@@ -1,7 +1,7 @@
 import math
 import os
 from queue import Queue
-from typing import Any, Callable, Optional, Sequence, Tuple
+from typing import Any, Callable, List, Optional, Sequence, Tuple
 
 import numpy as np
 from imlib.cells.cells import Cell
@@ -120,7 +120,7 @@ class VolumeFilter(object):
         f_path = os.path.join(self.plane_directory, plane_name)
         tifffile.imsave(f_path, plane.T)
 
-    def get_results(self):
+    def get_results(self) -> List[Cell]:
         logger.info("Splitting cell clusters and writing results")
 
         max_cell_volume = sphere_volume(

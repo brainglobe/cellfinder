@@ -1,9 +1,10 @@
 import multiprocessing
 from datetime import datetime
 from queue import Queue
-from typing import Callable, Optional
+from typing import Callable, List, Optional, Tuple
 
 import numpy as np
+from imlib.cells.cells import Cell
 from imlib.general.system import get_num_processes
 
 from cellfinder_core.detect.filters.plane import TileProcessor
@@ -12,12 +13,12 @@ from cellfinder_core.detect.filters.volume.volume_filter import VolumeFilter
 
 
 def calculate_parameters_in_pixels(
-    voxel_sizes,
-    soma_diameter_um,
-    max_cluster_size_um3,
-    ball_xy_size_um,
-    ball_z_size_um,
-):
+    voxel_sizes: Tuple[float, float, float],
+    soma_diameter_um: float,
+    max_cluster_size_um3: float,
+    ball_xy_size_um: float,
+    ball_z_size_um: float,
+) -> Tuple[int, int, int, int]:
     """
     Convert the command-line arguments from real (um) units to pixels
     """
@@ -37,26 +38,26 @@ def calculate_parameters_in_pixels(
 
 
 def main(
-    signal_array,
-    start_plane,
-    end_plane,
-    voxel_sizes,
-    soma_diameter,
-    max_cluster_size,
-    ball_xy_size,
-    ball_z_size,
-    ball_overlap_fraction,
-    soma_spread_factor,
-    n_free_cpus,
-    log_sigma_size,
-    n_sds_above_mean_thresh,
-    outlier_keep=False,
-    artifact_keep=False,
-    save_planes=False,
-    plane_directory=None,
+    signal_array: np.ndarray,
+    start_plane: int,
+    end_plane: int,
+    voxel_sizes: Tuple[float, float, float],
+    soma_diameter: float,
+    max_cluster_size: float,
+    ball_xy_size: float,
+    ball_z_size: float,
+    ball_overlap_fraction: float,
+    soma_spread_factor: float,
+    n_free_cpus: int,
+    log_sigma_size: float,
+    n_sds_above_mean_thresh: float,
+    outlier_keep: bool = False,
+    artifact_keep: bool = False,
+    save_planes: bool = False,
+    plane_directory: Optional[str] = None,
     *,
     callback: Optional[Callable[[int], None]] = None,
-):
+) -> List[Cell]:
     """
     Parameters
     ----------
@@ -94,14 +95,14 @@ def main(
     if signal_array.ndim != 3:
         raise IOError("Input data must be 3D")
 
-    setup_params = [
+    setup_params = (
         signal_array[0, :, :],
         soma_diameter,
         ball_xy_size,
         ball_z_size,
         ball_overlap_fraction,
         start_plane,
-    ]
+    )
 
     # Create 3D analysis filter
     mp_3d_filter = VolumeFilter(
