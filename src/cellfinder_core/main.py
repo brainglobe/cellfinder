@@ -2,12 +2,15 @@
 N.B imports are within functions to prevent tensorflow being imported before
 it's warnings are silenced
 """
-
 import os
+from typing import Callable, Optional, Tuple
 
+import numpy as np
 from imlib.general.logging import suppress_specific_logs
 
 from cellfinder_core import logger
+from cellfinder_core.download.models import model_type
+from cellfinder_core.train.train_yml import depth_type
 
 tf_suppress_log_messages = [
     "multiprocessing can interact badly with TensorFlow"
@@ -15,33 +18,33 @@ tf_suppress_log_messages = [
 
 
 def main(
-    signal_array,
-    background_array,
-    voxel_sizes,
-    start_plane=0,
-    end_plane=-1,
-    trained_model=None,
-    model_weights=None,
-    model="resnet50_tv",
-    batch_size=32,
-    n_free_cpus=2,
-    network_voxel_sizes=[5, 1, 1],
-    soma_diameter=16,
-    ball_xy_size=6,
-    ball_z_size=15,
-    ball_overlap_fraction=0.6,
-    log_sigma_size=0.2,
-    n_sds_above_mean_thresh=10,
-    soma_spread_factor=1.4,
-    max_cluster_size=100000,
-    cube_width=50,
-    cube_height=50,
-    cube_depth=20,
-    network_depth="50",
+    signal_array: np.ndarray,
+    background_array: np.ndarray,
+    voxel_sizes: Tuple[int, int, int],
+    start_plane: int = 0,
+    end_plane: int = -1,
+    trained_model: Optional[os.PathLike] = None,
+    model_weights: Optional[os.PathLike] = None,
+    model: model_type = "resnet50_tv",
+    batch_size: int = 32,
+    n_free_cpus: int = 2,
+    network_voxel_sizes: Tuple[int, int, int] = (5, 1, 1),
+    soma_diameter: int = 16,
+    ball_xy_size: int = 6,
+    ball_z_size: int = 15,
+    ball_overlap_fraction: float = 0.6,
+    log_sigma_size: float = 0.2,
+    n_sds_above_mean_thresh: int = 10,
+    soma_spread_factor: float = 1.4,
+    max_cluster_size: int = 100000,
+    cube_width: int = 50,
+    cube_height: int = 50,
+    cube_depth: int = 20,
+    network_depth: depth_type = "50",
     *,
-    detect_callback=None,
-    classify_callback=None,
-    detect_finished_callback=None,
+    detect_callback: Optional[Callable[[int], None]] = None,
+    classify_callback: Optional[Callable[[int], None]] = None,
+    detect_finished_callback: Optional[Callable[[list], None]] = None,
 ):
     """
     Parameters

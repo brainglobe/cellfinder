@@ -24,7 +24,7 @@ def prep_classification(
     trained_model: Optional[os.PathLike],
     model_weights: Optional[os.PathLike],
     install_path: Optional[os.PathLike],
-    model_name: str,
+    model_name: model_download.model_type,
     n_free_cpus: int,
 ) -> Path:
     n_processes = get_num_processes(min_free_cpu_cores=n_free_cpus)
@@ -41,7 +41,7 @@ def prep_training(
     trained_model: Optional[os.PathLike],
     model_weights: Optional[os.PathLike],
     install_path: Optional[os.PathLike],
-    model_name: str,
+    model_name: model_download.model_type,
 ) -> Path:
     n_processes = get_num_processes(min_free_cpu_cores=n_free_cpus)
     prep_tensorflow(n_processes)
@@ -60,7 +60,7 @@ def prep_models(
     trained_model_path: Optional[os.PathLike],
     model_weights_path: Optional[os.PathLike],
     install_path: Optional[os.PathLike],
-    model_name: str,
+    model_name: model_download.model_type,
 ) -> Path:
     install_path = install_path or DEFAULT_INSTALL_PATH
     # if no model or weights, set default weights
