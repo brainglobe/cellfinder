@@ -313,7 +313,6 @@ def run(
     save_progress=False,
     epochs=100,
 ):
-
     from cellfinder_core.main import suppress_tf_logging
 
     suppress_tf_logging(tf_suppress_log_messages)

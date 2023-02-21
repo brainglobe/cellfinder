@@ -171,7 +171,6 @@ def residual_block(
     bn_epsilon=1e-5,
     axis=3,
 ):
-
     """
     Residual unit from He et al. (2015)
 
@@ -314,7 +313,6 @@ def get_shortcut(
     bn_epsilon=1e-5,
     axis=3,
 ):
-
     """
     Create shortcut. For none-bottleneck residual units, this is just the
     identity. Otherwise, the input is reshaped to match the output of the

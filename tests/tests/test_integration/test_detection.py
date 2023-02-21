@@ -32,7 +32,6 @@ def background_array():
 # FIXME: This isn't a very good example
 @pytest.mark.slow
 def test_detection_full(signal_array, background_array):
-
     cells_test = main(
         signal_array,
         background_array,

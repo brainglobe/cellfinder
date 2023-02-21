@@ -51,7 +51,6 @@ def augment(augmentation_parameters, image, scale_back=True):
 
 
 def rescale_to_isotropic(image, relative_pixel_sizes, interpolation_order):
-
     if not all_elements_equal(relative_pixel_sizes):
         min_pixel_size = min(relative_pixel_sizes)
         normalised_pixel_sizes = []

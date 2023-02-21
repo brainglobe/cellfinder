@@ -48,7 +48,6 @@ def get_model(
 
 
 def make_lists(tiff_files, train=True):
-
     signal_list = []
     background_list = []
     if train:

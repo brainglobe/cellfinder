@@ -42,7 +42,6 @@ def setup(
 
 
 def setup_tile_filtering(plane):
-
     max_value = get_max_value(plane)
     clipping_value = max_value - 2
     thrsh_val = max_value - 1

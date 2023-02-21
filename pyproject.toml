@@ -2,32 +2,19 @@
 requires = ['setuptools', 'wheel', 'cython']
 build-backend = 'setuptools.build_meta'
 
+[tool.cibuildwheel]
+build = "cp38-* cp39-* cp310-*"
+
 [tool.black]
 target-version = ['py38', 'py39', 'py310']
 skip-string-normalization = false
 line-length = 79
-exclude = '''
-(
-  /(
-      \.eggs
-    | \.git
-    | \.hg
-    | \.mypy_cache
-    | \.tox
-    | \.venv
-    | _build
-    | buck-out
-    | build
-    | dist
-    | examples
-  )/
-)
-'''
 
-[tool.isort]
-profile = "black"
-line_length = 79
+[tool.ruff]
+line-length = 79
+exclude = ["__init__.py","build",".eggs"]
+select = ["I", "E", "F"]
+fix = true
 
-
-[tool.cibuildwheel]
-build = "cp38-* cp39-* cp310-*"
+[tool.ruff.isort]
+known-first-party = ["cellfinder_core"]
