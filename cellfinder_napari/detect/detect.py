@@ -1,6 +1,6 @@
 from math import ceil
 from pathlib import Path
-from typing import List, Optional
+from typing import Optional
 
 import napari
 from cellfinder_core.classify.cube_generator import get_cube_depth_min_max
@@ -11,7 +11,6 @@ from qtpy.QtWidgets import QScrollArea
 
 from cellfinder_napari.utils import (
     add_layers,
-    brainglobe_logo,
     header_label_widget,
     html_label_widget,
     widget_header,
@@ -118,7 +117,8 @@ def detect_widget() -> FunctionGui:
         use_pre_trained_weights : bool
             Select to use pre-trained model weights
         trained_model : Optional[Path]
-            Trained model file path (home directory (default) -> pretrained weights)
+            Trained model file path (home directory (default) -> pretrained
+            weights)
         start_plane : int
             First plane to process (to process a subset of the data)
         end_plane : int
@@ -190,7 +190,8 @@ def detect_widget() -> FunctionGui:
             lambda points: add_layers(points, viewer=viewer)
         )
 
-        # Make sure if the worker emits an error, it is propagated to this thread
+        # Make sure if the worker emits an error, it is propagated to this
+        # thread
         def reraise(e):
             raise Exception from e
 

@@ -47,7 +47,8 @@ def test_reset_to_defaults(get_training_widget):
 
 def test_run_with_no_yaml_files(get_training_widget):
     """
-    Checks whether expected info message will be shown to user if they don't specify YAML file(s).
+    Checks whether expected info message will be shown to user if they don't
+    specify YAML file(s).
     """
     with patch("cellfinder_napari.train.train.show_info") as show_info:
         get_training_widget.call_button.clicked()
@@ -61,7 +62,8 @@ def test_run_with_virtual_yaml_files(get_training_widget):
     Checks that training is run with expected set of parameters.
     """
     with patch("cellfinder_napari.train.train.run_training") as run_training:
-        # make default input valid - need yml files (they don't technically have to exist)
+        # make default input valid - need yml files (they don't technically
+        # have to exist)
         virtual_yaml_files = (
             Path.home() / "file_1.yml",
             Path.home() / "file_2.yml",

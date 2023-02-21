@@ -5,7 +5,10 @@ import pooch
 from napari.types import LayerData
 from skimage.io import imread
 
-base_url = "https://raw.githubusercontent.com/brainglobe/cellfinder/master/tests/data/integration/detection/crop_planes"
+base_url = (
+    "https://raw.githubusercontent.com/brainglobe/cellfinder/"
+    "master/tests/data/integration/detection/crop_planes"
+)
 
 
 def load_sample() -> List[LayerData]:

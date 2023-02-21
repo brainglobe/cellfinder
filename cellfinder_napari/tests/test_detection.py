@@ -1,11 +1,7 @@
-import glob
-import pathlib
 from unittest.mock import patch
 
 import napari
-import numpy as np
 import pytest
-from PIL import Image
 
 from cellfinder_napari.detect import detect_widget
 from cellfinder_napari.detect.detect_containers import (

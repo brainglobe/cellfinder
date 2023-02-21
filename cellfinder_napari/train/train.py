@@ -1,8 +1,6 @@
 from pathlib import Path
 from typing import Optional
 
-from cellfinder_core.download.models import model_weight_urls
-from cellfinder_core.train.train_yml import models
 from cellfinder_core.train.train_yml import run as train_yml
 from magicgui import magicgui
 from magicgui.widgets import FunctionGui, PushButton

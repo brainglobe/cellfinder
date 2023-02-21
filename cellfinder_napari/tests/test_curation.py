@@ -4,7 +4,6 @@ from unittest.mock import patch
 import napari
 import numpy as np
 import pytest
-from matplotlib.style import available
 from napari.layers import Image, Points
 
 from cellfinder_napari import sample_data
@@ -140,7 +139,8 @@ def test_check_image_data_for_extraction(valid_curation_widget):
 
 def test_check_image_data_wrong_shape(valid_curation_widget):
     """
-    Check curation widget shows expected user message if images don't have identical shape.
+    Check curation widget shows expected user message if images don't have
+    identical shape.
     """
     with patch("cellfinder_napari.curation.show_info") as show_info:
         signal_layer_with_wrong_shape = napari.layers.Image(
@@ -158,7 +158,8 @@ def test_check_image_data_wrong_shape(valid_curation_widget):
 
 def test_check_image_data_missing_signal(valid_curation_widget):
     """
-    Check curation widget shows expected user message if signal image is missing.
+    Check curation widget shows expected user message if signal image is
+    missing.
     """
     with patch("cellfinder_napari.curation.show_info") as show_info:
         valid_curation_widget.signal_layer = None

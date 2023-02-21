@@ -1,9 +1,7 @@
-from abc import abstractmethod
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
 
-import napari
 import numpy
 
 from cellfinder_napari.input_container import InputContainer
@@ -21,14 +19,17 @@ class DataInputs(InputContainer):
     voxel_size_x: float = 2
 
     def as_core_arguments(self) -> dict:
-        """Passes voxel size data as one tuple instead of 3 individual floats"""
+        """
+        Passes voxel size data as one tuple instead of 3 individual floats
+        """
         data_input_dict = super().as_core_arguments()
         data_input_dict["voxel_sizes"] = (
             self.voxel_size_z,
             self.voxel_size_y,
             self.voxel_size_x,
         )
-        # del operator doesn't affect self, because asdict creates a copy of fields.
+        # del operator doesn't affect self, because asdict creates a copy of
+        # fields.
         del data_input_dict["voxel_size_z"]
         del data_input_dict["voxel_size_y"]
         del data_input_dict["voxel_size_x"]

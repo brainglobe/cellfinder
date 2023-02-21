@@ -1,8 +1,6 @@
-from typing import Iterable
-
 from cellfinder_core.main import main as cellfinder_run
-from napari.qt.threading import WorkerBase, WorkerBaseSignals, thread_worker
-from qtpy.QtCore import QObject, Signal
+from napari.qt.threading import WorkerBase, WorkerBaseSignals
+from qtpy.QtCore import Signal
 
 from .detect_containers import (
     ClassificationInputs,

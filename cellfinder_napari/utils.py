@@ -26,7 +26,7 @@ widget_header = """
 <p><a href="https://github.com/brainglobe/cellfinder-napari" style="color:gray;">Source</a></p>
 <p><a href="https://www.biorxiv.org/content/10.1101/2020.10.21.348771v2" style="color:gray;">Citation</a></p>
 <p><small>For help, hover the cursor over each parameter.</small>
-"""
+"""  # noqa: E501
 
 
 def html_label_widget(label: str, *, tag: str = "b") -> dict:
@@ -50,7 +50,8 @@ header_label_widget = html_label_widget(
 
 def add_layers(points: List[Cell], viewer: napari.Viewer) -> None:
     """
-    Adds classified cell candidates as two separate point layers to the napari viewer.
+    Adds classified cell candidates as two separate point layers to the napari
+    viewer.
     """
     detected, rejected = cells_to_array(points)
 
