@@ -100,7 +100,6 @@ def main():
 
 
 def run_all(args, what_to_run, atlas):
-
     from cellfinder_core.classify import classify
     from cellfinder_core.detect import detect
     from cellfinder_core.tools import prep

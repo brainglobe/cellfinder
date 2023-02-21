@@ -155,7 +155,6 @@ def test_cube_extraction(tmpdir, depth=20):
     args.voxel_sizes[0] = 0.1
 
     with pytest.raises(extract_cubes.StackSizeError):
-
         extract_cubes.main(
             get_cells(args.paths.cells_file_path),
             args.paths.tmp__cubes_output_dir,

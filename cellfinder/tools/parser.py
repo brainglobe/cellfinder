@@ -12,9 +12,8 @@ from argparse import (
     ArgumentTypeError,
 )
 
-from brainreg.cli import atlas_parse
+from brainreg.cli import atlas_parse, geometry_parser, niftyreg_parse
 from brainreg.cli import backend_parse as brainreg_backend_parse
-from brainreg.cli import geometry_parser, niftyreg_parse
 from cellfinder_core.download.cli import (
     download_directory_parser,
     model_parser,

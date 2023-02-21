@@ -383,7 +383,6 @@ def main(
     n_free_cpus=4,
     save_empty_cubes=False,
 ):
-
     start_time = datetime.now()
 
     if voxel_sizes[0] != network_voxel_sizes[0]:

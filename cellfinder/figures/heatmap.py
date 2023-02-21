@@ -34,7 +34,6 @@ def run(
     smoothing=None,
     mask=True,
 ):
-
     points = pd.read_hdf(downsampled_points).values
 
     bins = get_bins(downsampled_shape, (1, 1, 1))
