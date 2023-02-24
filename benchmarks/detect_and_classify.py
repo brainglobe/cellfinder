@@ -16,7 +16,7 @@ data_dir = (
 signal_data_path = data_dir / "crop_planes" / "ch0"
 background_data_path = data_dir / "crop_planes" / "ch1"
 
-voxel_sizes = [5, 2, 2]
+voxel_sizes = (5, 2, 2)
 
 # Read data
 signal_array = read_with_dask(str(signal_data_path))
