@@ -1,6 +1,71 @@
+[project]
+name = "cellfinder-core"
+description = "Automated 3D cell detection in large microscopy images"
+readme = "README.md"
+authors = [
+    {name = "Adam Tyson, Christian Niedworok, Charly Rousseau", email = "code@adamltyson.com"},
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Topic :: Scientific/Engineering :: Image Recognition",
+]
+requires-python = ">=3.8"
+dependencies = [
+    "dask[array]",
+    "fancylog>=0.0.7",
+    "imlib>=0.0.26",
+    "natsort",
+    "numpy",
+    "scikit-image",
+    "scikit-learn",
+    "tensorflow-macos>=2.5.0; platform_system=='Darwin' and platform_machine=='arm64'",
+    "tensorflow>=2.5.0; platform_system!='Darwin' or platform_machine!='arm64'",
+    "tifffile",
+    "tqdm",
+]
+dynamic = ['version']
+
+[project.urls]
+Homepage = "https://brainglobe.info/cellfinder"
+"Source Code" = "https://github.com/brainglobe/cellfinder-core"
+"Bug Tracker" = "https://github.com/brainglobe/cellfinder-core/issues"
+Documentation = "https://docs.brainglobe.info/cellfinder"
+
+[project.optional-dependencies]
+dev = [
+    "black",
+    "gitpython",
+    "pre-commit",
+    "pytest",
+    "pytest-cov",
+    "pytest-timeout",
+    "tox",
+]
+
+[project.scripts]
+cellfinder_download = "cellfinder_core.download.cli:main"
+cellfinder_train = "cellfinder_core.train.train_yml:cli"
+
 [build-system]
-requires = ['setuptools', 'wheel', 'cython']
+requires = [
+    "setuptools>=45",
+    "wheel",
+    "setuptools_scm[toml]>=6.2",
+    "cython",
+]
 build-backend = 'setuptools.build_meta'
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools_scm]
 
 [tool.cibuildwheel]
 build = "cp38-* cp39-* cp310-*"
