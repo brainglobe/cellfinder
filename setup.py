@@ -7,24 +7,20 @@ with open(path.join(this_directory, "README.md"), encoding="utf-8") as f:
     long_description = f.read()
 
 requirements = [
+    "brainreg",
     "cellfinder-core>=0.2.4",
+    "configobj",
+    "fancylog>=0.0.7",
+    "imio",
+    "imlib>=0.0.26",
+    "multiprocessing-logging>=0.3.4",
+    "natsort",
     "numpy",
-    "scikit-learn",
-    "configparser",
     "pandas",
     "packaging",
     "scikit-image",
     "tifffile",
-    "natsort",
     "tqdm",
-    "multiprocessing-logging>=0.3.4",
-    "psutil",
-    "configobj",
-    "slurmio>=0.0.4",
-    "fancylog>=0.0.7",
-    "imlib>=0.0.26",
-    "brainreg",
-    "imio",
 ]
 
 
