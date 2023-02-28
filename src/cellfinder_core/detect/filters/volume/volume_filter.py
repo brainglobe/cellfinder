@@ -77,7 +77,6 @@ class VolumeFilter(object):
             plane, mask = result.get()
 
             logger.debug(f"Plane {self.z} received for 3D filtering")
-            print(f"Plane {self.z} received for 3D filtering")
 
             logger.debug(f"Adding plane {self.z} for 3D filtering")
             self.ball_filter.append(plane, mask)
