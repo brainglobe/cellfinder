@@ -146,7 +146,14 @@ class BallFilter:
             for x in range(max_width):
                 ball_centre_x = x + ball_radius
                 ball_centre_y = y + ball_radius
-                if self.__is_tile_to_check(ball_centre_x, ball_centre_y):
+                if _is_tile_to_check(
+                    ball_centre_x,
+                    ball_centre_y,
+                    self.middle_z_idx,
+                    self.tile_step_width,
+                    self.tile_step_height,
+                    self.good_tiles_mask,
+                ):
                     cube = self.volume[
                         x : x + self.kernel.shape[0],
                         y : y + self.kernel.shape[1],
@@ -200,3 +207,13 @@ def _cube_overlaps(
                 if cube[x, y, z] >= THRESHOLD_VALUE:
                     current_overlap_value += kernel[x, y, z]
     return current_overlap_value > overlap_threshold
+
+
+def _is_tile_to_check(
+    x, y, middle_z_idx, tile_step_width, tile_step_height, good_tiles_mask
+):  # Highly optimised because most time critical
+    middle_z = middle_z_idx
+
+    x_in_mask = x // tile_step_width  # TEST: test bounds (-1 range)
+    y_in_mask = y // tile_step_height  # TEST: test bounds (-1 range)
+    return good_tiles_mask[x_in_mask, y_in_mask, middle_z]
