@@ -1,4 +1,5 @@
 import numpy as np
+from numba import jit
 
 from cellfinder_core.tools.array_operations import bin_mean_3d
 from cellfinder_core.tools.geometry import make_sphere
@@ -151,41 +152,16 @@ class BallFilter:
                         y : y + self.kernel.shape[1],
                         :,
                     ]
-                    if self.__cube_overlaps(cube):
+                    if _cube_overlaps(
+                        cube,
+                        self.ball_z_size,
+                        self.overlap_threshold,
+                        self.THRESHOLD_VALUE,
+                        self.kernel,
+                    ):
                         self.volume[
                             ball_centre_x, ball_centre_y, middle_z
                         ] = self.SOMA_CENTRE_VALUE
-
-    def __cube_overlaps(
-        self, cube
-    ):  # Highly optimised because most time critical
-        """
-
-        :param np.ndarray cube: The thresholded array to check for ball fit.
-            values at CellDetector.THRESHOLD_VALUE are threshold
-        :return: True if the overlap exceeds self.overlap_fraction
-        """
-        if DEBUG:
-            assert cube.max() <= 1
-            assert cube.shape == self.kernel.shape
-
-        current_overlap_value = 0
-
-        for z in range(cube.shape[2]):
-            # TODO: OPTIMISE: step from middle to outer boundaries to check
-            # more data first
-            if (
-                z == np.floor(self.ball_z_size / 2) + 1
-                and current_overlap_value < self.overlap_threshold * 0.4
-            ):  # FIXME: do not hard code value
-                return False  # DEBUG: optimisation attempt
-            for y in range(cube.shape[1]):
-                for x in range(cube.shape[0]):
-                    if (
-                        cube[x, y, z] >= self.THRESHOLD_VALUE
-                    ):  # includes self.SOMA_CENTRE_VALUE
-                        current_overlap_value += self.kernel[x, y, z]
-        return current_overlap_value > self.overlap_threshold
 
     def __is_tile_to_check(
         self, x, y
@@ -195,3 +171,32 @@ class BallFilter:
         x_in_mask = x // self.tile_step_width  # TEST: test bounds (-1 range)
         y_in_mask = y // self.tile_step_height  # TEST: test bounds (-1 range)
         return self.good_tiles_mask[x_in_mask, y_in_mask, middle_z]
+
+
+@jit(nopython=True, cache=True)
+def _cube_overlaps(
+    cube, ball_z_size, overlap_threshold, THRESHOLD_VALUE, kernel
+):  # Highly optimised because most time critical
+    """
+
+    :param np.ndarray cube: The thresholded array to check for ball fit.
+        values at CellDetector.THRESHOLD_VALUE are threshold
+    :return: True if the overlap exceeds self.overlap_fraction
+    """
+    current_overlap_value = 0
+
+    for z in range(cube.shape[2]):
+        # TODO: OPTIMISE: step from middle to outer boundaries to check
+        # more data first
+        # FIXME: do not hard code value
+        if (
+            z == np.floor(ball_z_size / 2) + 1
+            and current_overlap_value < overlap_threshold * 0.4
+        ):
+            return False  # DEBUG: optimisation attempt
+        for y in range(cube.shape[1]):
+            for x in range(cube.shape[0]):
+                # includes self.SOMA_CENTRE_VALUE
+                if cube[x, y, z] >= THRESHOLD_VALUE:
+                    current_overlap_value += kernel[x, y, z]
+    return current_overlap_value > overlap_threshold
