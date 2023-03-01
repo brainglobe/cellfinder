@@ -40,7 +40,7 @@ for plane in signal_array:
 # Run the 3D filter
 profiler = Profiler()
 profiler.start()
-for i in range(100):
+for i in range(10):
     mp_3d_filter._run_filter()
 
 profiler.stop()
