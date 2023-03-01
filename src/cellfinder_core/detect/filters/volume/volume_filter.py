@@ -140,7 +140,7 @@ class VolumeFilter(object):
                 cell_centre = get_structure_centre_wrapper(cell_points)
                 cells.append(
                     Cell(
-                        (cell_centre["x"], cell_centre["y"], cell_centre["z"]),
+                        (cell_centre.x, cell_centre.y, cell_centre.z),
                         Cell.UNKNOWN,
                     )
                 )
@@ -158,9 +158,9 @@ class VolumeFilter(object):
                         cells.append(
                             Cell(
                                 (
-                                    cell_centre["x"],
-                                    cell_centre["y"],
-                                    cell_centre["z"],
+                                    cell_centre.x,
+                                    cell_centre.y,
+                                    cell_centre.z,
                                 ),
                                 Cell.UNKNOWN,
                             )
@@ -170,9 +170,9 @@ class VolumeFilter(object):
                     cells.append(
                         Cell(
                             (
-                                cell_centre["x"],
-                                cell_centre["y"],
-                                cell_centre["z"],
+                                cell_centre.x,
+                                cell_centre.y,
+                                cell_centre.z,
                             ),
                             Cell.ARTIFACT,
                         )

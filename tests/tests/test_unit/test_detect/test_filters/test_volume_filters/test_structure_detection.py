@@ -43,7 +43,7 @@ def structure(three_d_cross):
 
 def test_get_structure_centre(structure):
     result_point = get_structure_centre_wrapper(structure)
-    assert (result_point["x"], result_point["y"], result_point["z"]) == (
+    assert (result_point.x, result_point.y, result_point.z) == (
         1,
         1,
         1,
