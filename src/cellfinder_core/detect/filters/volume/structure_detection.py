@@ -152,7 +152,7 @@ class CellDetector:
                     if self.relative_z > 0:
                         neighbour_ids[2] = self.previous_layer[x, y]
 
-                    if self.is_new_structure(neighbour_ids):
+                    if is_new_structure(neighbour_ids):
                         neighbour_ids[0] = self.next_structure_id
                         self.next_structure_id += 1
                     struct_id = self.structure_manager.add(
@@ -223,7 +223,7 @@ class CellDetector:
                                     x + 1, y + 1
                                 ]
 
-                    if self.is_new_structure(neighbour_ids):
+                    if is_new_structure(neighbour_ids):
                         neighbour_ids[0] = self.next_structure_id
                         self.next_structure_id += 1
                     struct_id = self.structure_manager.add(
@@ -236,12 +236,6 @@ class CellDetector:
 
                 layer[x, y] = struct_id
         return layer
-
-    def is_new_structure(self, neighbour_ids):  # TEST:
-        for i in range(len(neighbour_ids)):
-            if neighbour_ids[i] != 0:
-                return False
-        return True
 
     def get_cell_centres(self):
         cell_centres = self.structure_manager.structures_to_cells()
@@ -337,3 +331,10 @@ class StructureManager:
             p = get_structure_centre(structure)
             cell_centres.append(p)
         return cell_centres
+
+
+def is_new_structure(neighbour_ids):
+    for i in range(len(neighbour_ids)):
+        if neighbour_ids[i] != 0:
+            return False
+    return True
