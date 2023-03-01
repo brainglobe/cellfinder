@@ -128,8 +128,6 @@ class BallFilter:
 
     def walk(self):  # Highly optimised because most time critical
         ball_radius = self.ball_xy_size // 2
-        middle_z = self.middle_z_idx
-
         tile_mask_covered_img_width = (
             self.good_tiles_mask.shape[0] * self.tile_step_width
         )
@@ -142,42 +140,21 @@ class BallFilter:
         # whole ball size because the cube is extracted with y + whole ball
         # height
         max_height = tile_mask_covered_img_height - self.ball_xy_size
-        for y in range(max_height):
-            for x in range(max_width):
-                ball_centre_x = x + ball_radius
-                ball_centre_y = y + ball_radius
-                if _is_tile_to_check(
-                    ball_centre_x,
-                    ball_centre_y,
-                    self.middle_z_idx,
-                    self.tile_step_width,
-                    self.tile_step_height,
-                    self.good_tiles_mask,
-                ):
-                    cube = self.volume[
-                        x : x + self.kernel.shape[0],
-                        y : y + self.kernel.shape[1],
-                        :,
-                    ]
-                    if _cube_overlaps(
-                        cube,
-                        self.ball_z_size,
-                        self.overlap_threshold,
-                        self.THRESHOLD_VALUE,
-                        self.kernel,
-                    ):
-                        self.volume[
-                            ball_centre_x, ball_centre_y, middle_z
-                        ] = self.SOMA_CENTRE_VALUE
-
-    def __is_tile_to_check(
-        self, x, y
-    ):  # Highly optimised because most time critical
-        middle_z = self.middle_z_idx
-
-        x_in_mask = x // self.tile_step_width  # TEST: test bounds (-1 range)
-        y_in_mask = y // self.tile_step_height  # TEST: test bounds (-1 range)
-        return self.good_tiles_mask[x_in_mask, y_in_mask, middle_z]
+        _walk(
+            max_height,
+            max_width,
+            self.tile_step_width,
+            self.tile_step_height,
+            self.good_tiles_mask,
+            self.volume,
+            self.kernel,
+            self.ball_z_size,
+            ball_radius,
+            self.middle_z_idx,
+            self.overlap_threshold,
+            self.THRESHOLD_VALUE,
+            self.SOMA_CENTRE_VALUE,
+        )
 
 
 @jit(nopython=True, cache=True)
@@ -209,11 +186,58 @@ def _cube_overlaps(
     return current_overlap_value > overlap_threshold
 
 
+@jit(nopython=True)
 def _is_tile_to_check(
-    x, y, middle_z_idx, tile_step_width, tile_step_height, good_tiles_mask
+    x, y, middle_z, tile_step_width, tile_step_height, good_tiles_mask
 ):  # Highly optimised because most time critical
-    middle_z = middle_z_idx
-
     x_in_mask = x // tile_step_width  # TEST: test bounds (-1 range)
     y_in_mask = y // tile_step_height  # TEST: test bounds (-1 range)
     return good_tiles_mask[x_in_mask, y_in_mask, middle_z]
+
+
+@jit(nopython=True)
+def _walk(
+    max_height,
+    max_width,
+    tile_step_width,
+    tile_step_height,
+    good_tiles_mask,
+    volume,
+    kernel,
+    ball_z_size,
+    ball_radius,
+    middle_z,
+    overlap_threshold,
+    THRESHOLD_VALUE,
+    SOMA_CENTRE_VALUE,
+):
+    """
+    Warning: modifies volume in place!
+    """
+    for y in range(max_height):
+        for x in range(max_width):
+            ball_centre_x = x + ball_radius
+            ball_centre_y = y + ball_radius
+            if _is_tile_to_check(
+                ball_centre_x,
+                ball_centre_y,
+                middle_z,
+                tile_step_width,
+                tile_step_height,
+                good_tiles_mask,
+            ):
+                cube = volume[
+                    x : x + kernel.shape[0],
+                    y : y + kernel.shape[1],
+                    :,
+                ]
+                if _cube_overlaps(
+                    cube,
+                    ball_z_size,
+                    overlap_threshold,
+                    THRESHOLD_VALUE,
+                    kernel,
+                ):
+                    volume[
+                        ball_centre_x, ball_centre_y, middle_z
+                    ] = SOMA_CENTRE_VALUE
