@@ -6,10 +6,11 @@ from cellfinder_core.detect.filters.volume.volume_filter import VolumeFilter
 # Use random data for signal data
 ball_z_size = 3
 
+
 def gen_signal_array(ny, nx):
     shape = (ball_z_size, ny, nx)
-    signal_array = np.random.random(shape)
-    return (signal_array * 65535).astype(np.uint16)
+    return np.random.randint(low=0, high=65535, size=shape, dtype=np.uint16)
+
 
 signal_array = gen_signal_array(667, 510)
 
@@ -30,8 +31,7 @@ mp_3d_filter = VolumeFilter(
 )
 
 # Use random data for mask data
-mask_shape = (42, 32)
-mask = np.random.randint(2, size=42 * 32, dtype=np.uint8).reshape(mask_shape)
+mask = np.random.randint(low=0, high=2, size=(42, 32), dtype=np.uint8)
 
 # Fill up the 3D filter with planes
 for plane in signal_array:
