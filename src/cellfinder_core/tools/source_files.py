@@ -1,11 +1,9 @@
-from pkg_resources import resource_filename
+from pathlib import Path
 
 
 def source_config_cellfinder():
-    return resource_filename("cellfinder_core", "config/cellfinder.conf")
+    return Path(__file__).parent.parent / "config" / "cellfinder.conf"
 
 
 def source_custom_config_cellfinder():
-    return resource_filename(
-        "cellfinder_core", "config/cellfinder.conf.custom"
-    )
+    return Path(__file__).parent.parent / "config" / "cellfinder.conf.custom"
