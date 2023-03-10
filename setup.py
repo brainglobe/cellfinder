@@ -1,11 +1,6 @@
 import Cython.Build
 from setuptools import Extension, setup
 
-base_tile_filter_extension = Extension(
-    name="cellfinder_core.detect.filters.plane.base_tile_filter",
-    sources=["src/cellfinder_core/detect/filters/plane/base_tile_filter.pyx"],
-    language="c++",
-)
 
 ball_filter_extension = Extension(
     name="cellfinder_core.detect.filters.volume.ball_filter",
@@ -21,7 +16,6 @@ structure_detection_extension = Extension(
 )
 
 extensions = [
-    base_tile_filter_extension,
     ball_filter_extension,
     structure_detection_extension,
 ]
