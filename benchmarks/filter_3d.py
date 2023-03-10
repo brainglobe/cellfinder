@@ -4,19 +4,21 @@ from pyinstrument import Profiler
 from cellfinder_core.detect.filters.volume.volume_filter import VolumeFilter
 
 # Use random data for signal data
-repeats = 2
-shape = (30 * repeats, 667, 510)
+ball_z_size = 3
 
-signal_array = np.random.random(shape)
-signal_array = (signal_array * 65535).astype(np.uint16)
+def gen_signal_array(ny, nx):
+    shape = (ball_z_size, ny, nx)
+    signal_array = np.random.random(shape)
+    return (signal_array * 65535).astype(np.uint16)
 
+signal_array = gen_signal_array(667, 510)
 
 soma_diameter = 8
 setup_params = [
     signal_array[0, :, :].T,
     soma_diameter,
     3,  # ball_xy_size,
-    3,  # ball_z_size,
+    ball_z_size,
     0.6,  # ball_overlap_fraction,
     0,  # start_plane,
 ]
