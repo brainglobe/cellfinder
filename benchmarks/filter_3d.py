@@ -43,6 +43,7 @@ for plane in signal_array:
 profiler = Profiler()
 profiler.start()
 for i in range(10):
+    # Repeat same filter 10 times to increase runtime
     mp_3d_filter._run_filter()
 
 profiler.stop()
