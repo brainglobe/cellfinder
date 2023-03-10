@@ -1,106 +1,91 @@
-# cython: language_level=3
-# distutils: language = c++
+from typing import Dict
 
-from libcpp.map cimport map as CppMap
-from libcpp.pair cimport pair as CppPair
-from libcpp.vector cimport vector as CppVector
-
-from cellfinder_core.detect.filters.typedefs cimport uint, ull, ulong, ushort
+from numba import jit
 
 
-cdef get_biggest_structure(CppVector[ulong] sizes):
-    cdef uint result = 0
-    cdef uint val
+def get_biggest_structure(sizes):
+    result = 0
     for val in sizes:
         if val > result:
             result = val
     return result
 
 
-cdef class BaseTileFilter:
-
-    cdef:
-        readonly uint out_of_brain_intensity_threshold
-        public ushort[:,:] _tile
-        public ushort current_threshold
-        public bint keep
-        SizeAnalyser size_analyser
-
+class BaseTileFilter:
     def __init__(self, out_of_brain_intensity_threshold=100):
         """
 
         :param int out_of_brain_intensity_threshold: Set to 0 to disable
         """
-        self.out_of_brain_intensity_threshold = out_of_brain_intensity_threshold
+        self.out_of_brain_intensity_threshold = (
+            out_of_brain_intensity_threshold
+        )
         self.current_threshold = -1
         self.keep = True
         self.size_analyser = SizeAnalyser()
 
-    cpdef set_tile(self, tile):
+    def set_tile(self, tile):
         raise NotImplementedError
 
-    cpdef get_tile(self):
+    def get_tile(self):
         raise NotImplementedError
 
-    cpdef get_structures(self):
-        cdef CppVector[ulong] struct_sizes
+    def get_structures(self):
+        struct_sizes = []
         self.size_analyser.process(self._tile, self.current_threshold)
         struct_sizes = self.size_analyser.get_sizes()
         return get_biggest_structure(struct_sizes), struct_sizes.size()
 
-    cpdef is_low_average(self):  # TODO: move to OutOfBrainTileFilter
-        cdef bint is_low
-        cdef double avg = 0
-        cdef uint x, y
-        for x in range(self._tile.shape[0]):
-            for y in range(self._tile.shape[1]):
-                avg += self._tile[x, y]
-        avg /= self._tile.shape[0] * self._tile.shape[1]
+    @jit
+    def is_low_average(self, tile):  # TODO: move to OutOfBrainTileFilter
+        avg = 0
+        for x in range(tile.shape[0]):
+            for y in range(tile.shape[1]):
+                avg += tile[x, y]
+        avg /= tile.shape[0] * tile.shape[1]
         is_low = avg < self.out_of_brain_intensity_threshold
         self.keep = not is_low
         return is_low
 
 
-cdef class OutOfBrainTileFilter(BaseTileFilter):
-
-    cpdef set_tile(self, tile):
+class OutOfBrainTileFilter(BaseTileFilter):
+    def set_tile(self, tile):
         self._tile = tile
 
-    cpdef get_tile(self):
+    def get_tile(self):
         return self._tile
 
 
-cdef class SizeAnalyser:
+class SizeAnalyser:
+    obsolete_ids: Dict[int, int] = {}
+    struct_sizes: Dict[int, int] = {}
 
-    cdef:
-        CppMap[ull, ull] obsolete_ids
-        CppMap[ull, ulong] struct_sizes
-
-    cpdef process(self, ushort[:,:] tile, ushort threshold):
+    def process(self, tile, threshold):
         tile = tile.copy()
         self.clear_maps()
 
-        cdef ull struct_id, id_west, id_north, last_structure_id
         last_structure_id = 1
 
-        cdef uint y, x
         for y in range(tile.shape[1]):
             for x in range(tile.shape[0]):
-                # default struct_id to 0 so that it is not counted as structure in next iterations
+                # default struct_id to 0 so that it is not counted as
+                # structure in next iterations
                 id_west = id_north = struct_id = 0
                 if tile[x, y] >= threshold:
                     # If in bounds look to neighbours
                     if x > 0:
-                        id_west = tile[x-1, y]
+                        id_west = tile[x - 1, y]
                     if y > 0:
-                        id_north = tile[x, y-1]
+                        id_north = tile[x, y - 1]
 
                     id_west = self.sanitise_id(id_west)
                     id_north = self.sanitise_id(id_north)
 
                     if id_west != 0:
                         if id_north != 0 and id_north != id_west:
-                            struct_id = self.merge_structures(id_west, id_north)
+                            struct_id = self.merge_structures(
+                                id_west, id_north
+                            )
                         else:
                             struct_id = id_west
                     elif id_north != 0:
@@ -114,32 +99,27 @@ cdef class SizeAnalyser:
 
                 tile[x, y] = struct_id
 
-    cpdef get_sizes(self):
-        cdef CppVector[ulong] struct_sizes
-        cdef ulong size
-        cdef ull s_id
-        cdef CppPair[ull, ulong] iterator_pair
+    def get_sizes(self):
         for iterator_pair in self.struct_sizes:
-            struct_sizes.push_back(iterator_pair.second)
-        return struct_sizes
+            self.struct_sizes.push_back(iterator_pair.second)
+        return self.struct_sizes
 
-    cdef clear_maps(self):
+    def clear_maps(self):
         self.obsolete_ids.clear()
         self.struct_sizes.clear()
 
-    cdef sanitise_id(self, ull s_id):
-        while self.obsolete_ids.count(s_id):  # walk up the chain of obsolescence
+    def sanitise_id(self, s_id):
+        while self.obsolete_ids.count(
+            s_id
+        ):  # walk up the chain of obsolescence
             s_id = self.obsolete_ids[s_id]
         return s_id
 
     # id1 and id2 must be valid struct IDs (>0)!
-    cdef merge_structures(self, ull id1, ull id2):
-        cdef ulong new_size
-        cdef ull tmp_id
-
+    def merge_structures(self, id1, id2):
         # ensure id1 is the smaller of the two values
         if id2 < id1:
-            tmp_id = id1    # swap
+            tmp_id = id1  # swap
             id1 = id2
             id2 = tmp_id
 

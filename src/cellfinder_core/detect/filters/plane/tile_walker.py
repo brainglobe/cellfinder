@@ -59,7 +59,7 @@ class TileWalker(object):
             self.y = y
             self.ftf.set_tile(tile)
             if self.ftf.out_of_brain_intensity_threshold:
-                if not self.ftf.is_low_average():
+                if not self.ftf.is_low_average(tile):
                     mask_x = self.x // self.tile_width
                     mask_y = self.y // self.tile_height
                     self.good_tiles_mask[mask_x, mask_y] = True
