@@ -1,7 +1,6 @@
 import Cython.Build
 from setuptools import Extension, setup
 
-
 ball_filter_extension = Extension(
     name="cellfinder_core.detect.filters.volume.ball_filter",
     sources=["src/cellfinder_core/detect/filters/volume/ball_filter.pyx"],
