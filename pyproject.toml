@@ -70,6 +70,9 @@ include-package-data = true
 [tool.cibuildwheel]
 build = "cp38-* cp39-* cp310-*"
 
+[tool.cibuildwheel.macos]
+archs = ["x86_64", "arm64"]
+
 [tool.pytest.ini_options]
 addopts = "--cov=src/cellfinder_core"
 filterwarnings = [
