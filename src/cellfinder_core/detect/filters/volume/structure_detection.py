@@ -1,4 +1,3 @@
-from collections import defaultdict
 from dataclasses import dataclass
 
 import numpy as np
@@ -243,9 +242,14 @@ class CellDetector:
         return cell_centres
 
     def get_coords_list(self):
-        coords = (
-            self.structure_manager.get_coords_dict()
-        )  # TODO: cache (attribute)
+        # TODO: cache (attribute)
+        coords_arrays = self.structure_manager.get_coords_dict()
+        # Convert from arrays to dicts
+        coords = {}
+        for sid in coords_arrays:
+            coords[sid] = []
+            for row in coords_arrays[sid]:
+                coords[sid].append({"x": row[0], "y": row[1], "z": row[2]})
         return coords
 
 
@@ -254,13 +258,22 @@ class StructureManager:
         # Mapping from obsolete IDs to the IDs that they have been
         # made obsolete by
         self.obsolete_ids = Dict.empty(
-            key_type=types.int64, value_type=types.int64
+            key_type=types.int64, value_type=types.uint64
         )
         # Mapping from IDs to list of points in that structure
-        self.coords_maps = defaultdict(list)
+        self.coords_maps = Dict.empty(
+            key_type=types.int64, value_type=types.uint64[:, :]
+        )
 
     def get_coords_dict(self):
         return self.coords_maps
+
+    def add_point(self, sid: int, point: np.ndarray) -> None:
+        """
+        Add *point* to the structure with the given *sid*.
+        """
+        point = np.array(point).astype(np.uint64)
+        self.coords_maps[sid] = np.row_stack((self.coords_maps[sid], point))
 
     def add(self, x: int, y: int, z: int, neighbour_ids: list[int]) -> int:
         """
@@ -274,15 +287,14 @@ class StructureManager:
         pertaining points.
         """
         updated_id = self.sanitise_ids(neighbour_ids)
+        if updated_id not in self.coords_maps:
+            self.coords_maps[updated_id] = np.zeros(
+                shape=(0, 3), dtype=np.uint64
+            )
         self.merge_structures(updated_id, neighbour_ids)
 
-        p = {
-            "x": x,
-            "y": y,
-            "z": z,
-        }  # Necessary to split definition on some machines
-        self.coords_maps[updated_id].append(p)  # Add point for that structure
-
+        # Add point for that structure
+        self.add_point(updated_id, [x, y, z])
         return updated_id
 
     def sanitise_ids(self, neighbour_ids: list[int]) -> int:
@@ -323,7 +335,7 @@ class StructureManager:
             # to current
             if neighbour_id > updated_id:
                 for p in self.coords_maps[neighbour_id]:
-                    self.coords_maps[updated_id].append(p)
+                    self.add_point(updated_id, p)
                 self.coords_maps.pop(neighbour_id)
                 self.obsolete_ids[neighbour_id] = updated_id
 
