@@ -1,8 +1,9 @@
 import multiprocessing
 from datetime import datetime
 from queue import Queue
-from typing import Callable, List, Optional, Tuple
+from typing import Callable, List, Optional, Tuple, Union
 
+import dask.array as da
 import numpy as np
 from imlib.cells.cells import Cell
 from imlib.general.system import get_num_processes
@@ -38,7 +39,7 @@ def calculate_parameters_in_pixels(
 
 
 def main(
-    signal_array: np.ndarray,
+    signal_array: Union[np.ndarray, da.Array],
     start_plane: int,
     end_plane: int,
     voxel_sizes: Tuple[float, float, float],
