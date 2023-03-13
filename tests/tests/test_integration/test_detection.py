@@ -99,3 +99,14 @@ def test_floating_point_error(signal_array, background_array):
     signal_array = signal_array.astype(float)
     with pytest.raises(ValueError, match="signal_array must be integer"):
         main(signal_array, background_array, voxel_sizes)
+
+
+def test_synthetic_data(synthetic_bright_spots):
+    signal_array, background_array = synthetic_bright_spots
+    detected = main(
+        signal_array,
+        background_array,
+        voxel_sizes,
+        n_free_cpus=0,
+    )
+    assert len(detected) == 8
