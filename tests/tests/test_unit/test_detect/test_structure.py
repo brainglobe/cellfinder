@@ -15,10 +15,15 @@ depth = 2
 # - A dict of expected structure coordinates
 test_data = [
     (
+        # Two pixels connected in a single structure
+        [(0, 0, 0), (0, 1, 0)],
+        {1: [{"x": 0, "y": 0, "z": 0}, {"x": 1, "y": 0, "z": 0}]},
+    ),
+    (
         # Two disconnected single-pixel structures
         [(0, 0, 0), (0, 2, 0)],
         {1: [{"x": 0, "y": 0, "z": 0}], 2: [{"x": 2, "y": 0, "z": 0}]},
-    )
+    ),
 ]
 
 
