@@ -2,7 +2,6 @@ from collections import defaultdict
 from dataclasses import dataclass
 
 import numpy as np
-from imlib.cells.cells import Cell
 
 
 @dataclass
@@ -250,72 +249,68 @@ class CellDetector:
 
 class StructureManager:
     def __init__(self):
-        self.default_cell_type = Cell.UNKNOWN
-        self.obsolete_ids = {}
+        # Mapping from obsolete IDs to the IDs that they have been
+        # made obsolete by
+        self.obsolete_ids: dict[int, int] = {}
+        # Mapping from IDs to list of points in that structure
         self.coords_maps = defaultdict(list)
 
     def get_coords_dict(self):
         return self.coords_maps
 
-    def add(self, x: int, y: int, z: int, neighbour_ids):
+    def add(self, x: int, y: int, z: int, neighbour_ids: list[int]) -> int:
         """
         For the current coordinates takes all the neighbours and find the
-        minimum structure
-        including obsolete structures mapping to any of the neighbours
-        recursively.
-        Once the correct structure id is found, append a point with the
-        current coordinates to the coordinates map
-        entry for the correct structure. Hence each entry of the map will be a
-        vector of all the pertaining points.
+        minimum structure including obsolete structures mapping to any of
+        the neighbours recursively.
 
-        :param x:
-        :param y:
-        :param z:
-        :param neighbour_ids:
-        :return:
+        Once the correct structure id is found, append a point with the
+        current coordinates to the coordinates map entry for the correct
+        structure. Hence each entry of the map will be a vector of all the
+        pertaining points.
         """
         updated_id = self.sanitise_ids(neighbour_ids)
         self.merge_structures(updated_id, neighbour_ids)
 
-        p = Point(x, y, z)  # Necessary to split definition on some machines
+        p = {"x": x, 'y': y, 'z': z}  # Necessary to split definition on some machines
         self.coords_maps[updated_id].append(p)  # Add point for that structure
 
         return updated_id
 
-    def sanitise_ids(self, neighbour_ids):
+    def sanitise_ids(self, neighbour_ids: list[int]) -> int:
         """
-        For all the neighbour ids, walk up the chain of obsolescence (self.
-        obsolete_ids)
-        to reassign the corresponding most obsolete structure to the current
-        neighbour
+        Get the smallest ID of all the structures that are connected to IDs
+        in `neighbour_ids`.
 
-        :param neighbour_ids:
-        :return: updated_id
+        For all the neighbour ids, walk up the chain of obsolescence (self.
+        obsolete_ids) to reassign the corresponding most obsolete structure
+        to the current neighbour.
+
+        Has no side effects on this class.
         """
-        for i in range(len(neighbour_ids)):
-            neighbour_id = neighbour_ids[i]
+        for i, neighbour_id in enumerate(neighbour_ids):
             # walk up the chain of obsolescence
             while neighbour_id in self.obsolete_ids:
                 neighbour_id = self.obsolete_ids[neighbour_id]
             neighbour_ids[i] = neighbour_id
 
-        updated_id = get_non_zero_ull_min(
-            neighbour_ids
-        )  # FIXME: what happens if all neighbour_ids are 0 (raise)
+        # Get minimum of all non-obsolete IDs
+        updated_id = get_non_zero_ull_min(neighbour_ids)
         return updated_id
 
-    def merge_structures(self, updated_id, neighbour_ids):
+    def merge_structures(
+        self, updated_id: int, neighbour_ids: list[int]
+    ) -> None:
         """
         For all the neighbours, reassign all the points of neighbour to
-        updated_id
-        Then deletes the now obsolete entry from the points map and add that
-        entry to the obsolete_ids
+        updated_id. Then deletes the now obsolete entry from the points
+        map and add that entry to the obsolete_ids.
 
-        :param updated_id:
-        :param neighbour_ids:
+        Updates:
+        - self.coords_maps
+        - self.obsolete_ids
         """
-        for i in range(len(neighbour_ids)):
-            neighbour_id = neighbour_ids[i]
+        for i, neighbour_id in enumerate(neighbour_ids):
             # minimise ID so if neighbour with higher ID, reassign its points
             # to current
             if neighbour_id > updated_id:
