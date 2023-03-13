@@ -2,6 +2,8 @@ from collections import defaultdict
 from dataclasses import dataclass
 
 import numpy as np
+from numba.core import types
+from numba.typed import Dict
 
 
 @dataclass
@@ -251,7 +253,9 @@ class StructureManager:
     def __init__(self):
         # Mapping from obsolete IDs to the IDs that they have been
         # made obsolete by
-        self.obsolete_ids: dict[int, int] = {}
+        self.obsolete_ids = Dict.empty(
+            key_type=types.int64, value_type=types.int64
+        )
         # Mapping from IDs to list of points in that structure
         self.coords_maps = defaultdict(list)
 
@@ -272,7 +276,11 @@ class StructureManager:
         updated_id = self.sanitise_ids(neighbour_ids)
         self.merge_structures(updated_id, neighbour_ids)
 
-        p = {"x": x, 'y': y, 'z': z}  # Necessary to split definition on some machines
+        p = {
+            "x": x,
+            "y": y,
+            "z": z,
+        }  # Necessary to split definition on some machines
         self.coords_maps[updated_id].append(p)  # Add point for that structure
 
         return updated_id
