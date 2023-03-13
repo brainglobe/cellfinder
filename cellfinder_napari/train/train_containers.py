@@ -31,7 +31,7 @@ class TrainingDataInputs(InputContainer):
                 "yaml_files",
                 custom_label="YAML files",
                 mode=FileDialogMode.EXISTING_FILES,
-                filter="*.y?ml",
+                filter="*.yml",
             ),
             output_directory=cls._custom_widget(
                 "output_directory", mode=FileDialogMode.EXISTING_DIRECTORY
