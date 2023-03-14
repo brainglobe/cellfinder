@@ -6,6 +6,8 @@ include cellfinder_napari/napari.yaml
 
 recursive-include cellfinder_napari *.png
 
-recursive-exclude * __pycache__
-recursive-exclude * *.py[co]
+exclude .pre-commit-config.yaml
+exclude tox.ini
+
 recursive-exclude examples *
+recursive-exclude resources *
