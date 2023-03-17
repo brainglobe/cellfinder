@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+from typing import Literal
 
 from cellfinder_core import logger
 from cellfinder_core.download.download import download
@@ -16,8 +17,10 @@ download_requirements_gb = {
     "resnet50_all": 0.18,
 }
 
+model_type = Literal["resnet50_tv", "resnet50_all"]
 
-def main(model_name: str, download_path: os.PathLike) -> Path:
+
+def main(model_name: model_type, download_path: os.PathLike) -> Path:
     """
     For a given model name and download path, download the model file
     and return the path to the downloaded file.

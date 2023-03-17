@@ -3,7 +3,7 @@ import numpy as np
 
 from cellfinder_core.main import main
 
-voxel_sizes = [5, 2, 2]
+voxel_sizes = (5, 2, 2)
 
 # Use random data for signal/background data
 repeats = 2

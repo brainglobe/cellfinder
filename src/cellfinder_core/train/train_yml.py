@@ -16,6 +16,7 @@ from argparse import (
 )
 from datetime import datetime
 from pathlib import Path
+from typing import Literal
 
 from fancylog import fancylog
 from imlib.general.numerical import check_positive_float, check_positive_int
@@ -40,6 +41,8 @@ models = {
     "101": "101-layer",
     "152": "152-layer",
 }
+
+depth_type = Literal["18", "34", "50", "101", "152"]
 
 
 def valid_model_depth(depth):
