@@ -15,14 +15,14 @@ def gen_signal_array(ny, nx):
 signal_array = gen_signal_array(667, 510)
 
 soma_diameter = 8
-setup_params = [
+setup_params = (
     signal_array[0, :, :].T,
     soma_diameter,
     3,  # ball_xy_size,
     ball_z_size,
     0.6,  # ball_overlap_fraction,
     0,  # start_plane,
-]
+)
 
 mp_3d_filter = VolumeFilter(
     soma_diameter=soma_diameter,
