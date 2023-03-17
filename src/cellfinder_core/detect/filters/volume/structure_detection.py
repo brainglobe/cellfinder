@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
 import numpy as np
+from numba import jit
 from numba.core import types
 from numba.typed import Dict
 
@@ -12,18 +13,17 @@ class Point:
     z: int
 
 
-ULLONG_MAX = 18446744073709551615  # (2**64) -1
+UINT64_MAX = np.iinfo(np.uint64).max
 N_NEIGHBOURS_4_CONNECTED = 3  # top left, below
 N_NEIGHBOURS_8_CONNECTED = 13  # all the 9 below + the 4 before on same plane
 
 
+@jit
 def get_non_zero_ull_min(values):
-    min_val = ULLONG_MAX
-    for i in range(len(values)):
-        s_id = values[i]
-        if s_id != 0:
-            if s_id < min_val:
-                min_val = s_id
+    min_val = UINT64_MAX
+    for v in values:
+        if v != 0 and v < min_val:
+            min_val = v
     return min_val
 
 
@@ -67,7 +67,7 @@ class CellDetector:
         ), 'Connection type must be one of 4,8 got "{}"'.format(connect_type)
         self.connect_type = connect_type
 
-        self.SOMA_CENTRE_VALUE = ULLONG_MAX
+        self.SOMA_CENTRE_VALUE = UINT64_MAX
 
         # position to append in stack
         # FIXME: replace by keeping start_z and self.z > self.start_Z
