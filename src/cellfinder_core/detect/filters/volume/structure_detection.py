@@ -348,6 +348,7 @@ class StructureManager:
         return cell_centres
 
 
+@jit
 def is_new_structure(neighbour_ids):
     for i in range(len(neighbour_ids)):
         if neighbour_ids[i] != 0:
