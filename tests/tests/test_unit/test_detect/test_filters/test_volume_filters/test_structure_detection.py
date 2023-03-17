@@ -3,6 +3,7 @@ import pytest
 
 from cellfinder_core.detect.filters.volume.structure_detection import (
     CellDetector,
+    Point,
     get_non_zero_ull_min_wrapper,
     get_structure_centre_wrapper,
 )
@@ -11,16 +12,6 @@ from cellfinder_core.detect.filters.volume.structure_detection import (
 def test_get_non_zero_ull_min():
     assert get_non_zero_ull_min_wrapper(list(range(10))) == 1
     assert get_non_zero_ull_min_wrapper([0] * 10) == (2**64) - 1
-
-
-class Point:
-    def __init__(self, x, y, z):
-        self.x = x
-        self.y = y
-        self.z = z
-
-    def __str__(self):
-        return "x: {}, y: {}, z: {}".format(self.x, self.y, self.z)
 
 
 @pytest.fixture()
@@ -67,63 +58,49 @@ test_data = [
     (
         # Two pixels connected in a single structure along x
         [(0, 0, 0), (0, 1, 0)],
-        {1: [{"x": 0, "y": 0, "z": 0}, {"x": 1, "y": 0, "z": 0}]},
+        {1: [Point(0, 0, 0), Point(1, 0, 0)]},
     ),
     (
         # Two pixels connected in a single structure along y
         [(0, 0, 0), (0, 0, 1)],
-        {1: [{"x": 0, "y": 0, "z": 0}, {"x": 0, "y": 1, "z": 0}]},
+        {1: [Point(0, 0, 0), Point(0, 1, 0)]},
     ),
     (
         # Two pixels connected in a single structure along z
         [(0, 0, 0), (1, 0, 0)],
-        {1: [{"x": 0, "y": 0, "z": 0}, {"x": 0, "y": 0, "z": 1}]},
+        {1: [Point(0, 0, 0), Point(0, 0, 1)]},
     ),
     (
         # Four pixels all connected and spread across x-y-z
         [(0, 0, 0), (1, 0, 0), (1, 1, 0), (1, 0, 1)],
-        {
-            1: [
-                {"x": 0, "y": 0, "z": 0},
-                {"x": 0, "y": 0, "z": 1},
-                {"x": 1, "y": 0, "z": 1},
-                {"x": 0, "y": 1, "z": 1},
-            ]
-        },
+        {1: [Point(0, 0, 0), Point(0, 0, 1), Point(1, 0, 1), Point(0, 1, 1)]},
     ),
     (
         # three initially disconnected pixels that then get merged
         # by a fourth pixel
         [(1, 1, 0), (0, 1, 1), (1, 0, 1), (1, 1, 1)],
-        {
-            1: [
-                {"x": 1, "y": 1, "z": 0},
-                {"x": 0, "y": 1, "z": 1},
-                {"x": 1, "y": 0, "z": 1},
-                {"x": 1, "y": 1, "z": 1},
-            ]
-        },
+        {1: [Point(1, 1, 0), Point(0, 1, 1), Point(1, 0, 1), Point(1, 1, 1)]},
     ),
     (
         # Three pixels in x-y plane that require structure merging
         [(1, 0, 0), (0, 1, 0), (1, 1, 0)],
         {
             1: [
-                {"x": 1, "y": 0, "z": 0},
-                {"x": 0, "y": 0, "z": 1},
-                {"x": 1, "y": 0, "z": 1},
+                Point(1, 0, 0),
+                Point(0, 0, 1),
+                Point(1, 0, 1),
             ]
         },
     ),
     (
         # Two disconnected single-pixel structures
         [(0, 0, 0), (0, 2, 0)],
-        {1: [{"x": 0, "y": 0, "z": 0}], 2: [{"x": 2, "y": 0, "z": 0}]},
+        {1: [Point(0, 0, 0)], 2: [Point(2, 0, 0)]},
     ),
     (
         # Two disconnected single-pixel structures along a diagonal
         [(0, 0, 0), (1, 1, 1)],
-        {1: [{"x": 0, "y": 0, "z": 0}], 2: [{"x": 1, "y": 1, "z": 1}]},
+        {1: [Point(0, 0, 0)], 2: [Point(1, 1, 1)]},
     ),
 ]
 
