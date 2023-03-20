@@ -1,16 +1,22 @@
-from dataclasses import dataclass
-
+import numba
 import numpy as np
 from numba import jit
 from numba.core import types
+from numba.experimental import jitclass
 from numba.typed import Dict
+from numba.types import DictType
 
 
-@dataclass
+@jitclass
 class Point:
     x: int
     y: int
     z: int
+
+    def __init__(self, x, y, z):
+        self.x = x
+        self.y = y
+        self.z = z
 
 
 UINT64_MAX = np.iinfo(np.uint64).max
@@ -25,6 +31,17 @@ def get_non_zero_ull_min(values):
         if v != 0 and v < min_val:
             min_val = v
     return min_val
+
+
+@jit(nopython=True)
+def get_from_dict_or_return(d: dict, a):
+    """
+    Traverse d, until a is not present as a key.
+    """
+    if a in d:
+        return get_from_dict_or_return(d, d[a])
+    else:
+        return a
 
 
 def get_structure_centre(structure):
@@ -46,11 +63,32 @@ def get_structure_centre_wrapper(structure):  # wrapper for testing purposes
     for p in structure:
         if type(p) == dict:
             s.append(Point(p["x"], p["y"], p["z"]))
-        else:
+        elif isinstance(p, Point):
             s.append(Point(p.x, p.y, p.z))
+        else:
+            s.append(Point(p[0], p[1], p[2]))
     return get_structure_centre(s)
 
 
+# Type declaration has to come outside of the class,
+# see https://github.com/numba/numba/issues/8808
+uint_2d_type = types.uint64[:, :]
+
+
+spec = [
+    ("connect_type", types.uint8),
+    ("SOMA_CENTRE_VALUE", types.uint64),
+    ("z", types.uint64),
+    ("relative_z", types.uint64),
+    ("next_structure_id", types.uint64),
+    ("shape", types.UniTuple(types.int64, 2)),
+    ("obsolete_ids", DictType(types.int64, types.int64)),
+    ("coords_maps", DictType(types.uint64, uint_2d_type)),
+    ("previous_layer", types.uint64[:, :]),
+]
+
+
+@jitclass(spec=spec)
 class CellDetector:
     def __init__(self, width: int, height: int, start_z: int, connect_type=4):
         self.shape = width, height
@@ -70,11 +108,11 @@ class CellDetector:
         # Mapping from obsolete IDs to the IDs that they have been
         # made obsolete by
         self.obsolete_ids = Dict.empty(
-            key_type=types.int64, value_type=types.uint64
+            key_type=types.int64, value_type=types.int64
         )
         # Mapping from IDs to list of points in that structure
         self.coords_maps = Dict.empty(
-            key_type=types.int64, value_type=types.uint64[:, :]
+            key_type=types.int64, value_type=uint_2d_type
         )
 
     def get_previous_layer(self):
@@ -86,14 +124,22 @@ class CellDetector:
         if [e for e in layer.shape[:2]] != [e for e in self.shape]:
             raise ValueError("layer does not have correct shape")
 
-        LAYER_MAX = np.iinfo(layer.dtype).max
+        source_dtype = layer.dtype
         # Have to cast layer to a concrete data type in order to save it
         # in the .previous_layer class attribute
         layer = layer.astype(np.uint64)
-        layer = layer * (UINT64_MAX // LAYER_MAX)
+
+        nbits = np.iinfo(source_dtype).bits
+        if nbits == 8:
+            layer *= numba.uint64(72340172838076656)
+        elif nbits == 16:
+            layer *= numba.uint64(281479271743489)
+        elif nbits == 32:
+            layer *= numba.uint64(4294967297)
 
         if self.connect_type == 4:
-            self.previous_layer = self.connect_four(layer)
+            layer = self.connect_four(layer)
+            self.previous_layer = layer
         else:
             self.previous_layer = self.connect_eight(layer)
 
@@ -139,6 +185,7 @@ class CellDetector:
                     struct_id = 0
 
                 layer[x, y] = struct_id
+
         return layer
 
     def connect_eight(self, layer):
@@ -228,7 +275,6 @@ class CellDetector:
         """
         Add *point* to the structure with the given *sid*.
         """
-        point = np.array(point).astype(np.uint64)
         self.coords_maps[sid] = np.row_stack((self.coords_maps[sid], point))
 
     def add(self, x: int, y: int, z: int, neighbour_ids: list[int]) -> int:
@@ -250,7 +296,8 @@ class CellDetector:
         self.merge_structures(updated_id, neighbour_ids)
 
         # Add point for that structure
-        self.add_point(updated_id, [x, y, z])
+        point = np.array([[x, y, z]], dtype=np.uint64)
+        self.add_point(updated_id, point)
         return updated_id
 
     def sanitise_ids(self, neighbour_ids: list[int]) -> int:
@@ -266,13 +313,14 @@ class CellDetector:
         """
         for i, neighbour_id in enumerate(neighbour_ids):
             # walk up the chain of obsolescence
-            while neighbour_id in self.obsolete_ids:
-                neighbour_id = self.obsolete_ids[neighbour_id]
+            neighbour_id = int(
+                get_from_dict_or_return(self.obsolete_ids, neighbour_id)
+            )
             neighbour_ids[i] = neighbour_id
 
         # Get minimum of all non-obsolete IDs
         updated_id = get_non_zero_ull_min(neighbour_ids)
-        return updated_id
+        return int(updated_id)
 
     def merge_structures(
         self, updated_id: int, neighbour_ids: list[int]
@@ -290,8 +338,7 @@ class CellDetector:
             # minimise ID so if neighbour with higher ID, reassign its points
             # to current
             if neighbour_id > updated_id:
-                for p in self.coords_maps[neighbour_id]:
-                    self.add_point(updated_id, p)
+                self.add_point(updated_id, self.coords_maps[neighbour_id])
                 self.coords_maps.pop(neighbour_id)
                 self.obsolete_ids[neighbour_id] = updated_id
 
