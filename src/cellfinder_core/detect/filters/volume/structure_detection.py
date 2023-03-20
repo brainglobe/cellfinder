@@ -61,10 +61,8 @@ class CellDetector:
         self.shape = width, height
         self.z = start_z
 
-        assert connect_type in (
-            4,
-            8,
-        ), 'Connection type must be one of 4,8 got "{}"'.format(connect_type)
+        if connect_type not in (4, 8):
+            raise ValueError("Connection type must be one of [4, 8]")
         self.connect_type = connect_type
 
         self.SOMA_CENTRE_VALUE = UINT64_MAX
@@ -82,11 +80,8 @@ class CellDetector:
     def process(
         self, layer
     ):  # WARNING: inplace  # WARNING: ull may be overkill but ulong required
-        assert [e for e in layer.shape[:2]] == [
-            e for e in self.shape
-        ], 'CellDetector layer error, expected shape "{}", got "{}"'.format(
-            self.shape, [e for e in layer.shape[:2]]
-        )
+        if [e for e in layer.shape[:2]] != [e for e in self.shape]:
+            raise ValueError("layer does not have correct shape")
 
         source_dtype = layer.dtype
         layer = layer.astype(np.uint64)
@@ -106,11 +101,7 @@ class CellDetector:
         elif source_dtype == np.uint64:
             pass
         else:
-            raise ValueError(
-                "Expected layer of any type from "
-                "np.uint8, np.uint16, np.uint32, np.uint64,"
-                "got: {}".format(source_dtype)
-            )
+            raise ValueError("Layer does not have uint data type")
 
         if self.connect_type == 4:
             self.previous_layer = self.connect_four(layer)
