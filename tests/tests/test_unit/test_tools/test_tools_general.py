@@ -18,14 +18,16 @@ validate_2d_img = np.array(
 )
 
 
-def test_get_max_value():
+def test_get_max_possible_value():
     num = random.randint(0, 100)
-    assert 255 == tools.get_max_value(np.array(num, dtype=np.uint8))
-    assert 65535 == tools.get_max_value(np.array(num, dtype=np.uint16))
+    assert 255 == tools.get_max_possible_value(np.array(num, dtype=np.uint8))
+    assert 65535 == tools.get_max_possible_value(
+        np.array(num, dtype=np.uint16)
+    )
     with pytest.raises(
         ValueError, match="must be a numpy array of integer data type"
     ):
-        tools.get_max_value(np.array(num, dtype=object))
+        tools.get_max_possible_value(np.array(num, dtype=np.float32))
 
 
 def test_union():

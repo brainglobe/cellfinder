@@ -4,7 +4,7 @@ import numpy as np
 from natsort import natsorted
 
 
-def get_max_value(obj_in: np.ndarray) -> int:
+def get_max_possible_value(obj_in: np.ndarray) -> int:
     """
     Returns the maximum allowed value for a numpy array of integer data type.
     """

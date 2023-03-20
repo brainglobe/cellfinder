@@ -128,13 +128,16 @@ test_data = [
 ]
 
 
+@pytest.mark.parametrize("dtype", [np.uint8, np.uint16, np.uint32, np.uint64])
 @pytest.mark.parametrize("pixels,expected_coords", test_data)
-def test_detection(pixels, expected_coords):
-    data = np.zeros((depth, width, height)).astype(np.uint64)
+def test_detection(dtype, pixels, expected_coords):
+    data = np.zeros((depth, width, height)).astype(dtype)
     detector = CellDetector(width, height, start_z=0)
 
+    # This is the value used by BallFilter to mark pixels
+    max_poss_value = np.iinfo(dtype).max
     for pix in pixels:
-        data[pix] = detector.SOMA_CENTRE_VALUE
+        data[pix] = max_poss_value
 
     for plane in data:
         detector.process(plane)

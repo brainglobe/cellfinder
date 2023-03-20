@@ -7,7 +7,7 @@ from cellfinder_core.detect.filters.volume.ball_filter import BallFilter
 from cellfinder_core.detect.filters.volume.structure_detection import (
     CellDetector,
 )
-from cellfinder_core.tools.tools import get_max_value
+from cellfinder_core.tools.tools import get_max_possible_value
 
 
 def get_ball_filter(
@@ -18,7 +18,7 @@ def get_ball_filter(
     ball_z_size: int,
     ball_overlap_fraction: float = 0.6,
 ) -> BallFilter:
-    max_value = get_max_value(plane)
+    max_value = get_max_possible_value(plane)
     thrsh_val = max_value - 1
     soma_centre_val = max_value
 
@@ -48,7 +48,7 @@ def get_cell_detector(
 
 
 def setup_tile_filtering(plane: np.ndarray) -> Tuple[int, int]:
-    max_value = get_max_value(plane)
+    max_value = get_max_possible_value(plane)
     clipping_value = max_value - 2
     thrsh_val = max_value - 1
 
