@@ -1,5 +1,6 @@
 from typing import Dict
 
+import numpy as np
 from numba import jit
 
 
@@ -36,16 +37,14 @@ class BaseTileFilter:
         struct_sizes = self.size_analyser.get_sizes()
         return get_biggest_structure(struct_sizes), struct_sizes.size()
 
-    @jit
-    def is_low_average(self, tile):  # TODO: move to OutOfBrainTileFilter
-        avg = 0
-        for x in range(tile.shape[0]):
-            for y in range(tile.shape[1]):
-                avg += tile[x, y]
-        avg /= tile.shape[0] * tile.shape[1]
-        is_low = avg < self.out_of_brain_intensity_threshold
-        self.keep = not is_low
-        return is_low
+
+@jit
+def is_low_average(tile: np.ndarray, threshold: float) -> bool:
+    """
+    Return `True` if the average value of *tile* is below *threshold*.
+    """
+    avg = np.mean(tile)
+    return avg < threshold
 
 
 class OutOfBrainTileFilter(BaseTileFilter):
