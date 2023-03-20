@@ -4,14 +4,14 @@ import pytest
 from cellfinder_core.detect.filters.volume.structure_detection import (
     CellDetector,
     Point,
-    get_non_zero_ull_min_wrapper,
+    get_non_zero_ull_min,
     get_structure_centre_wrapper,
 )
 
 
 def test_get_non_zero_ull_min():
-    assert get_non_zero_ull_min_wrapper(list(range(10))) == 1
-    assert get_non_zero_ull_min_wrapper([0] * 10) == (2**64) - 1
+    assert get_non_zero_ull_min(np.arange(10, dtype=np.uint64)) == 1
+    assert get_non_zero_ull_min(np.zeros(10, dtype=np.uint64)) == (2**64) - 1
 
 
 @pytest.fixture()

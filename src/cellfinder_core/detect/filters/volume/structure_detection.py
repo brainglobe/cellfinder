@@ -18,18 +18,13 @@ N_NEIGHBOURS_4_CONNECTED = 3  # top left, below
 N_NEIGHBOURS_8_CONNECTED = 13  # all the 9 below + the 4 before on same plane
 
 
-@jit
+@jit(nopython=True)
 def get_non_zero_ull_min(values):
     min_val = UINT64_MAX
     for v in values:
         if v != 0 and v < min_val:
             min_val = v
     return min_val
-
-
-def get_non_zero_ull_min_wrapper(values):  # wrapper for testing purposes
-    assert len(values) == 10
-    return get_non_zero_ull_min(values)
 
 
 def get_structure_centre(structure):
