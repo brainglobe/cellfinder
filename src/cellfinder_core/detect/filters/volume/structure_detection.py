@@ -67,7 +67,15 @@ class CellDetector:
         self.relative_z = 0
         self.next_structure_id = 1
 
-        self.structure_manager = StructureManager()
+        # Mapping from obsolete IDs to the IDs that they have been
+        # made obsolete by
+        self.obsolete_ids = Dict.empty(
+            key_type=types.int64, value_type=types.uint64
+        )
+        # Mapping from IDs to list of points in that structure
+        self.coords_maps = Dict.empty(
+            key_type=types.int64, value_type=types.uint64[:, :]
+        )
 
     def get_previous_layer(self):
         return np.array(self.previous_layer, dtype=np.uint64)
@@ -138,9 +146,7 @@ class CellDetector:
                     if is_new_structure(neighbour_ids):
                         neighbour_ids[0] = self.next_structure_id
                         self.next_structure_id += 1
-                    struct_id = self.structure_manager.add(
-                        x, y, self.z, neighbour_ids
-                    )
+                    struct_id = self.add(x, y, self.z, neighbour_ids)
                 else:
                     # reset so that grayscale value does not count as
                     # structure in next iterations
@@ -205,9 +211,7 @@ class CellDetector:
                     if is_new_structure(neighbour_ids):
                         neighbour_ids[0] = self.next_structure_id
                         self.next_structure_id += 1
-                    struct_id = self.structure_manager.add(
-                        x, y, self.z, neighbour_ids
-                    )
+                    struct_id = self.add(x, y, self.z, neighbour_ids)
                 else:
                     # reset so that grayscale value does not count as
                     # structure in next iterations
@@ -217,32 +221,19 @@ class CellDetector:
         return layer
 
     def get_cell_centres(self):
-        cell_centres = self.structure_manager.structures_to_cells()
+        cell_centres = self.structures_to_cells()
         return cell_centres
 
     def get_coords_list(self):
         # TODO: cache (attribute)
-        coords_arrays = self.structure_manager.get_coords_dict()
+        coords_arrays = self.get_coords_dict()
         # Convert from arrays to dicts
         coords = {}
         for sid in coords_arrays:
             coords[sid] = []
             for row in coords_arrays[sid]:
-                coords[sid].append({"x": row[0], "y": row[1], "z": row[2]})
+                coords[sid].append(Point(row[0], row[1], row[2]))
         return coords
-
-
-class StructureManager:
-    def __init__(self):
-        # Mapping from obsolete IDs to the IDs that they have been
-        # made obsolete by
-        self.obsolete_ids = Dict.empty(
-            key_type=types.int64, value_type=types.uint64
-        )
-        # Mapping from IDs to list of points in that structure
-        self.coords_maps = Dict.empty(
-            key_type=types.int64, value_type=types.uint64[:, :]
-        )
 
     def get_coords_dict(self):
         return self.coords_maps
