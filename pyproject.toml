@@ -82,6 +82,7 @@ filterwarnings = [
     # Raised by tensorflow; should be removed when tensorflow 2.12.0 is released. Fix is:
     # https://github.com/tensorflow/tensorflow/commit/b23c5750c9f35a87872793eef7c56e74ec55d4a7
     "ignore:`np.bool8` is a deprecated alias for `np.bool_`",
+    # See https://github.com/numba/numba/issues/8676
     "ignore:.*:numba.core.errors.NumbaTypeSafetyWarning"
 ]
 markers = [
