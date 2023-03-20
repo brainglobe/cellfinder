@@ -125,16 +125,13 @@ class CellDetector:
         :param layer:
         :return:
         """
-        # Labels of structures at left, top, below
-        neighbour_ids = [0] * N_NEIGHBOURS_4_CONNECTED
-
         for y in range(layer.shape[1]):
             for x in range(layer.shape[0]):
                 if layer[x, y] == self.SOMA_CENTRE_VALUE:
-                    for i in range(N_NEIGHBOURS_4_CONNECTED):  # reset
-                        neighbour_ids[
-                            i
-                        ] = 0  # Labels of structures at left, top, below
+                    # Labels of structures at left, top, below
+                    neighbour_ids = np.zeros(
+                        N_NEIGHBOURS_4_CONNECTED, dtype=np.uint64
+                    )
                     # If in bounds look at neighbours
                     if x > 0:
                         neighbour_ids[0] = layer[x - 1, y]
@@ -170,15 +167,11 @@ class CellDetector:
         :param layer:
         :return:
         """
-        # Labels of neighbour structures touching before
         neighbour_ids = [0] * N_NEIGHBOURS_8_CONNECTED
 
         for y in range(layer.shape[1]):
             for x in range(layer.shape[0]):
                 if layer[x, y] == self.SOMA_CENTRE_VALUE:
-                    for i in range(N_NEIGHBOURS_8_CONNECTED):  # reset
-                        neighbour_ids[i] = 0
-
                     # If in bounds look at neighbours
                     if x > 0 and y > 0:
                         neighbour_ids[0] = layer[x - 1, y - 1]
