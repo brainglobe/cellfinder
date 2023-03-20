@@ -86,25 +86,11 @@ class CellDetector:
         if [e for e in layer.shape[:2]] != [e for e in self.shape]:
             raise ValueError("layer does not have correct shape")
 
-        source_dtype = layer.dtype
+        LAYER_MAX = np.iinfo(layer.dtype).max
+        # Have to cast layer to a concrete data type in order to save it
+        # in the .previous_layer class attribute
         layer = layer.astype(np.uint64)
-
-        # The 'magic numbers' below are chosen so that the maximum number
-        # representable in each data type is converted to 2**64 - 1, the
-        # maximum representable number in uint64.
-        if source_dtype == np.uint8:
-            # 2**56 + 2**48 + 2**40 + 2**32 + 2**24 + 2**16 + 2**8 + 1
-            layer *= 72340172838076673  # TEST:
-        elif source_dtype == np.uint16:
-            # 2**48 + 2**32 + 2**16 + 1
-            layer *= 281479271743489
-        elif source_dtype == np.uint32:
-            # 2**32 + 1
-            layer *= 4294967297
-        elif source_dtype == np.uint64:
-            pass
-        else:
-            raise ValueError("Layer does not have uint data type")
+        layer = layer * (UINT64_MAX // LAYER_MAX)
 
         if self.connect_type == 4:
             self.previous_layer = self.connect_four(layer)
