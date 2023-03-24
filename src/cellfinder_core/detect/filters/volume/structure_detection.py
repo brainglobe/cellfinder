@@ -96,7 +96,7 @@ class CellDetector:
         # maximum representable number in uint64.
         if source_dtype == np.uint8:
             # 2**56 + 2**48 + 2**40 + 2**32 + 2**24 + 2**16 + 2**8 + 1
-            layer *= 72340172838076656  # TEST:
+            layer *= 72340172838076673  # TEST:
         elif source_dtype == np.uint16:
             # 2**48 + 2**32 + 2**16 + 1
             layer *= 281479271743489
