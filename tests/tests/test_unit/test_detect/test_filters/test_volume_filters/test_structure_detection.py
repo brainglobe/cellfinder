@@ -9,6 +9,16 @@ from cellfinder_core.detect.filters.volume.structure_detection import (
 )
 
 
+def coords_to_points(coords_arrays):
+    # Convert from arrays to dicts
+    coords = {}
+    for sid in coords_arrays:
+        coords[sid] = []
+        for row in coords_arrays[sid]:
+            coords[sid].append(Point(row[0], row[1], row[2]))
+    return coords
+
+
 def test_get_non_zero_ull_min():
     assert get_non_zero_ull_min(np.arange(10, dtype=np.uint64)) == 1
     assert get_non_zero_ull_min(np.zeros(10, dtype=np.uint64)) == (2**64) - 1
@@ -119,5 +129,5 @@ def test_detection(dtype, pixels, expected_coords):
     for plane in data:
         detector.process(plane)
 
-    coords = detector.get_coords_list()
-    assert coords == expected_coords
+    coords = detector.get_coords_dict()
+    assert coords_to_points(coords) == expected_coords

@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from typing import List
 
 import numba
@@ -9,16 +10,11 @@ from numba.typed import Dict
 from numba.types import DictType
 
 
-@jitclass
+@dataclass
 class Point:
     x: int
     y: int
     z: int
-
-    def __init__(self, x, y, z):
-        self.x = x
-        self.y = y
-        self.z = z
 
 
 UINT64_MAX = np.iinfo(np.uint64).max
@@ -258,17 +254,6 @@ class CellDetector:
     def get_cell_centres(self):
         cell_centres = self.structures_to_cells()
         return cell_centres
-
-    def get_coords_list(self):
-        # TODO: cache (attribute)
-        coords_arrays = self.get_coords_dict()
-        # Convert from arrays to dicts
-        coords = {}
-        for sid in coords_arrays:
-            coords[sid] = []
-            for row in coords_arrays[sid]:
-                coords[sid].append(Point(row[0], row[1], row[2]))
-        return coords
 
     def get_coords_dict(self):
         return self.coords_maps
