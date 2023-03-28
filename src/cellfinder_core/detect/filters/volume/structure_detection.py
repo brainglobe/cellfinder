@@ -127,9 +127,12 @@ class CellDetector:
         # in the .previous_layer class attribute
         layer = layer.astype(np.uint64)
 
+        # The 'magic numbers' below are chosen so that the maximum number
+        # representable in each data type is converted to 2**64 - 1, the
+        # maximum representable number in uint64.
         nbits = np.iinfo(source_dtype).bits
         if nbits == 8:
-            layer *= numba.uint64(72340172838076656)
+            layer *= numba.uint64(72340172838076673)
         elif nbits == 16:
             layer *= numba.uint64(281479271743489)
         elif nbits == 32:
