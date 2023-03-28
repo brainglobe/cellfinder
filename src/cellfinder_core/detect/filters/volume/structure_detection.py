@@ -1,3 +1,5 @@
+from typing import List
+
 import numba
 import numpy as np
 from numba import jit
@@ -277,7 +279,7 @@ class CellDetector:
         """
         self.coords_maps[sid] = np.row_stack((self.coords_maps[sid], point))
 
-    def add(self, x: int, y: int, z: int, neighbour_ids: list[int]) -> int:
+    def add(self, x: int, y: int, z: int, neighbour_ids: List[int]) -> int:
         """
         For the current coordinates takes all the neighbours and find the
         minimum structure including obsolete structures mapping to any of
@@ -300,7 +302,7 @@ class CellDetector:
         self.add_point(updated_id, point)
         return updated_id
 
-    def sanitise_ids(self, neighbour_ids: list[int]) -> int:
+    def sanitise_ids(self, neighbour_ids: List[int]) -> int:
         """
         Get the smallest ID of all the structures that are connected to IDs
         in `neighbour_ids`.
@@ -323,7 +325,7 @@ class CellDetector:
         return int(updated_id)
 
     def merge_structures(
-        self, updated_id: int, neighbour_ids: list[int]
+        self, updated_id: int, neighbour_ids: List[int]
     ) -> None:
         """
         For all the neighbours, reassign all the points of neighbour to
