@@ -18,6 +18,17 @@ class TileProcessor:
 
     def get_tile_mask(self, plane: da.array) -> Tuple[np.ndarray, np.ndarray]:
         """
+        This thresholds the input plane, and returns a mask indicating which
+        tiles are inside the brain.
+
+        The input plane is:
+
+        1. Clipped to self.threshold value
+        2. Run through a peak enhancement filter (see `classical_filter.py`)
+        3. Thresholded. Any values that are larger than
+           (mean + stddev * sself.n_sds_above_mean_thresh) are set to
+           self.threshold_value in-place.
+
         Parameters
         ----------
         plane :
@@ -26,7 +37,7 @@ class TileProcessor:
         Returns
         -------
         plane :
-            Modified plane.
+            Thresholded plane.
         mask :
             Good tiles mask.
         """
@@ -36,9 +47,12 @@ class TileProcessor:
         # Read plane from a dask array into memory as a numpy array
         plane = np.array(plane)
 
+        # Get tiles that are within the brain
         walker = TileWalker(plane, self.soma_diameter)
         walker.walk_out_of_brain_only()
+        good_tiles = walker.good_tiles_mask.astype(np.uint8)
 
+        # Threshold the image
         thresholded_img = enhance_peaks(
             plane.copy(),
             self.clipping_value,
@@ -47,6 +61,6 @@ class TileProcessor:
         avg = np.mean(thresholded_img)
         sd = np.std(thresholded_img)
         threshold = avg + self.n_sds_above_mean_thresh * sd
-
         plane[thresholded_img > threshold] = self.threshold_value
-        return plane, walker.good_tiles_mask.astype(np.uint8)
+
+        return plane, good_tiles
