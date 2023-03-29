@@ -24,19 +24,14 @@ class TileWalker:
     def __init__(self, img, soma_diameter):
         self.img = img
         self.img_width, self.img_height = img.shape
-        self.soma_diameter = soma_diameter
-        self.tile_width = self.soma_diameter * 2
-        self.tile_height = self.soma_diameter * 2
+        self.tile_width = soma_diameter * 2
+        self.tile_height = soma_diameter * 2
 
         n_tiles_width = math.ceil(self.img_width / self.tile_width)
         n_tiles_height = math.ceil(self.img_height / self.tile_height)
         self.good_tiles_mask = np.zeros(
             (n_tiles_width, n_tiles_height), dtype=bool
         )
-
-        self.x = 0
-        self.y = 0
-        self.tile_idx = 0
 
         corner_tile = img[0 : self.tile_width, 0 : self.tile_height]
         corner_intensity = np.mean(corner_tile)
@@ -70,11 +65,9 @@ class TileWalker:
             return
 
         for x, y, tile in self._get_tiles():
-            self.x = x
-            self.y = y
             if not is_low_average(tile, threshold):
-                mask_x = self.x // self.tile_width
-                mask_y = self.y // self.tile_height
+                mask_x = x // self.tile_width
+                mask_y = y // self.tile_height
                 self.good_tiles_mask[mask_x, mask_y] = True
 
 
