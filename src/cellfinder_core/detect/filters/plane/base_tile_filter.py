@@ -1,8 +1,5 @@
 from typing import Dict
 
-import numpy as np
-from numba import jit
-
 
 def get_biggest_structure(sizes):
     result = 0
@@ -10,49 +7,6 @@ def get_biggest_structure(sizes):
         if val > result:
             result = val
     return result
-
-
-class BaseTileFilter:
-    def __init__(self, out_of_brain_intensity_threshold=100):
-        """
-
-        :param int out_of_brain_intensity_threshold: Set to 0 to disable
-        """
-        self.out_of_brain_intensity_threshold = (
-            out_of_brain_intensity_threshold
-        )
-        self.current_threshold = -1
-        self.keep = True
-        self.size_analyser = SizeAnalyser()
-
-    def set_tile(self, tile):
-        raise NotImplementedError
-
-    def get_tile(self):
-        raise NotImplementedError
-
-    def get_structures(self):
-        struct_sizes = []
-        self.size_analyser.process(self._tile, self.current_threshold)
-        struct_sizes = self.size_analyser.get_sizes()
-        return get_biggest_structure(struct_sizes), struct_sizes.size()
-
-
-@jit
-def is_low_average(tile: np.ndarray, threshold: float) -> bool:
-    """
-    Return `True` if the average value of *tile* is below *threshold*.
-    """
-    avg = np.mean(tile)
-    return avg < threshold
-
-
-class OutOfBrainTileFilter(BaseTileFilter):
-    def set_tile(self, tile):
-        self._tile = tile
-
-    def get_tile(self):
-        return self._tile
 
 
 class SizeAnalyser:

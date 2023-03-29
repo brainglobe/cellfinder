@@ -1,11 +1,7 @@
 import math
 
 import numpy as np
-
-from cellfinder_core.detect.filters.plane.base_tile_filter import (
-    OutOfBrainTileFilter,
-    is_low_average,
-)
+from numba import jit
 
 
 class TileWalker:
@@ -43,11 +39,7 @@ class TileWalker:
         ].mean()
         corner_sd = img[0 : self.tile_width, 0 : self.tile_height].std()
         # add 1 to ensure not 0, as disables
-        out_of_brain_threshold = (corner_intensity + (2 * corner_sd)) + 1
-
-        self.ftf = OutOfBrainTileFilter(
-            out_of_brain_intensity_threshold=out_of_brain_threshold
-        )
+        self.out_of_brain_threshold = (corner_intensity + (2 * corner_sd)) + 1
 
     def _get_tiles(self):  # WARNING: crops to integer steps
         """
@@ -70,16 +62,23 @@ class TileWalker:
         greater than the intensity threshold mark the tile as good
         in self.good_tiles_mask.
         """
-        threshold = self.ftf.out_of_brain_intensity_threshold
+        threshold = self.out_of_brain_threshold
         if threshold == 0:
             return
 
         for x, y, tile in self._get_tiles():
             self.x = x
             self.y = y
-            self.ftf.set_tile(tile)
-            self.ftf.keep = not is_low_average(tile, threshold)
-            if self.ftf.keep:
+            if not is_low_average(tile, threshold):
                 mask_x = self.x // self.tile_width
                 mask_y = self.y // self.tile_height
                 self.good_tiles_mask[mask_x, mask_y] = True
+
+
+@jit
+def is_low_average(tile: np.ndarray, threshold: float) -> bool:
+    """
+    Return `True` if the average value of *tile* is below *threshold*.
+    """
+    avg = np.mean(tile)
+    return avg < threshold
