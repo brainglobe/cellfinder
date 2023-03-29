@@ -36,17 +36,19 @@ class BallFilter:
         # This is done by:
         # 1. Generating a binary sphere at a resolution *upscale_factor* larger
         #    than desired.
-        # 2. Downscaling the binary sphere to get a 'fuzzy' sphere at the original
-        #    intended scale
+        # 2. Downscaling the binary sphere to get a 'fuzzy' sphere at the
+        #    original intended scale
         upscale_factor: int = 7
-        upscaled_kernel_shape = [
+        upscaled_kernel_shape = (
             upscale_factor * ball_xy_size,
             upscale_factor * ball_xy_size,
             upscale_factor * ball_z_size,
-        ]
-        upscaled_ball_centre_position = [
-            np.floor(d / 2) for d in upscaled_kernel_shape
-        ]
+        )
+        upscaled_ball_centre_position = (
+            np.floor(upscaled_kernel_shape[0] / 2),
+            np.floor(upscaled_kernel_shape[1] / 2),
+            np.floor(upscaled_kernel_shape[2] / 2),
+        )
         upscaled_ball_radius = upscaled_kernel_shape[0] / 2.0
         sphere_kernel = make_sphere(
             upscaled_kernel_shape,
