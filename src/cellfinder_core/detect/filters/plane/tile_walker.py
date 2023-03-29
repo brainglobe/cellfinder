@@ -23,7 +23,6 @@ class TileWalker:
 
     def __init__(self, img, soma_diameter):
         self.img = img
-        self.thresholded_img = img.copy()
         self.img_width, self.img_height = img.shape
         self.soma_diameter = soma_diameter
         self.tile_width = self.soma_diameter * 2
@@ -43,39 +42,44 @@ class TileWalker:
             0 : self.tile_width, 0 : self.tile_height
         ].mean()
         corner_sd = img[0 : self.tile_width, 0 : self.tile_height].std()
-        out_of_brain_threshold = (
-            corner_intensity + (2 * corner_sd)
-        ) + 1  # add 1 to ensure not 0, as disables
+        # add 1 to ensure not 0, as disables
+        out_of_brain_threshold = (corner_intensity + (2 * corner_sd)) + 1
 
         self.ftf = OutOfBrainTileFilter(
             out_of_brain_intensity_threshold=out_of_brain_threshold
         )
 
     def _get_tiles(self):  # WARNING: crops to integer steps
+        """
+        Generator that yields tiles of the 2D image.
+        """
         for y in range(
             0, self.img_height - self.tile_height, self.tile_height
         ):
             for x in range(
                 0, self.img_width - self.tile_width, self.tile_width
             ):
-                read_tile = self.img[
+                tile = self.img[
                     x : x + self.tile_width, y : y + self.tile_height
                 ]
-                write_tile = self.thresholded_img[
-                    x : x + self.tile_width, y : y + self.tile_height
-                ]
-                yield x, y, read_tile, write_tile
+                yield x, y, tile
 
     def walk_out_of_brain_only(self):
-        for x, y, tile, write_tile in self._get_tiles():
+        """
+        Loop through tiles, and if the average value of a tile is
+        greater than the intensity threshold mark the tile as good
+        in self.good_tiles_mask.
+        """
+        threshold = self.ftf.out_of_brain_intensity_threshold
+        if threshold == 0:
+            return
+
+        for x, y, tile in self._get_tiles():
             self.x = x
             self.y = y
             self.ftf.set_tile(tile)
-            if self.ftf.out_of_brain_intensity_threshold:
-                self.ftf.keep = not is_low_average(
-                    tile, self.ftf.out_of_brain_intensity_threshold
-                )
-                if self.ftf.keep:
-                    mask_x = self.x // self.tile_width
-                    mask_y = self.y // self.tile_height
-                    self.good_tiles_mask[mask_x, mask_y] = True
+            self.ftf.keep = not is_low_average(tile, threshold)
+            if self.ftf.keep:
+                mask_x = self.x // self.tile_width
+                mask_y = self.y // self.tile_height
+                self.good_tiles_mask[mask_x, mask_y] = True

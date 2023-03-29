@@ -37,11 +37,10 @@ class TileProcessor:
         plane = np.array(plane)
 
         walker = TileWalker(plane, self.soma_diameter)
-
         walker.walk_out_of_brain_only()
 
         thresholded_img = enhance_peaks(
-            walker.thresholded_img,
+            plane.copy(),
             self.clipping_value,
             gaussian_sigma=laplace_gaussian_sigma,
         )
