@@ -151,7 +151,6 @@ class BallFilter:
             self.good_tiles_mask,
             self.volume,
             self.kernel,
-            self.ball_z_size,
             ball_radius,
             self.middle_z_idx,
             self.overlap_threshold,
@@ -207,15 +206,14 @@ def _is_tile_to_check(
 
 @jit(nopython=True)
 def _walk(
-    max_height,
-    max_width,
+    max_height: int,
+    max_width: int,
     tile_step_width,
     tile_step_height,
-    good_tiles_mask,
-    volume,
+    good_tiles_mask: np.ndarray,
+    volume: np.ndarray,
     kernel,
-    ball_z_size,
-    ball_radius,
+    ball_radius: int,
     middle_z,
     overlap_threshold,
     THRESHOLD_VALUE,
@@ -243,7 +241,6 @@ def _walk(
                 ]
                 if _cube_overlaps(
                     cube,
-                    ball_z_size,
                     overlap_threshold,
                     THRESHOLD_VALUE,
                     kernel,
