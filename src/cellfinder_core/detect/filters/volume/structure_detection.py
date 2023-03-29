@@ -32,12 +32,12 @@ def get_non_zero_ull_min(values):
 
 
 @jit(nopython=True)
-def get_from_dict_or_return(d: dict, a):
+def traverse_dict(d: dict, a):
     """
     Traverse d, until a is not present as a key.
     """
     if a in d:
-        return get_from_dict_or_return(d, d[a])
+        return traverse_dict(d, d[a])
     else:
         return a
 
@@ -303,9 +303,7 @@ class CellDetector:
         """
         for i, neighbour_id in enumerate(neighbour_ids):
             # walk up the chain of obsolescence
-            neighbour_id = int(
-                get_from_dict_or_return(self.obsolete_ids, neighbour_id)
-            )
+            neighbour_id = int(traverse_dict(self.obsolete_ids, neighbour_id))
             neighbour_ids[i] = neighbour_id
 
         # Get minimum of all non-obsolete IDs
