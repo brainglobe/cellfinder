@@ -170,12 +170,11 @@ def _cube_overlaps(
     current_overlap_value = 0
 
     middle = np.floor(ball_z_size / 2) + 1
-    overlap_thresh = overlap_threshold * 0.4
+    overlap_thresh = overlap_threshold * 0.4  # FIXME: do not hard code value
 
     for z in range(cube.shape[2]):
         # TODO: OPTIMISE: step from middle to outer boundaries to check
         # more data first
-        # FIXME: do not hard code value
         if z == middle and current_overlap_value < overlap_thresh:
             return False  # DEBUG: optimisation attempt
         for y in range(cube.shape[1]):
