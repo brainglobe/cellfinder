@@ -9,7 +9,7 @@ ball_z_size = 3
 
 def gen_signal_array(ny, nx):
     shape = (ball_z_size, ny, nx)
-    return np.random.randint(low=0, high=65535, size=shape, dtype=np.uint16)
+    return np.random.randint(low=0, high=65536, size=shape, dtype=np.uint16)
 
 
 signal_array = gen_signal_array(667, 510)
