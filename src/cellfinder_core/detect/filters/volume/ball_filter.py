@@ -1,3 +1,5 @@
+from typing import Optional
+
 import numpy as np
 from numba import jit
 
@@ -13,11 +15,11 @@ class BallFilter:
         layer_width,
         layer_height,
         ball_xy_size,
-        ball_z_size,
+        ball_z_size: int,
         overlap_fraction=0.8,
         tile_step_width=None,
         tile_step_height=None,
-        threshold_value=None,
+        threshold_value: Optional[int] = None,
         soma_centre_value=None,
     ):
         self.ball_xy_size = ball_xy_size
@@ -74,11 +76,10 @@ class BallFilter:
         # Index of the middle plane in the volume
         self.middle_z_idx = int(np.floor(ball_z_size / 2))
 
+        # TODO: lazy initialisation
         self.good_tiles_mask = np.empty(
             (
-                int(
-                    np.ceil(layer_width / tile_step_width)
-                ),  # TODO: lazy initialisation
+                int(np.ceil(layer_width / tile_step_width)),
                 int(np.ceil(layer_height / tile_step_height)),
                 ball_z_size,
             ),
@@ -143,6 +144,7 @@ class BallFilter:
         # Get maximum offsets for the ball
         max_width = tile_mask_covered_img_width - self.ball_xy_size
         max_height = tile_mask_covered_img_height - self.ball_xy_size
+
         _walk(
             max_height,
             max_width,
@@ -161,23 +163,45 @@ class BallFilter:
 
 @jit(nopython=True, cache=True)
 def _cube_overlaps(
-    cube, ball_z_size, overlap_threshold, THRESHOLD_VALUE, kernel
-):  # Highly optimised because most time critical
+    cube: np.ndarray,
+    overlap_threshold: float,
+    THRESHOLD_VALUE: int,
+    kernel: np.ndarray,
+) -> bool:  # Highly optimised because most time critical
     """
+    For each pixel in cube that is greater than THRESHOLD_VALUE, sum
+    up the corresponding pixels in *kernel*. If the total is less than
+    overlap_threshold, return False, otherwise return True.
 
-    :param np.ndarray cube: The thresholded array to check for ball fit.
-        values at CellDetector.THRESHOLD_VALUE are threshold
-    :return: True if the overlap exceeds self.overlap_fraction
+    Halfway through scanning the z-planes, if the total overlap is
+    less than 0.4 * overlap_threshold, this will return False early
+    without scanning the second half of the z-planes.
+
+    Parameters
+    ----------
+    cube :
+        3D array.
+    overlap_threshold :
+        Threshold above which to return True.
+    THRESHOLD_VALUE :
+        Value above which a pixel is marked as being part of a cell.
+    kernel :
+        3D array, with the same shape as *cube*.
     """
     current_overlap_value = 0
 
-    middle = np.floor(ball_z_size / 2) + 1
-    overlap_thresh = overlap_threshold * 0.4  # FIXME: do not hard code value
+    middle = np.floor(cube.shape[2] / 2) + 1
+    halfway_overlap_thresh = (
+        overlap_threshold * 0.4
+    )  # FIXME: do not hard code value
 
     for z in range(cube.shape[2]):
         # TODO: OPTIMISE: step from middle to outer boundaries to check
         # more data first
-        if z == middle and current_overlap_value < overlap_thresh:
+        #
+        # If halfway through the array, and the overlap value isn't more than
+        # 0.4 * the overlap threshold, return
+        if z == middle and current_overlap_value < halfway_overlap_thresh:
             return False  # DEBUG: optimisation attempt
         for y in range(cube.shape[1]):
             for x in range(cube.shape[0]):
@@ -208,18 +232,41 @@ def _is_tile_to_check(
 def _walk(
     max_height: int,
     max_width: int,
-    tile_step_width,
-    tile_step_height,
+    tile_step_width: int,
+    tile_step_height: int,
     good_tiles_mask: np.ndarray,
     volume: np.ndarray,
-    kernel,
+    kernel: np.ndarray,
     ball_radius: int,
-    middle_z,
-    overlap_threshold,
-    THRESHOLD_VALUE,
-    SOMA_CENTRE_VALUE,
-):
+    middle_z: int,
+    overlap_threshold: float,
+    THRESHOLD_VALUE: int,
+    SOMA_CENTRE_VALUE: int,
+) -> None:
     """
+    Scan through *volume*, and mark pixels where there are enough surrounding
+    pixels with high enough intensity.
+
+    The surrounding area is defined by the *kernel*.
+
+    Parameters
+    ----------
+    max_height, max_width :
+        Maximum offsets for the ball filter.
+    good_tiles_mask :
+        Array containing information on whether a tile needs checking
+        or not.
+    volume :
+        3D array containing the plane-filtered data.
+    kernel :
+        3D array
+    ball_radius :
+        Radius of the ball in the xy plane.
+    SOMA_CENTRE_VALUE :
+        Value that is used to mark pixels in *volume*.
+
+    Notes
+    -----
     Warning: modifies volume in place!
     """
     for y in range(max_height):
