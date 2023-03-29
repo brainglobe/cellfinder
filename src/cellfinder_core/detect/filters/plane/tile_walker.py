@@ -8,7 +8,19 @@ from cellfinder_core.detect.filters.plane.base_tile_filter import (
 )
 
 
-class TileWalker(object):
+class TileWalker:
+    """
+    A class to segment a 2D image into tiles, and mark each of the
+    tiles as good or bad depending on whether the average image
+    value in each tile is above a threshold.
+
+    Attributes
+    ----------
+    good_tiles_mask :
+        An array whose entries correspond to each tile.
+        The values are set in self.walk_out_of_brain_only()
+    """
+
     def __init__(self, img, soma_diameter):
         self.img = img
         self.thresholded_img = img.copy()
