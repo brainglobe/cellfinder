@@ -1,17 +1,25 @@
+from typing import Tuple
+
 import numpy as np
 
 
-def make_sphere(ball_shape, radius, position):
+def make_sphere(
+    ball_shape: Tuple[int, int, int],
+    radius: float,
+    position: Tuple[int, int, int],
+) -> np.ndarray:
     """
-    Assumes shape and position are both a 3-tuple of int or float
-    the units are pixels / voxels (px for short)
-    radius is a int or float in px
+    Return a boolean array, with array elements inside a sphere set
+    to 1 and those outside set to 0.
 
-    :param tuple(int) ball_shape:
-    :param float radius:
-    :param tuple(int) position:
-    :return:
-    :rtype: np.ndarray
+    Parameters
+    ----------
+    ball_shape :
+        Shape of the output array.
+    radius :
+        Radius of the sphere.
+    position :
+        Centre of the sphere.
     """
 
     half_sizes = (radius,) * 3
