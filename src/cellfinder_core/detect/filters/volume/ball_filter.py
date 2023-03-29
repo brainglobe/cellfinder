@@ -29,26 +29,34 @@ class BallFilter:
         self.THRESHOLD_VALUE = threshold_value
         self.SOMA_CENTRE_VALUE = soma_centre_value
 
-        # temporary kernel of scaling_factor*ball_x_y size to be then scaled
-        # to final ball size
-        x_upscale_factor = (
-            y_upscale_factor
-        ) = z_upscale_factor = 7  # WARNING: needs to be integer
-        temp_kernel_shape = [
-            x_upscale_factor * ball_xy_size,
-            y_upscale_factor * ball_xy_size,
-            z_upscale_factor * ball_z_size,
+        # Create a spherical kernel.
+        #
+        # This is done by:
+        # 1. Generating a binary sphere at a resolution *upscale_factor* larger
+        #    than desired.
+        # 2. Downscaling the binary sphere to get a 'fuzzy' sphere at the original
+        #    intended scale
+        upscale_factor: int = 7
+        upscaled_kernel_shape = [
+            upscale_factor * ball_xy_size,
+            upscale_factor * ball_xy_size,
+            upscale_factor * ball_z_size,
         ]
-        tmp_ball_centre_position = [
-            np.floor(d / 2) for d in temp_kernel_shape
-        ]  # z_centre is xy_centre before resize
-        tmp_ball_radius = temp_kernel_shape[0] / 2.0
-        tmp_kernel = make_sphere(
-            temp_kernel_shape, tmp_ball_radius, tmp_ball_centre_position
+        upscaled_ball_centre_position = [
+            np.floor(d / 2) for d in upscaled_kernel_shape
+        ]
+        upscaled_ball_radius = upscaled_kernel_shape[0] / 2.0
+        sphere_kernel = make_sphere(
+            upscaled_kernel_shape,
+            upscaled_ball_radius,
+            upscaled_ball_centre_position,
         )
-        tmp_kernel = tmp_kernel.astype(np.float64)
+        sphere_kernel = sphere_kernel.astype(np.float64)
         self.kernel = bin_mean_3d(
-            tmp_kernel, x_upscale_factor, y_upscale_factor, z_upscale_factor
+            sphere_kernel,
+            bin_height=upscale_factor,
+            bin_width=upscale_factor,
+            bin_depth=upscale_factor,
         )
 
         assert (
