@@ -34,6 +34,9 @@ def pad_and_bin_mean(arr: np.ndarray, bin_width: int, bin_height: int):
 def bin_mean_3d(
     arr: np.ndarray, bin_width: int, bin_height: int, bin_depth: int
 ) -> np.ndarray:
+    """
+    Bin a 3D array, and return an array of the mean value in each bin.
+    """
     if (arr.shape[0] % bin_width) != 0:
         raise ValueError(
             "Bin width must divide arr exactly, got {} and {}".format(
