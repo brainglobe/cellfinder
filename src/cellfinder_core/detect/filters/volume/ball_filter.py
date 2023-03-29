@@ -133,17 +133,15 @@ class BallFilter:
 
     def walk(self):  # Highly optimised because most time critical
         ball_radius = self.ball_xy_size // 2
+        # Get extents of image that are covered by tiles
         tile_mask_covered_img_width = (
             self.good_tiles_mask.shape[0] * self.tile_step_width
         )
         tile_mask_covered_img_height = (
             self.good_tiles_mask.shape[1] * self.tile_step_height
         )
-        # whole ball size because the cube is extracted with x + whole ball
-        # width
+        # Get maximum offsets for the ball
         max_width = tile_mask_covered_img_width - self.ball_xy_size
-        # whole ball size because the cube is extracted with y + whole ball
-        # height
         max_height = tile_mask_covered_img_height - self.ball_xy_size
         _walk(
             max_height,
