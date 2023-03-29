@@ -192,8 +192,16 @@ def _cube_overlaps(
 
 @jit(nopython=True)
 def _is_tile_to_check(
-    x, y, middle_z, tile_step_width, tile_step_height, good_tiles_mask
+    x: int,
+    y: int,
+    middle_z: int,
+    tile_step_width: int,
+    tile_step_height: int,
+    good_tiles_mask: np.ndarray,
 ):  # Highly optimised because most time critical
+    """
+    Check if the tile containing pixel (x, y) is a tile that needs checking.
+    """
     x_in_mask = x // tile_step_width  # TEST: test bounds (-1 range)
     y_in_mask = y // tile_step_height  # TEST: test bounds (-1 range)
     return good_tiles_mask[x_in_mask, y_in_mask, middle_z]
