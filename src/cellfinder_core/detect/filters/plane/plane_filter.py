@@ -45,9 +45,8 @@ class TileProcessor:
             self.clipping_value,
             gaussian_sigma=laplace_gaussian_sigma,
         )
-
-        avg = thresholded_img.ravel().mean()
-        sd = thresholded_img.ravel().std()
+        avg = np.mean(thresholded_img)
+        sd = np.std(thresholded_img)
         threshold = avg + self.n_sds_above_mean_thresh * sd
 
         plane[thresholded_img > threshold] = self.threshold_value
