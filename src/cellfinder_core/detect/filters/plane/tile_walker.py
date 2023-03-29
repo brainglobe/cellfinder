@@ -10,6 +10,10 @@ class TileWalker:
     tiles as good or bad depending on whether the average image
     value in each tile is above a threshold.
 
+    The threshold is set using the tile of data in the corner.
+    The mean and standard deviation of this tile is calculated, and
+    the threshold set at 1 + mean + (2 * stddev).
+
     Attributes
     ----------
     good_tiles_mask :
@@ -34,10 +38,9 @@ class TileWalker:
         self.y = 0
         self.tile_idx = 0
 
-        corner_intensity = img[
-            0 : self.tile_width, 0 : self.tile_height
-        ].mean()
-        corner_sd = img[0 : self.tile_width, 0 : self.tile_height].std()
+        corner_tile = img[0 : self.tile_width, 0 : self.tile_height]
+        corner_intensity = np.mean(corner_tile)
+        corner_sd = np.std(corner_tile)
         # add 1 to ensure not 0, as disables
         self.out_of_brain_threshold = (corner_intensity + (2 * corner_sd)) + 1
 
