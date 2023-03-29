@@ -65,10 +65,7 @@ class BallFilter:
             ball_z_size, self.kernel.shape[2]
         )
 
-        self.overlap_threshold = (
-            self.overlap_fraction
-            * np.array(self.kernel, dtype=np.float64).sum()
-        )
+        self.overlap_threshold = np.sum(self.overlap_fraction * self.kernel)
 
         # Stores the current planes that are being filtered
         self.volume = np.empty(
