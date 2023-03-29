@@ -4,7 +4,7 @@ import numpy as np
 
 
 # WARNING: skewed if does not fall exactly (integer multiple)
-def bin_array(arr, bin_width=15, bin_height=15):
+def bin_array(arr: np.ndarray, bin_width: int, bin_height: int):
     bin_width = int(bin_width)
     bin_height = int(bin_height)
 
@@ -26,7 +26,7 @@ def bin_array(arr, bin_width=15, bin_height=15):
     return binned_array
 
 
-def pad_and_bin_mean(arr, bin_width=15, bin_height=15):
+def pad_and_bin_mean(arr: np.ndarray, bin_width: int, bin_height: int):
     binned_array = bin_array(arr, bin_width, bin_height)
     return binned_array.mean(axis=(1, 3))
 
