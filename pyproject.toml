@@ -75,7 +75,7 @@ build = "cp38-* cp39-* cp310-*"
 archs = ["x86_64", "arm64"]
 
 [tool.pytest.ini_options]
-addopts = "--cov=src/cellfinder_core"
+addopts = "--cov=cellfinder_core --cov-report=xml"
 filterwarnings = [
     "error",
     # Raised by tensorflow; should be removed when tensorflow 2.12.0 is released. Fix is:
