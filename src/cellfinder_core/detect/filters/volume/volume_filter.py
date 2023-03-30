@@ -130,10 +130,7 @@ class VolumeFilter(object):
         )
 
         cells = []
-        for (
-            cell_id,
-            cell_points,
-        ) in self.cell_detector.get_coords_list().items():
+        for cell_id, cell_points in self.cell_detector.coords_maps.items():
             cell_volume = len(cell_points)
 
             if cell_volume < max_cell_volume:
