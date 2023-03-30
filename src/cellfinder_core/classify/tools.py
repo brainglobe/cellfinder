@@ -1,3 +1,6 @@
+import os
+from typing import Optional
+
 import numpy as np
 import tensorflow as tf
 
@@ -6,8 +9,8 @@ from cellfinder_core.classify.resnet import build_model
 
 
 def get_model(
-    existing_model=None,
-    model_weights=None,
+    existing_model: Optional[os.PathLike] = None,
+    model_weights: Optional[os.PathLike] = None,
     network_depth=None,
     learning_rate=0.0001,
     inference=False,

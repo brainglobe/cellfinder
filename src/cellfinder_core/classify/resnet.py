@@ -1,4 +1,7 @@
+from typing import Dict, List, Literal, Tuple, Union
+
 from tensorflow.keras import Model
+from tensorflow.keras.initializers import Initializer
 from tensorflow.keras.layers import (
     Activation,
     Add,
@@ -15,7 +18,11 @@ from tensorflow.keras.optimizers import Adam
 #####################################################################
 # Define the types of ResNet
 
-resnet_unit_blocks = {
+layer_type = Literal[
+    "18-layer", "34-layer", "50-layer", "101-layer", "152-layer"
+]
+
+resnet_unit_blocks: Dict[layer_type, List[int]] = {
     "18-layer": [2, 2, 2, 2],
     "34-layer": [3, 4, 6, 3],
     "50-layer": [3, 4, 6, 3],
@@ -23,7 +30,7 @@ resnet_unit_blocks = {
     "152-layer": [3, 6, 36, 3],
 }
 
-network_residual_bottleneck = {
+network_residual_bottleneck: Dict[layer_type, bool] = {
     "18-layer": False,
     "34-layer": False,
     "50-layer": True,
@@ -34,31 +41,17 @@ network_residual_bottleneck = {
 
 
 def build_model(
-    shape=(50, 50, 20, 2),
-    network_depth="18-layer",
+    shape: Tuple[int, int, int, int] = (50, 50, 20, 2),
+    network_depth: layer_type = "18-layer",
     optimizer=None,
-    learning_rate=0.0005,  # higher rates don't always converge
+    learning_rate: float = 0.0005,  # higher rates don't always converge
     loss="categorical_crossentropy",
     metrics=["accuracy"],
-    number_classes=2,
-    axis=3,
-    starting_features=64,
+    number_classes: int = 2,
+    axis: int = 3,
+    starting_features: int = 64,
     classification_activation="softmax",
-):
-    """
-
-    :param shape:
-    :param network_depth:
-    :param optimizer:
-    :param learning_rate:
-    :param loss:
-    :param metrics:
-    :param number_classes:
-    :param int axis: Default: 3. Assumed channels are last
-    :param starting_features: # increases in each set of residual units
-    :param classification_activation:
-    :return:
-    """
+) -> Model:
     blocks, bottleneck = get_resnet_blocks_and_bottleneck(network_depth)
 
     inputs = Input(shape)
@@ -94,7 +87,7 @@ def build_model(
     return model
 
 
-def get_resnet_blocks_and_bottleneck(network_depth):
+def get_resnet_blocks_and_bottleneck(network_depth: layer_type):
     """
     Parses dicts, and returns how many resnet blocks are in each unit, along
     with whether they are bottlneck blocks or not
@@ -304,14 +297,14 @@ def residual_block(
 
 def get_shortcut(
     inputs,
-    resnet_unit_label,
-    block_id,
-    features,
-    stride,
-    use_bias=False,
-    kernel_initializer="he_normal",
-    bn_epsilon=1e-5,
-    axis=3,
+    resnet_unit_label: int,
+    block_id: int,
+    features: int,
+    stride: int,
+    use_bias: bool = False,
+    kernel_initializer: Union[str, Initializer] = "he_normal",
+    bn_epsilon: float = 1e-5,
+    axis: int = 3,
 ):
     """
     Create shortcut. For none-bottleneck residual units, this is just the
@@ -351,7 +344,7 @@ def get_shortcut(
         return inputs
 
 
-def get_stride(resnet_unit_id, block_id):
+def get_stride(resnet_unit_id: int, block_id: int) -> int:
     """
     Determines the convolution stride.
 

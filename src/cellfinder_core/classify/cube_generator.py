@@ -1,4 +1,5 @@
 from random import shuffle
+from typing import Optional, Tuple
 
 import numpy as np
 import tensorflow as tf
@@ -8,6 +9,7 @@ from scipy.ndimage import zoom
 from skimage.io import imread
 from tensorflow.keras.utils import Sequence
 
+from cellfinder_core import types
 from cellfinder_core.classify.augment import AugmentationParameters, augment
 
 # TODO: rename, as now using dask arrays -
@@ -33,26 +35,26 @@ class CubeGeneratorFromFile(Sequence):
     def __init__(
         self,
         points,
-        signal_array,
-        background_array,
+        signal_array: types.array,
+        background_array: types.array,
         voxel_sizes,
         network_voxel_sizes,
-        batch_size=16,
-        cube_width=50,
-        cube_height=50,
-        cube_depth=20,
-        channels=2,  # No other option currently
-        classes=2,
-        extract=False,
-        train=False,
-        augment=False,
-        augment_likelihood=0.1,
-        flip_axis=[0, 1, 2],
-        rotate_max_axes=[1, 1, 1],  # degrees
+        batch_size: Optional[int] = 16,
+        cube_width: Optional[int] = 50,
+        cube_height: Optional[int] = 50,
+        cube_depth: Optional[int] = 20,
+        channels: Optional[int] = 2,  # No other option currently
+        classes: Optional[int] = 2,
+        extract: Optional[bool] = False,
+        train: Optional[bool] = False,
+        augment: Optional[bool] = False,
+        augment_likelihood: Optional[float] = 0.1,
+        flip_axis: Tuple[int, int, int] = (0, 1, 2),
+        rotate_max_axes: Tuple[float, float, float] = (1, 1, 1),  # degrees
         # scale=[0.5, 2],  # min, max
-        translate=[0.05, 0.05, 0.05],
-        shuffle=False,
-        interpolation_order=2,
+        translate: Tuple[float, float, float] = (0.05, 0.05, 0.05),
+        shuffle: Optional[bool] = False,
+        interpolation_order: Optional[int] = 2,
     ):
         self.points = points
         self.signal_array = signal_array

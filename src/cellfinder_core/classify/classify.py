@@ -1,10 +1,10 @@
-from typing import Callable, Optional
+from typing import Callable, List, Optional
 
 import numpy as np
 from imlib.general.system import get_num_processes
 from tensorflow import keras
 
-from cellfinder_core import logger
+from cellfinder_core import logger, types
 from cellfinder_core.classify.cube_generator import CubeGeneratorFromFile
 from cellfinder_core.classify.tools import get_model
 from cellfinder_core.train.train_yml import models
@@ -12,9 +12,9 @@ from cellfinder_core.train.train_yml import models
 
 def main(
     points,
-    signal_array,
-    background_array,
-    n_free_cpus,
+    signal_array: types.array,
+    background_array: types.array,
+    n_free_cpus: int,
     voxel_sizes,
     network_voxel_sizes,
     batch_size,
@@ -27,7 +27,7 @@ def main(
     max_workers=3,
     *,
     callback: Optional[Callable[[int], None]] = None,
-):
+) -> List:
     """
     Parameters
     ----------
