@@ -1,3 +1,0 @@
-include src/cellfinder_core/config/*
-global-include *.pxd
-global-include *.pyx
