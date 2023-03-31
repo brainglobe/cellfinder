@@ -18,8 +18,6 @@ class Point:
 
 
 UINT64_MAX = np.iinfo(np.uint64).max
-N_NEIGHBOURS_4_CONNECTED = 3  # below, left and behind
-N_NEIGHBOURS_8_CONNECTED = 13  # all the 9 below + the 4 before on same plane
 
 
 @jit(nopython=True)
@@ -74,7 +72,6 @@ uint_2d_type = types.uint64[:, :]
 
 
 spec = [
-    ("connect_type", types.uint8),
     ("SOMA_CENTRE_VALUE", types.uint64),
     ("z", types.uint64),
     ("relative_z", types.uint64),
@@ -88,13 +85,9 @@ spec = [
 
 @jitclass(spec=spec)
 class CellDetector:
-    def __init__(self, width: int, height: int, start_z: int, connect_type=4):
+    def __init__(self, width: int, height: int, start_z: int):
         self.shape = width, height
         self.z = start_z
-
-        if connect_type not in (4, 8):
-            raise ValueError("Connection type must be one of [4, 8]")
-        self.connect_type = connect_type
 
         self.SOMA_CENTRE_VALUE = UINT64_MAX
 
@@ -138,11 +131,8 @@ class CellDetector:
         elif nbits == 32:
             layer *= numba.uint64(4294967297)
 
-        if self.connect_type == 4:
-            layer = self.connect_four(layer)
-            self.previous_layer = layer
-        else:
-            self.previous_layer = self.connect_eight(layer)
+        layer = self.connect_four(layer)
+        self.previous_layer = layer
 
         if self.relative_z == 0:
             self.relative_z += 1
@@ -164,10 +154,8 @@ class CellDetector:
         for y in range(layer.shape[1]):
             for x in range(layer.shape[0]):
                 if layer[x, y] == self.SOMA_CENTRE_VALUE:
-                    # Labels of structures at left, top, below
-                    neighbour_ids = np.zeros(
-                        N_NEIGHBOURS_4_CONNECTED, dtype=np.uint64
-                    )
+                    # Labels of structures below, left and behind
+                    neighbour_ids = np.zeros(3, dtype=np.uint64)
                     # If in bounds look at neighbours
                     if x > 0:
                         neighbour_ids[0] = layer[x - 1, y]
@@ -187,71 +175,6 @@ class CellDetector:
 
                 layer[x, y] = struct_id
 
-        return layer
-
-    def connect_eight(self, layer):
-        """
-        For all the pixels in the current layer, finds all structures touching
-        this pixel using the
-        eight connected (connected by edges or corners) rule and also looks at
-        the pixel at the same
-        location in the previous layer.
-        If structures are found, they are added to the structure manager and
-        the pixel labeled accordingly.
-
-        :param layer:
-        :return:
-        """
-        neighbour_ids = [0] * N_NEIGHBOURS_8_CONNECTED
-
-        for y in range(layer.shape[1]):
-            for x in range(layer.shape[0]):
-                if layer[x, y] == self.SOMA_CENTRE_VALUE:
-                    # If in bounds look at neighbours
-                    if x > 0 and y > 0:
-                        neighbour_ids[0] = layer[x - 1, y - 1]
-                    if x > 0:
-                        neighbour_ids[1] = layer[x - 1, y]
-                    if y > 0:
-                        neighbour_ids[2] = layer[x, y - 1]
-                        neighbour_ids[3] = layer[x + 1, y - 1]
-                    if self.relative_z > 0:
-                        if x > 0 and y > 0:
-                            neighbour_ids[4] = self.previous_layer[
-                                x - 1, y - 1
-                            ]
-                        if x > 0:
-                            neighbour_ids[5] = self.previous_layer[x - 1, y]
-                            if y < layer.shape[1] - 1:
-                                neighbour_ids[6] = self.previous_layer[
-                                    x - 1, y + 1
-                                ]
-                        if y > 0:
-                            neighbour_ids[7] = self.previous_layer[x, y - 1]
-                            if x < layer.shape[0] - 1:
-                                neighbour_ids[8] = self.previous_layer[
-                                    x + 1, y - 1
-                                ]
-                        neighbour_ids[9] = self.previous_layer[x, y]
-                        if y < layer.shape[1] - 1:
-                            neighbour_ids[10] = self.previous_layer[x, y + 1]
-                        if x < layer.shape[0] - 1:
-                            neighbour_ids[11] = self.previous_layer[x + 1, y]
-                            if y < layer.shape[1] - 1:
-                                neighbour_ids[12] = self.previous_layer[
-                                    x + 1, y + 1
-                                ]
-
-                    if is_new_structure(neighbour_ids):
-                        neighbour_ids[0] = self.next_structure_id
-                        self.next_structure_id += 1
-                    struct_id = self.add(x, y, self.z, neighbour_ids)
-                else:
-                    # reset so that grayscale value does not count as
-                    # structure in next iterations
-                    struct_id = 0
-
-                layer[x, y] = struct_id
         return layer
 
     def get_cell_centres(self):
