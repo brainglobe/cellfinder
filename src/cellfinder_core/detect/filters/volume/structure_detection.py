@@ -1,6 +1,5 @@
-from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import List, Tuple, Union
+from typing import List, Sequence, Tuple, Union
 
 import numba
 import numpy as np
