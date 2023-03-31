@@ -4,6 +4,7 @@ import numpy as np
 
 from cellfinder_core.detect.filters.plane.base_tile_filter import (
     OutOfBrainTileFilter,
+    is_low_average,
 )
 
 
@@ -59,7 +60,10 @@ class TileWalker(object):
             self.y = y
             self.ftf.set_tile(tile)
             if self.ftf.out_of_brain_intensity_threshold:
-                if not self.ftf.is_low_average():
+                self.ftf.keep = not is_low_average(
+                    tile, self.ftf.out_of_brain_intensity_threshold
+                )
+                if self.ftf.keep:
                     mask_x = self.x // self.tile_width
                     mask_y = self.y // self.tile_height
                     self.good_tiles_mask[mask_x, mask_y] = True

@@ -3,24 +3,25 @@ import pytest
 
 from cellfinder_core.detect.filters.volume.structure_detection import (
     CellDetector,
-    get_non_zero_ull_min_wrapper,
+    Point,
+    get_non_zero_ull_min,
     get_structure_centre_wrapper,
 )
 
 
+def coords_to_points(coords_arrays):
+    # Convert from arrays to dicts
+    coords = {}
+    for sid in coords_arrays:
+        coords[sid] = []
+        for row in coords_arrays[sid]:
+            coords[sid].append(Point(row[0], row[1], row[2]))
+    return coords
+
+
 def test_get_non_zero_ull_min():
-    assert get_non_zero_ull_min_wrapper(list(range(10))) == 1
-    assert get_non_zero_ull_min_wrapper([0] * 10) == (2**64) - 1
-
-
-class Point:
-    def __init__(self, x, y, z):
-        self.x = x
-        self.y = y
-        self.z = z
-
-    def __str__(self):
-        return "x: {}, y: {}, z: {}".format(self.x, self.y, self.z)
+    assert get_non_zero_ull_min(np.arange(10, dtype=np.uint64)) == 1
+    assert get_non_zero_ull_min(np.zeros(10, dtype=np.uint64)) == (2**64) - 1
 
 
 @pytest.fixture()
@@ -43,7 +44,7 @@ def structure(three_d_cross):
 
 def test_get_structure_centre(structure):
     result_point = get_structure_centre_wrapper(structure)
-    assert (result_point["x"], result_point["y"], result_point["z"]) == (
+    assert (result_point.x, result_point.y, result_point.z) == (
         1,
         1,
         1,
@@ -67,63 +68,49 @@ test_data = [
     (
         # Two pixels connected in a single structure along x
         [(0, 0, 0), (0, 1, 0)],
-        {1: [{"x": 0, "y": 0, "z": 0}, {"x": 1, "y": 0, "z": 0}]},
+        {1: [Point(0, 0, 0), Point(1, 0, 0)]},
     ),
     (
         # Two pixels connected in a single structure along y
         [(0, 0, 0), (0, 0, 1)],
-        {1: [{"x": 0, "y": 0, "z": 0}, {"x": 0, "y": 1, "z": 0}]},
+        {1: [Point(0, 0, 0), Point(0, 1, 0)]},
     ),
     (
         # Two pixels connected in a single structure along z
         [(0, 0, 0), (1, 0, 0)],
-        {1: [{"x": 0, "y": 0, "z": 0}, {"x": 0, "y": 0, "z": 1}]},
+        {1: [Point(0, 0, 0), Point(0, 0, 1)]},
     ),
     (
         # Four pixels all connected and spread across x-y-z
         [(0, 0, 0), (1, 0, 0), (1, 1, 0), (1, 0, 1)],
-        {
-            1: [
-                {"x": 0, "y": 0, "z": 0},
-                {"x": 0, "y": 0, "z": 1},
-                {"x": 1, "y": 0, "z": 1},
-                {"x": 0, "y": 1, "z": 1},
-            ]
-        },
+        {1: [Point(0, 0, 0), Point(0, 0, 1), Point(1, 0, 1), Point(0, 1, 1)]},
     ),
     (
         # three initially disconnected pixels that then get merged
         # by a fourth pixel
         [(1, 1, 0), (0, 1, 1), (1, 0, 1), (1, 1, 1)],
-        {
-            1: [
-                {"x": 1, "y": 1, "z": 0},
-                {"x": 0, "y": 1, "z": 1},
-                {"x": 1, "y": 0, "z": 1},
-                {"x": 1, "y": 1, "z": 1},
-            ]
-        },
+        {1: [Point(1, 1, 0), Point(0, 1, 1), Point(1, 0, 1), Point(1, 1, 1)]},
     ),
     (
         # Three pixels in x-y plane that require structure merging
         [(1, 0, 0), (0, 1, 0), (1, 1, 0)],
         {
             1: [
-                {"x": 1, "y": 0, "z": 0},
-                {"x": 0, "y": 0, "z": 1},
-                {"x": 1, "y": 0, "z": 1},
+                Point(1, 0, 0),
+                Point(0, 0, 1),
+                Point(1, 0, 1),
             ]
         },
     ),
     (
         # Two disconnected single-pixel structures
         [(0, 0, 0), (0, 2, 0)],
-        {1: [{"x": 0, "y": 0, "z": 0}], 2: [{"x": 2, "y": 0, "z": 0}]},
+        {1: [Point(0, 0, 0)], 2: [Point(2, 0, 0)]},
     ),
     (
         # Two disconnected single-pixel structures along a diagonal
         [(0, 0, 0), (1, 1, 1)],
-        {1: [{"x": 0, "y": 0, "z": 0}], 2: [{"x": 1, "y": 1, "z": 1}]},
+        {1: [Point(0, 0, 0)], 2: [Point(1, 1, 1)]},
     ),
 ]
 
@@ -142,5 +129,5 @@ def test_detection(dtype, pixels, expected_coords):
     for plane in data:
         detector.process(plane)
 
-    coords = detector.get_coords_list()
-    assert coords == expected_coords
+    coords = detector.get_coords_dict()
+    assert coords_to_points(coords) == expected_coords

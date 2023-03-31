@@ -91,20 +91,7 @@ class VolumeFilter(object):
             self.ball_filter.append(plane, mask)
 
             if self.ball_filter.ready:
-                logger.debug(f"Ball filtering plane {self.z}")
-                self.ball_filter.walk()
-
-                middle_plane = self.ball_filter.get_middle_plane()
-                if self.save_planes:
-                    self.save_plane(middle_plane)
-
-                logger.debug(f"Detecting structures for plane {self.z}")
-                self.cell_detector.process(middle_plane)
-
-                logger.debug(f"Structures done for plane {self.z}")
-                logger.debug(
-                    f"Skipping plane {self.z} for 3D filter" " (out of bounds)"
-                )
+                self._run_filter()
 
             callback(self.z)
             self.z += 1
@@ -113,6 +100,22 @@ class VolumeFilter(object):
         progress_bar.close()
         logger.debug("3D filter done")
         return self.get_results()
+
+    def _run_filter(self):
+        logger.debug(f"Ball filtering plane {self.z}")
+        self.ball_filter.walk()
+
+        middle_plane = self.ball_filter.get_middle_plane()
+        if self.save_planes:
+            self.save_plane(middle_plane)
+
+        logger.debug(f"Detecting structures for plane {self.z}")
+        self.cell_detector.process(middle_plane)
+
+        logger.debug(f"Structures done for plane {self.z}")
+        logger.debug(
+            f"Skipping plane {self.z} for 3D filter" " (out of bounds)"
+        )
 
     def save_plane(self, plane):
         plane_name = f"plane_{str(self.z).zfill(4)}.tif"
@@ -127,17 +130,14 @@ class VolumeFilter(object):
         )
 
         cells = []
-        for (
-            cell_id,
-            cell_points,
-        ) in self.cell_detector.get_coords_list().items():
+        for cell_id, cell_points in self.cell_detector.coords_maps.items():
             cell_volume = len(cell_points)
 
             if cell_volume < max_cell_volume:
                 cell_centre = get_structure_centre_wrapper(cell_points)
                 cells.append(
                     Cell(
-                        (cell_centre["x"], cell_centre["y"], cell_centre["z"]),
+                        (cell_centre.x, cell_centre.y, cell_centre.z),
                         Cell.UNKNOWN,
                     )
                 )
@@ -155,9 +155,9 @@ class VolumeFilter(object):
                         cells.append(
                             Cell(
                                 (
-                                    cell_centre["x"],
-                                    cell_centre["y"],
-                                    cell_centre["z"],
+                                    cell_centre.x,
+                                    cell_centre.y,
+                                    cell_centre.z,
                                 ),
                                 Cell.UNKNOWN,
                             )
@@ -167,9 +167,9 @@ class VolumeFilter(object):
                     cells.append(
                         Cell(
                             (
-                                cell_centre["x"],
-                                cell_centre["y"],
-                                cell_centre["z"],
+                                cell_centre.x,
+                                cell_centre.y,
+                                cell_centre.z,
                             ),
                             Cell.ARTIFACT,
                         )

@@ -22,6 +22,7 @@ dependencies = [
     "fancylog>=0.0.7",
     "imlib>=0.0.26",
     "natsort",
+    "numba",
     "numpy",
     "scikit-image",
     "scikit-learn",
@@ -44,6 +45,7 @@ dev = [
     "black",
     "gitpython",
     "pre-commit",
+    "pyinstrument",
     "pytest",
     "pytest-cov",
     "pytest-timeout",
@@ -59,7 +61,6 @@ requires = [
     "setuptools>=45",
     "wheel",
     "setuptools_scm[toml]>=6.2",
-    "cython",
 ]
 build-backend = 'setuptools.build_meta'
 
@@ -80,13 +81,15 @@ filterwarnings = [
     "error",
     # Raised by tensorflow; should be removed when tensorflow 2.12.0 is released. Fix is:
     # https://github.com/tensorflow/tensorflow/commit/b23c5750c9f35a87872793eef7c56e74ec55d4a7
-    "ignore:`np.bool8` is a deprecated alias for `np.bool_`"
+    "ignore:`np.bool8` is a deprecated alias for `np.bool_`",
+    # See https://github.com/numba/numba/issues/8676
+    "ignore:.*:numba.core.errors.NumbaTypeSafetyWarning"
 ]
 markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
     "serial",
 ]
-log_level = "DEBUG"
+log_level = "WARNING"
 
 [tool.black]
 target-version = ['py38', 'py39', 'py310']
