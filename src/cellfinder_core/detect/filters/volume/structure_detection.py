@@ -1,5 +1,6 @@
+from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import List
+from typing import List, Tuple, Union
 
 import numba
 import numpy as np
@@ -42,10 +43,10 @@ def traverse_dict(d: dict, a):
         return a
 
 
-def get_structure_centre(structure):
-    mean_x = 0
-    mean_y = 0
-    mean_z = 0
+def get_structure_centre(structure: Sequence[Point]) -> Point:
+    mean_x = 0.0
+    mean_y = 0.0
+    mean_z = 0.0
     s_len = len(structure)
 
     for p in structure:
@@ -56,13 +57,17 @@ def get_structure_centre(structure):
     return Point(round(mean_x), round(mean_y), round(mean_z))
 
 
-def get_structure_centre_wrapper(structure):  # wrapper for testing purposes
+def get_structure_centre_wrapper(
+    structure: Sequence[Union[Point, Tuple[int, int, int]]]
+) -> Point:
+    """
+    Wrapper to allow either Points or bare numbers to be passed
+    to get_structure_centre().
+    """
     s = []
     for p in structure:
-        if type(p) == dict:
-            s.append(Point(p["x"], p["y"], p["z"]))
-        elif isinstance(p, Point):
-            s.append(Point(p.x, p.y, p.z))
+        if isinstance(p, Point):
+            s.append(p)
         else:
             s.append(Point(p[0], p[1], p[2]))
     return get_structure_centre(s)
