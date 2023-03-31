@@ -8,7 +8,7 @@ from cellfinder_core.detect.filters.setup_filters import setup_tile_filtering
 shape = (10000, 10000)
 
 signal_array_plane = np.random.randint(
-    low=0, high=65535, size=shape, dtype=np.uint16
+    low=0, high=65536, size=shape, dtype=np.uint16
 )
 
 clipping_value, threshold_value = setup_tile_filtering(signal_array_plane)

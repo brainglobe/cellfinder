@@ -18,7 +18,7 @@ class Point:
 
 
 UINT64_MAX = np.iinfo(np.uint64).max
-N_NEIGHBOURS_4_CONNECTED = 3  # top left, below
+N_NEIGHBOURS_4_CONNECTED = 3  # below, left and behind
 N_NEIGHBOURS_8_CONNECTED = 13  # all the 9 below + the 4 before on same plane
 
 
