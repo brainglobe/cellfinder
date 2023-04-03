@@ -26,7 +26,7 @@ class TileProcessor:
         1. Clipped to self.threshold value
         2. Run through a peak enhancement filter (see `classical_filter.py`)
         3. Thresholded. Any values that are larger than
-           (mean + stddev * sself.n_sds_above_mean_thresh) are set to
+           (mean + stddev * self.n_sds_above_mean_thresh) are set to
            self.threshold_value in-place.
 
         Parameters
@@ -50,7 +50,7 @@ class TileProcessor:
 
         # Get tiles that are within the brain
         walker = TileWalker(plane, self.soma_diameter)
-        walker.walk_out_of_brain_only()
+        walker.mark_bright_tiles()
         inside_brain_tiles = walker.bright_tiles_mask.astype(np.uint8)
 
         # Threshold the image

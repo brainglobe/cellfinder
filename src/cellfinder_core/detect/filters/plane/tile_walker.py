@@ -19,7 +19,7 @@ class TileWalker:
     bright_tiles_mask :
         An boolean array whose entries correspond to whether each tile is
         bright (1) or dark (0). The values are set in
-        self.walk_out_of_brain_only().
+        self.mark_bright_tiles().
     """
 
     def __init__(self, img, soma_diameter):
@@ -61,10 +61,10 @@ class TileWalker:
                 ]
                 yield x, y, tile
 
-    def walk_out_of_brain_only(self):
+    def mark_bright_tiles(self):
         """
         Loop through tiles, and if the average value of a tile is
-        greater than the intensity threshold mark the tile as good
+        greater than the intensity threshold mark the tile as bright
         in self.bright_tiles_mask.
         """
         threshold = self.out_of_brain_threshold
