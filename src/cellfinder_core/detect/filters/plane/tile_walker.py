@@ -10,7 +10,7 @@ class TileWalker:
     tiles as bright or dark depending on whether the average image
     value in each tile is above a threshold.
 
-    The threshold is set using the tile of data in the corner.
+    The threshold is set using the tile of data containing the corner (0, 0).
     The mean and standard deviation of this tile is calculated, and
     the threshold set at 1 + mean + (2 * stddev).
 
@@ -40,9 +40,15 @@ class TileWalker:
         # add 1 to ensure not 0, as disables
         self.out_of_brain_threshold = (corner_intensity + (2 * corner_sd)) + 1
 
-    def _get_tiles(self):  # WARNING: crops to integer steps
+    def _get_tiles(self):
         """
         Generator that yields tiles of the 2D image.
+
+        Notes
+        -----
+        The final tile in each dimension can have a smaller size than the
+        rest of the tiles if the tile shape does not exactly divide the
+        image shape.
         """
         for y in range(
             0, self.img_height - self.tile_height, self.tile_height
