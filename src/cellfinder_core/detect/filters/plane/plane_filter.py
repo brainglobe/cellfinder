@@ -38,8 +38,9 @@ class TileProcessor:
         -------
         plane :
             Thresholded plane.
-        mask :
-            Good tiles mask.
+        inside_brain_tiles :
+            Boolean mask indicating which tiles are inside (1) or
+            outside (0) the brain.
         """
         laplace_gaussian_sigma = self.log_sigma_size * self.soma_diameter
         plane = plane.T
@@ -50,7 +51,7 @@ class TileProcessor:
         # Get tiles that are within the brain
         walker = TileWalker(plane, self.soma_diameter)
         walker.walk_out_of_brain_only()
-        good_tiles = walker.good_tiles_mask.astype(np.uint8)
+        inside_brain_tiles = walker.bright_tiles_mask.astype(np.uint8)
 
         # Threshold the image
         thresholded_img = enhance_peaks(
@@ -63,4 +64,4 @@ class TileProcessor:
         threshold = avg + self.n_sds_above_mean_thresh * sd
         plane[thresholded_img > threshold] = self.threshold_value
 
-        return plane, good_tiles
+        return plane, inside_brain_tiles

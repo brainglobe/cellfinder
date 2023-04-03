@@ -7,7 +7,7 @@ from numba import jit
 class TileWalker:
     """
     A class to segment a 2D image into tiles, and mark each of the
-    tiles as good or bad depending on whether the average image
+    tiles as bright or dark depending on whether the average image
     value in each tile is above a threshold.
 
     The threshold is set using the tile of data in the corner.
@@ -16,9 +16,10 @@ class TileWalker:
 
     Attributes
     ----------
-    good_tiles_mask :
-        An array whose entries correspond to each tile.
-        The values are set in self.walk_out_of_brain_only()
+    bright_tiles_mask :
+        An boolean array whose entries correspond to whether each tile is
+        bright (1) or dark (0). The values are set in
+        self.walk_out_of_brain_only().
     """
 
     def __init__(self, img, soma_diameter):
@@ -29,7 +30,7 @@ class TileWalker:
 
         n_tiles_width = math.ceil(self.img_width / self.tile_width)
         n_tiles_height = math.ceil(self.img_height / self.tile_height)
-        self.good_tiles_mask = np.zeros(
+        self.bright_tiles_mask = np.zeros(
             (n_tiles_width, n_tiles_height), dtype=bool
         )
 
@@ -58,7 +59,7 @@ class TileWalker:
         """
         Loop through tiles, and if the average value of a tile is
         greater than the intensity threshold mark the tile as good
-        in self.good_tiles_mask.
+        in self.bright_tiles_mask.
         """
         threshold = self.out_of_brain_threshold
         if threshold == 0:
@@ -68,7 +69,7 @@ class TileWalker:
             if not is_low_average(tile, threshold):
                 mask_x = x // self.tile_width
                 mask_y = y // self.tile_height
-                self.good_tiles_mask[mask_x, mask_y] = True
+                self.bright_tiles_mask[mask_x, mask_y] = True
 
 
 @jit
