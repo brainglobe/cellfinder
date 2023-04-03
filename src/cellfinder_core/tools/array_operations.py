@@ -3,7 +3,9 @@ import math
 import numpy as np
 
 
-def bin_array(arr: np.ndarray, bin_width: int, bin_height: int) -> np.ndarray:
+def get_2d_bins(
+    arr: np.ndarray, bin_width: int, bin_height: int
+) -> np.ndarray:
     """
     Bin a 2D array.
 
@@ -53,7 +55,7 @@ def bin_array(arr: np.ndarray, bin_width: int, bin_height: int) -> np.ndarray:
     return binned_array
 
 
-def pad_and_bin_mean(
+def binned_mean_2d(
     arr: np.ndarray, bin_width: int, bin_height: int
 ) -> np.ndarray:
     """
@@ -67,7 +69,7 @@ def pad_and_bin_mean(
     of the returned array (arr[-1, :] and arr[:, -1]) will have mean values
     calculated including this zero padding.
     """
-    binned_array = bin_array(arr, bin_width, bin_height)
+    binned_array = get_2d_bins(arr, bin_width, bin_height)
     return binned_array.mean(axis=(1, 3))
 
 
@@ -79,11 +81,8 @@ def bin_mean_3d(
 
     Notes
     -----
-    The original array is zero padded so that it is tiled exactly
-    by bins of shape (*bin_width*, *bin_height*, *bin_depth*). If the tile
-    shape does not exactly divide the array shape, values on the outer edge
-    of the returned array (arr[-1, :, :], arr[:, -1, :], arr[:, :, -1])
-    will have mean values calculated including this zero padding.
+    If the tile shape does not exactly divide the array shape an error is
+    raised.
     """
     if (arr.shape[0] % bin_width) != 0:
         raise ValueError(
@@ -107,7 +106,7 @@ def bin_mean_3d(
     binned_arr = []
     for i in range(0, arr.shape[2] - 1, bin_depth):
         sub_stack = [
-            pad_and_bin_mean(arr[:, :, j], bin_width, bin_height)
+            binned_mean_2d(arr[:, :, j], bin_width, bin_height)
             for j in range(i, i + bin_depth)
         ]
         binned_arr.append(np.dstack(sub_stack).mean(axis=2))
