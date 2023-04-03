@@ -76,6 +76,14 @@ def bin_mean_3d(
 ) -> np.ndarray:
     """
     Bin a 3D array, and return an array of the mean value in each bin.
+
+    Notes
+    -----
+    The original array is zero padded so that it is tiled exactly
+    by bins of shape (*bin_width*, *bin_height*, *bin_depth*). If the tile
+    shape does not exactly divide the array shape, values on the outer edge
+    of the returned array (arr[-1, :, :], arr[:, -1, :], arr[:, :, -1])
+    will have mean values calculated including this zero padding.
     """
     if (arr.shape[0] % bin_width) != 0:
         raise ValueError(
