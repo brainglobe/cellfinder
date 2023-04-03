@@ -18,6 +18,7 @@ class BallFilter:
     plane of the stack that have a high enough intensity within the
     spherical kernel.
     """
+
     def __init__(
         self,
         layer_width: int,
@@ -111,7 +112,7 @@ class BallFilter:
         self.middle_z_idx = int(np.floor(ball_z_size / 2))
 
         # TODO: lazy initialisation
-        self.good_tiles_mask = np.empty(
+        self.inside_brain_tiles = np.empty(
             (
                 int(np.ceil(layer_width / tile_step_width)),
                 int(np.ceil(layer_height / tile_step_height)),
@@ -142,9 +143,9 @@ class BallFilter:
                 [e for e in layer.shape[:2]],
             )
             assert [e for e in mask.shape[:2]] == [
-                e for e in self.good_tiles_mask.shape[2]
+                e for e in self.inside_brain_tiles.shape[2]
             ], 'mask shape mismatch, expected"{}", got {}"'.format(
-                [e for e in self.good_tiles_mask.shape[:2]],
+                [e for e in self.inside_brain_tiles.shape[:2]],
                 [e for e in mask.shape[:2]],
             )
         if not self.ready:
@@ -154,10 +155,12 @@ class BallFilter:
             self.volume = np.roll(
                 self.volume, -1, axis=2
             )  # WARNING: not in place
-            self.good_tiles_mask = np.roll(self.good_tiles_mask, -1, axis=2)
-        # Add the new layer to the top of volume and good_tiles_mask
+            self.inside_brain_tiles = np.roll(
+                self.inside_brain_tiles, -1, axis=2
+            )
+        # Add the new layer to the top of volume and inside_brain_tiles
         self.volume[:, :, self.__current_z] = layer[:, :]
-        self.good_tiles_mask[:, :, self.__current_z] = mask[:, :]
+        self.inside_brain_tiles[:, :, self.__current_z] = mask[:, :]
 
     def get_middle_plane(self):
         """
@@ -170,10 +173,10 @@ class BallFilter:
         ball_radius = self.ball_xy_size // 2
         # Get extents of image that are covered by tiles
         tile_mask_covered_img_width = (
-            self.good_tiles_mask.shape[0] * self.tile_step_width
+            self.inside_brain_tiles.shape[0] * self.tile_step_width
         )
         tile_mask_covered_img_height = (
-            self.good_tiles_mask.shape[1] * self.tile_step_height
+            self.inside_brain_tiles.shape[1] * self.tile_step_height
         )
         # Get maximum offsets for the ball
         max_width = tile_mask_covered_img_width - self.ball_xy_size
@@ -184,7 +187,7 @@ class BallFilter:
             max_width,
             self.tile_step_width,
             self.tile_step_height,
-            self.good_tiles_mask,
+            self.inside_brain_tiles,
             self.volume,
             self.kernel,
             ball_radius,
@@ -252,14 +255,14 @@ def _is_tile_to_check(
     middle_z: int,
     tile_step_width: int,
     tile_step_height: int,
-    good_tiles_mask: np.ndarray,
+    inside_brain_tiles: np.ndarray,
 ):  # Highly optimised because most time critical
     """
     Check if the tile containing pixel (x, y) is a tile that needs checking.
     """
     x_in_mask = x // tile_step_width  # TEST: test bounds (-1 range)
     y_in_mask = y // tile_step_height  # TEST: test bounds (-1 range)
-    return good_tiles_mask[x_in_mask, y_in_mask, middle_z]
+    return inside_brain_tiles[x_in_mask, y_in_mask, middle_z]
 
 
 @jit(nopython=True)
@@ -268,7 +271,7 @@ def _walk(
     max_width: int,
     tile_step_width: int,
     tile_step_height: int,
-    good_tiles_mask: np.ndarray,
+    inside_brain_tiles: np.ndarray,
     volume: np.ndarray,
     kernel: np.ndarray,
     ball_radius: int,
@@ -287,9 +290,9 @@ def _walk(
     ----------
     max_height, max_width :
         Maximum offsets for the ball filter.
-    good_tiles_mask :
-        Array containing information on whether a tile needs checking
-        or not.
+    inside_brain_tiles :
+        Array containing information on whether a tile is inside the brain
+        or not. Tiles outside the brain are skipped.
     volume :
         3D array containing the plane-filtered data.
     kernel :
@@ -313,7 +316,7 @@ def _walk(
                 middle_z,
                 tile_step_width,
                 tile_step_height,
-                good_tiles_mask,
+                inside_brain_tiles,
             ):
                 cube = volume[
                     x : x + kernel.shape[0],
