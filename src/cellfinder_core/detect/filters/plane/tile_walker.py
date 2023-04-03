@@ -1,69 +1,87 @@
 import math
 
 import numpy as np
-
-from cellfinder_core.detect.filters.plane.base_tile_filter import (
-    OutOfBrainTileFilter,
-    is_low_average,
-)
+from numba import jit
 
 
-class TileWalker(object):
+class TileWalker:
+    """
+    A class to segment a 2D image into tiles, and mark each of the
+    tiles as bright or dark depending on whether the average image
+    value in each tile is above a threshold.
+
+    The threshold is set using the tile of data containing the corner (0, 0).
+    The mean and standard deviation of this tile is calculated, and
+    the threshold set at 1 + mean + (2 * stddev).
+
+    Attributes
+    ----------
+    bright_tiles_mask :
+        An boolean array whose entries correspond to whether each tile is
+        bright (1) or dark (0). The values are set in
+        self.mark_bright_tiles().
+    """
+
     def __init__(self, img, soma_diameter):
         self.img = img
-        self.thresholded_img = img.copy()
         self.img_width, self.img_height = img.shape
-        self.soma_diameter = soma_diameter
-        self.tile_width = self.soma_diameter * 2
-        self.tile_height = self.soma_diameter * 2
+        self.tile_width = soma_diameter * 2
+        self.tile_height = soma_diameter * 2
 
         n_tiles_width = math.ceil(self.img_width / self.tile_width)
         n_tiles_height = math.ceil(self.img_height / self.tile_height)
-        self.good_tiles_mask = np.zeros(
+        self.bright_tiles_mask = np.zeros(
             (n_tiles_width, n_tiles_height), dtype=bool
         )
 
-        self.x = 0
-        self.y = 0
-        self.tile_idx = 0
+        corner_tile = img[0 : self.tile_width, 0 : self.tile_height]
+        corner_intensity = np.mean(corner_tile)
+        corner_sd = np.std(corner_tile)
+        # add 1 to ensure not 0, as disables
+        self.out_of_brain_threshold = (corner_intensity + (2 * corner_sd)) + 1
 
-        corner_intensity = img[
-            0 : self.tile_width, 0 : self.tile_height
-        ].mean()
-        corner_sd = img[0 : self.tile_width, 0 : self.tile_height].std()
-        out_of_brain_threshold = (
-            corner_intensity + (2 * corner_sd)
-        ) + 1  # add 1 to ensure not 0, as disables
+    def _get_tiles(self):
+        """
+        Generator that yields tiles of the 2D image.
 
-        self.ftf = OutOfBrainTileFilter(
-            out_of_brain_intensity_threshold=out_of_brain_threshold
-        )
-
-    def _get_tiles(self):  # WARNING: crops to integer steps
+        Notes
+        -----
+        The final tile in each dimension can have a smaller size than the
+        rest of the tiles if the tile shape does not exactly divide the
+        image shape.
+        """
         for y in range(
             0, self.img_height - self.tile_height, self.tile_height
         ):
             for x in range(
                 0, self.img_width - self.tile_width, self.tile_width
             ):
-                read_tile = self.img[
+                tile = self.img[
                     x : x + self.tile_width, y : y + self.tile_height
                 ]
-                write_tile = self.thresholded_img[
-                    x : x + self.tile_width, y : y + self.tile_height
-                ]
-                yield x, y, read_tile, write_tile
+                yield x, y, tile
 
-    def walk_out_of_brain_only(self):
-        for x, y, tile, write_tile in self._get_tiles():
-            self.x = x
-            self.y = y
-            self.ftf.set_tile(tile)
-            if self.ftf.out_of_brain_intensity_threshold:
-                self.ftf.keep = not is_low_average(
-                    tile, self.ftf.out_of_brain_intensity_threshold
-                )
-                if self.ftf.keep:
-                    mask_x = self.x // self.tile_width
-                    mask_y = self.y // self.tile_height
-                    self.good_tiles_mask[mask_x, mask_y] = True
+    def mark_bright_tiles(self):
+        """
+        Loop through tiles, and if the average value of a tile is
+        greater than the intensity threshold mark the tile as bright
+        in self.bright_tiles_mask.
+        """
+        threshold = self.out_of_brain_threshold
+        if threshold == 0:
+            return
+
+        for x, y, tile in self._get_tiles():
+            if not is_low_average(tile, threshold):
+                mask_x = x // self.tile_width
+                mask_y = y // self.tile_height
+                self.bright_tiles_mask[mask_x, mask_y] = True
+
+
+@jit
+def is_low_average(tile: np.ndarray, threshold: float) -> bool:
+    """
+    Return `True` if the average value of *tile* is below *threshold*.
+    """
+    avg = np.mean(tile)
+    return avg < threshold

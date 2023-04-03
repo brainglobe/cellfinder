@@ -18,6 +18,17 @@ class TileProcessor:
 
     def get_tile_mask(self, plane: da.array) -> Tuple[np.ndarray, np.ndarray]:
         """
+        This thresholds the input plane, and returns a mask indicating which
+        tiles are inside the brain.
+
+        The input plane is:
+
+        1. Clipped to self.threshold value
+        2. Run through a peak enhancement filter (see `classical_filter.py`)
+        3. Thresholded. Any values that are larger than
+           (mean + stddev * self.n_sds_above_mean_thresh) are set to
+           self.threshold_value in-place.
+
         Parameters
         ----------
         plane :
@@ -26,9 +37,10 @@ class TileProcessor:
         Returns
         -------
         plane :
-            Modified plane.
-        mask :
-            Good tiles mask.
+            Thresholded plane.
+        inside_brain_tiles :
+            Boolean mask indicating which tiles are inside (1) or
+            outside (0) the brain.
         """
         laplace_gaussian_sigma = self.log_sigma_size * self.soma_diameter
         plane = plane.T
@@ -36,19 +48,20 @@ class TileProcessor:
         # Read plane from a dask array into memory as a numpy array
         plane = np.array(plane)
 
+        # Get tiles that are within the brain
         walker = TileWalker(plane, self.soma_diameter)
+        walker.mark_bright_tiles()
+        inside_brain_tiles = walker.bright_tiles_mask.astype(np.uint8)
 
-        walker.walk_out_of_brain_only()
-
+        # Threshold the image
         thresholded_img = enhance_peaks(
-            walker.thresholded_img,
+            plane.copy(),
             self.clipping_value,
             gaussian_sigma=laplace_gaussian_sigma,
         )
-
-        avg = thresholded_img.ravel().mean()
-        sd = thresholded_img.ravel().std()
+        avg = np.mean(thresholded_img)
+        sd = np.std(thresholded_img)
         threshold = avg + self.n_sds_above_mean_thresh * sd
-
         plane[thresholded_img > threshold] = self.threshold_value
-        return plane, walker.good_tiles_mask.astype(np.uint8)
+
+        return plane, inside_brain_tiles
