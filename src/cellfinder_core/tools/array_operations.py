@@ -3,24 +3,51 @@ import math
 import numpy as np
 
 
-# WARNING: skewed if does not fall exactly (integer multiple)
-def bin_array(arr: np.ndarray, bin_width: int, bin_height: int):
+def bin_array(arr: np.ndarray, bin_width: int, bin_height: int) -> np.ndarray:
+    """
+    Bin a 2D array.
+
+    Parameters
+    ----------
+    arr :
+        Input array.
+    bin_width, bin_height :
+        Width/height of the bins.
+
+    Returns
+    -------
+    binned_arr
+        A 4D array. The dimensions correspond to:
+            1. Bin number along first dimension of input array.
+            2. Element index along first dimension within bin.
+            3. Bin number along second dimension of input array.
+            4. Element index along second dimension within bin.
+
+    Notes
+    -----
+    The original array is zero padded so that it is tiled exactly
+    by tiles of shape (bin_width, bin_height).
+    """
     bin_width = int(bin_width)
     bin_height = int(bin_height)
 
+    # Get number of required bins to tile arr
     n_bins_width = int(math.ceil(arr.shape[0] / bin_width))
-    width = n_bins_width * bin_width
     n_bins_height = int(math.ceil(arr.shape[1] / bin_height))
+    # Get width/height to have integer number of bins that fully
+    # covers arr
+    width = n_bins_width * bin_width
     height = n_bins_height * bin_height
 
-    # zero padding array to integer multiples of bin_width/bin_height
+    # Zero padding array to integer multiples of bin_width/bin_height
     padded_array = np.zeros((width, height), dtype=arr.dtype)
     padded_array[0 : arr.shape[0], 0 : arr.shape[1]] = arr
 
+    # Reshape into 4D array.
     binned_array = padded_array.reshape(
-        padded_array.shape[0] // bin_width,
+        n_bins_width,
         bin_width,
-        padded_array.shape[1] // bin_height,
+        n_bins_height,
         bin_height,
     )
     return binned_array
