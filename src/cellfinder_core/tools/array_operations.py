@@ -53,7 +53,20 @@ def bin_array(arr: np.ndarray, bin_width: int, bin_height: int) -> np.ndarray:
     return binned_array
 
 
-def pad_and_bin_mean(arr: np.ndarray, bin_width: int, bin_height: int):
+def pad_and_bin_mean(
+    arr: np.ndarray, bin_width: int, bin_height: int
+) -> np.ndarray:
+    """
+    Get mean value of *arr* in bins of shape (*bin_width*, *bin_height*)
+
+    Notes
+    -----
+    The original array is zero padded so that it is tiled exactly
+    by tiles of shape (*bin_width*, *bin_height*). If the tile shape
+    does not exactly divide the array shape, values on the outer edge
+    of the returned array (arr[-1, :] and arr[:, -1]) will have mean values
+    calculated including this zero padding.
+    """
     binned_array = bin_array(arr, bin_width, bin_height)
     return binned_array.mean(axis=(1, 3))
 
