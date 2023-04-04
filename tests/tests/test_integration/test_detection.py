@@ -110,3 +110,18 @@ def test_synthetic_data(synthetic_bright_spots):
         n_free_cpus=0,
     )
     assert len(detected) == 8
+
+
+@pytest.mark.parametrize("ndim", [1, 2, 4])
+def test_data_dimension_error(ndim):
+    # Check for an error when non-3D data input
+    shape = (2, 3, 4, 5)[:ndim]
+    signal_array = np.random.randint(
+        low=0, high=2**16, size=shape, dtype=np.uint16
+    )
+    background_array = np.random.randint(
+        low=0, high=2**16, size=shape, dtype=np.uint16
+    )
+
+    with pytest.raises(ValueError, match="Input data must be 3D"):
+        main(signal_array, background_array, voxel_sizes)
