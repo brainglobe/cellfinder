@@ -1,5 +1,3 @@
-from typing import Optional
-
 import numpy as np
 from numba import jit
 
@@ -25,11 +23,11 @@ class BallFilter:
         layer_height: int,
         ball_xy_size: int,
         ball_z_size: int,
-        overlap_fraction: float = 0.8,
-        tile_step_width: Optional[int] = None,
-        tile_step_height: Optional[int] = None,
-        threshold_value: Optional[int] = None,
-        soma_centre_value: Optional[int] = None,
+        overlap_fraction: float,
+        tile_step_width: int,
+        tile_step_height: int,
+        threshold_value: int,
+        soma_centre_value: int,
     ):
         """
         Parameters
