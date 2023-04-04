@@ -1,5 +1,3 @@
-from typing import Optional
-
 import numpy as np
 from numba import jit
 
@@ -25,11 +23,11 @@ class BallFilter:
         layer_height: int,
         ball_xy_size: int,
         ball_z_size: int,
-        overlap_fraction: float = 0.8,
-        tile_step_width=None,
-        tile_step_height=None,
-        threshold_value: Optional[int] = None,
-        soma_centre_value=None,
+        overlap_fraction: float,
+        tile_step_width: int,
+        tile_step_height: int,
+        threshold_value: int,
+        soma_centre_value: int,
     ):
         """
         Parameters
@@ -125,13 +123,13 @@ class BallFilter:
         self.__current_z = -1
 
     @property
-    def ready(self):
+    def ready(self) -> bool:
         """
         Return `True` if enough layers have been appended to run the filter.
         """
         return self.__current_z == self.ball_z_size - 1
 
-    def append(self, layer, mask):
+    def append(self, layer: np.ndarray, mask: np.ndarray) -> None:
         """
         Add a new 2D layer to the filter.
         """
@@ -162,14 +160,14 @@ class BallFilter:
         self.volume[:, :, self.__current_z] = layer[:, :]
         self.inside_brain_tiles[:, :, self.__current_z] = mask[:, :]
 
-    def get_middle_plane(self):
+    def get_middle_plane(self) -> np.ndarray:
         """
         Get the plane in the middle of self.volume.
         """
         z = self.middle_z_idx
         return np.array(self.volume[:, :, z], dtype=np.uint16)
 
-    def walk(self):  # Highly optimised because most time critical
+    def walk(self) -> None:  # Highly optimised because most time critical
         ball_radius = self.ball_xy_size // 2
         # Get extents of image that are covered by tiles
         tile_mask_covered_img_width = (
