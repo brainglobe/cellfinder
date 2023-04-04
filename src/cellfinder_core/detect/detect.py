@@ -1,3 +1,18 @@
+"""
+Detection is run in three steps:
+
+1. 2D filtering
+2. 3D filtering
+3. Structure detection
+
+In steps 1. and 2. filters are applied, and any bright points detected
+post-filter are marked. To avoid using a separate mask array to mark the
+bright points, the input data is clipped to the maximum storeable value
+(max_val), and
+- (max_val - 1) used to mark during 2D filtering
+- (max_val) used to mark during 3D filtering
+"""
+
 import multiprocessing
 from datetime import datetime
 from queue import Queue

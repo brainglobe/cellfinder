@@ -10,8 +10,18 @@ from cellfinder_core.detect.filters.plane.tile_walker import TileWalker
 
 @dataclass
 class TileProcessor:
-    clipping_value: float
-    threshold_value: float
+    """
+    Attributes
+    ----------
+    clipping_value :
+        Upper value that the input plane is clipped to.
+    threshold_value :
+        Value used to mark bright features in the input planes after they have
+        been run through the 2D filter.
+    """
+
+    clipping_value: int
+    threshold_value: int
     soma_diameter: float
     log_sigma_size: float
     n_sds_above_mean_thresh: float
@@ -23,7 +33,7 @@ class TileProcessor:
 
         The input plane is:
 
-        1. Clipped to self.threshold value
+        1. Clipped to [0, self.clipping_value]
         2. Run through a peak enhancement filter (see `classical_filter.py`)
         3. Thresholded. Any values that are larger than
            (mean + stddev * self.n_sds_above_mean_thresh) are set to
