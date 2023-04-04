@@ -110,9 +110,6 @@ class CellDetector:
             key_type=types.int64, value_type=uint_2d_type
         )
 
-    def get_previous_layer(self):
-        return np.array(self.previous_layer, dtype=np.uint64)
-
     def process(
         self, layer
     ):  # WARNING: inplace  # WARNING: ull may be overkill but ulong required
