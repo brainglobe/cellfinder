@@ -18,6 +18,9 @@ def get_ball_filter(
     ball_z_size: int,
     ball_overlap_fraction: float = 0.6,
 ) -> BallFilter:
+    # thrsh_val is used to clip the data in plane to make sure
+    # a number is available to mark cells. soma_centre_val is the
+    # number used to mark cells.
     max_value = get_max_possible_value(plane)
     thrsh_val = max_value - 1
     soma_centre_val = max_value
@@ -48,6 +51,18 @@ def get_cell_detector(
 
 
 def setup_tile_filtering(plane: np.ndarray) -> Tuple[int, int]:
+    """
+    Setup values that are used to threshold the plane during 2D filtering.
+
+    Returns
+    -------
+    clipping_value :
+        Upper value used to clip planes before 2D filtering. This is chosen
+        to leave two numbers left that can later be used to mark bright points
+        during the 2D and 3D filtering stages.
+    threshold_value :
+        Value used to mark bright pixels after 2D filtering.
+    """
     max_value = get_max_possible_value(plane)
     clipping_value = max_value - 2
     thrsh_val = max_value - 1
