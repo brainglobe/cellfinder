@@ -58,7 +58,8 @@ def setup_tile_filtering(plane: np.ndarray) -> Tuple[int, int]:
     -------
     clipping_value :
         Upper value used to clip planes before 2D filtering. This is chosen
-        to leave two numbers left that can be used to...
+        to leave two numbers left that can later be used to mark bright points
+        during the 2D and 3D filtering stages.
     threshold_value :
         Value used to mark bright pixels after 2D filtering.
     """
