@@ -16,7 +16,8 @@ bright points, the input data is clipped to [0, (max_val - 2)]
 import multiprocessing
 from datetime import datetime
 from queue import Queue
-from typing import Callable, List, Optional, Tuple, Union
+from threading import Lock
+from typing import Callable, List, Optional, Sequence, Tuple, Union
 
 import dask.array as da
 import numpy as np
@@ -144,32 +145,12 @@ def main(
         n_sds_above_mean_thresh,
     )
 
-    # Setup a manager to handle the locks
-    m = multiprocessing.Manager()
-
     # Force spawn context
     mp_ctx = multiprocessing.get_context("spawn")
     with mp_ctx.Pool(n_processes) as worker_pool:
-        async_results: Queue = Queue()
-        # Create a lock for each plane in the input array. These locks
-        # are used to prevent many planes building up in the case where
-        # the 2D filtering is much slower than the 3D filtering.
-        locks = [m.Lock() for _ in range(len(signal_array))]
-        [lock.acquire(blocking=False) for lock in locks]
-
-        # Start 2D filter
-        # Submits each plane to the worker pool, and sets up a queue of
-        # asyncronous results
-        #
-        # NOTE: Need to make sure every plane isn't read into memory at this
-        # stage, as all of these jobs are submitted immediately to the pool.
-        # *plane* is a dask array, so as long as it isn't forced into memory
-        # (e.g. using np.array(plane)) here then there shouldn't be an issue
-        for plane, lock in zip(signal_array, locks):
-            res = worker_pool.apply_async(
-                mp_tile_processor.get_tile_mask, args=(plane, lock)
-            )
-            async_results.put(res)
+        async_results, locks = _map_with_locks(
+            mp_tile_processor.get_tile_mask, signal_array, worker_pool
+        )
 
         # Release the first set of locks for the 2D filtering
         for i in range(ball_z_size):
@@ -189,3 +170,39 @@ def main(
         )
     )
     return cells
+
+
+def _run_func_with_lock(func, arg, lock: Lock):
+    """
+    Run a function after acquiring a lock.
+    """
+    lock.acquire(blocking=True)
+    return func(arg)
+
+
+def _map_with_locks(
+    func, iterable: Sequence, worker_pool
+) -> Tuple[Queue, List[Lock]]:
+    """
+    Map a function to arguments, blocking execution.
+
+    Maps *func* to args in *iterable*, but blocks all execution and
+    return a queue of asyncronous results and locks for each of the
+    results. Execution can be enabled by releasing the returned
+    locks in order.
+    """
+    # Setup a manager to handle the locks
+    m = multiprocessing.Manager()
+    # Setup one lock per argument to be mapped
+    locks = [m.Lock() for _ in range(len(iterable))]
+    [lock.acquire(blocking=False) for lock in locks]
+
+    async_results: Queue = Queue()
+
+    for arg, lock in zip(iterable, locks):
+        async_result = worker_pool.apply_async(
+            _run_func_with_lock, args=(func, arg, lock)
+        )
+        async_results.put(async_result)
+
+    return async_results, locks
