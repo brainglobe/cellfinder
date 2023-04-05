@@ -1,6 +1,7 @@
 import math
 import os
 from queue import Queue
+from threading import Lock
 from typing import Any, Callable, List, Optional, Sequence, Tuple
 
 import numpy as np
@@ -39,7 +40,7 @@ class VolumeFilter(object):
     ):
         self.soma_diameter = soma_diameter
         self.soma_size_spread_factor = soma_size_spread_factor
-        self.planes_paths_range = planes_paths_range
+        self.n_planes = len(planes_paths_range)
         self.z = start_plane
         self.save_planes = save_planes
         self.plane_directory = plane_directory
@@ -71,13 +72,12 @@ class VolumeFilter(object):
     def process(
         self,
         async_result_queue: Queue,
+        locks: List[Lock],
         *,
         callback: Callable[[int], None],
     ):
-        progress_bar = tqdm(
-            total=len(self.planes_paths_range), desc="Processing planes"
-        )
-        while not async_result_queue.empty():
+        progress_bar = tqdm(total=self.n_planes, desc="Processing planes")
+        for z in range(self.n_planes):
             # Get result from the queue.
             #
             # It is important to remove the result from the queue here
@@ -93,6 +93,9 @@ class VolumeFilter(object):
             self.ball_filter.append(plane, mask)
 
             if self.ball_filter.ready:
+                # Let the next 2D filter run
+                if z + 1 < len(locks):
+                    locks[z + 1].release()
                 self._run_filter()
 
             callback(self.z)

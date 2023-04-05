@@ -145,26 +145,33 @@ def main(
     )
 
     mp_ctx = multiprocessing.get_context("spawn")
+    m = multiprocessing.Manager()
     with mp_ctx.Pool(n_processes) as worker_pool:
         # Start 2D filter
         # Submits each plane to the worker pool, and sets up a queue of
         # asyncronous results
         async_results: Queue = Queue()
+        locks = [m.Lock() for _ in range(len(signal_array))]
+        [lock.acquire(blocking=False) for lock in locks]
 
         # NOTE: Need to make sure every plane isn't read into memory at this
         # stage, as all of these jobs are submitted immediately to the pool.
         # *plane* is a dask array, so as long as it isn't forced into memory
         # (e.g. using np.array(plane)) here then there shouldn't be an issue
-        for plane in signal_array:
+        for plane, lock in zip(signal_array, locks):
             res = worker_pool.apply_async(
-                mp_tile_processor.get_tile_mask, args=(plane,)
+                mp_tile_processor.get_tile_mask, args=(plane, lock)
             )
             async_results.put(res)
+
+        # Release the first set of locks
+        for i in range(ball_z_size):
+            locks[i].release()
 
         # Start 3D filter
         # This runs in the main thread, and blocks until the all the 2D and
         # then 3D filtering has finished
-        cells = mp_3d_filter.process(async_results, callback=callback)
+        cells = mp_3d_filter.process(async_results, locks, callback=callback)
 
     print(
         "Detection complete - all planes done in : {}".format(
