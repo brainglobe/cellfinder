@@ -144,16 +144,23 @@ def main(
         n_sds_above_mean_thresh,
     )
 
-    mp_ctx = multiprocessing.get_context("spawn")
+    # Setup a manager to handle the locks
     m = multiprocessing.Manager()
+
+    # Force spawn context
+    mp_ctx = multiprocessing.get_context("spawn")
     with mp_ctx.Pool(n_processes) as worker_pool:
-        # Start 2D filter
-        # Submits each plane to the worker pool, and sets up a queue of
-        # asyncronous results
         async_results: Queue = Queue()
+        # Create a lock for each plane in the input array. These locks
+        # are used to prevent many planes building up in the case where
+        # the 2D filtering is much slower than the 3D filtering.
         locks = [m.Lock() for _ in range(len(signal_array))]
         [lock.acquire(blocking=False) for lock in locks]
 
+        # Start 2D filter
+        # Submits each plane to the worker pool, and sets up a queue of
+        # asyncronous results
+        #
         # NOTE: Need to make sure every plane isn't read into memory at this
         # stage, as all of these jobs are submitted immediately to the pool.
         # *plane* is a dask array, so as long as it isn't forced into memory
@@ -164,13 +171,16 @@ def main(
             )
             async_results.put(res)
 
-        # Release the first set of locks
+        # Release the first set of locks for the 2D filtering
         for i in range(ball_z_size):
             locks[i].release()
 
         # Start 3D filter
+        #
         # This runs in the main thread, and blocks until the all the 2D and
-        # then 3D filtering has finished
+        # then 3D filtering has finished. As batches of planes are filtered
+        # by the 3D filter, it releases the locks of subsequent 2D filter
+        # processes.
         cells = mp_3d_filter.process(async_results, locks, callback=callback)
 
     print(
