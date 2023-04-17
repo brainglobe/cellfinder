@@ -21,7 +21,13 @@ UINT64_MAX = np.iinfo(np.uint64).max
 
 
 @jit(nopython=True)
-def get_non_zero_ull_min(values):
+def get_non_zero_ull_min(values: np.ndarray) -> int:
+    """
+    Get the minimum of non-zero entries in *values*.
+
+    If all entries are zero, returns maximum storeable number
+    in uint64 data type.
+    """
     min_val = UINT64_MAX
     for v in values:
         if v != 0 and v < min_val:
@@ -89,7 +95,46 @@ spec = [
 
 @jitclass(spec=spec)
 class CellDetector:
+    """
+    A class to detect connected structures within a series of
+    stacked planes.
+
+    Attributes
+    ----------
+    SOMA_CENTRE_VALUE :
+        The value used to (previously) mark pixels belonging to cells.
+    z :
+        z-index of the plane currently being processed.
+    relative_z:
+        z-index of the plane being processed, relative to the z-index of
+        the plane that was first processed.
+    next_structure_id :
+        The next available structure ID that has yet to be used. IDs start
+        counting up from 1.
+    shape :
+        Shape of the planes to be processed.
+    obsolete_ids :
+        Mapping from obsolete structure IDs to the structure ID they
+        have been replaced with. This is used to keep track of structures
+        that were initially disconnected, but later connected as the planes
+        are scanned.
+    coords_maps :
+        Mapping from structure ID to the coordinates of pixels within that
+        structure. Coordinates are stored in a 2D array, with the second
+        axis indexing (x, y, z) coordinates.
+    previous_layer :
+        The previous layer to have been processed.
+    """
+
     def __init__(self, width: int, height: int, start_z: int):
+        """
+        Parameters
+        ----------
+        width, height
+            Shape of the layers input to self.process()
+        start_z:
+            The z-coordinate of the first processed layer.
+        """
         self.shape = width, height
         self.z = start_z
 
@@ -110,15 +155,17 @@ class CellDetector:
             key_type=types.int64, value_type=uint_2d_type
         )
 
-    def process(
-        self, layer
-    ):  # WARNING: inplace  # WARNING: ull may be overkill but ulong required
+    def process(self, layer: np.ndarray) -> None:
+        """
+        Process a new layer.
+        """
         if [e for e in layer.shape[:2]] != [e for e in self.shape]:
             raise ValueError("layer does not have correct shape")
 
         source_dtype = layer.dtype
         # Have to cast layer to a concrete data type in order to save it
-        # in the .previous_layer class attribute
+        # in the .previous_layer class attribute. uint64 might be overkill
+        # but needs to be at least uint32
         layer = layer.astype(np.uint64)
 
         # The 'magic numbers' below are chosen so that the maximum number
@@ -140,17 +187,21 @@ class CellDetector:
 
         self.z += 1
 
-    def connect_four(self, layer):
+    def connect_four(self, layer: np.ndarray) -> np.ndarray:
         """
-        For all the pixels in the current layer, finds all structures touching
-        this pixel using the
-        four connected (plus shape) rule and also looks at the pixel at the
-        same location in the previous layer.
-        If structures are found, they are added to the structure manager and
-        the pixel labeled accordingly.
+        Perform structure labelling.
 
-        :param layer:
-        :return:
+        For all the pixels in the current layer, finds all structures touching
+        this pixel using the four connected (plus shape) rule and also looks at
+        the pixel at the same location in the previous layer. If structures are
+        found, they are added to the structure manager and the pixel labeled
+        accordingly.
+
+        Returns
+        -------
+        layer :
+            Layer with pixels either set to zero (no structure) or labelled
+            with their structure ID.
         """
         for y in range(layer.shape[1]):
             for x in range(layer.shape[0]):
@@ -178,7 +229,7 @@ class CellDetector:
 
         return layer
 
-    def get_cell_centres(self):
+    def get_cell_centres(self) -> List[Point]:
         cell_centres = self.structures_to_cells()
         return cell_centres
 
@@ -254,7 +305,7 @@ class CellDetector:
                 self.coords_maps.pop(neighbour_id)
                 self.obsolete_ids[neighbour_id] = updated_id
 
-    def structures_to_cells(self):
+    def structures_to_cells(self) -> List[Point]:
         cell_centres = []
         for iterator_pair in self.coords_maps:
             structure = iterator_pair.second
