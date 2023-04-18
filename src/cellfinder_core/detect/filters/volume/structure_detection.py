@@ -89,7 +89,7 @@ spec = [
     ("shape", types.UniTuple(types.int64, 2)),
     ("obsolete_ids", DictType(types.int64, types.int64)),
     ("coords_maps", DictType(types.uint64, uint_2d_type)),
-    ("previous_layer", types.uint64[:, :]),
+    ("previous_plane", types.uint64[:, :]),
 ]
 
 
@@ -122,8 +122,8 @@ class CellDetector:
         Mapping from structure ID to the coordinates of pixels within that
         structure. Coordinates are stored in a 2D array, with the second
         axis indexing (x, y, z) coordinates.
-    previous_layer :
-        The previous layer to have been processed.
+    previous_plane :
+        The previous plane to have been processed.
     """
 
     def __init__(self, width: int, height: int, start_z: int):
@@ -131,9 +131,9 @@ class CellDetector:
         Parameters
         ----------
         width, height
-            Shape of the layers input to self.process()
+            Shape of the planes input to self.process()
         start_z:
-            The z-coordinate of the first processed layer.
+            The z-coordinate of the first processed plane.
         """
         self.shape = width, height
         self.z = start_z
@@ -155,66 +155,66 @@ class CellDetector:
             key_type=types.int64, value_type=uint_2d_type
         )
 
-    def process(self, layer: np.ndarray) -> None:
+    def process(self, plane: np.ndarray) -> None:
         """
-        Process a new layer.
+        Process a new plane.
         """
-        if [e for e in layer.shape[:2]] != [e for e in self.shape]:
-            raise ValueError("layer does not have correct shape")
+        if [e for e in plane.shape[:2]] != [e for e in self.shape]:
+            raise ValueError("plane does not have correct shape")
 
-        source_dtype = layer.dtype
-        # Have to cast layer to a concrete data type in order to save it
-        # in the .previous_layer class attribute. uint64 might be overkill
+        source_dtype = plane.dtype
+        # Have to cast plane to a concrete data type in order to save it
+        # in the .previous_plane class attribute. uint64 might be overkill
         # but needs to be at least uint32
-        layer = layer.astype(np.uint64)
+        plane = plane.astype(np.uint64)
 
         # The 'magic numbers' below are chosen so that the maximum number
         # representable in each data type is converted to 2**64 - 1, the
         # maximum representable number in uint64.
         nbits = np.iinfo(source_dtype).bits
         if nbits == 8:
-            layer *= numba.uint64(72340172838076673)
+            plane *= numba.uint64(72340172838076673)
         elif nbits == 16:
-            layer *= numba.uint64(281479271743489)
+            plane *= numba.uint64(281479271743489)
         elif nbits == 32:
-            layer *= numba.uint64(4294967297)
+            plane *= numba.uint64(4294967297)
 
-        layer = self.connect_four(layer)
-        self.previous_layer = layer
+        plane = self.connect_four(plane)
+        self.previous_plane = plane
 
         if self.relative_z == 0:
             self.relative_z += 1
 
         self.z += 1
 
-    def connect_four(self, layer: np.ndarray) -> np.ndarray:
+    def connect_four(self, plane: np.ndarray) -> np.ndarray:
         """
         Perform structure labelling.
 
-        For all the pixels in the current layer, finds all structures touching
+        For all the pixels in the current plane, finds all structures touching
         this pixel using the four connected (plus shape) rule and also looks at
-        the pixel at the same location in the previous layer. If structures are
+        the pixel at the same location in the previous plane. If structures are
         found, they are added to the structure manager and the pixel labeled
         accordingly.
 
         Returns
         -------
-        layer :
-            Layer with pixels either set to zero (no structure) or labelled
+        plane :
+            Plane with pixels either set to zero (no structure) or labelled
             with their structure ID.
         """
-        for y in range(layer.shape[1]):
-            for x in range(layer.shape[0]):
-                if layer[x, y] == self.SOMA_CENTRE_VALUE:
+        for y in range(plane.shape[1]):
+            for x in range(plane.shape[0]):
+                if plane[x, y] == self.SOMA_CENTRE_VALUE:
                     # Labels of structures below, left and behind
                     neighbour_ids = np.zeros(3, dtype=np.uint64)
                     # If in bounds look at neighbours
                     if x > 0:
-                        neighbour_ids[0] = layer[x - 1, y]
+                        neighbour_ids[0] = plane[x - 1, y]
                     if y > 0:
-                        neighbour_ids[1] = layer[x, y - 1]
+                        neighbour_ids[1] = plane[x, y - 1]
                     if self.relative_z > 0:
-                        neighbour_ids[2] = self.previous_layer[x, y]
+                        neighbour_ids[2] = self.previous_plane[x, y]
 
                     if is_new_structure(neighbour_ids):
                         neighbour_ids[0] = self.next_structure_id
@@ -225,9 +225,9 @@ class CellDetector:
                     # structure in next iterations
                     struct_id = 0
 
-                layer[x, y] = struct_id
+                plane[x, y] = struct_id
 
-        return layer
+        return plane
 
     def get_cell_centres(self) -> List[Point]:
         cell_centres = self.structures_to_cells()

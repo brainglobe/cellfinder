@@ -19,8 +19,8 @@ class BallFilter:
 
     def __init__(
         self,
-        layer_width: int,
-        layer_height: int,
+        plane_width: int,
+        plane_height: int,
         ball_xy_size: int,
         ball_z_size: int,
         overlap_fraction: float,
@@ -32,8 +32,8 @@ class BallFilter:
         """
         Parameters
         ----------
-        layer_width, layer_height :
-            Width/height of the layers.
+        plane_width, plane_height :
+            Width/height of the planes.
         ball_xy_size :
             Diameter of the spherical kernel in the x/y dimensions.
         ball_z_size :
@@ -104,7 +104,7 @@ class BallFilter:
 
         # Stores the current planes that are being filtered
         self.volume = np.empty(
-            (layer_width, layer_height, ball_z_size), dtype=np.uint16
+            (plane_width, plane_height, ball_z_size), dtype=np.uint16
         )
         # Index of the middle plane in the volume
         self.middle_z_idx = int(np.floor(ball_z_size / 2))
@@ -112,33 +112,33 @@ class BallFilter:
         # TODO: lazy initialisation
         self.inside_brain_tiles = np.empty(
             (
-                int(np.ceil(layer_width / tile_step_width)),
-                int(np.ceil(layer_height / tile_step_height)),
+                int(np.ceil(plane_width / tile_step_width)),
+                int(np.ceil(plane_height / tile_step_height)),
                 ball_z_size,
             ),
             dtype=np.uint8,
         )
-        # Stores the z-index in volume at which new layers are inserted when
+        # Stores the z-index in volume at which new planes are inserted when
         # append() is called
         self.__current_z = -1
 
     @property
     def ready(self) -> bool:
         """
-        Return `True` if enough layers have been appended to run the filter.
+        Return `True` if enough planes have been appended to run the filter.
         """
         return self.__current_z == self.ball_z_size - 1
 
-    def append(self, layer: np.ndarray, mask: np.ndarray) -> None:
+    def append(self, plane: np.ndarray, mask: np.ndarray) -> None:
         """
-        Add a new 2D layer to the filter.
+        Add a new 2D plane to the filter.
         """
         if DEBUG:
-            assert [e for e in layer.shape[:2]] == [
+            assert [e for e in plane.shape[:2]] == [
                 e for e in self.volume.shape[:2]
-            ], 'layer shape mismatch, expected "{}", got "{}"'.format(
+            ], 'plane shape mismatch, expected "{}", got "{}"'.format(
                 [e for e in self.volume.shape[:2]],
-                [e for e in layer.shape[:2]],
+                [e for e in plane.shape[:2]],
             )
             assert [e for e in mask.shape[:2]] == [
                 e for e in self.inside_brain_tiles.shape[2]
@@ -149,15 +149,15 @@ class BallFilter:
         if not self.ready:
             self.__current_z += 1
         else:
-            # Shift everything down by one to make way for the new layer
+            # Shift everything down by one to make way for the new plane
             self.volume = np.roll(
                 self.volume, -1, axis=2
             )  # WARNING: not in place
             self.inside_brain_tiles = np.roll(
                 self.inside_brain_tiles, -1, axis=2
             )
-        # Add the new layer to the top of volume and inside_brain_tiles
-        self.volume[:, :, self.__current_z] = layer[:, :]
+        # Add the new plane to the top of volume and inside_brain_tiles
+        self.volume[:, :, self.__current_z] = plane[:, :]
         self.inside_brain_tiles[:, :, self.__current_z] = mask[:, :]
 
     def get_middle_plane(self) -> np.ndarray:

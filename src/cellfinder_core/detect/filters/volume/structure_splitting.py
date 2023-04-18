@@ -45,21 +45,21 @@ def ball_filter_imgs(
 
     good_tiles_mask = np.ones((1, 1, volume.shape[2]), dtype=np.uint8)
 
-    layer_width, layer_height = volume.shape[:2]
+    plane_width, plane_height = volume.shape[:2]
 
     bf = BallFilter(
-        layer_width,
-        layer_height,
+        plane_width,
+        plane_height,
         ball_xy_size,
         ball_z_size,
         overlap_fraction=0.8,
-        tile_step_width=layer_width,
-        tile_step_height=layer_height,
+        tile_step_width=plane_width,
+        tile_step_height=plane_height,
         threshold_value=threshold_value,
         soma_centre_value=soma_centre_value,
     )
     cell_detector = CellDetector(
-        layer_width, layer_height, start_z=ball_z_size // 2
+        plane_width, plane_height, start_z=ball_z_size // 2
     )
 
     # FIXME: hard coded type
