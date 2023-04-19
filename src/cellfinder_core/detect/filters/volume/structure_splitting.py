@@ -1,9 +1,12 @@
+from typing import List, Sequence, Tuple
+
 import numpy as np
 
 from cellfinder_core import logger
 from cellfinder_core.detect.filters.volume.ball_filter import BallFilter
 from cellfinder_core.detect.filters.volume.structure_detection import (
     CellDetector,
+    Point,
     get_structure_centre_wrapper,
 )
 
@@ -12,7 +15,7 @@ class StructureSplitException(Exception):
     pass
 
 
-def get_shape(xs, ys, zs):
+def get_shape(xs: np.ndarray, ys: np.ndarray, zs: np.ndarray) -> List[int]:
     # +1 because difference. TEST:
     shape = [int((dim.max() - dim.min()) + 1) for dim in (xs, ys, zs)]
     return shape
@@ -39,8 +42,12 @@ def coords_to_volume(xs, ys, zs, ball_radius=1):
 
 
 def ball_filter_imgs(
-    volume, threshold_value, soma_centre_value, ball_xy_size=3, ball_z_size=3
-):
+    volume: np.ndarray,
+    threshold_value,
+    soma_centre_value,
+    ball_xy_size: int = 3,
+    ball_z_size: int = 3,
+) -> Tuple[np.ndarray, List[Point]]:
     # OPTIMISE: reuse ball filter instance
 
     good_tiles_mask = np.ones((1, 1, volume.shape[2]), dtype=np.uint8)
@@ -75,7 +82,9 @@ def ball_filter_imgs(
     return ball_filtered_volume, cell_detector.get_cell_centres()
 
 
-def iterative_ball_filter(volume, n_iter=10):
+def iterative_ball_filter(
+    volume: np.ndarray, n_iter: int = 10
+) -> Tuple[List[int], List[List[Point]]]:
     ns = []
     centres = []
 
@@ -97,14 +106,14 @@ def iterative_ball_filter(volume, n_iter=10):
     return ns, centres
 
 
-def check_centre_in_cuboid(centre, max_coords):
+def check_centre_in_cuboid(centre: Point, max_coords: np.ndarray) -> bool:
     """
     Checks whether a coordinate is in a cuboid
     :param centre: x,y,z coordinate
     :param max_coords: far corner of cuboid
     :return: True if within cuboid, otherwise False
     """
-    relative_coords = np.array([centre[k] for k in ("x", "y", "z")])
+    relative_coords = np.array([centre.x, centre.y, centre.z])
     if (relative_coords > max_coords).all():
         logger.info(
             'Relative coordinates "{}" exceed maximum volume '
@@ -115,21 +124,25 @@ def check_centre_in_cuboid(centre, max_coords):
         return True
 
 
-def split_cells(cell_points, outlier_keep=False):
+def split_cells(
+    cell_points: Sequence[Point], outlier_keep: bool = False
+) -> List[Point]:
     orig_centre = get_structure_centre_wrapper(cell_points)
 
-    xs = np.array([p["x"] for p in cell_points])  # TODO: use dataframe
-    ys = np.array([p["y"] for p in cell_points])
-    zs = np.array([p["z"] for p in cell_points])
+    xs = np.array([p.x for p in cell_points])  # TODO: use dataframe
+    ys = np.array([p.y for p in cell_points])
+    zs = np.array([p.z for p in cell_points])
 
-    orig_corner = {
-        "x": orig_centre["x"] - (orig_centre["x"] - xs.min()),
-        "y": orig_centre["y"] - (orig_centre["y"] - ys.min()),
-        "z": orig_centre["z"] - (orig_centre["z"] - zs.min()),
-    }
-    relative_orig_centre = {
-        k: orig_centre[k] - orig_corner[k] for k in ("x", "y", "z")
-    }
+    orig_corner = Point(
+        orig_centre.x - (orig_centre.x - xs.min()),
+        orig_centre.y - (orig_centre.y - ys.min()),
+        orig_centre.z - (orig_centre.z - zs.min()),
+    )
+    relative_orig_centre = Point(
+        orig_centre.x - orig_corner.x,
+        orig_centre.y - orig_corner.y,
+        orig_centre.z - orig_corner.z,
+    )
 
     original_bounding_cuboid_shape = get_shape(xs, ys, zs)
 
@@ -158,11 +171,11 @@ def split_cells(cell_points, outlier_keep=False):
     absolute_centres = []
     # FIXME: extract functionality
     for relative_centre in relative_centres:
-        absolute_centre = {
-            "x": orig_corner["x"] + relative_centre["x"],
-            "y": orig_corner["y"] + relative_centre["y"],
-            "z": orig_corner["z"] + relative_centre["z"],
-        }
+        absolute_centre = Point(
+            orig_corner.x + relative_centre.x,
+            orig_corner.y + relative_centre.y,
+            orig_corner.z + relative_centre.z,
+        )
         absolute_centres.append(absolute_centre)
 
-        return absolute_centres
+    return absolute_centres
