@@ -24,6 +24,7 @@ import numpy as np
 from imlib.cells.cells import Cell
 from imlib.general.system import get_num_processes
 
+from cellfinder_core import logger
 from cellfinder_core.detect.filters.plane import TileProcessor
 from cellfinder_core.detect.filters.setup_filters import setup_tile_filtering
 from cellfinder_core.detect.filters.volume.volume_filter import VolumeFilter
@@ -154,6 +155,7 @@ def main(
 
         # Release the first set of locks for the 2D filtering
         for i in range(ball_z_size):
+            logger.debug(f"🔓 Releasing lock for plane {i}")
             locks[i].release()
 
         # Start 3D filter

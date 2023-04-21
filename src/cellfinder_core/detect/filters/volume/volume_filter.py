@@ -87,14 +87,12 @@ class VolumeFilter(object):
             # .get() blocks until the result is available
             plane, mask = result.get()
 
-            logger.debug(f"Plane {self.z} received for 3D filtering")
-
-            logger.debug(f"Adding plane {self.z} for 3D filtering")
             self.ball_filter.append(plane, mask)
 
             if self.ball_filter.ready:
                 # Let the next 2D filter run
                 if z + 1 < len(locks):
+                    logger.debug(f"🔓 Releasing lock for plane {z + 1}")
                     locks[z + 1].release()
                 self._run_filter()
 
@@ -107,22 +105,19 @@ class VolumeFilter(object):
         return self.get_results()
 
     def _run_filter(self):
-        logger.debug(f"Ball filtering plane {self.z}")
+        logger.debug(f"🏐 Ball filtering plane {self.z}")
         self.ball_filter.walk()
 
         middle_plane = self.ball_filter.get_middle_plane()
         if self.save_planes:
             self.save_plane(middle_plane)
 
-        logger.debug(f"Detecting structures for plane {self.z}")
+        logger.debug(f"🏫 Detecting structures for plane {self.z}")
         self.previous_plane = self.cell_detector.process(
             middle_plane, self.previous_plane
         )
 
-        logger.debug(f"Structures done for plane {self.z}")
-        logger.debug(
-            f"Skipping plane {self.z} for 3D filter" " (out of bounds)"
-        )
+        logger.debug(f"🏫 Structures done for plane {self.z}")
 
     def save_plane(self, plane):
         plane_name = f"plane_{str(self.z).zfill(4)}.tif"
