@@ -89,6 +89,7 @@ def main(
             f"{signal_array.dtype}"
         )
     n_processes = get_num_processes(min_free_cpu_cores=n_free_cpus)
+    n_ball_procs = n_processes - 1
     start_time = datetime.now()
 
     (
@@ -128,6 +129,7 @@ def main(
         setup_params=setup_params,
         soma_size_spread_factor=soma_spread_factor,
         planes_paths_range=signal_array,
+        n_locks_release=n_ball_procs,
         save_planes=save_planes,
         plane_directory=plane_directory,
         start_plane=start_plane,
@@ -148,13 +150,13 @@ def main(
 
     # Force spawn context
     mp_ctx = multiprocessing.get_context("spawn")
-    with mp_ctx.Pool(n_processes) as worker_pool:
+    with mp_ctx.Pool(n_ball_procs) as worker_pool:
         async_results, locks = _map_with_locks(
             mp_tile_processor.get_tile_mask, signal_array, worker_pool
         )
 
         # Release the first set of locks for the 2D filtering
-        for i in range(ball_z_size):
+        for i in range(n_ball_procs + ball_z_size):
             logger.debug(f"🔓 Releasing lock for plane {i}")
             locks[i].release()
 

@@ -31,6 +31,7 @@ class VolumeFilter(object):
         soma_size_spread_factor: float = 1.4,
         setup_params: Tuple[np.ndarray, Any, int, int, float, Any],
         planes_paths_range: Sequence,
+        n_locks_release: int,
         save_planes: bool = False,
         plane_directory: Optional[str] = None,
         start_plane: int = 0,
@@ -46,6 +47,7 @@ class VolumeFilter(object):
         self.plane_directory = plane_directory
         self.max_cluster_size = max_cluster_size
         self.outlier_keep = outlier_keep
+        self.n_locks_release = n_locks_release
 
         self.artifact_keep = artifact_keep
 
@@ -83,17 +85,21 @@ class VolumeFilter(object):
             # It is important to remove the result from the queue here
             # to free up memory once this plane has been processed by
             # the 3D filter here
+            logger.debug(f"🏐 Waiting for plane {z}")
             result = async_result_queue.get()
             # .get() blocks until the result is available
             plane, mask = result.get()
+            logger.debug(f"🏐 Got plane {z}")
 
             self.ball_filter.append(plane, mask)
 
             if self.ball_filter.ready:
                 # Let the next 2D filter run
-                if z + 1 < len(locks):
-                    logger.debug(f"🔓 Releasing lock for plane {z + 1}")
-                    locks[z + 1].release()
+                z_release = z + self.n_locks_release + 1
+                if z_release < len(locks):
+                    logger.debug(f"🔓 Releasing lock for plane {z_release}")
+                    locks[z_release].release()
+
                 self._run_filter()
 
             callback(self.z)

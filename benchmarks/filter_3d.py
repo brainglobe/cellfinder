@@ -28,6 +28,7 @@ mp_3d_filter = VolumeFilter(
     soma_diameter=soma_diameter,
     setup_params=setup_params,
     planes_paths_range=signal_array,
+    n_locks_release=1,
 )
 
 # Use random data for mask data
