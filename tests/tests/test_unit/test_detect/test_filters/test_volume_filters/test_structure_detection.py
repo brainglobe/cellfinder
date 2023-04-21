@@ -89,7 +89,14 @@ test_data = [
         # three initially disconnected pixels that then get merged
         # by a fourth pixel
         [(1, 1, 0), (0, 1, 1), (1, 0, 1), (1, 1, 1)],
-        {1: [Point(1, 1, 0), Point(0, 1, 1), Point(1, 0, 1), Point(1, 1, 1)]},
+        {
+            1: [
+                Point(1, 1, 0),
+                Point(1, 0, 1),
+                Point(0, 1, 1),
+                Point(1, 1, 1),
+            ]
+        },
     ),
     (
         # Three pixels in x-y plane that require structure merging

@@ -297,7 +297,7 @@ class CellDetector:
         - self.coords_maps
         - self.obsolete_ids
         """
-        for i, neighbour_id in enumerate(neighbour_ids):
+        for neighbour_id in np.unique(neighbour_ids):
             # minimise ID so if neighbour with higher ID, reassign its points
             # to current
             if neighbour_id > updated_id:
