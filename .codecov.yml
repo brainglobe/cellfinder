@@ -1,1 +1,15 @@
 comment: false
+
+
+# Add a numba flag to any files that contain code jit compiled
+# with numba. Tests are run without Numba compilation on the main
+# branch to collect code coverage, and the carryforward flags are
+# used to make sure coverage of these files does not decrease on
+# pull requests.
+flags:
+  numba:
+    paths:
+      - src/cellfinder_core/detect/filters/plane/tile_walker.py
+      - src/cellfinder_core/detect/filters/volume/ball_filter.py
+      - src/cellfinder_core/detect/filters/volume/structure_detection.py
+    carryforward: true

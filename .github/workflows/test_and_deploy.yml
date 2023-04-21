@@ -19,23 +19,25 @@ jobs:
     strategy:
       matrix:
         # Run all supported Python versions on linux
-        python-version: ["3.8", "3.9", "3.10"]
         os: [ubuntu-latest]
-        # Include one windows and macos run
+        python-version: ["3.8", "3.9", "3.10"]
+        # Include one windows, one macos run
         include:
         - os: macos-latest
           python-version: "3.9"
         - os: windows-latest
           python-version: "3.9"
+
     steps:
       - name: Cache tensorflow model
         uses: actions/cache@v3
         with:
           path: "~/.cellfinder"
           key: models-${{ hashFiles('~/.cellfinder/**') }}
-      - uses: neuroinformatics-unit/actions/test@v1.0.4
+      - uses: neuroinformatics-unit/actions/test@v2
         with:
           python-version: ${{ matrix.python-version }}
+
 
   # Run cellfinder tests to make sure cellfinder is still compatible
   # with cellfinder-core
