@@ -23,7 +23,7 @@ This part of processing performs two tasks:
 
    Because applying several of the filters is more time efficient when done on floating point data types, each plane is cast to `float64` in this step.
 
-1. Works out which areas of the plane are inside or outside of the brain. To do this the plane is divied into square tiles that have edge length `2 * soma_diameter`. The lower corner tile is assumed to be outside the brain, and any tiles that have a mean intensity less than `1 + mean + (2 * stddev)` of the corner tile are marked as being outside the brain. This speeds up processing in later steps by automatically skipping over tiles marked as outside the brain in this step.
+1. Works out which areas of the plane are inside or outside of the brain. To do this the plane is divided into square tiles that have edge length `2 * soma_diameter`. The lower corner tile is assumed to be outside the brain, and any tiles that have a mean intensity less than `1 + mean + (2 * stddev)` of the corner tile are marked as being outside the brain. This speeds up processing in later steps by automatically skipping over tiles marked as outside the brain in this step.
 
 ### 3D filtering
 Code can be found in `cellfinder_core/detect/filters/volume/ball_filter.py`.
