@@ -54,7 +54,7 @@ N.B. To speed up cellfinder, you need CUDA & cuDNN installed. Instructions
 
 ### Usage
 Before using cellfinder-core, it may be useful to take a look at the
-[preprint](https://www.biorxiv.org/content/10.1101/2020.10.21.348771v2) which
+[paper](https://doi.org/10.1371/journal.pcbi.1009074) which
 outlines the algorithm.
 
 The API is not yet fully documented. For an idea of what the parameters do,
@@ -293,7 +293,7 @@ Contributions to cellfinder-core are more than welcome. Please see the [contribu
 
 ---
 ## Citing cellfinder
-If you find this plugin useful, and use it in your research, please cite the preprint outlining the cell detection algorithm:
+If you find this plugin useful, and use it in your research, please cite the paper outlining the cell detection algorithm:
 > Tyson, A. L., Rousseau, C. V., Niedworok, C. J., Keshavarzi, S., Tsitoura, C., Cossell, L., Strom, M. and Margrie, T. W. (2021) “A deep learning algorithm for 3D cell detection in whole mouse brain image datasets’ PLOS Computational Biology, 17(5), e1009074
 [https://doi.org/10.1371/journal.pcbi.1009074](https://doi.org/10.1371/journal.pcbi.1009074)
 
