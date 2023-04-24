@@ -71,6 +71,7 @@ def ball_filter_imgs(
 
     # FIXME: hard coded type
     ball_filtered_volume = np.zeros(volume.shape, dtype=np.uint16)
+    previous_plane = None
     for z in range(volume.shape[2]):
         bf.append(volume[:, :, z].astype(np.uint16), good_tiles_mask[:, :, z])
         if bf.ready:
@@ -78,7 +79,9 @@ def ball_filter_imgs(
             middle_plane = bf.get_middle_plane()
             ball_filtered_volume[:, :, z] = middle_plane[:]
             # DEBUG: TEST: transpose
-            cell_detector.process(middle_plane.copy())
+            previous_plane = cell_detector.process(
+                middle_plane.copy(), previous_plane
+            )
     return ball_filtered_volume, cell_detector.get_cell_centres()
 
 
