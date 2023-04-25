@@ -116,7 +116,7 @@ class BallFilter:
                 int(np.ceil(plane_height / tile_step_height)),
                 ball_z_size,
             ),
-            dtype=np.uint8,
+            dtype=bool,
         )
         # Stores the z-index in volume at which new planes are inserted when
         # append() is called

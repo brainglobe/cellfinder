@@ -50,7 +50,7 @@ def ball_filter_imgs(
 ) -> Tuple[np.ndarray, List[Point]]:
     # OPTIMISE: reuse ball filter instance
 
-    good_tiles_mask = np.ones((1, 1, volume.shape[2]), dtype=np.uint8)
+    good_tiles_mask = np.ones((1, 1, volume.shape[2]), dtype=bool)
 
     plane_width, plane_height = volume.shape[:2]
 

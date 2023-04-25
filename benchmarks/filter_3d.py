@@ -31,7 +31,7 @@ mp_3d_filter = VolumeFilter(
 )
 
 # Use random data for mask data
-mask = np.random.randint(low=0, high=2, size=(42, 32), dtype=np.uint8)
+mask = np.random.randint(low=0, high=2, size=(42, 32), dtype=bool)
 
 # Fill up the 3D filter with planes
 for plane in signal_array:

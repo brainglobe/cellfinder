@@ -61,7 +61,7 @@ class TileProcessor:
         # Get tiles that are within the brain
         walker = TileWalker(plane, self.soma_diameter)
         walker.mark_bright_tiles()
-        inside_brain_tiles = walker.bright_tiles_mask.astype(np.uint8)
+        inside_brain_tiles = walker.bright_tiles_mask
 
         # Threshold the image
         thresholded_img = enhance_peaks(
