@@ -54,9 +54,10 @@ class TileProcessor:
         """
         laplace_gaussian_sigma = self.log_sigma_size * self.soma_diameter
         plane = plane.T
-        plane = np.clip(plane, 0, self.clipping_value)
+        np.clip(plane, 0, self.clipping_value, out=plane)
         # Read plane from a dask array into memory as a numpy array
-        plane = np.array(plane)
+        if isinstance(plane, da.Array):
+            plane = np.array(plane)
 
         # Get tiles that are within the brain
         walker = TileWalker(plane, self.soma_diameter)
