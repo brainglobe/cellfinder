@@ -74,28 +74,18 @@ jobs:
         run: |
           python -m pytest --color=yes -v
 
-  build_sdist:
-    name: Build source distribution
-    needs: [test]
+  build_sdist_wheel:
+    name: Build source distribution and wheel
+    needs: [test, test_cellfinder]
     if: github.event_name == 'push' && github.ref_type == 'tag'
     runs-on: ubuntu-latest
     steps:
-    - uses: brainglobe/actions/build_sdist@v1
-
-  build_wheels:
-    name: Build wheels on ${{ matrix.os }}
-    needs: [test]
-    if: github.event_name == 'push' && github.ref_type == 'tag'
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-20.04, windows-2019, macos-11]
-    steps:
-    - uses: brainglobe/actions/build_wheels@v1
+    - uses:  neuroinformatics-unit/actions/build_sdist_wheels@v2
 
   upload_all:
     name: Publish build distributions
-    needs: [build_sdist, build_wheels]
+    needs: [build_sdist_wheel]
+    if: github.event_name == 'push' && github.ref_type == 'tag'
     runs-on: ubuntu-latest
     steps:
     - uses: actions/download-artifact@v3
