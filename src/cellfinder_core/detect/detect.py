@@ -185,7 +185,7 @@ def _run_func_with_lock(func, arg, lock: Lock):
 
 
 def _map_with_locks(
-    func, iterable: Sequence, worker_pool
+    func, iterable: Sequence, worker_pool: multiprocessing.pool.Pool
 ) -> Tuple[Queue, List[Lock]]:
     """
     Map a function to arguments, blocking execution.
