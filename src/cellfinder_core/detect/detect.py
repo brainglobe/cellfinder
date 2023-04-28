@@ -156,7 +156,7 @@ def main(
         )
 
         # Release the first set of locks for the 2D filtering
-        for i in range(n_ball_procs + ball_z_size):
+        for i in range(min(n_ball_procs + ball_z_size, len(locks))):
             logger.debug(f"🔓 Releasing lock for plane {i}")
             locks[i].release()
 

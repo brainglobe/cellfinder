@@ -20,6 +20,18 @@ voxel_sizes = [5, 2, 2]
 DETECTION_TOLERANCE = 2
 
 
+class UnixFS:
+    @staticmethod
+    def rm(filename):
+        os.remove(filename)
+
+
+def test_unix_fs(mocker):
+    mocker.patch("os.remove")
+    UnixFS.rm("file")
+    os.remove.assert_called_once_with("file")
+
+
 @pytest.fixture
 def signal_array():
     return read_with_dask(signal_data_path)
@@ -59,10 +71,15 @@ def test_detection_full(signal_array, background_array, n_free_cpus):
     )
 
 
-def test_detection_small_planes(signal_array, background_array, n_free_cpus):
+def test_detection_small_planes(
+    signal_array, background_array, n_free_cpus, mocker
+):
     # Check that processing works when number of planes < number of processes
     nproc = get_num_processes(n_free_cpus)
     n_planes = 2
+
+    # Don't want to bother classifying in this test, so mock classifcation
+    mocker.patch("cellfinder_core.classify.classify.main")
 
     pytest.mark.skipif(
         nproc < n_planes,
