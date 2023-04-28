@@ -4,6 +4,7 @@ from math import isclose
 import imlib.IO.cells as cell_io
 import numpy as np
 import pytest
+from imlib.general.system import get_num_processes
 
 from cellfinder_core.main import main
 from cellfinder_core.tools.IO import read_with_dask
@@ -55,6 +56,25 @@ def test_detection_full(signal_array, background_array, n_free_cpus):
     )
     assert isclose(
         num_cells_validation, num_cells_test, abs_tol=DETECTION_TOLERANCE
+    )
+
+
+def test_detection_small_planes(signal_array, background_array, n_free_cpus):
+    # Check that processing works when number of planes < number of processes
+    nproc = get_num_processes(n_free_cpus)
+    n_planes = 2
+
+    pytest.mark.skipif(
+        nproc < n_planes,
+        f"Number of available processes is {nproc}. "
+        f"Test only effective if number of available processes >= {n_planes}.",
+    )
+
+    main(
+        signal_array[0:n_planes],
+        background_array[0:n_planes],
+        voxel_sizes,
+        ball_z_size=5,
     )
 
 
