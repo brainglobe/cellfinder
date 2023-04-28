@@ -31,12 +31,12 @@ def background_array():
 
 # FIXME: This isn't a very good example
 @pytest.mark.slow
-def test_detection_full(signal_array, background_array):
+def test_detection_full(signal_array, background_array, n_free_cpus):
     cells_test = main(
         signal_array,
         background_array,
         voxel_sizes,
-        n_free_cpus=0,
+        n_free_cpus=n_free_cpus,
     )
     cells_validation = cell_io.get_cells(cells_validation_xml)
 
@@ -58,7 +58,7 @@ def test_detection_full(signal_array, background_array):
     )
 
 
-def test_callbacks(signal_array, background_array):
+def test_callbacks(signal_array, background_array, n_free_cpus):
     # 20 is minimum number of planes needed to find > 0 cells
     signal_array = signal_array[0:20]
     background_array = background_array[0:20]
@@ -83,7 +83,7 @@ def test_callbacks(signal_array, background_array):
         detect_callback=detect_callback,
         classify_callback=classify_callback,
         detect_finished_callback=detect_finished_callback,
-        n_free_cpus=0,
+        n_free_cpus=n_free_cpus,
     )
 
     np.testing.assert_equal(planes_done, np.arange(len(signal_array)))
@@ -101,13 +101,13 @@ def test_floating_point_error(signal_array, background_array):
         main(signal_array, background_array, voxel_sizes)
 
 
-def test_synthetic_data(synthetic_bright_spots):
+def test_synthetic_data(synthetic_bright_spots, n_free_cpus):
     signal_array, background_array = synthetic_bright_spots
     detected = main(
         signal_array,
         background_array,
         voxel_sizes,
-        n_free_cpus=0,
+        n_free_cpus=n_free_cpus,
     )
     assert len(detected) == 8
 
