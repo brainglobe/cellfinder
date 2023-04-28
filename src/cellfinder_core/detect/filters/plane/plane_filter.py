@@ -1,5 +1,6 @@
 from dataclasses import dataclass
-from typing import Tuple
+from threading import Lock
+from typing import Optional, Tuple
 
 import dask.array as da
 import numpy as np
@@ -26,7 +27,9 @@ class TileProcessor:
     log_sigma_size: float
     n_sds_above_mean_thresh: float
 
-    def get_tile_mask(self, plane: da.array) -> Tuple[np.ndarray, np.ndarray]:
+    def get_tile_mask(
+        self, plane: da.array, lock: Optional[Lock] = None
+    ) -> Tuple[np.ndarray, np.ndarray]:
         """
         This thresholds the input plane, and returns a mask indicating which
         tiles are inside the brain.
@@ -43,6 +46,9 @@ class TileProcessor:
         ----------
         plane :
             Input plane.
+        lock :
+            If given, block reading the plane into memory until the lock
+            can be acquired.
 
         Returns
         -------
@@ -55,6 +61,8 @@ class TileProcessor:
         laplace_gaussian_sigma = self.log_sigma_size * self.soma_diameter
         plane = plane.T
         np.clip(plane, 0, self.clipping_value, out=plane)
+        if lock is not None:
+            lock.acquire(blocking=True)
         # Read plane from a dask array into memory as a numpy array
         if isinstance(plane, da.Array):
             plane = np.array(plane)

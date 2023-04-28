@@ -4,6 +4,7 @@ from math import isclose
 import imlib.IO.cells as cell_io
 import numpy as np
 import pytest
+from imlib.general.system import get_num_processes
 
 from cellfinder_core.main import main
 from cellfinder_core.tools.IO import read_with_dask
@@ -19,6 +20,18 @@ voxel_sizes = [5, 2, 2]
 DETECTION_TOLERANCE = 2
 
 
+class UnixFS:
+    @staticmethod
+    def rm(filename):
+        os.remove(filename)
+
+
+def test_unix_fs(mocker):
+    mocker.patch("os.remove")
+    UnixFS.rm("file")
+    os.remove.assert_called_once_with("file")
+
+
 @pytest.fixture
 def signal_array():
     return read_with_dask(signal_data_path)
@@ -31,12 +44,12 @@ def background_array():
 
 # FIXME: This isn't a very good example
 @pytest.mark.slow
-def test_detection_full(signal_array, background_array):
+def test_detection_full(signal_array, background_array, n_free_cpus):
     cells_test = main(
         signal_array,
         background_array,
         voxel_sizes,
-        n_free_cpus=0,
+        n_free_cpus=n_free_cpus,
     )
     cells_validation = cell_io.get_cells(cells_validation_xml)
 
@@ -58,7 +71,32 @@ def test_detection_full(signal_array, background_array):
     )
 
 
-def test_callbacks(signal_array, background_array):
+def test_detection_small_planes(
+    signal_array, background_array, n_free_cpus, mocker
+):
+    # Check that processing works when number of planes < number of processes
+    nproc = get_num_processes(n_free_cpus)
+    n_planes = 2
+
+    # Don't want to bother classifying in this test, so mock classifcation
+    mocker.patch("cellfinder_core.classify.classify.main")
+
+    pytest.mark.skipif(
+        nproc < n_planes,
+        f"Number of available processes is {nproc}. "
+        f"Test only effective if number of available processes >= {n_planes}.",
+    )
+
+    main(
+        signal_array[0:n_planes],
+        background_array[0:n_planes],
+        voxel_sizes,
+        ball_z_size=5,
+        n_free_cpus=n_free_cpus,
+    )
+
+
+def test_callbacks(signal_array, background_array, n_free_cpus):
     # 20 is minimum number of planes needed to find > 0 cells
     signal_array = signal_array[0:20]
     background_array = background_array[0:20]
@@ -83,7 +121,7 @@ def test_callbacks(signal_array, background_array):
         detect_callback=detect_callback,
         classify_callback=classify_callback,
         detect_finished_callback=detect_finished_callback,
-        n_free_cpus=0,
+        n_free_cpus=n_free_cpus,
     )
 
     np.testing.assert_equal(planes_done, np.arange(len(signal_array)))
@@ -101,13 +139,13 @@ def test_floating_point_error(signal_array, background_array):
         main(signal_array, background_array, voxel_sizes)
 
 
-def test_synthetic_data(synthetic_bright_spots):
+def test_synthetic_data(synthetic_bright_spots, n_free_cpus):
     signal_array, background_array = synthetic_bright_spots
     detected = main(
         signal_array,
         background_array,
         voxel_sizes,
-        n_free_cpus=0,
+        n_free_cpus=n_free_cpus,
     )
     assert len(detected) == 8
 

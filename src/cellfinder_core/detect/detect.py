@@ -16,13 +16,15 @@ bright points, the input data is clipped to [0, (max_val - 2)]
 import multiprocessing
 from datetime import datetime
 from queue import Queue
-from typing import Callable, List, Optional, Tuple, Union
+from threading import Lock
+from typing import Callable, List, Optional, Sequence, Tuple, Union
 
 import dask.array as da
 import numpy as np
 from imlib.cells.cells import Cell
 from imlib.general.system import get_num_processes
 
+from cellfinder_core import logger
 from cellfinder_core.detect.filters.plane import TileProcessor
 from cellfinder_core.detect.filters.setup_filters import setup_tile_filtering
 from cellfinder_core.detect.filters.volume.volume_filter import VolumeFilter
@@ -87,6 +89,7 @@ def main(
             f"{signal_array.dtype}"
         )
     n_processes = get_num_processes(min_free_cpu_cores=n_free_cpus)
+    n_ball_procs = n_processes - 1
     start_time = datetime.now()
 
     (
@@ -126,6 +129,7 @@ def main(
         setup_params=setup_params,
         soma_size_spread_factor=soma_spread_factor,
         planes_paths_range=signal_array,
+        n_locks_release=n_ball_procs,
         save_planes=save_planes,
         plane_directory=plane_directory,
         start_plane=start_plane,
@@ -144,27 +148,25 @@ def main(
         n_sds_above_mean_thresh,
     )
 
+    # Force spawn context
     mp_ctx = multiprocessing.get_context("spawn")
-    with mp_ctx.Pool(n_processes) as worker_pool:
-        # Start 2D filter
-        # Submits each plane to the worker pool, and sets up a queue of
-        # asyncronous results
-        async_results: Queue = Queue()
+    with mp_ctx.Pool(n_ball_procs) as worker_pool:
+        async_results, locks = _map_with_locks(
+            mp_tile_processor.get_tile_mask, signal_array, worker_pool
+        )
 
-        # NOTE: Need to make sure every plane isn't read into memory at this
-        # stage, as all of these jobs are submitted immediately to the pool.
-        # *plane* is a dask array, so as long as it isn't forced into memory
-        # (e.g. using np.array(plane)) here then there shouldn't be an issue
-        for plane in signal_array:
-            res = worker_pool.apply_async(
-                mp_tile_processor.get_tile_mask, args=(plane,)
-            )
-            async_results.put(res)
+        # Release the first set of locks for the 2D filtering
+        for i in range(min(n_ball_procs + ball_z_size, len(locks))):
+            logger.debug(f"🔓 Releasing lock for plane {i}")
+            locks[i].release()
 
         # Start 3D filter
+        #
         # This runs in the main thread, and blocks until the all the 2D and
-        # then 3D filtering has finished
-        cells = mp_3d_filter.process(async_results, callback=callback)
+        # then 3D filtering has finished. As batches of planes are filtered
+        # by the 3D filter, it releases the locks of subsequent 2D filter
+        # processes.
+        cells = mp_3d_filter.process(async_results, locks, callback=callback)
 
     print(
         "Detection complete - all planes done in : {}".format(
@@ -172,3 +174,39 @@ def main(
         )
     )
     return cells
+
+
+def _run_func_with_lock(func, arg, lock: Lock):
+    """
+    Run a function after acquiring a lock.
+    """
+    lock.acquire(blocking=True)
+    return func(arg)
+
+
+def _map_with_locks(
+    func, iterable: Sequence, worker_pool: multiprocessing.pool.Pool
+) -> Tuple[Queue, List[Lock]]:
+    """
+    Map a function to arguments, blocking execution.
+
+    Maps *func* to args in *iterable*, but blocks all execution and
+    return a queue of asyncronous results and locks for each of the
+    results. Execution can be enabled by releasing the returned
+    locks in order.
+    """
+    # Setup a manager to handle the locks
+    m = multiprocessing.Manager()
+    # Setup one lock per argument to be mapped
+    locks = [m.Lock() for _ in range(len(iterable))]
+    [lock.acquire(blocking=False) for lock in locks]
+
+    async_results: Queue = Queue()
+
+    for arg, lock in zip(iterable, locks):
+        async_result = worker_pool.apply_async(
+            _run_func_with_lock, args=(func, arg, lock)
+        )
+        async_results.put(async_result)
+
+    return async_results, locks

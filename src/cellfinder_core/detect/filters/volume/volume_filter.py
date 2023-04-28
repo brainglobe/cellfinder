@@ -1,6 +1,7 @@
 import math
 import os
 from queue import Queue
+from threading import Lock
 from typing import Any, Callable, List, Optional, Sequence, Tuple
 
 import numpy as np
@@ -30,6 +31,7 @@ class VolumeFilter(object):
         soma_size_spread_factor: float = 1.4,
         setup_params: Tuple[np.ndarray, Any, int, int, float, Any],
         planes_paths_range: Sequence,
+        n_locks_release: int,
         save_planes: bool = False,
         plane_directory: Optional[str] = None,
         start_plane: int = 0,
@@ -39,12 +41,13 @@ class VolumeFilter(object):
     ):
         self.soma_diameter = soma_diameter
         self.soma_size_spread_factor = soma_size_spread_factor
-        self.planes_paths_range = planes_paths_range
+        self.n_planes = len(planes_paths_range)
         self.z = start_plane
         self.save_planes = save_planes
         self.plane_directory = plane_directory
         self.max_cluster_size = max_cluster_size
         self.outlier_keep = outlier_keep
+        self.n_locks_release = n_locks_release
 
         self.artifact_keep = artifact_keep
 
@@ -71,28 +74,32 @@ class VolumeFilter(object):
     def process(
         self,
         async_result_queue: Queue,
+        locks: List[Lock],
         *,
         callback: Callable[[int], None],
     ):
-        progress_bar = tqdm(
-            total=len(self.planes_paths_range), desc="Processing planes"
-        )
-        while not async_result_queue.empty():
+        progress_bar = tqdm(total=self.n_planes, desc="Processing planes")
+        for z in range(self.n_planes):
             # Get result from the queue.
             #
             # It is important to remove the result from the queue here
             # to free up memory once this plane has been processed by
             # the 3D filter here
+            logger.debug(f"🏐 Waiting for plane {z}")
             result = async_result_queue.get()
             # .get() blocks until the result is available
             plane, mask = result.get()
+            logger.debug(f"🏐 Got plane {z}")
 
-            logger.debug(f"Plane {self.z} received for 3D filtering")
-
-            logger.debug(f"Adding plane {self.z} for 3D filtering")
             self.ball_filter.append(plane, mask)
 
             if self.ball_filter.ready:
+                # Let the next 2D filter run
+                z_release = z + self.n_locks_release + 1
+                if z_release < len(locks):
+                    logger.debug(f"🔓 Releasing lock for plane {z_release}")
+                    locks[z_release].release()
+
                 self._run_filter()
 
             callback(self.z)
@@ -104,22 +111,19 @@ class VolumeFilter(object):
         return self.get_results()
 
     def _run_filter(self):
-        logger.debug(f"Ball filtering plane {self.z}")
+        logger.debug(f"🏐 Ball filtering plane {self.z}")
         self.ball_filter.walk()
 
         middle_plane = self.ball_filter.get_middle_plane()
         if self.save_planes:
             self.save_plane(middle_plane)
 
-        logger.debug(f"Detecting structures for plane {self.z}")
+        logger.debug(f"🏫 Detecting structures for plane {self.z}")
         self.previous_plane = self.cell_detector.process(
             middle_plane, self.previous_plane
         )
 
-        logger.debug(f"Structures done for plane {self.z}")
-        logger.debug(
-            f"Skipping plane {self.z} for 3D filter" " (out of bounds)"
-        )
+        logger.debug(f"🏫 Structures done for plane {self.z}")
 
     def save_plane(self, plane):
         plane_name = f"plane_{str(self.z).zfill(4)}.tif"
