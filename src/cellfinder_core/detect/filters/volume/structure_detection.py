@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 from typing import List, Sequence, Tuple, Union
 
-import numba
 import numpy as np
 from numba import jit
 from numba.core import types
@@ -17,18 +16,15 @@ class Point:
     z: int
 
 
-UINT64_MAX = np.iinfo(np.uint64).max
-
-
 @jit(nopython=True)
-def get_non_zero_ull_min(values: np.ndarray) -> int:
+def get_non_zero_dtype_min(values: np.ndarray) -> int:
     """
     Get the minimum of non-zero entries in *values*.
 
     If all entries are zero, returns maximum storeable number
-    in uint64 data type.
+    in the values array.
     """
-    min_val = UINT64_MAX
+    min_val = np.iinfo(values.dtype).max
     for v in values:
         if v != 0 and v < min_val:
             min_val = v
@@ -82,14 +78,11 @@ uint_2d_type = types.uint64[:, :]
 
 
 spec = [
-    ("SOMA_CENTRE_VALUE", types.uint64),
     ("z", types.uint64),
-    ("relative_z", types.uint64),
     ("next_structure_id", types.uint64),
     ("shape", types.UniTuple(types.int64, 2)),
     ("obsolete_ids", DictType(types.int64, types.int64)),
     ("coords_maps", DictType(types.uint64, uint_2d_type)),
-    ("previous_plane", types.uint64[:, :]),
 ]
 
 
@@ -101,13 +94,8 @@ class CellDetector:
 
     Attributes
     ----------
-    SOMA_CENTRE_VALUE :
-        The value used to (previously) mark pixels belonging to cells.
     z :
         z-index of the plane currently being processed.
-    relative_z:
-        z-index of the plane being processed, relative to the z-index of
-        the plane that was first processed.
     next_structure_id :
         The next available structure ID that has yet to be used. IDs start
         counting up from 1.
@@ -122,8 +110,6 @@ class CellDetector:
         Mapping from structure ID to the coordinates of pixels within that
         structure. Coordinates are stored in a 2D array, with the second
         axis indexing (x, y, z) coordinates.
-    previous_plane :
-        The previous plane to have been processed.
     """
 
     def __init__(self, width: int, height: int, start_z: int):
@@ -137,12 +123,6 @@ class CellDetector:
         """
         self.shape = width, height
         self.z = start_z
-
-        self.SOMA_CENTRE_VALUE = UINT64_MAX
-
-        # position to append in stack
-        # FIXME: replace by keeping start_z and self.z > self.start_Z
-        self.relative_z = 0
         self.next_structure_id = 1
 
         # Mapping from obsolete IDs to the IDs that they have been
@@ -155,39 +135,22 @@ class CellDetector:
             key_type=types.int64, value_type=uint_2d_type
         )
 
-    def process(self, plane: np.ndarray) -> None:
+    def process(
+        self, plane: np.ndarray, previous_plane: np.ndarray
+    ) -> np.ndarray:
         """
         Process a new plane.
         """
         if [e for e in plane.shape[:2]] != [e for e in self.shape]:
             raise ValueError("plane does not have correct shape")
 
-        source_dtype = plane.dtype
-        # Have to cast plane to a concrete data type in order to save it
-        # in the .previous_plane class attribute. uint64 might be overkill
-        # but needs to be at least uint32
-        plane = plane.astype(np.uint64)
-
-        # The 'magic numbers' below are chosen so that the maximum number
-        # representable in each data type is converted to 2**64 - 1, the
-        # maximum representable number in uint64.
-        nbits = np.iinfo(source_dtype).bits
-        if nbits == 8:
-            plane *= numba.uint64(72340172838076673)
-        elif nbits == 16:
-            plane *= numba.uint64(281479271743489)
-        elif nbits == 32:
-            plane *= numba.uint64(4294967297)
-
-        plane = self.connect_four(plane)
-        self.previous_plane = plane
-
-        if self.relative_z == 0:
-            self.relative_z += 1
-
+        plane = self.connect_four(plane, previous_plane)
         self.z += 1
+        return plane
 
-    def connect_four(self, plane: np.ndarray) -> np.ndarray:
+    def connect_four(
+        self, plane: np.ndarray, previous_plane: np.ndarray
+    ) -> np.ndarray:
         """
         Perform structure labelling.
 
@@ -203,9 +166,10 @@ class CellDetector:
             Plane with pixels either set to zero (no structure) or labelled
             with their structure ID.
         """
+        SOMA_CENTRE_VALUE = np.iinfo(plane.dtype).max
         for y in range(plane.shape[1]):
             for x in range(plane.shape[0]):
-                if plane[x, y] == self.SOMA_CENTRE_VALUE:
+                if plane[x, y] == SOMA_CENTRE_VALUE:
                     # Labels of structures below, left and behind
                     neighbour_ids = np.zeros(3, dtype=np.uint64)
                     # If in bounds look at neighbours
@@ -213,8 +177,8 @@ class CellDetector:
                         neighbour_ids[0] = plane[x - 1, y]
                     if y > 0:
                         neighbour_ids[1] = plane[x, y - 1]
-                    if self.relative_z > 0:
-                        neighbour_ids[2] = self.previous_plane[x, y]
+                    if previous_plane is not None:
+                        neighbour_ids[2] = previous_plane[x, y]
 
                     if is_new_structure(neighbour_ids):
                         neighbour_ids[0] = self.next_structure_id
@@ -282,7 +246,7 @@ class CellDetector:
             neighbour_ids[i] = neighbour_id
 
         # Get minimum of all non-obsolete IDs
-        updated_id = get_non_zero_ull_min(neighbour_ids)
+        updated_id = get_non_zero_dtype_min(neighbour_ids)
         return int(updated_id)
 
     def merge_structures(

@@ -52,6 +52,8 @@ class VolumeFilter(object):
         self.threshold_value = None
         self.setup_params = setup_params
 
+        self.previous_plane = None
+
         self.ball_filter = get_ball_filter(
             plane=self.setup_params[0],
             soma_diameter=self.setup_params[1],
@@ -110,7 +112,9 @@ class VolumeFilter(object):
             self.save_plane(middle_plane)
 
         logger.debug(f"Detecting structures for plane {self.z}")
-        self.cell_detector.process(middle_plane)
+        self.previous_plane = self.cell_detector.process(
+            middle_plane, self.previous_plane
+        )
 
         logger.debug(f"Structures done for plane {self.z}")
         logger.debug(
