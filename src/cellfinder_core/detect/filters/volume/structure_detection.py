@@ -17,7 +17,7 @@ class Point:
 
 
 @jit(nopython=True)
-def get_non_zero_ull_min(values: np.ndarray) -> int:
+def get_non_zero_dtype_min(values: np.ndarray) -> int:
     """
     Get the minimum of non-zero entries in *values*.
 
@@ -246,7 +246,7 @@ class CellDetector:
             neighbour_ids[i] = neighbour_id
 
         # Get minimum of all non-obsolete IDs
-        updated_id = get_non_zero_ull_min(neighbour_ids)
+        updated_id = get_non_zero_dtype_min(neighbour_ids)
         return int(updated_id)
 
     def merge_structures(

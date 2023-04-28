@@ -4,7 +4,7 @@ import pytest
 from cellfinder_core.detect.filters.volume.structure_detection import (
     CellDetector,
     Point,
-    get_non_zero_ull_min,
+    get_non_zero_dtype_min,
     get_structure_centre_wrapper,
 )
 
@@ -19,9 +19,18 @@ def coords_to_points(coords_arrays):
     return coords
 
 
-def test_get_non_zero_ull_min():
-    assert get_non_zero_ull_min(np.arange(10, dtype=np.uint64)) == 1
-    assert get_non_zero_ull_min(np.zeros(10, dtype=np.uint64)) == (2**64) - 1
+@pytest.mark.parametrize(
+    ("dtype", "expected"),
+    [
+        (np.uint64, 2**64 - 1),
+        (np.uint32, 2**32 - 1),
+        (np.uint16, 2**16 - 1),
+        (np.uint8, 2**8 - 1),
+    ],
+)
+def test_get_non_zero_dtype_min(dtype, expected):
+    assert get_non_zero_dtype_min(np.arange(10, dtype=dtype)) == 1
+    assert get_non_zero_dtype_min(np.zeros(10, dtype=dtype)) == expected
 
 
 @pytest.fixture()
