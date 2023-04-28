@@ -92,6 +92,7 @@ def test_detection_small_planes(
         background_array[0:n_planes],
         voxel_sizes,
         ball_z_size=5,
+        n_free_cpus=n_free_cpus,
     )
 
 
