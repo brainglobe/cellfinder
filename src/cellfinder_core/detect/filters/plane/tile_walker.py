@@ -1,4 +1,5 @@
 import math
+from typing import Generator, Tuple
 
 import numpy as np
 from numba import jit
@@ -22,7 +23,7 @@ class TileWalker:
         self.mark_bright_tiles().
     """
 
-    def __init__(self, img, soma_diameter):
+    def __init__(self, img: np.ndarray, soma_diameter: int) -> None:
         self.img = img
         self.img_width, self.img_height = img.shape
         self.tile_width = soma_diameter * 2
@@ -40,7 +41,7 @@ class TileWalker:
         # add 1 to ensure not 0, as disables
         self.out_of_brain_threshold = (corner_intensity + (2 * corner_sd)) + 1
 
-    def _get_tiles(self):
+    def _get_tiles(self) -> Generator[Tuple[int, int, np.ndarray], None, None]:
         """
         Generator that yields tiles of the 2D image.
 
@@ -61,7 +62,7 @@ class TileWalker:
                 ]
                 yield x, y, tile
 
-    def mark_bright_tiles(self):
+    def mark_bright_tiles(self) -> None:
         """
         Loop through tiles, and if the average value of a tile is
         greater than the intensity threshold mark the tile as bright

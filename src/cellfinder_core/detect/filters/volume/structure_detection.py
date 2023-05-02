@@ -1,11 +1,11 @@
 from dataclasses import dataclass
-from typing import List, Sequence, Tuple, Union
+from typing import Dict, List, Sequence, Tuple, TypeVar, Union
 
+import numba.typed
 import numpy as np
 from numba import jit
 from numba.core import types
 from numba.experimental import jitclass
-from numba.typed import Dict
 from numba.types import DictType
 
 
@@ -31,8 +31,11 @@ def get_non_zero_dtype_min(values: np.ndarray) -> int:
     return min_val
 
 
+T = TypeVar("T")
+
+
 @jit(nopython=True)
-def traverse_dict(d: dict, a):
+def traverse_dict(d: Dict[T, T], a: T) -> T:
     """
     Traverse d, until a is not present as a key.
     """
@@ -127,11 +130,11 @@ class CellDetector:
 
         # Mapping from obsolete IDs to the IDs that they have been
         # made obsolete by
-        self.obsolete_ids = Dict.empty(
+        self.obsolete_ids = numba.typed.Dict.empty(
             key_type=types.int64, value_type=types.int64
         )
         # Mapping from IDs to list of points in that structure
-        self.coords_maps = Dict.empty(
+        self.coords_maps = numba.typed.Dict.empty(
             key_type=types.int64, value_type=uint_2d_type
         )
 
@@ -197,7 +200,7 @@ class CellDetector:
         cell_centres = self.structures_to_cells()
         return cell_centres
 
-    def get_coords_dict(self):
+    def get_coords_dict(self) -> Dict:
         return self.coords_maps
 
     def add_point(self, sid: int, point: np.ndarray) -> None:
@@ -279,7 +282,7 @@ class CellDetector:
 
 
 @jit
-def is_new_structure(neighbour_ids):
+def is_new_structure(neighbour_ids: np.ndarray) -> bool:
     for i in range(len(neighbour_ids)):
         if neighbour_ids[i] != 0:
             return False

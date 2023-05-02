@@ -17,7 +17,7 @@ import multiprocessing
 from datetime import datetime
 from queue import Queue
 from threading import Lock
-from typing import Callable, List, Optional, Sequence, Tuple, Union
+from typing import Callable, List, Optional, Sequence, Tuple, TypeVar, Union
 
 import dask.array as da
 import numpy as np
@@ -176,7 +176,13 @@ def main(
     return cells
 
 
-def _run_func_with_lock(func, arg, lock: Lock):
+Tin = TypeVar("Tin")
+Tout = TypeVar("Tout")
+
+
+def _run_func_with_lock(
+    func: Callable[[Tin], Tout], arg: Tin, lock: Lock
+) -> Tout:
     """
     Run a function after acquiring a lock.
     """
@@ -185,7 +191,9 @@ def _run_func_with_lock(func, arg, lock: Lock):
 
 
 def _map_with_locks(
-    func, iterable: Sequence, worker_pool: multiprocessing.pool.Pool
+    func: Callable[[Tin], Tout],
+    iterable: Sequence[Tin],
+    worker_pool: multiprocessing.pool.Pool,
 ) -> Tuple[Queue, List[Lock]]:
     """
     Map a function to arguments, blocking execution.

@@ -254,7 +254,7 @@ def _is_tile_to_check(
     tile_step_width: int,
     tile_step_height: int,
     inside_brain_tiles: np.ndarray,
-):  # Highly optimised because most time critical
+) -> bool:  # Highly optimised because most time critical
     """
     Check if the tile containing pixel (x, y) is a tile that needs checking.
     """

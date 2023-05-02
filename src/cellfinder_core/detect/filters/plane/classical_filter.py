@@ -3,7 +3,9 @@ from scipy.ndimage import gaussian_filter, laplace
 from scipy.signal import medfilt2d
 
 
-def enhance_peaks(img, clipping_value, gaussian_sigma=2.5):
+def enhance_peaks(
+    img: np.ndarray, clipping_value: float, gaussian_sigma: float = 2.5
+) -> np.ndarray:
     type_in = img.dtype
     filtered_img = medfilt2d(img.astype(np.float64))
     filtered_img = gaussian_filter(filtered_img, gaussian_sigma)

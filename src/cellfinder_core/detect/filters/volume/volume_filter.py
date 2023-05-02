@@ -77,7 +77,7 @@ class VolumeFilter(object):
         locks: List[Lock],
         *,
         callback: Callable[[int], None],
-    ):
+    ) -> List[Cell]:
         progress_bar = tqdm(total=self.n_planes, desc="Processing planes")
         for z in range(self.n_planes):
             # Get result from the queue.
@@ -110,7 +110,7 @@ class VolumeFilter(object):
         logger.debug("3D filter done")
         return self.get_results()
 
-    def _run_filter(self):
+    def _run_filter(self) -> None:
         logger.debug(f"🏐 Ball filtering plane {self.z}")
         self.ball_filter.walk()
 
@@ -125,7 +125,11 @@ class VolumeFilter(object):
 
         logger.debug(f"🏫 Structures done for plane {self.z}")
 
-    def save_plane(self, plane):
+    def save_plane(self, plane: np.ndarray) -> None:
+        if self.plane_directory is None:
+            raise ValueError(
+                "plane_directory must be set to save planes to file"
+            )
         plane_name = f"plane_{str(self.z).zfill(4)}.tif"
         f_path = os.path.join(self.plane_directory, plane_name)
         tifffile.imsave(f_path, plane.T)
@@ -186,5 +190,5 @@ class VolumeFilter(object):
         return cells
 
 
-def sphere_volume(radius):
+def sphere_volume(radius: float) -> float:
     return (4 / 3) * math.pi * radius**3

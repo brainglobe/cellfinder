@@ -21,7 +21,9 @@ def get_shape(xs: np.ndarray, ys: np.ndarray, zs: np.ndarray) -> List[int]:
     return shape
 
 
-def coords_to_volume(xs, ys, zs, ball_radius=1):
+def coords_to_volume(
+    xs: np.ndarray, ys: np.ndarray, zs: np.ndarray, ball_radius: int = 1
+) -> np.ndarray:
     ball_diameter = ball_radius * 2
     # Expanded to ensure the ball fits even at the border
     expanded_shape = [
@@ -43,8 +45,8 @@ def coords_to_volume(xs, ys, zs, ball_radius=1):
 
 def ball_filter_imgs(
     volume: np.ndarray,
-    threshold_value,
-    soma_centre_value,
+    threshold_value: int,
+    soma_centre_value: int,
     ball_xy_size: int = 3,
     ball_z_size: int = 3,
 ) -> Tuple[np.ndarray, List[Point]]:
