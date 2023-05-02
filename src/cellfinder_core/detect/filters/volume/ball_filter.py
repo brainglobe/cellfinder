@@ -141,7 +141,7 @@ class BallFilter:
                 [e for e in plane.shape[:2]],
             )
             assert [e for e in mask.shape[:2]] == [
-                e for e in self.inside_brain_tiles.shape[2]
+                e for e in self.inside_brain_tiles.shape[:2]
             ], 'mask shape mismatch, expected"{}", got {}"'.format(
                 [e for e in self.inside_brain_tiles.shape[:2]],
                 [e for e in mask.shape[:2]],

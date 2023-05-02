@@ -5,6 +5,7 @@ from typing import Optional, Tuple
 import dask.array as da
 import numpy as np
 
+from cellfinder_core import types
 from cellfinder_core.detect.filters.plane.classical_filter import enhance_peaks
 from cellfinder_core.detect.filters.plane.tile_walker import TileWalker
 
@@ -28,7 +29,7 @@ class TileProcessor:
     n_sds_above_mean_thresh: float
 
     def get_tile_mask(
-        self, plane: da.array, lock: Optional[Lock] = None
+        self, plane: types.array, lock: Optional[Lock] = None
     ) -> Tuple[np.ndarray, np.ndarray]:
         """
         This thresholds the input plane, and returns a mask indicating which
