@@ -105,3 +105,14 @@ fix = true
 
 [tool.ruff.isort]
 known-first-party = ["cellfinder_core"]
+
+[tool.mypy]
+python_version = "3.8"
+
+[[tool.mypy.overrides]]
+module = [
+    "cellfinder_core.detect.*",
+]
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+disallow_untyped_calls = true

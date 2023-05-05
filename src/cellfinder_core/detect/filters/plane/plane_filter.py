@@ -23,7 +23,7 @@ class TileProcessor:
 
     clipping_value: int
     threshold_value: int
-    soma_diameter: float
+    soma_diameter: int
     log_sigma_size: float
     n_sds_above_mean_thresh: float
 
