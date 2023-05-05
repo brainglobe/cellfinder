@@ -3,7 +3,7 @@ from typing import Dict, List, Sequence, Tuple, TypeVar, Union
 
 import numba.typed
 import numpy as np
-from numba import jit
+from numba import njit
 from numba.core import types
 from numba.experimental import jitclass
 from numba.types import DictType
@@ -16,7 +16,7 @@ class Point:
     z: int
 
 
-@jit(nopython=True)
+@njit
 def get_non_zero_dtype_min(values: np.ndarray) -> int:
     """
     Get the minimum of non-zero entries in *values*.
@@ -34,7 +34,7 @@ def get_non_zero_dtype_min(values: np.ndarray) -> int:
 T = TypeVar("T")
 
 
-@jit(nopython=True)
+@njit
 def traverse_dict(d: Dict[T, T], a: T) -> T:
     """
     Traverse d, until a is not present as a key.
@@ -281,7 +281,7 @@ class CellDetector:
         return cell_centres
 
 
-@jit
+@njit
 def is_new_structure(neighbour_ids: np.ndarray) -> bool:
     for i in range(len(neighbour_ids)):
         if neighbour_ids[i] != 0:

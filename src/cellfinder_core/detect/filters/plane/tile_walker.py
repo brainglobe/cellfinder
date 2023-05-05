@@ -2,7 +2,7 @@ import math
 from typing import Generator, Tuple
 
 import numpy as np
-from numba import jit
+from numba import njit
 
 
 class TileWalker:
@@ -79,7 +79,7 @@ class TileWalker:
                 self.bright_tiles_mask[mask_x, mask_y] = True
 
 
-@jit
+@njit
 def is_low_average(tile: np.ndarray, threshold: float) -> bool:
     """
     Return `True` if the average value of *tile* is below *threshold*.
