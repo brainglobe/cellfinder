@@ -104,7 +104,7 @@ class CubeGeneratorFromFile(Sequence):
     def __check_image_sizes(self):
         if len(self.signal_array) != len(self.background_array):
             raise ValueError(
-                f"Number of signal images ({len(self.signal_array)} does not"
+                f"Number of signal images ({len(self.signal_array)}) does not "
                 f"match the number of background images "
                 f"({len(self.background_array)}"
             )
