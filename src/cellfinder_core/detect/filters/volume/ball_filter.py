@@ -1,5 +1,5 @@
 import numpy as np
-from numba import jit
+from numba import njit
 
 from cellfinder_core.tools.array_operations import bin_mean_3d
 from cellfinder_core.tools.geometry import make_sphere
@@ -196,7 +196,7 @@ class BallFilter:
         )
 
 
-@jit(nopython=True, cache=True)
+@njit(cache=True)
 def _cube_overlaps(
     cube: np.ndarray,
     overlap_threshold: float,
@@ -246,7 +246,7 @@ def _cube_overlaps(
     return current_overlap_value > overlap_threshold
 
 
-@jit(nopython=True)
+@njit
 def _is_tile_to_check(
     x: int,
     y: int,
@@ -263,7 +263,7 @@ def _is_tile_to_check(
     return inside_brain_tiles[x_in_mask, y_in_mask, middle_z]
 
 
-@jit(nopython=True)
+@njit
 def _walk(
     max_height: int,
     max_width: int,
