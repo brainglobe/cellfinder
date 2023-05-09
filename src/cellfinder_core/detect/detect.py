@@ -17,14 +17,13 @@ import multiprocessing
 from datetime import datetime
 from queue import Queue
 from threading import Lock
-from typing import Callable, List, Optional, Sequence, Tuple, TypeVar, Union
+from typing import Callable, List, Optional, Sequence, Tuple, TypeVar
 
-import dask.array as da
 import numpy as np
 from imlib.cells.cells import Cell
 from imlib.general.system import get_num_processes
 
-from cellfinder_core import logger
+from cellfinder_core import logger, types
 from cellfinder_core.detect.filters.plane import TileProcessor
 from cellfinder_core.detect.filters.setup_filters import setup_tile_filtering
 from cellfinder_core.detect.filters.volume.volume_filter import VolumeFilter
@@ -56,7 +55,7 @@ def calculate_parameters_in_pixels(
 
 
 def main(
-    signal_array: Union[np.ndarray, da.Array],
+    signal_array: types.array,
     start_plane: int,
     end_plane: int,
     voxel_sizes: Tuple[float, float, float],
@@ -128,7 +127,7 @@ def main(
         soma_diameter=soma_diameter,
         setup_params=setup_params,
         soma_size_spread_factor=soma_spread_factor,
-        planes_paths_range=signal_array,
+        n_planes=len(signal_array),
         n_locks_release=n_ball_procs,
         save_planes=save_planes,
         plane_directory=plane_directory,
@@ -152,7 +151,9 @@ def main(
     mp_ctx = multiprocessing.get_context("spawn")
     with mp_ctx.Pool(n_ball_procs) as worker_pool:
         async_results, locks = _map_with_locks(
-            mp_tile_processor.get_tile_mask, signal_array, worker_pool
+            mp_tile_processor.get_tile_mask,
+            signal_array,  # type: ignore
+            worker_pool,
         )
 
         # Release the first set of locks for the 2D filtering

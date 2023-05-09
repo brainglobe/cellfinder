@@ -110,5 +110,4 @@ def bin_mean_3d(
             for j in range(i, i + bin_depth)
         ]
         binned_arr.append(np.dstack(sub_stack).mean(axis=2))
-    binned_arr = np.dstack(binned_arr)
-    return binned_arr
+    return np.dstack(binned_arr)

@@ -27,11 +27,11 @@ def make_sphere(
     # generate the grid for the support points
     # centered at the position indicated by position
     grid = [slice(-x0, dim - x0) for x0, dim in zip(position, ball_shape)]
-    position = np.ogrid[grid]
+    meshedgrid = np.ogrid[grid]
     # calculate the distance of all points from `position` center
     # scaled by the radius
     arr = np.zeros(ball_shape, dtype=float)
-    for x_i, half_size in zip(position, half_sizes):
+    for x_i, half_size in zip(meshedgrid, half_sizes):
         arr += np.abs(x_i / half_size) ** 2
     # the inner part of the sphere will have distance below 1
     return arr <= 1.0

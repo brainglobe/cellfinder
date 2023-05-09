@@ -1,8 +1,9 @@
 from dataclasses import dataclass
-from typing import Dict, List, Sequence, Tuple, TypeVar, Union
+from typing import Dict, List, Optional, Sequence, Tuple, TypeVar, Union
 
 import numba.typed
 import numpy as np
+import numpy.typing as npt
 from numba import njit
 from numba.core import types
 from numba.experimental import jitclass
@@ -139,7 +140,7 @@ class CellDetector:
         )
 
     def process(
-        self, plane: np.ndarray, previous_plane: np.ndarray
+        self, plane: np.ndarray, previous_plane: Optional[np.ndarray]
     ) -> np.ndarray:
         """
         Process a new plane.
@@ -152,7 +153,7 @@ class CellDetector:
         return plane
 
     def connect_four(
-        self, plane: np.ndarray, previous_plane: np.ndarray
+        self, plane: np.ndarray, previous_plane: Optional[np.ndarray]
     ) -> np.ndarray:
         """
         Perform structure labelling.
@@ -209,7 +210,9 @@ class CellDetector:
         """
         self.coords_maps[sid] = np.row_stack((self.coords_maps[sid], point))
 
-    def add(self, x: int, y: int, z: int, neighbour_ids: List[int]) -> int:
+    def add(
+        self, x: int, y: int, z: int, neighbour_ids: npt.NDArray[np.uint64]
+    ) -> int:
         """
         For the current coordinates takes all the neighbours and find the
         minimum structure including obsolete structures mapping to any of
@@ -232,7 +235,7 @@ class CellDetector:
         self.add_point(updated_id, point)
         return updated_id
 
-    def sanitise_ids(self, neighbour_ids: List[int]) -> int:
+    def sanitise_ids(self, neighbour_ids: npt.NDArray[np.uint64]) -> int:
         """
         Get the smallest ID of all the structures that are connected to IDs
         in `neighbour_ids`.
@@ -253,7 +256,7 @@ class CellDetector:
         return int(updated_id)
 
     def merge_structures(
-        self, updated_id: int, neighbour_ids: List[int]
+        self, updated_id: int, neighbour_ids: npt.NDArray[np.uint64]
     ) -> None:
         """
         For all the neighbours, reassign all the points of neighbour to
