@@ -47,5 +47,5 @@ def test_structure_splitting(signal_array, background_array):
         signal_array,
         background_array,
         voxel_sizes,
-        n_free_cpus=1,
+        n_free_cpus=0,
     )
