@@ -45,34 +45,20 @@ def traverse_dict(d: Dict[T, T], a: T) -> T:
         return a
 
 
-def get_structure_centre(structure: Sequence[Point]) -> Point:
+@njit
+def get_structure_centre(structure: np.ndarray) -> np.ndarray:
     mean_x = 0.0
     mean_y = 0.0
     mean_z = 0.0
     s_len = len(structure)
 
+    assert len(structure[0]) == 3
     for p in structure:
-        mean_x += p.x / s_len
-        mean_y += p.y / s_len
-        mean_z += p.z / s_len
+        mean_x += p[0] / s_len
+        mean_y += p[1] / s_len
+        mean_z += p[2] / s_len
 
-    return Point(round(mean_x), round(mean_y), round(mean_z))
-
-
-def get_structure_centre_wrapper(
-    structure: Sequence[Union[Point, Tuple[int, int, int]]]
-) -> Point:
-    """
-    Wrapper to allow either Points or bare numbers to be passed
-    to get_structure_centre().
-    """
-    s = []
-    for p in structure:
-        if isinstance(p, Point):
-            s.append(p)
-        else:
-            s.append(Point(p[0], p[1], p[2]))
-    return get_structure_centre(s)
+    return np.array([round(mean_x), round(mean_y), round(mean_z)])
 
 
 # Type declaration has to come outside of the class,
@@ -196,9 +182,8 @@ class CellDetector:
 
         return plane
 
-    def get_cell_centres(self) -> List[Point]:
-        cell_centres = self.structures_to_cells()
-        return cell_centres
+    def get_cell_centres(self) -> np.ndarray:
+        return self.structures_to_cells()
 
     def get_coords_dict(self) -> Dict:
         return self.coords_maps
@@ -272,12 +257,12 @@ class CellDetector:
                 self.coords_maps.pop(neighbour_id)
                 self.obsolete_ids[neighbour_id] = updated_id
 
-    def structures_to_cells(self) -> List[Point]:
-        cell_centres = []
-        for iterator_pair in self.coords_maps:
-            structure = iterator_pair.second
+    def structures_to_cells(self) -> np.ndarray:
+        cell_centres = np.empty((len(self.coords_maps.keys()),3))
+        idx = 0
+        for structure_id, structure in self.coords_maps.items():
             p = get_structure_centre(structure)
-            cell_centres.append(p)
+            cell_centres[idx] = p
         return cell_centres
 
 

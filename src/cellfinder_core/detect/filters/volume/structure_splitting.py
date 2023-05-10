@@ -7,7 +7,7 @@ from cellfinder_core.detect.filters.volume.ball_filter import BallFilter
 from cellfinder_core.detect.filters.volume.structure_detection import (
     CellDetector,
     Point,
-    get_structure_centre_wrapper,
+    get_structure_centre,
 )
 
 
@@ -111,14 +111,14 @@ def iterative_ball_filter(
     return ns, centres
 
 
-def check_centre_in_cuboid(centre: Point, max_coords: np.ndarray) -> bool:
+def check_centre_in_cuboid(centre: np.ndarray, max_coords: np.ndarray) -> bool:
     """
     Checks whether a coordinate is in a cuboid
     :param centre: x,y,z coordinate
     :param max_coords: far corner of cuboid
     :return: True if within cuboid, otherwise False
     """
-    relative_coords = np.array([centre.x, centre.y, centre.z])
+    relative_coords = np.array([centre[0], centre[1], centre[2]])
     if (relative_coords > max_coords).all():
         logger.info(
             'Relative coordinates "{}" exceed maximum volume '
@@ -130,23 +130,24 @@ def check_centre_in_cuboid(centre: Point, max_coords: np.ndarray) -> bool:
 
 
 def split_cells(
-    cell_points: Sequence[Point], outlier_keep: bool = False
+    cell_points: np.ndarray, outlier_keep: bool = False
 ) -> List[Point]:
-    orig_centre = get_structure_centre_wrapper(cell_points)
+    
+    orig_centre = get_structure_centre(cell_points)
 
-    xs = np.array([p.x for p in cell_points])  # TODO: use dataframe
-    ys = np.array([p.y for p in cell_points])
-    zs = np.array([p.z for p in cell_points])
+    xs = np.array([p[0] for p in cell_points])  # TODO: use dataframe
+    ys = np.array([p[1] for p in cell_points])
+    zs = np.array([p[2] for p in cell_points])
 
     orig_corner = Point(
-        orig_centre.x - (orig_centre.x - xs.min()),
-        orig_centre.y - (orig_centre.y - ys.min()),
-        orig_centre.z - (orig_centre.z - zs.min()),
+        orig_centre[0] - (orig_centre[0] - xs.min()),
+        orig_centre[1] - (orig_centre[1] - ys.min()),
+        orig_centre[2] - (orig_centre[2] - zs.min()),
     )
     relative_orig_centre = Point(
-        orig_centre.x - orig_corner.x,
-        orig_centre.y - orig_corner.y,
-        orig_centre.z - orig_corner.z,
+        orig_centre[0] - orig_corner.x,
+        orig_centre[1] - orig_corner.y,
+        orig_centre[2] - orig_corner.z,
     )
 
     original_bounding_cuboid_shape = get_shape(xs, ys, zs)
@@ -177,9 +178,9 @@ def split_cells(
     # FIXME: extract functionality
     for relative_centre in relative_centres:
         absolute_centre = Point(
-            orig_corner.x + relative_centre.x,
-            orig_corner.y + relative_centre.y,
-            orig_corner.z + relative_centre.z,
+            orig_corner.x + relative_centre[0],
+            orig_corner.y + relative_centre[1],
+            orig_corner.z + relative_centre[2],
         )
         absolute_centres.append(absolute_centre)
 
