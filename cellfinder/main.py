@@ -137,6 +137,8 @@ def run_all(args, what_to_run, atlas):
             args.n_free_cpus,
             args.log_sigma_size,
             args.n_sds_above_mean_thresh,
+            save_planes=args.save_planes,
+            plane_directory=args.plane_directory,
         )
         ensure_directory_exists(args.paths.points_directory)
 

@@ -26,8 +26,6 @@ DETECTION_TOLERANCE = 2
 
 @pytest.mark.slow
 def test_detection_full(tmpdir):
-    tmpdir = str(tmpdir)
-
     cellfinder_args = [
         "cellfinder",
         "-s",
@@ -35,7 +33,7 @@ def test_detection_full(tmpdir):
         "-b",
         background_data,
         "-o",
-        tmpdir,
+        str(tmpdir),
         "-v",
         z_pix,
         y_pix,
@@ -50,10 +48,10 @@ def test_detection_full(tmpdir):
     sys.argv = cellfinder_args
     cellfinder_run()
 
-    cells_test_xml = os.path.join(tmpdir, "points", "cell_classification.xml")
+    cells_test_xml = tmpdir / "points" / "cell_classification.xml"
 
     cells_validation = cell_io.get_cells(cells_validation_xml)
-    cells_test = cell_io.get_cells(cells_test_xml)
+    cells_test = cell_io.get_cells(str(cells_test_xml))
 
     num_non_cells_validation = sum(
         [cell.type == 1 for cell in cells_validation]
@@ -71,3 +69,8 @@ def test_detection_full(tmpdir):
     assert isclose(
         num_cells_validation, num_cells_test, abs_tol=DETECTION_TOLERANCE
     )
+    # Check that planes are saved
+    for i in range(2, 30):
+        assert (
+            tmpdir / "processed_planes" / f"plane_{str(i).zfill(4)}.tif"
+        ).exists()
