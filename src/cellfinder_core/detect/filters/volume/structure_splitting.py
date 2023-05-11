@@ -1,4 +1,4 @@
-from typing import List, Sequence, Tuple
+from typing import List, Tuple
 
 import numpy as np
 
@@ -49,7 +49,7 @@ def ball_filter_imgs(
     soma_centre_value: int,
     ball_xy_size: int = 3,
     ball_z_size: int = 3,
-) -> Tuple[np.ndarray, List[Point]]:
+) -> Tuple[np.ndarray, np.ndarray]:
     # OPTIMISE: reuse ball filter instance
 
     good_tiles_mask = np.ones((1, 1, volume.shape[2]), dtype=bool)
@@ -89,7 +89,7 @@ def ball_filter_imgs(
 
 def iterative_ball_filter(
     volume: np.ndarray, n_iter: int = 10
-) -> Tuple[List[int], List[List[Point]]]:
+) -> Tuple[List[int], List[np.ndarray]]:
     ns = []
     centres = []
 
@@ -118,7 +118,7 @@ def check_centre_in_cuboid(centre: np.ndarray, max_coords: np.ndarray) -> bool:
     :param max_coords: far corner of cuboid
     :return: True if within cuboid, otherwise False
     """
-    relative_coords = np.array([centre[0], centre[1], centre[2]])
+    relative_coords = centre
     if (relative_coords > max_coords).all():
         logger.info(
             'Relative coordinates "{}" exceed maximum volume '
@@ -132,12 +132,11 @@ def check_centre_in_cuboid(centre: np.ndarray, max_coords: np.ndarray) -> bool:
 def split_cells(
     cell_points: np.ndarray, outlier_keep: bool = False
 ) -> List[Point]:
-    
     orig_centre = get_structure_centre(cell_points)
 
-    xs = np.array([p[0] for p in cell_points])  # TODO: use dataframe
-    ys = np.array([p[1] for p in cell_points])
-    zs = np.array([p[2] for p in cell_points])
+    xs = cell_points[:, 0]
+    ys = cell_points[:, 1]
+    zs = cell_points[:, 2]
 
     orig_corner = Point(
         orig_centre[0] - (orig_centre[0] - xs.min()),

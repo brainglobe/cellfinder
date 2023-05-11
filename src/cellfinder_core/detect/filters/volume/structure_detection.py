@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Dict, List, Sequence, Tuple, TypeVar, Union
+from typing import Dict, List, TypeVar
 
 import numba.typed
 import numpy as np
@@ -47,18 +47,23 @@ def traverse_dict(d: Dict[T, T], a: T) -> T:
 
 @njit
 def get_structure_centre(structure: np.ndarray) -> np.ndarray:
-    mean_x = 0.0
-    mean_y = 0.0
-    mean_z = 0.0
-    s_len = len(structure)
+    """
+    Get the pixel coordinates of the centre of a structure.
 
-    assert len(structure[0]) == 3
-    for p in structure:
-        mean_x += p[0] / s_len
-        mean_y += p[1] / s_len
-        mean_z += p[2] / s_len
-
-    return np.array([round(mean_x), round(mean_y), round(mean_z)])
+    Centre calculated as the mean of each pixel coordinate,
+    rounded to the nearest integer.
+    """
+    # can't do np.mean(structure, axis=0)
+    # because axis is not supported by numba
+    return np.round(
+        np.array(
+            [
+                np.mean(structure[:, 0]),
+                np.mean(structure[:, 1]),
+                np.mean(structure[:, 2]),
+            ]
+        )
+    )
 
 
 # Type declaration has to come outside of the class,
@@ -258,9 +263,8 @@ class CellDetector:
                 self.obsolete_ids[neighbour_id] = updated_id
 
     def structures_to_cells(self) -> np.ndarray:
-        cell_centres = np.empty((len(self.coords_maps.keys()),3))
-        idx = 0
-        for structure_id, structure in self.coords_maps.items():
+        cell_centres = np.empty((len(self.coords_maps.keys()), 3))
+        for idx, structure in enumerate(self.coords_maps.values()):
             p = get_structure_centre(structure)
             cell_centres[idx] = p
         return cell_centres

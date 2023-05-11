@@ -16,7 +16,6 @@ from cellfinder_core.detect.filters.setup_filters import (
 )
 from cellfinder_core.detect.filters.volume.structure_detection import (
     get_structure_centre,
-    Point
 )
 from cellfinder_core.detect.filters.volume.structure_splitting import (
     StructureSplitException,
@@ -148,10 +147,13 @@ class VolumeFilter(object):
 
             if cell_volume < max_cell_volume:
                 cell_centre = get_structure_centre(cell_points)
-                cell_centre_point = Point(cell_centre[0], cell_centre[1], cell_centre[2])
                 cells.append(
                     Cell(
-                        (cell_centre_point.x, cell_centre_point.y, cell_centre_point.z),
+                        (
+                            cell_centre[0],
+                            cell_centre[1],
+                            cell_centre[2],
+                        ),
                         Cell.UNKNOWN,
                     )
                 )
@@ -178,10 +180,13 @@ class VolumeFilter(object):
                         )
                 else:
                     cell_centre = get_structure_centre(cell_points)
-                    cell_centre_point = Point(cell_centre[0], cell_centre[1], cell_centre[2])
                     cells.append(
                         Cell(
-                            (cell_centre_point.x, cell_centre_point.y, cell_centre_point.z),
+                            (
+                                cell_centre[0],
+                                cell_centre[1],
+                                cell_centre[2],
+                            ),
                             Cell.ARTIFACT,
                         )
                     )

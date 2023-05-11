@@ -45,21 +45,13 @@ def three_d_cross():
 
 
 @pytest.fixture()
-def structure(three_d_cross):
-    coords = np.where(three_d_cross == 1)[::-1]
-    s = [Point(*c) for c in zip(coords[0], coords[1], coords[2])]
-    return s
-
-@pytest.fixture()
-def structure_as_array(structure):
-    s_array = np.empty((len(structure),3))
-    for i, p in enumerate(structure):
-        s_array[i] = np.array([p.x, p.y, p.z])
-    return s_array
+def structure(three_d_cross) -> np.ndarray:
+    coords = np.array(np.where(three_d_cross)).transpose()
+    return coords
 
 
-def test_get_structure_centre(structure_as_array):
-    result_point = get_structure_centre(structure_as_array)
+def test_get_structure_centre(structure):
+    result_point = get_structure_centre(structure)
     assert (result_point[0], result_point[1], result_point[2]) == (
         1,
         1,
