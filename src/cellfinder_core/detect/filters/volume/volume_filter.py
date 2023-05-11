@@ -2,7 +2,7 @@ import math
 import os
 from queue import Queue
 from threading import Lock
-from typing import Any, Callable, List, Optional, Sequence, Tuple
+from typing import Any, Callable, List, Optional, Tuple
 
 import numpy as np
 from imlib.cells.cells import Cell
@@ -30,7 +30,7 @@ class VolumeFilter(object):
         soma_diameter: float,
         soma_size_spread_factor: float = 1.4,
         setup_params: Tuple[np.ndarray, Any, int, int, float, Any],
-        planes_paths_range: Sequence,
+        n_planes: int,
         n_locks_release: int,
         save_planes: bool = False,
         plane_directory: Optional[str] = None,
@@ -41,7 +41,7 @@ class VolumeFilter(object):
     ):
         self.soma_diameter = soma_diameter
         self.soma_size_spread_factor = soma_size_spread_factor
-        self.n_planes = len(planes_paths_range)
+        self.n_planes = n_planes
         self.z = start_plane
         self.save_planes = save_planes
         self.plane_directory = plane_directory
@@ -55,7 +55,7 @@ class VolumeFilter(object):
         self.threshold_value = None
         self.setup_params = setup_params
 
-        self.previous_plane = None
+        self.previous_plane: Optional[np.ndarray] = None
 
         self.ball_filter = get_ball_filter(
             plane=self.setup_params[0],
@@ -66,7 +66,7 @@ class VolumeFilter(object):
         )
 
         self.cell_detector = get_cell_detector(
-            plane_shape=self.setup_params[0].shape,
+            plane_shape=self.setup_params[0].shape,  # type: ignore
             ball_z_size=self.setup_params[3],
             z_offset=self.setup_params[5],
         )
