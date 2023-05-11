@@ -6,7 +6,6 @@ from cellfinder_core import logger
 from cellfinder_core.detect.filters.volume.ball_filter import BallFilter
 from cellfinder_core.detect.filters.volume.structure_detection import (
     CellDetector,
-    Point,
     get_structure_centre,
 )
 
@@ -131,22 +130,27 @@ def check_centre_in_cuboid(centre: np.ndarray, max_coords: np.ndarray) -> bool:
 
 def split_cells(
     cell_points: np.ndarray, outlier_keep: bool = False
-) -> List[Point]:
+) -> np.ndarray:
     orig_centre = get_structure_centre(cell_points)
 
     xs = cell_points[:, 0]
     ys = cell_points[:, 1]
     zs = cell_points[:, 2]
 
-    orig_corner = Point(
-        orig_centre[0] - (orig_centre[0] - xs.min()),
-        orig_centre[1] - (orig_centre[1] - ys.min()),
-        orig_centre[2] - (orig_centre[2] - zs.min()),
+    orig_corner = np.array(
+        [
+            orig_centre[0] - (orig_centre[0] - xs.min()),
+            orig_centre[1] - (orig_centre[1] - ys.min()),
+            orig_centre[2] - (orig_centre[2] - zs.min()),
+        ]
     )
-    relative_orig_centre = Point(
-        orig_centre[0] - orig_corner.x,
-        orig_centre[1] - orig_corner.y,
-        orig_centre[2] - orig_corner.z,
+
+    relative_orig_centre = np.array(
+        [
+            orig_centre[0] - orig_corner[0],
+            orig_centre[1] - orig_corner[1],
+            orig_centre[2] - orig_corner[2],
+        ]
     )
 
     original_bounding_cuboid_shape = get_shape(xs, ys, zs)
@@ -176,10 +180,12 @@ def split_cells(
     absolute_centres = []
     # FIXME: extract functionality
     for relative_centre in relative_centres:
-        absolute_centre = Point(
-            orig_corner.x + relative_centre[0],
-            orig_corner.y + relative_centre[1],
-            orig_corner.z + relative_centre[2],
+        absolute_centre = np.array(
+            [
+                orig_corner[0] + relative_centre[0],
+                orig_corner[1] + relative_centre[1],
+                orig_corner[2] + relative_centre[2],
+            ]
         )
         absolute_centres.append(absolute_centre)
 

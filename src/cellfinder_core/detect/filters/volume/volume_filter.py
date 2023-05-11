@@ -171,9 +171,9 @@ class VolumeFilter(object):
                         cells.append(
                             Cell(
                                 (
-                                    cell_centre.x,
-                                    cell_centre.y,
-                                    cell_centre.z,
+                                    cell_centre[0],
+                                    cell_centre[1],
+                                    cell_centre[2],
                                 ),
                                 Cell.UNKNOWN,
                             )
