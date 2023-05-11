@@ -1,10 +1,9 @@
 """
 An integration test module for structure splitting
 
-The associated test dataset (exposed here through fixtures) was derived from
-"MS_cx_left". It was created by stitching four 370x370 x-y-plane patches from
-slices 1000:1021. This was manually determined to be a minimal example of
-covering the structure splitting code with real life data.
+The associated test dataset (exposed here through fixtures) is a minimal
+example created to cover the structure splitting code with (modified)
+real life data.
 """
 
 import os
@@ -18,10 +17,10 @@ data_dir = os.path.join(
     os.getcwd(), "tests", "data", "integration", "detection"
 )
 signal_data_path = os.path.join(
-    data_dir, "MS_cx_left_corners_stitched", "signal"
+    data_dir, "structure_split_test", "signal"
 )
 background_data_path = os.path.join(
-    data_dir, "MS_cx_left_corners_stitched", "background"
+    data_dir, "structure_split_test", "background"
 )
 
 voxel_sizes = [5, 2.31, 2.31]
