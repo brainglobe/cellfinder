@@ -16,9 +16,7 @@ from cellfinder_core.tools.IO import read_with_dask
 data_dir = os.path.join(
     os.getcwd(), "tests", "data", "integration", "detection"
 )
-signal_data_path = os.path.join(
-    data_dir, "structure_split_test", "signal"
-)
+signal_data_path = os.path.join(data_dir, "structure_split_test", "signal")
 background_data_path = os.path.join(
     data_dir, "structure_split_test", "background"
 )

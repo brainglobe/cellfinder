@@ -161,7 +161,7 @@ def split_cells(
     # centres is a list of lists of centres (1 list of centres per ball run)
     ns, centres = iterative_ball_filter(vol)
     ns.insert(0, 1)
-    centres.insert(0, [relative_orig_centre])
+    centres.insert(0, relative_orig_centre)
 
     best_iteration = ns.index(max(ns))
 
@@ -171,15 +171,17 @@ def split_cells(
     if not outlier_keep:
         # TODO: change to checking whether in original cluster shape
         original_max_coords = np.array(original_bounding_cuboid_shape)
-        relative_centres = [
-            x
-            for x in relative_centres
-            if check_centre_in_cuboid(x, original_max_coords)
-        ]
+        relative_centres = np.array(
+            [
+                x
+                for x in relative_centres
+                if check_centre_in_cuboid(x, original_max_coords)
+            ]
+        )
 
-    absolute_centres = []
+    absolute_centres = np.empty((len(relative_centres), 3))
     # FIXME: extract functionality
-    for relative_centre in relative_centres:
+    for i, relative_centre in enumerate(relative_centres):
         absolute_centre = np.array(
             [
                 orig_corner[0] + relative_centre[0],
@@ -187,6 +189,6 @@ def split_cells(
                 orig_corner[2] + relative_centre[2],
             ]
         )
-        absolute_centres.append(absolute_centre)
+        absolute_centres[i] = absolute_centre
 
     return absolute_centres
