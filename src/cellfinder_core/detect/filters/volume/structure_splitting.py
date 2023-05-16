@@ -181,14 +181,8 @@ def split_cells(
 
     absolute_centres = np.empty((len(relative_centres), 3))
     # FIXME: extract functionality
-    for i, relative_centre in enumerate(relative_centres):
-        absolute_centre = np.array(
-            [
-                orig_corner[0] + relative_centre[0],
-                orig_corner[1] + relative_centre[1],
-                orig_corner[2] + relative_centre[2],
-            ]
-        )
-        absolute_centres[i] = absolute_centre
+    absolute_centres[:, 0] = orig_corner[0] + relative_centres[:, 0]
+    absolute_centres[:, 1] = orig_corner[1] + relative_centres[:, 1]
+    absolute_centres[:, 2] = orig_corner[2] + relative_centres[:, 2]
 
     return absolute_centres
