@@ -158,10 +158,10 @@ def split_cells(
     ball_radius = 1
     vol = coords_to_volume(xs, ys, zs, ball_radius=ball_radius)
 
-    # centres is a list of lists of centres (1 list of centres per ball run)
+    # centres is a list of arrays of centres (1 array of centres per ball run)
     ns, centres = iterative_ball_filter(vol)
     ns.insert(0, 1)
-    centres.insert(0, relative_orig_centre)
+    centres.insert(0, np.array([relative_orig_centre]))
 
     best_iteration = ns.index(max(ns))
 
