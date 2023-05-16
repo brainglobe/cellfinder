@@ -15,7 +15,7 @@ from cellfinder_core.detect.filters.setup_filters import (
     get_cell_detector,
 )
 from cellfinder_core.detect.filters.volume.structure_detection import (
-    get_structure_centre_wrapper,
+    get_structure_centre,
 )
 from cellfinder_core.detect.filters.volume.structure_splitting import (
     StructureSplitException,
@@ -146,10 +146,14 @@ class VolumeFilter(object):
             cell_volume = len(cell_points)
 
             if cell_volume < max_cell_volume:
-                cell_centre = get_structure_centre_wrapper(cell_points)
+                cell_centre = get_structure_centre(cell_points)
                 cells.append(
                     Cell(
-                        (cell_centre.x, cell_centre.y, cell_centre.z),
+                        (
+                            cell_centre[0],
+                            cell_centre[1],
+                            cell_centre[2],
+                        ),
                         Cell.UNKNOWN,
                     )
                 )
@@ -167,21 +171,21 @@ class VolumeFilter(object):
                         cells.append(
                             Cell(
                                 (
-                                    cell_centre.x,
-                                    cell_centre.y,
-                                    cell_centre.z,
+                                    cell_centre[0],
+                                    cell_centre[1],
+                                    cell_centre[2],
                                 ),
                                 Cell.UNKNOWN,
                             )
                         )
                 else:
-                    cell_centre = get_structure_centre_wrapper(cell_points)
+                    cell_centre = get_structure_centre(cell_points)
                     cells.append(
                         Cell(
                             (
-                                cell_centre.x,
-                                cell_centre.y,
-                                cell_centre.z,
+                                cell_centre[0],
+                                cell_centre[1],
+                                cell_centre[2],
                             ),
                             Cell.ARTIFACT,
                         )

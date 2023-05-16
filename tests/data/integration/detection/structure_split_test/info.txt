@@ -1,0 +1,5 @@
+# Test data info (for internal use)
+
+The test images in this folder were derived from "MS_cx_left".
+They were created by stitching four 370x370 x-y-plane patches from
+slices 1000:1021.

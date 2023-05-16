@@ -5,7 +5,7 @@ from cellfinder_core.detect.filters.volume.structure_detection import (
     CellDetector,
     Point,
     get_non_zero_dtype_min,
-    get_structure_centre_wrapper,
+    get_structure_centre,
 )
 
 
@@ -45,15 +45,14 @@ def three_d_cross():
 
 
 @pytest.fixture()
-def structure(three_d_cross):
-    coords = np.where(three_d_cross == 1)[::-1]
-    s = [Point(*c) for c in zip(coords[0], coords[1], coords[2])]
-    return s
+def structure(three_d_cross) -> np.ndarray:
+    coords = np.array(np.where(three_d_cross)).transpose()
+    return coords
 
 
 def test_get_structure_centre(structure):
-    result_point = get_structure_centre_wrapper(structure)
-    assert (result_point.x, result_point.y, result_point.z) == (
+    result_point = get_structure_centre(structure)
+    assert (result_point[0], result_point[1], result_point[2]) == (
         1,
         1,
         1,

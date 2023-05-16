@@ -1,4 +1,4 @@
-from typing import List, Sequence, Tuple
+from typing import List, Tuple
 
 import numpy as np
 
@@ -6,8 +6,7 @@ from cellfinder_core import logger
 from cellfinder_core.detect.filters.volume.ball_filter import BallFilter
 from cellfinder_core.detect.filters.volume.structure_detection import (
     CellDetector,
-    Point,
-    get_structure_centre_wrapper,
+    get_structure_centre,
 )
 
 
@@ -49,7 +48,7 @@ def ball_filter_imgs(
     soma_centre_value: int,
     ball_xy_size: int = 3,
     ball_z_size: int = 3,
-) -> Tuple[np.ndarray, List[Point]]:
+) -> Tuple[np.ndarray, np.ndarray]:
     # OPTIMISE: reuse ball filter instance
 
     good_tiles_mask = np.ones((1, 1, volume.shape[2]), dtype=bool)
@@ -89,7 +88,7 @@ def ball_filter_imgs(
 
 def iterative_ball_filter(
     volume: np.ndarray, n_iter: int = 10
-) -> Tuple[List[int], List[List[Point]]]:
+) -> Tuple[List[int], List[np.ndarray]]:
     ns = []
     centres = []
 
@@ -111,14 +110,14 @@ def iterative_ball_filter(
     return ns, centres
 
 
-def check_centre_in_cuboid(centre: Point, max_coords: np.ndarray) -> bool:
+def check_centre_in_cuboid(centre: np.ndarray, max_coords: np.ndarray) -> bool:
     """
     Checks whether a coordinate is in a cuboid
     :param centre: x,y,z coordinate
     :param max_coords: far corner of cuboid
     :return: True if within cuboid, otherwise False
     """
-    relative_coords = np.array([centre.x, centre.y, centre.z])
+    relative_coords = centre
     if (relative_coords > max_coords).all():
         logger.info(
             'Relative coordinates "{}" exceed maximum volume '
@@ -130,23 +129,28 @@ def check_centre_in_cuboid(centre: Point, max_coords: np.ndarray) -> bool:
 
 
 def split_cells(
-    cell_points: Sequence[Point], outlier_keep: bool = False
-) -> List[Point]:
-    orig_centre = get_structure_centre_wrapper(cell_points)
+    cell_points: np.ndarray, outlier_keep: bool = False
+) -> np.ndarray:
+    orig_centre = get_structure_centre(cell_points)
 
-    xs = np.array([p.x for p in cell_points])  # TODO: use dataframe
-    ys = np.array([p.y for p in cell_points])
-    zs = np.array([p.z for p in cell_points])
+    xs = cell_points[:, 0]
+    ys = cell_points[:, 1]
+    zs = cell_points[:, 2]
 
-    orig_corner = Point(
-        orig_centre.x - (orig_centre.x - xs.min()),
-        orig_centre.y - (orig_centre.y - ys.min()),
-        orig_centre.z - (orig_centre.z - zs.min()),
+    orig_corner = np.array(
+        [
+            orig_centre[0] - (orig_centre[0] - xs.min()),
+            orig_centre[1] - (orig_centre[1] - ys.min()),
+            orig_centre[2] - (orig_centre[2] - zs.min()),
+        ]
     )
-    relative_orig_centre = Point(
-        orig_centre.x - orig_corner.x,
-        orig_centre.y - orig_corner.y,
-        orig_centre.z - orig_corner.z,
+
+    relative_orig_centre = np.array(
+        [
+            orig_centre[0] - orig_corner[0],
+            orig_centre[1] - orig_corner[1],
+            orig_centre[2] - orig_corner[2],
+        ]
     )
 
     original_bounding_cuboid_shape = get_shape(xs, ys, zs)
@@ -154,10 +158,10 @@ def split_cells(
     ball_radius = 1
     vol = coords_to_volume(xs, ys, zs, ball_radius=ball_radius)
 
-    # centres is a list of lists of centres (1 list of centres per ball run)
+    # centres is a list of arrays of centres (1 array of centres per ball run)
     ns, centres = iterative_ball_filter(vol)
     ns.insert(0, 1)
-    centres.insert(0, [relative_orig_centre])
+    centres.insert(0, np.array([relative_orig_centre]))
 
     best_iteration = ns.index(max(ns))
 
@@ -167,20 +171,18 @@ def split_cells(
     if not outlier_keep:
         # TODO: change to checking whether in original cluster shape
         original_max_coords = np.array(original_bounding_cuboid_shape)
-        relative_centres = [
-            x
-            for x in relative_centres
-            if check_centre_in_cuboid(x, original_max_coords)
-        ]
-
-    absolute_centres = []
-    # FIXME: extract functionality
-    for relative_centre in relative_centres:
-        absolute_centre = Point(
-            orig_corner.x + relative_centre.x,
-            orig_corner.y + relative_centre.y,
-            orig_corner.z + relative_centre.z,
+        relative_centres = np.array(
+            [
+                x
+                for x in relative_centres
+                if check_centre_in_cuboid(x, original_max_coords)
+            ]
         )
-        absolute_centres.append(absolute_centre)
+
+    absolute_centres = np.empty((len(relative_centres), 3))
+    # FIXME: extract functionality
+    absolute_centres[:, 0] = orig_corner[0] + relative_centres[:, 0]
+    absolute_centres[:, 1] = orig_corner[1] + relative_centres[:, 1]
+    absolute_centres[:, 2] = orig_corner[2] + relative_centres[:, 2]
 
     return absolute_centres
