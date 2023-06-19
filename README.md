@@ -10,7 +10,7 @@
 [![Imports: isort](https://img.shields.io/badge/%20imports-isort-%231674b1?style=flat&labelColor=ef8336)](https://pycqa.github.io/isort/)
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
 [![Contributions](https://img.shields.io/badge/Contributions-Welcome-brightgreen.svg)](https://docs.brainglobe.info/cellfinder/contributing)
-[![Website](https://img.shields.io/website?up_message=online&url=https%3A%2F%2Fbrainglobe.info)](https://brainglobe.info/cellfinder)
+[![Website](https://img.shields.io/website?up_message=online&url=https%3A%2F%2Fbrainglobe.info)](https://brainglobe.info/documentation/cellfinder/index.html)
 [![Twitter](https://img.shields.io/twitter/follow/brain_globe?style=social)](https://twitter.com/brain_globe)
 
 # Cellfinder
@@ -35,7 +35,7 @@ for [napari](https://napari.org/).**
 
  ---
 Installation is with
-`pip install cellfinder` or by [using the supplied docker image](https://docs.brainglobe.info/cellfinder/installation/installation-with-docker).
+`pip install cellfinder`
 
 ---
 Basic usage:
@@ -43,9 +43,7 @@ Basic usage:
 cellfinder -s signal_images -b background_images -o output_dir --metadata metadata
 ```
 Full documentation can be
-found [here](https://docs.brainglobe.info/cellfinder). In particular, **please
-see the
-[data requirements](https://docs.brainglobe.info/cellfinder/user-guide/data-requirements)**.
+found [here](https://brainglobe.info/documentation/cellfinder/index.html).
 
 This software is at a very early stage, and was written with our data in mind.
 Over time we hope to support other data types/formats. If you have any issues, please get in touch [on the forum](https://forum.image.sc/tag/brainglobe) or by
@@ -101,7 +99,7 @@ disributions. *(Example to come)*
 
 ### Tracing of inputs to retrosplenial cortex (RSP)
 Input cell somas detected by cellfinder, aligned to the Allen Reference Atlas,
-and visualised in [brainrender](https://github.com/brancolab/brainrender) along
+and visualised in [brainrender](https://github.com/brainglobe/brainrender) along
 with RSP.
 
 ![brainrender](https://raw.githubusercontent.com/brainglobe/cellfinder/master/resources/brainrender.png)
@@ -136,7 +134,7 @@ coordinate space of your raw data).
 
 
 ## Contributing
-Contributions to cellfinder are more than welcome. Please see the [contributing guide](https://github.com/brainglobe/.github/blob/main/CONTRIBUTING.md).
+Contributions to cellfinder are more than welcome. Please see the [developers guide](https://brainglobe.info/developers/index.html).
 
 
 ## Citing cellfinder
@@ -150,8 +148,3 @@ If you use any of the image registration functions in cellfinder, please also ci
 **If you use this, or any other tools in the brainglobe suite, please
  [let us know](mailto:code@adamltyson.com?subject=cellfinder), and
  we'd be happy to promote your paper/talk etc.**
-
- ---
-The BrainGlobe project is generously supported by the Sainsbury Wellcome Centre and the Institute of Neuroscience, Technical University of Munich, with funding from Wellcome, the Gatsby Charitable Foundation and the Munich Cluster for Systems Neurology - Synergy.
-
-<img src='https://brainglobe.info/images/logos_combined.png' width="550">
