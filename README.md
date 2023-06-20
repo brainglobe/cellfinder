@@ -3,8 +3,7 @@
 [![Downloads](https://pepy.tech/badge/cellfinder-core)](https://pepy.tech/project/cellfinder-core)
 [![Wheel](https://img.shields.io/pypi/wheel/cellfinder-core.svg)](https://pypi.org/project/cellfinder-core)
 [![Development Status](https://img.shields.io/pypi/status/cellfinder-core.svg)](https://github.com/brainglobe/cellfinder-core)
-[![Tests](https://img.shields.io/github/workflow/status/brainglobe/cellfinder-core/tests)](
-    https://github.com/brainglobe/cellfinder-core/actions)
+[![Tests](https://img.shields.io/github/workflow/status/brainglobe/cellfinder-core/tests)](https://github.com/brainglobe/cellfinder-core/actions)
 [![codecov](https://codecov.io/gh/brainglobe/cellfinder-core/branch/main/graph/badge.svg?token=nx1lhNI7ox)](https://codecov.io/gh/brainglobe/cellfinder-core)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/python/black)
 [![Imports: isort](https://img.shields.io/badge/%20imports-isort-%231674b1?style=flat&labelColor=ef8336)](https://pycqa.github.io/isort/)
@@ -29,14 +28,13 @@ whole-brain microscopy analysis, and the algorithm can also be implemented in
 ---
 
 ## Instructions
-
 ### Installation
-`cellfinder-core` supports Python >=3.7,
+`cellfinder-core` supports Python >=3.9,
 and works across Linux, Windows, and should work on most versions of macOS
 (although this is not tested).
 
 Assuming you have a Python environment set up
-(e.g. [using conda](https://docs.brainglobe.info/cellfinder/using-conda)),
+(e.g. [using conda](https://brainglobe.info/documentation/general/conda.html)),
 you can install `cellfinder-core` with:
 ```bash
 pip install cellfinder-core
@@ -50,7 +48,7 @@ pip install cellfinder-napari
 ```
 
 N.B. To speed up cellfinder, you need CUDA & cuDNN installed. Instructions
-[here](https://docs.brainglobe.info/cellfinder/installation/using-gpu).
+[here](https://brainglobe.info/documentation/general/gpu.html).
 
 ### Usage
 Before using cellfinder-core, it may be useful to take a look at the
@@ -59,8 +57,8 @@ outlines the algorithm.
 
 The API is not yet fully documented. For an idea of what the parameters do,
 see the documentation for the cellfinder whole-brain microscopy image analysis
-command-line tool ([cell candidate detection](https://docs.brainglobe.info/cellfinder/user-guide/command-line/candidate-detection),
-[cell candidate classification](https://docs.brainglobe.info/cellfinder/user-guide/command-line/classification)).
+command-line tool ([cell candidate detection](https://brainglobe.info/documentation/cellfinder/user-guide/command-line/candidate-detection.html),
+[cell candidate classification](https://brainglobe.info/documentation/cellfinder/user-guide/command-line/classification.html)).
 It may also be useful to try the
 [cellfinder napari plugin](https://github.com/brainglobe/cellfinder-napari)
 so you can adjust the parameters in a GUI.
@@ -219,8 +217,8 @@ from serial two-photon microscopy images of mouse brains
 (available [here](https://gin.g-node.org/cellfinder/training_data)).
 
 Training the network is likely simpler using the
-[command-line interface](https://docs.brainglobe.info/cellfinder/user-guide/training#start-training)
-or the [Napari plugin](https://docs.brainglobe.info/cellfinder-napari/user-guide/training-the-network),
+[command-line interface](https://brainglobe.info/documentation/cellfinder/user-guide/command-line/training/index.html)
+or the [Napari plugin](https://brainglobe.info/documentation/cellfinder/user-guide/napari-plugin/training-the-network.html),
 but it is possible through the Python API.
 
 ```python
@@ -253,7 +251,7 @@ run_training(
 ### More info
 
 More documentation about cellfinder and other BrainGlobe tools can be
-found [here](https://docs.brainglobe.info).
+found [here](https://brainglobe.info).
 
 This software is at a very early stage, and was written with our data in mind.
 Over time we hope to support other data types/formats. If you have any
@@ -289,7 +287,7 @@ cells or artefacts:
 **Cassified cell candidates. Yellow - cells, Blue - artefacts**
 
 ## Contributing
-Contributions to cellfinder-core are more than welcome. Please see the [contributing guide](https://github.com/brainglobe/.github/blob/main/CONTRIBUTING.md).
+Contributions to cellfinder-core are more than welcome. Please see the [developers guide](https://brainglobe.info/developers/index.html).
 
 ---
 ## Citing cellfinder
@@ -300,9 +298,3 @@ If you find this plugin useful, and use it in your research, please cite the pap
 **If you use this, or any other tools in the brainglobe suite, please
  [let us know](mailto:code@adamltyson.com?subject=cellfinder-core), and
  we'd be happy to promote your paper/talk etc.**
-
-
- ---
-The BrainGlobe project is generously supported by the Sainsbury Wellcome Centre and the Institute of Neuroscience, Technical University of Munich, with funding from Wellcome, the Gatsby Charitable Foundation and the Munich Cluster for Systems Neurology - Synergy.
-
-<img src='https://brainglobe.info/images/logos_combined.png' width="550">
