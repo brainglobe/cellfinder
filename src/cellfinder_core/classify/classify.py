@@ -1,30 +1,32 @@
-from typing import Callable, List, Optional
+import os
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 import numpy as np
+from imlib.cells.cells import Cell
 from imlib.general.system import get_num_processes
 from tensorflow import keras
 
 from cellfinder_core import logger, types
 from cellfinder_core.classify.cube_generator import CubeGeneratorFromFile
 from cellfinder_core.classify.tools import get_model
-from cellfinder_core.train.train_yml import models
+from cellfinder_core.train.train_yml import depth_type, models
 
 
 def main(
-    points,
+    points: List[Cell],
     signal_array: types.array,
     background_array: types.array,
     n_free_cpus: int,
-    voxel_sizes,
-    network_voxel_sizes,
-    batch_size,
-    cube_height,
-    cube_width,
-    cube_depth,
-    trained_model,
-    model_weights,
-    network_depth,
-    max_workers=3,
+    voxel_sizes: Tuple[int, int, int],
+    network_voxel_sizes: Tuple[int, int, int],
+    batch_size: int,
+    cube_height: int,
+    cube_width: int,
+    cube_depth: int,
+    trained_model: Optional[os.PathLike],
+    model_weights: Optional[os.PathLike],
+    network_depth: depth_type,
+    max_workers: int = 3,
     *,
     callback: Optional[Callable[[int], None]] = None,
 ) -> List:
@@ -93,8 +95,10 @@ def main(
 
 
 class BatchEndCallback(keras.callbacks.Callback):
-    def __init__(self, callback):
+    def __init__(self, callback: Callable[[int], None]):
         self._callback = callback
 
-    def on_predict_batch_end(self, batch, logs=None):
+    def on_predict_batch_end(
+        self, batch: int, logs: Optional[Dict[str, Any]] = None
+    ) -> None:
         self._callback(batch)

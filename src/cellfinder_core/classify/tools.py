@@ -1,21 +1,22 @@
 import os
-from typing import Optional
+from typing import List, Optional, Sequence, Tuple, Union
 
 import numpy as np
 import tensorflow as tf
+from tensorflow.keras import Model
 
 from cellfinder_core import logger
-from cellfinder_core.classify.resnet import build_model
+from cellfinder_core.classify.resnet import build_model, layer_type
 
 
 def get_model(
     existing_model: Optional[os.PathLike] = None,
     model_weights: Optional[os.PathLike] = None,
-    network_depth=None,
-    learning_rate=0.0001,
-    inference=False,
-    continue_training=False,
-):
+    network_depth: Optional[layer_type] = None,
+    learning_rate: float = 0.0001,
+    inference: bool = False,
+    continue_training: bool = False,
+) -> Model:
     """
     Returns the correct model based on the arguments passed
     :param existing_model: An existing, trained model. This is returned if it
@@ -32,7 +33,7 @@ def get_model(
     :return: A tf.keras model
 
     """
-    if existing_model is not None:
+    if existing_model is not None or network_depth is None:
         logger.debug(f"Loading model: {existing_model}")
         return tf.keras.models.load_model(existing_model)
     else:
@@ -50,7 +51,9 @@ def get_model(
         return model
 
 
-def make_lists(tiff_files, train=True):
+def make_lists(
+    tiff_files: Sequence, train: bool = True
+) -> Union[Tuple[List, List], Tuple[List, List, np.ndarray]]:
     signal_list = []
     background_list = []
     if train:
@@ -67,7 +70,6 @@ def make_lists(tiff_files, train=True):
                     labels.append(1)
 
     if train:
-        labels = np.array(labels)
-        return signal_list, background_list, labels
+        return signal_list, background_list, np.array(labels)
     else:
         return signal_list, background_list

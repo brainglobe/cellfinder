@@ -1,4 +1,5 @@
 from random import getrandbits, uniform
+from typing import Optional
 
 import numpy as np
 from natsort import natsorted
@@ -127,7 +128,7 @@ def is_any_list_overlap(list_a, list_b):
     return any({*list_a} & {*list_b})
 
 
-def random_bool(likelihood=None):
+def random_bool(likelihood: Optional[float] = None) -> bool:
     """
     Return a random boolean (True/False). If "likelihood" is not None, this
     is biased.
@@ -144,7 +145,7 @@ def random_bool(likelihood=None):
             return False
 
 
-def random_sign():
+def random_sign() -> int:
     """
     Returns a random sign (-1 or 1) with a 50/50 chance of each.
     :return: Random sign (-1 or 1)
@@ -155,7 +156,7 @@ def random_sign():
         return -1
 
 
-def random_probability():
+def random_probability() -> float:
     """
     Return a random probability in the range (0, 1)
     :return: Random probability in the range (0, 1)
@@ -163,7 +164,7 @@ def random_probability():
     return uniform(0, 1)
 
 
-def all_elements_equal(x):
+def all_elements_equal(x) -> bool:
     """
     Return True is all the elements in a series are equal
     :param x: Series of values (e.g. list or numpy array)

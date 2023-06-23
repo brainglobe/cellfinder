@@ -3,7 +3,7 @@ N.B imports are within functions to prevent tensorflow being imported before
 it's warnings are silenced
 """
 import os
-from typing import Callable, Optional, Tuple
+from typing import Callable, List, Optional, Tuple
 
 import numpy as np
 from imlib.general.logging import suppress_specific_logs
@@ -45,7 +45,7 @@ def main(
     detect_callback: Optional[Callable[[int], None]] = None,
     classify_callback: Optional[Callable[[int], None]] = None,
     detect_finished_callback: Optional[Callable[[list], None]] = None,
-):
+) -> List:
     """
     Parameters
     ----------
@@ -113,7 +113,7 @@ def main(
     return points
 
 
-def suppress_tf_logging(tf_suppress_log_messages):
+def suppress_tf_logging(tf_suppress_log_messages: List[str]) -> None:
     """
     Prevents many lines of logs such as:
     "2019-10-24 16:54:41.363978: I tensorflow/stream_executor/platform/default

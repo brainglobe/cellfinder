@@ -16,7 +16,7 @@ from argparse import (
 )
 from datetime import datetime
 from pathlib import Path
-from typing import Literal
+from typing import Dict, Literal
 
 from fancylog import fancylog
 from imlib.general.numerical import check_positive_float, check_positive_int
@@ -27,6 +27,7 @@ from sklearn.model_selection import train_test_split
 
 import cellfinder_core as program_for_log
 from cellfinder_core import logger
+from cellfinder_core.classify.resnet import layer_type
 from cellfinder_core.tools.prep import DEFAULT_INSTALL_PATH
 
 tf_suppress_log_messages = [
@@ -34,15 +35,15 @@ tf_suppress_log_messages = [
     "multiprocessing can interact badly with TensorFlow",
 ]
 
-models = {
+depth_type = Literal["18", "34", "50", "101", "152"]
+
+models: Dict[depth_type, layer_type] = {
     "18": "18-layer",
     "34": "34-layer",
     "50": "50-layer",
     "101": "101-layer",
     "152": "152-layer",
 }
-
-depth_type = Literal["18", "34", "50", "101", "152"]
 
 
 def valid_model_depth(depth):

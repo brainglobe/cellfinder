@@ -1,5 +1,6 @@
-from typing import Dict, List, Literal, Tuple, Union
+from typing import Callable, Dict, List, Literal, Optional, Tuple, Union
 
+from tensorflow import Tensor
 from tensorflow.keras import Model
 from tensorflow.keras.initializers import Initializer
 from tensorflow.keras.layers import (
@@ -13,7 +14,7 @@ from tensorflow.keras.layers import (
     MaxPooling3D,
     ZeroPadding3D,
 )
-from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.optimizers import Adam, Optimizer
 
 #####################################################################
 # Define the types of ResNet
@@ -43,14 +44,14 @@ network_residual_bottleneck: Dict[layer_type, bool] = {
 def build_model(
     shape: Tuple[int, int, int, int] = (50, 50, 20, 2),
     network_depth: layer_type = "18-layer",
-    optimizer=None,
+    optimizer: Optional[Optimizer] = None,
     learning_rate: float = 0.0005,  # higher rates don't always converge
-    loss="categorical_crossentropy",
-    metrics=["accuracy"],
+    loss: str = "categorical_crossentropy",
+    metrics: List[str] = ["accuracy"],
     number_classes: int = 2,
     axis: int = 3,
     starting_features: int = 64,
-    classification_activation="softmax",
+    classification_activation: str = "softmax",
 ) -> Model:
     blocks, bottleneck = get_resnet_blocks_and_bottleneck(network_depth)
 
@@ -87,7 +88,9 @@ def build_model(
     return model
 
 
-def get_resnet_blocks_and_bottleneck(network_depth: layer_type):
+def get_resnet_blocks_and_bottleneck(
+    network_depth: layer_type,
+) -> Tuple[List[int], bool]:
     """
     Parses dicts, and returns how many resnet blocks are in each unit, along
     with whether they are bottlneck blocks or not
@@ -101,34 +104,21 @@ def get_resnet_blocks_and_bottleneck(network_depth: layer_type):
 
 
 def non_residual_block(
-    inputs,
-    starting_features,
-    conv_kernel=(7, 7, 3),
-    strides=(2, 2, 2),
-    padding=3,
-    max_pool_size=(3, 3, 2),
-    activation="relu",
-    use_bias=False,
-    bn_epsilon=1e-5,
-    pooling_padding="same",
-    axis=3,
-):
+    inputs: Tensor,
+    starting_features: int,
+    conv_kernel: Tuple[int, int, int] = (7, 7, 3),
+    strides: Tuple[int, int, int] = (2, 2, 2),
+    padding: int = 3,
+    max_pool_size: Tuple[int, int, int] = (3, 3, 2),
+    activation: str = "relu",
+    use_bias: bool = False,
+    bn_epsilon: float = 1e-5,
+    pooling_padding: str = "same",
+    axis: int = 3,
+) -> Tensor:
     """
-     Non-residual unit from He et al. (2015). Corresponds to "conv1" and the
+    Non-residual unit from He et al. (2015). Corresponds to "conv1" and the
     max pool.
-
-    :param inputs:
-    :param starting_features:
-    :param conv_kernel:
-    :param strides:
-    :param padding:
-    :param max_pool_size:
-    :param activation:
-    :param use_bias:
-    :param bn_epsilon:
-    :param pooling_padding:
-    :param axis:
-    :return:
     """
 
     x = ZeroPadding3D(padding=padding, name="conv1_padding")(inputs)
@@ -152,18 +142,18 @@ def non_residual_block(
 
 
 def residual_block(
-    output_features,
-    resnet_unit_id,
-    block_id,
-    conv_kernel=(3, 3, 3),
-    bottleneck_conv_kernel=(1, 1, 1),
-    bottleneck=False,
-    activation="relu",
-    use_bias=False,
-    kernel_initializer="he_normal",
-    bn_epsilon=1e-5,
-    axis=3,
-):
+    output_features: Tensor,
+    resnet_unit_id: int,
+    block_id: int,
+    conv_kernel: Tuple[int, int, int] = (3, 3, 3),
+    bottleneck_conv_kernel: Tuple[int, int, int] = (1, 1, 1),
+    bottleneck: int = False,
+    activation: str = "relu",
+    use_bias: bool = False,
+    kernel_initializer: str = "he_normal",
+    bn_epsilon: float = 1e-5,
+    axis: int = 3,
+) -> Callable[[Tensor], Tensor]:
     """
     Residual unit from He et al. (2015)
 
@@ -188,7 +178,7 @@ def residual_block(
     stride = get_stride(resnet_unit_id, block_id)
     resnet_unit_label = resnet_unit_id + 2
 
-    def f(x):
+    def f(x: Tensor) -> Tensor:
         if bottleneck:
             y = Conv3D(
                 output_features,
@@ -296,7 +286,7 @@ def residual_block(
 
 
 def get_shortcut(
-    inputs,
+    inputs: Tensor,
     resnet_unit_label: int,
     block_id: int,
     features: int,
@@ -305,7 +295,7 @@ def get_shortcut(
     kernel_initializer: Union[str, Initializer] = "he_normal",
     bn_epsilon: float = 1e-5,
     axis: int = 3,
-):
+) -> Tensor:
     """
     Create shortcut. For none-bottleneck residual units, this is just the
     identity. Otherwise, the input is reshaped to match the output of the

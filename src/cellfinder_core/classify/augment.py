@@ -1,3 +1,5 @@
+from typing import List, Tuple
+
 import numpy as np
 from scipy.ndimage import rotate, zoom
 
@@ -11,7 +13,11 @@ from cellfinder_core.tools.tools import (
 all_axes = np.array((0, 1, 2))
 
 
-def augment(augmentation_parameters, image, scale_back=True):
+def augment(
+    augmentation_parameters: "AugmentationParameters",
+    image: np.ndarray,
+    scale_back: bool = True,
+) -> np.ndarray:
     pixel_sizes = image.shape
     min_pixel_size = min(pixel_sizes)
     relative_pixel_sizes = []
@@ -50,7 +56,11 @@ def augment(augmentation_parameters, image, scale_back=True):
     return image
 
 
-def rescale_to_isotropic(image, relative_pixel_sizes, interpolation_order):
+def rescale_to_isotropic(
+    image: np.ndarray,
+    relative_pixel_sizes: List[float],
+    interpolation_order: int,
+) -> Tuple[np.ndarray, List[float]]:
     if not all_elements_equal(relative_pixel_sizes):
         min_pixel_size = min(relative_pixel_sizes)
         normalised_pixel_sizes = []
@@ -66,8 +76,11 @@ def rescale_to_isotropic(image, relative_pixel_sizes, interpolation_order):
 
 
 def rescale_to_original_size(
-    image, relative_pixel_sizes, normalised_pixel_sizes, interpolation_order
-):
+    image: np.ndarray,
+    relative_pixel_sizes: List[float],
+    normalised_pixel_sizes: List[float],
+    interpolation_order: int,
+) -> np.ndarray:
     if not all_elements_equal(relative_pixel_sizes):
         inverse_pixel_sizes = []
         for pixel_size in normalised_pixel_sizes:
@@ -77,13 +90,17 @@ def rescale_to_original_size(
     return image
 
 
-def flip_image(image, axes_to_flip):
+def flip_image(image: np.ndarray, axes_to_flip: List[int]) -> np.ndarray:
     for axis in axes_to_flip:
         image = np.flip(image, axis)
     return image
 
 
-def translate_image(image, translate_axes, random_translate_multipliers):
+def translate_image(
+    image: np.ndarray,
+    translate_axes: List[int],
+    random_translate_multipliers: List[float],
+) -> np.ndarray:
     pixel_shifts = []
     for idx, axis in enumerate(translate_axes):
         pixel_shifts.append(
@@ -94,7 +111,9 @@ def translate_image(image, translate_axes, random_translate_multipliers):
     return image
 
 
-def rotate_image(image, rotation_angles):
+def rotate_image(
+    image: np.ndarray, rotation_angles: List[float]
+) -> np.ndarray:
     for axis, angle in enumerate(rotation_angles):
         if angle != 0:
             rotate_axes = all_axes[all_axes != axis]
@@ -118,11 +137,11 @@ class AugmentationParameters:
     # precomputed, so both channels are treated identically
     def __init__(
         self,
-        flip_axis,
-        translate,
-        rotate_max_axes,
-        interpolation_order,
-        augment_likelihood,
+        flip_axis: Tuple[int, int, int],
+        translate: Tuple[float, float, float],
+        rotate_max_axes: Tuple[float, float, float],
+        interpolation_order: int,
+        augment_likelihood: float,
     ):
         # this is a clumsy way of passing parameters to the augment function
         self.flip_axis = flip_axis
@@ -132,10 +151,10 @@ class AugmentationParameters:
 
         self.augment_likelihood = augment_likelihood
 
-        self.axes_to_flip = None
-        self.translate_axes = None
-        self.random_translate_multipliers = None
-        self.rotation_angles = None
+        self.axes_to_flip: List[int] = []
+        self.translate_axes: List[int] = []
+        self.random_translate_multipliers: List[float] = []
+        self.rotation_angles: List[float] = []
 
         if flip_axis:
             self.get_flip_parameters(flip_axis)
@@ -144,14 +163,16 @@ class AugmentationParameters:
         if rotate_max_axes:
             self.get_rotation_parameters(rotate_max_axes)
 
-    def get_flip_parameters(self, flip_axis):
+    def get_flip_parameters(self, flip_axis: Tuple[int, int, int]) -> None:
         self.axes_to_flip = []
         for axis in all_axes:
             if axis in flip_axis:
                 if random_bool(likelihood=self.augment_likelihood):
                     self.axes_to_flip.append(axis)
 
-    def get_translation_parameters(self, translate):
+    def get_translation_parameters(
+        self, translate: Tuple[float, float, float]
+    ) -> None:
         self.translate_axes = []
         self.random_translate_multipliers = []
         for axis, translate_mag in enumerate(translate):
@@ -162,7 +183,9 @@ class AugmentationParameters:
                         random_sign() * random_probability() * translate_mag
                     )
 
-    def get_rotation_parameters(self, rotate_max_axes):
+    def get_rotation_parameters(
+        self, rotate_max_axes: Tuple[float, float, float]
+    ) -> None:
         self.rotation_angles = []
         for max_rotation in rotate_max_axes:
             if random_bool(likelihood=self.augment_likelihood):
