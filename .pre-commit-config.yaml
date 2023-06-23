@@ -23,9 +23,10 @@ repos:
       rev: v1.3.0
       hooks:
           - id: mypy
+            args: [--config-file, pyproject.toml]
             additional_dependencies:
                 - types-setuptools
                 - types-requests
+                - types-tqdm
                 - dask
                 - numpy
-                - numba

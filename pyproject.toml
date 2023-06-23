@@ -107,7 +107,22 @@ fix = true
 known-first-party = ["cellfinder_core"]
 
 [tool.mypy]
-python_version = "3.8"
+
+[[tool.mypy.overrides]]
+module = [
+    "fancylog.*",
+    "imlib.*",
+    "natsort.*",
+    "numba.*",
+    "tensorflow.*",
+    "tifffile.*",
+    "pyinstrument.*",
+    "pytest.*",
+    "scipy.*",
+    "skimage.*",
+    "sklearn.*",
+]
+ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
 module = [
