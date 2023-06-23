@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from imlib.general.exceptions import CommandLineInputError
+from brainglobe_utils.general.exceptions import CommandLineInputError
 
 
 def get_subdirectories(directory, names_only=False):

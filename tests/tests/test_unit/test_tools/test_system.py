@@ -3,8 +3,8 @@ from math import isclose
 from pathlib import Path
 
 import pytest
-from imlib.general.exceptions import CommandLineInputError
-from imlib.general.system import ensure_directory_exists
+from brainglobe_utils.general.exceptions import CommandLineInputError
+from brainglobe_utils.general.system import ensure_directory_exists
 
 import cellfinder.tools.system as system
 

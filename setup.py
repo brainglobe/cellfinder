@@ -12,7 +12,7 @@ requirements = [
     "configobj",
     "fancylog>=0.0.7",
     "imio",
-    "imlib>=0.0.26",
+    "brainglobe-utils",
     "multiprocessing-logging>=0.3.4",
     "natsort",
     "numpy",

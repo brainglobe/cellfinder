@@ -2,8 +2,8 @@ import pathlib
 import sys
 
 import pytest
+from brainglobe_utils.general.config import get_config_obj
 from cellfinder_core.download.cli import main as cellfinder_download
-from imlib.general.config import get_config_obj
 
 test_data_dir = pathlib.Path(__file__) / ".." / ".." / "data"
 data_dir = test_data_dir / "brain"

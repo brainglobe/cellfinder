@@ -14,9 +14,9 @@ from datetime import datetime
 from math import floor
 
 import numpy as np
-from imlib.cells.cells import group_cells_by_z
-from imlib.general.numerical import is_even
-from imlib.general.system import get_num_processes
+from brainglobe_utils.cells.cells import group_cells_by_z
+from brainglobe_utils.general.numerical import is_even
+from brainglobe_utils.general.system import get_num_processes
 from numpy.linalg.linalg import LinAlgError
 from skimage import transform
 from tifffile import tifffile

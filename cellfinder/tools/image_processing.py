@@ -1,5 +1,5 @@
 import numpy as np
-from imlib.general.numerical import is_even
+from brainglobe_utils.general.numerical import is_even
 
 
 def crop_center_2d(img, crop_x=None, crop_y=None):

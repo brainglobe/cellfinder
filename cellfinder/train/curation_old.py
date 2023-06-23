@@ -3,11 +3,14 @@ from pathlib import Path
 
 import napari
 import numpy as np
-from imlib.cells.cells import Cell
-from imlib.general.list import unique_elements_lists
-from imlib.general.system import ensure_directory_exists, get_sorted_file_paths
-from imlib.IO.cells import cells_xml_to_df, get_cells, save_cells
-from imlib.IO.yaml import save_yaml
+from brainglobe_utils.cells.cells import Cell
+from brainglobe_utils.general.list import unique_elements_lists
+from brainglobe_utils.general.system import (
+    ensure_directory_exists,
+    get_sorted_file_paths,
+)
+from brainglobe_utils.IO.cells import cells_xml_to_df, get_cells, save_cells
+from brainglobe_utils.IO.yaml import save_yaml
 from napari.utils.io import magic_imread
 from qtpy.QtWidgets import QApplication
 
