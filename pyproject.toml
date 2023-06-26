@@ -22,7 +22,7 @@ requires-python = ">=3.8"
 dependencies = [
     "brainglobe-napari-io",
     "cellfinder-core>=0.3",
-    "imlib",
+    "brainglobe-utils",
     "magicgui",
     "napari",
     "napari-ndtiffs",

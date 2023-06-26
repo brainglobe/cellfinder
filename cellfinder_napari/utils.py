@@ -3,7 +3,7 @@ from typing import Callable, List, Optional, Tuple
 import napari
 import numpy as np
 import pandas as pd
-from imlib.cells.cells import Cell
+from brainglobe_utils.cells.cells import Cell
 from pkg_resources import resource_filename
 from qtpy.QtWidgets import (
     QComboBox,

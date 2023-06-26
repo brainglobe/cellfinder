@@ -1,5 +1,5 @@
 import pytest
-from imlib.cells.cells import Cell
+from brainglobe_utils.cells.cells import Cell
 from qtpy.QtWidgets import QGridLayout
 
 from ..utils import add_button, add_combobox, add_layers, html_label_widget

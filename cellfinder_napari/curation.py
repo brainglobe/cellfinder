@@ -5,8 +5,8 @@ import napari
 import numpy as np
 import tifffile
 from brainglobe_napari_io.cellfinder.utils import convert_layer_to_cells
-from imlib.cells.cells import Cell
-from imlib.IO.yaml import save_yaml
+from brainglobe_utils.cells.cells import Cell
+from brainglobe_utils.IO.yaml import save_yaml
 from magicgui.widgets import ProgressBar
 from napari.qt.threading import thread_worker
 from napari.utils.notifications import show_info
