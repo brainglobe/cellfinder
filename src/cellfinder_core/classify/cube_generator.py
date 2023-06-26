@@ -4,8 +4,8 @@ from typing import Dict, List, Optional, Tuple, Union
 
 import numpy as np
 import tensorflow as tf
-from imlib.cells.cells import Cell, group_cells_by_z
-from imlib.general.numerical import is_even
+from brainglobe_utils.cells.cells import Cell, group_cells_by_z
+from brainglobe_utils.general.numerical import is_even
 from scipy.ndimage import zoom
 from skimage.io import imread
 from tensorflow.keras.utils import Sequence

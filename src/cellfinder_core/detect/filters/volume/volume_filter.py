@@ -5,7 +5,7 @@ from threading import Lock
 from typing import Any, Callable, List, Optional, Tuple
 
 import numpy as np
-from imlib.cells.cells import Cell
+from brainglobe_utils.cells.cells import Cell
 from tifffile import tifffile
 from tqdm import tqdm
 

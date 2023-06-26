@@ -6,7 +6,7 @@ import os
 from typing import Callable, List, Optional, Tuple
 
 import numpy as np
-from imlib.general.logging import suppress_specific_logs
+from brainglobe_utils.general.logging import suppress_specific_logs
 
 from cellfinder_core import logger
 from cellfinder_core.download.models import model_type

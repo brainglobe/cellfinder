@@ -20,8 +20,8 @@ from threading import Lock
 from typing import Callable, List, Optional, Sequence, Tuple, TypeVar
 
 import numpy as np
-from imlib.cells.cells import Cell
-from imlib.general.system import get_num_processes
+from brainglobe_utils.cells.cells import Cell
+from brainglobe_utils.general.system import get_num_processes
 
 from cellfinder_core import logger, types
 from cellfinder_core.detect.filters.plane import TileProcessor

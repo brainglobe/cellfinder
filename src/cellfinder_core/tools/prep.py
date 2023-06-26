@@ -7,8 +7,8 @@ import os
 from pathlib import Path
 from typing import Optional
 
-from imlib.general.config import get_config_obj
-from imlib.general.system import get_num_processes
+from brainglobe_utils.general.config import get_config_obj
+from brainglobe_utils.general.system import get_num_processes
 
 import cellfinder_core.tools.tf as tf_tools
 from cellfinder_core import logger

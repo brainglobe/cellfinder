@@ -8,7 +8,7 @@
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/python/black)
 [![Imports: isort](https://img.shields.io/badge/%20imports-isort-%231674b1?style=flat&labelColor=ef8336)](https://pycqa.github.io/isort/)
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
-[![Contributions](https://img.shields.io/badge/Contributions-Welcome-brightgreen.svg)](https://docs.brainglobe.info/cellfinder/contributing)
+[![Contributions](https://img.shields.io/badge/Contributions-Welcome-brightgreen.svg)](https://brainglobe.info/developers/index.html)
 [![Twitter](https://img.shields.io/twitter/follow/brain_globe?style=social)](https://twitter.com/brain_globe)
 
 # cellfinder-core
@@ -76,7 +76,7 @@ detected_cells = cellfinder_run(signal_array,background_array,voxel_sizes)
 ```
 
 The output is a list of
-[imlib Cell objects](https://github.com/adamltyson/imlib/blob/51ec5a8053e738776ceaa8d44e531b3c4b0e29d8/imlib/cells/cells.py#L15).
+[brainglobe-utils Cell objects](https://github.com/brainglobe/brainglobe-utils/blob/044a735049c1323466d277f9df1c3abad8b2bb8d/brainglobe_utils/cells/cells.py#L19)
 Each `Cell` has a centroid coordinate, and a type:
 
 ```python
@@ -88,7 +88,7 @@ Cell type 2 is a "real" cell, and Cell type 1 is a "rejected" object (i.e.
 not classified as a cell):
 
 ```python
-from imlib.cells.cells import Cell
+from brainglobe_utils.cells.cells import Cell
 print(Cell.CELL)
 # 2
 
@@ -98,15 +98,15 @@ print(Cell.NO_CELL)
 
 #### Saving the results
 If you want to save the detected cells for use in other BrainGlobe software (e.g. the
-[cellfinder napari plugin](https://docs.brainglobe.info/cellfinder-napari/introduction)),
+[cellfinder napari plugin](https://brainglobe.info/documentation/cellfinder/user-guide/napari-plugin/index.html)),
 you can save in the cellfinder XML standard:
 ```python
-from imlib.IO.cells import save_cells
+from brainglobe_utils.IO.cells import save_cells
 save_cells(detected_cells, "/path/to/cells.xml")
 ```
 You can load these back with:
 ```python
-from imlib.IO.cells import get_cells
+from brainglobe_utils.IO.cells import get_cells
 cells = get_cells("/path/to/cells.xml")
 ```
 
@@ -210,7 +210,8 @@ if len(cell_candidates) > 0: # Don't run if there's nothing to classify
 The training data needed are matched pairs (signal & background) of small
 (usually 50 x 50 x 100um) images centered on the coordinate of candidate cells.
 These can be generated however you like, but I recommend using the
-[Napari plugin](https://docs.brainglobe.info/cellfinder-napari/user-guide/training-data-generation).
+[Napari plugin](https://brainglobe.
+info/documentation/cellfinder/user-guide/napari-plugin/training-data-generation.html).
 
 `cellfinder-core` comes with a 50-layer ResNet trained on ~100,000 data points
 from serial two-photon microscopy images of mouse brains
@@ -296,5 +297,5 @@ If you find this plugin useful, and use it in your research, please cite the pap
 [https://doi.org/10.1371/journal.pcbi.1009074](https://doi.org/10.1371/journal.pcbi.1009074)
 
 **If you use this, or any other tools in the brainglobe suite, please
- [let us know](mailto:code@adamltyson.com?subject=cellfinder-core), and
+ [let us know](mailto:hello@brainglobe.info?subject=cellfinder-core), and
  we'd be happy to promote your paper/talk etc.**

@@ -1,10 +1,10 @@
 import os
 from math import isclose
 
-import imlib.IO.cells as cell_io
+import brainglobe_utils.IO.cells as cell_io
 import numpy as np
 import pytest
-from imlib.general.system import get_num_processes
+from brainglobe_utils.general.system import get_num_processes
 
 from cellfinder_core.main import main
 from cellfinder_core.tools.IO import read_with_dask

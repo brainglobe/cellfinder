@@ -2,8 +2,8 @@ import os
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
 import numpy as np
-from imlib.cells.cells import Cell
-from imlib.general.system import get_num_processes
+from brainglobe_utils.cells.cells import Cell
+from brainglobe_utils.general.system import get_num_processes
 from tensorflow import keras
 
 from cellfinder_core import logger, types

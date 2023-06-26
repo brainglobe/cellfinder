@@ -3,9 +3,9 @@ import os
 from typing import Tuple
 
 import numpy as np
+from brainglobe_utils.general.system import get_sorted_file_paths
 from dask import array as da
 from dask import delayed
-from imlib.general.system import get_sorted_file_paths
 from tifffile import TiffFile, imread
 
 

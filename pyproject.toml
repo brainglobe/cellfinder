@@ -20,7 +20,7 @@ requires-python = ">=3.8"
 dependencies = [
     "dask[array]",
     "fancylog>=0.0.7",
-    "imlib>=0.0.26",
+    "brainglobe-utils",
     "natsort",
     "numba",
     "numpy",
@@ -111,7 +111,7 @@ known-first-party = ["cellfinder_core"]
 [[tool.mypy.overrides]]
 module = [
     "fancylog.*",
-    "imlib.*",
+    "brainglobe_utils.*",
     "natsort.*",
     "numba.*",
     "tensorflow.*",

@@ -2,7 +2,7 @@ from os import listdir
 from os.path import isfile, join
 
 import natsort
-from imlib.cells.cells import Cell, UntypedCell
+from brainglobe_utils.cells.cells import Cell, UntypedCell
 
 
 class TiffList(object):
