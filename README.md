@@ -51,14 +51,16 @@ N.B. To speed up cellfinder, you need CUDA & cuDNN installed. Instructions
 [here](https://brainglobe.info/documentation/general/gpu.html).
 
 #### Conda Install
-`cellfinder-core` is available on `conda-forge`, however `tensorflow`, one of it's core dependencies, is not.
-As a result; you _must_ manually install `tensorflow` into your environment - whether you do this before or after `conda install`ing doesn't matter.
-Once you are ready, install `cellfinder-core` into the desired environment via conda;
+Linux and MacOS users can also install `cellfinder-core` from `conda-forge`, by running
 ```sh
 conda install -c conda-forge cellfinder-core
 ```
 
-Please bear in mind that running the `conda install` command above will exit without failing even if `tensorflow` is not present; however `tensorflow` will not be installed as part of this process, and thus `cellfinder-core` will not be usable.
+Windows users can also use the command above to install `cellfinder-core`, however `tensorflow` (one of `cellfinder-core`'s core dependencies) is not available so will not be included.
+Consequentially, `cellfinder-core` will be usable - you will get `PackageNotFound` errors when attempting to import.
+To rectify this, Windows users _must_ [manually install `tensorflow`](#manual-tensorflow-installations) (and ensure their Python interpreter can see this install) for `cellfinder-core` to work.
+Please refer to the [`tensorflow` install page](https://www.tensorflow.org/install) for further guidance.
+Whether `tensorflow` is installed before or after `conda install`ing `cellfinder-core` shouldn't matter, so long as `tensorflow` is visible to the Python interpreter.
 
 ### Usage
 Before using cellfinder-core, it may be useful to take a look at the
