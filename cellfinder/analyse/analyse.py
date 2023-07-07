@@ -15,8 +15,8 @@ import numpy as np
 import pandas as pd
 import tifffile
 from bg_atlasapi import BrainGlobeAtlas
-from imlib.general.system import ensure_directory_exists
-from imlib.pandas.misc import sanitise_df
+from brainglobe_utils.general.system import ensure_directory_exists
+from brainglobe_utils.pandas.misc import sanitise_df
 
 from cellfinder.export.export import export_points
 

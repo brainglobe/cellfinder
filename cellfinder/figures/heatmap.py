@@ -5,9 +5,9 @@ import imio
 import numpy as np
 import pandas as pd
 import tifffile
-from imlib.general.system import ensure_directory_exists
-from imlib.image.masking import mask_image_threshold
-from imlib.image.scale import scale_and_convert_to_16_bits
+from brainglobe_utils.general.system import ensure_directory_exists
+from brainglobe_utils.image.masking import mask_image_threshold
+from brainglobe_utils.image.scale import scale_and_convert_to_16_bits
 from skimage.filters import gaussian
 
 

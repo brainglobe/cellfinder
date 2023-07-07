@@ -14,10 +14,10 @@ from datetime import datetime
 
 import bg_space as bgs
 import tifffile
+from brainglobe_utils.cells.cells import MissingCellsError
+from brainglobe_utils.general.system import ensure_directory_exists
+from brainglobe_utils.IO.cells import get_cells, save_cells
 from cellfinder_core.main import suppress_tf_logging, tf_suppress_log_messages
-from imlib.cells.cells import MissingCellsError
-from imlib.general.system import ensure_directory_exists
-from imlib.IO.cells import get_cells, save_cells
 
 BRAINREG_PRE_PROCESSING_ARGS = None
 

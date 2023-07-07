@@ -2,7 +2,7 @@ import os
 import sys
 from math import isclose
 
-import imlib.IO.cells as cell_io
+import brainglobe_utils.IO.cells as cell_io
 import pytest
 
 from cellfinder.main import main as cellfinder_run

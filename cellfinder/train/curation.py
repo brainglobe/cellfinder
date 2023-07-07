@@ -4,11 +4,11 @@ from pathlib import Path
 import napari
 import numpy as np
 from bg_atlasapi import BrainGlobeAtlas
+from brainglobe_utils.cells.cells import Cell
+from brainglobe_utils.general.system import get_sorted_file_paths
+from brainglobe_utils.IO.cells import save_cells
 from brainreg.paths import Paths as BrainregPaths
 from brainreg_segment.layout.gui_elements import add_button
-from imlib.cells.cells import Cell
-from imlib.general.system import get_sorted_file_paths
-from imlib.IO.cells import save_cells
 from napari.utils.io import magic_imread
 from napari_cellfinder.cellfinder import get_cell_arrays
 from qtpy import QtCore

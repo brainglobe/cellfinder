@@ -3,12 +3,12 @@ import os
 import imio
 import numpy as np
 import pytest
-from imlib.cells.cells import Cell
-from imlib.general.system import (
+from brainglobe_utils.cells.cells import Cell
+from brainglobe_utils.general.system import (
     delete_directory_contents,
     get_sorted_file_paths,
 )
-from imlib.IO.cells import get_cells
+from brainglobe_utils.IO.cells import get_cells
 from tifffile import tifffile
 
 import cellfinder.extract.extract_cubes as extract_cubes

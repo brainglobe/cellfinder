@@ -1,7 +1,7 @@
 import os
 
 import pytest
-from imlib.general.exceptions import CommandLineInputError
+from brainglobe_utils.general.exceptions import CommandLineInputError
 
 from cellfinder.tools import prep
 
