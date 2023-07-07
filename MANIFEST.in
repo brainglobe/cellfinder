@@ -1,1 +1,13 @@
-prune tests/data
+include README.md
+include LICENSE
+include pyproject.toml
+
+exclude *.yml
+exclude *.yaml
+exclude tox.ini
+exclude CHANGELOG.md
+
+graft src
+
+prune benchmarks
+prune tests

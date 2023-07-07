@@ -12,9 +12,16 @@ jobs:
   linting:
     runs-on: ubuntu-latest
     steps:
-      - uses: neuroinformatics-unit/actions/lint@v1.2.0
+      - uses: neuroinformatics-unit/actions/lint@v2
+
+  manifest:
+    name: Check Manifest
+    runs-on: ubuntu-latest
+    steps:
+      - uses: neuroinformatics-unit/actions/check_manifest@v2
 
   test:
+    needs: [linting, manifest]
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -42,6 +49,7 @@ jobs:
   # Run cellfinder tests to make sure cellfinder is still compatible
   # with cellfinder-core
   test_cellfinder:
+    needs: [linting, manifest]
     name: Run cellfinder tests
     runs-on: ubuntu-latest
     steps:
