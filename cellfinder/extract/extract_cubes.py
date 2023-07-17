@@ -8,13 +8,14 @@ Charly Rousseau (https://github.com/crousseau).
 
 import logging
 import os
-from collections import deque
+from collections import defaultdict, deque
 from concurrent.futures import ProcessPoolExecutor
 from datetime import datetime
 from math import floor
 
 import numpy as np
-from brainglobe_utils.cells.cells import group_cells_by_z
+
+# from brainglobe_utils.cells.cells import group_cells_by_z
 from brainglobe_utils.general.numerical import is_even
 from brainglobe_utils.general.system import get_num_processes
 from numpy.linalg.linalg import LinAlgError
@@ -24,6 +25,21 @@ from tqdm import tqdm
 
 from cellfinder.tools import image_processing as img_tools
 from cellfinder.tools import system
+
+
+def group_cells_by_z(cells):
+    """
+    For a list of Cells return a dict of lists of cells, grouped by plane.
+
+    :param list cells: list of cells from cellfinder.cells.cells.Cell
+    :return:  default
+    dict, with each key being a plane (e.g. 1280) and each entry being a list
+    of Cells
+    """
+    cells_groups = defaultdict(list)
+    for cell in cells:
+        cells_groups[cell.z].append(cell)
+    return cells_groups  # NOTE: no cast to dict
 
 
 class StackSizeError(Exception):
