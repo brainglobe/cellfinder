@@ -88,7 +88,7 @@ def main(
             f"{signal_array.dtype}"
         )
     n_processes = get_num_processes(min_free_cpu_cores=n_free_cpus)
-    n_ball_procs = n_processes - 1
+    n_ball_procs = max(n_processes - 1, 1)
     start_time = datetime.now()
 
     (

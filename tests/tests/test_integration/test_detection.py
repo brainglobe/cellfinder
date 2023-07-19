@@ -44,6 +44,13 @@ def background_array():
 
 # FIXME: This isn't a very good example
 @pytest.mark.slow
+@pytest.mark.parametrize(
+    "n_free_cpus",
+    [
+        pytest.lazy_fixture("no_free_cpus"),
+        pytest.lazy_fixture("run_on_one_cpu_only"),
+    ],
+)
 def test_detection_full(signal_array, background_array, n_free_cpus):
     cells_test = main(
         signal_array,
@@ -72,10 +79,10 @@ def test_detection_full(signal_array, background_array, n_free_cpus):
 
 
 def test_detection_small_planes(
-    signal_array, background_array, n_free_cpus, mocker
+    signal_array, background_array, no_free_cpus, mocker
 ):
     # Check that processing works when number of planes < number of processes
-    nproc = get_num_processes(n_free_cpus)
+    nproc = get_num_processes(no_free_cpus)
     n_planes = 2
 
     # Don't want to bother classifying in this test, so mock classifcation
@@ -92,11 +99,11 @@ def test_detection_small_planes(
         background_array[0:n_planes],
         voxel_sizes,
         ball_z_size=5,
-        n_free_cpus=n_free_cpus,
+        n_free_cpus=no_free_cpus,
     )
 
 
-def test_callbacks(signal_array, background_array, n_free_cpus):
+def test_callbacks(signal_array, background_array, no_free_cpus):
     # 20 is minimum number of planes needed to find > 0 cells
     signal_array = signal_array[0:20]
     background_array = background_array[0:20]
@@ -121,7 +128,7 @@ def test_callbacks(signal_array, background_array, n_free_cpus):
         detect_callback=detect_callback,
         classify_callback=classify_callback,
         detect_finished_callback=detect_finished_callback,
-        n_free_cpus=n_free_cpus,
+        n_free_cpus=no_free_cpus,
     )
 
     np.testing.assert_equal(planes_done, np.arange(len(signal_array)))
@@ -139,13 +146,13 @@ def test_floating_point_error(signal_array, background_array):
         main(signal_array, background_array, voxel_sizes)
 
 
-def test_synthetic_data(synthetic_bright_spots, n_free_cpus):
+def test_synthetic_data(synthetic_bright_spots, no_free_cpus):
     signal_array, background_array = synthetic_bright_spots
     detected = main(
         signal_array,
         background_array,
         voxel_sizes,
-        n_free_cpus=n_free_cpus,
+        n_free_cpus=no_free_cpus,
     )
     assert len(detected) == 8
 
