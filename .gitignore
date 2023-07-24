@@ -124,3 +124,9 @@ pip-wheel-metadata/
 mprofile*.dat
 
 *.DS_Store
+
+# asv
+.asv
+benchmarks/results
+benchmarks/html
+benchmarks/env

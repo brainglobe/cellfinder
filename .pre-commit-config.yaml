@@ -24,6 +24,7 @@ repos:
       hooks:
           - id: mypy
             args: [--config-file, pyproject.toml]
+            exclude: benchmarks/benchmarks/tools/IO.py
             additional_dependencies:
                 - types-setuptools
                 - types-requests
