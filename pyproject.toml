@@ -35,10 +35,10 @@ dependencies = [
 dynamic = ['version']
 
 [project.urls]
-Homepage = "https://brainglobe.info/cellfinder"
+Homepage = "https://brainglobe.info"
 "Source Code" = "https://github.com/brainglobe/cellfinder-core"
 "Bug Tracker" = "https://github.com/brainglobe/cellfinder-core/issues"
-Documentation = "https://docs.brainglobe.info/cellfinder"
+Documentation = "https://brainglobe.info/documentation/cellfinder/index.html"
 
 [project.optional-dependencies]
 dev = [
