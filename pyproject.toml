@@ -68,11 +68,15 @@ documentation = "https://docs.brainglobe.info/cellfinder"
 
 [build-system]
 requires = ["setuptools>=45", "wheel", "setuptools_scm[toml]>=6.2"]
+build-backend = "setuptools.build_meta"
 
 [tool.black]
 target-version = ['py38', 'py39', 'py310']
 skip-string-normalization = false
 line-length = 79
+
+[tool.check-manifest]
+ignore = ["*.yaml"]
 
 [tool.ruff]
 line-length = 79
