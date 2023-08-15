@@ -1,3 +1,7 @@
-__version__ = "0.7.0"
-__author__ = "Adam Tyson, Christian Niedworok, Charly Rousseau"
-__license__ = "BSD-3-Clause"
+from importlib.metadata import metadata
+
+__version__ = metadata("cellfinder")["version"]
+__author__ = metadata("cellfinder")["author-email"]
+__license__ = metadata("cellfinder")["license"]
+
+del metadata
