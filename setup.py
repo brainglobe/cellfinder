@@ -15,6 +15,7 @@ requirements = [
     "brainglobe-utils>=0.2.5",
     "multiprocessing-logging>=0.3.4",
     "natsort",
+    "napari",
     "numpy",
     "pandas",
     "packaging",
