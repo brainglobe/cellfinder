@@ -23,7 +23,6 @@ classifiers = [
 ]
 dependencies = [
     "brainreg",
-    "brainreg-segment",
     "cellfinder-core>=0.2.4",
     "configobj",
     "fancylog>=0.0.7",
@@ -31,7 +30,6 @@ dependencies = [
     "brainglobe-utils>=0.2.5",
     "multiprocessing-logging>=0.3.4",
     "natsort",
-    "napari[pyside2]",
     "numpy",
     "pandas",
     "packaging",
@@ -43,8 +41,6 @@ dynamic = ["version"]
 
 [project.scripts]
 cellfinder = "cellfinder.main:main"
-cellfinder_curate_new = "cellfinder.train.curation:main"
-cellfinder_curate = "cellfinder.train.curation_old:main"
 
 [project.optional-dependencies]
 dev = [
@@ -58,7 +54,7 @@ dev = [
     "flake8",
     "setuptools_scm",
 ]
-napari = ["brainglobe-napari-io", "cellfinder-napari"]
+napari = ["napari[pyside2]", "brainglobe-napari-io", "cellfinder-napari"]
 
 [project.urls]
 source = "https://github.com/brainglobe/cellfinder"
