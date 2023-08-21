@@ -6,8 +6,8 @@ license = { file = "LICENSE" }
 requires-python = ">=3.8"
 authors = [
     { name = "Adam Tyson", email = "code@adamltyson.com" },
-    { name = "Christian Niedworok", email = "code@adamltyson.com" },
-    { name = "Charly Rousseau", email = "code@adamltyson.com" },
+    { name = "Christian Niedworok" },
+    { name = "Charly Rousseau" },
 ]
 classifiers = [
     "Development Status :: 3 - Alpha",
@@ -49,9 +49,7 @@ dev = [
     "pytest",
     "gitpython",
     "coverage>=5.0.3",
-    "bump2version",
     "pre-commit",
-    "flake8",
     "setuptools_scm",
 ]
 napari = ["napari[pyside2]", "brainglobe-napari-io", "cellfinder-napari"]
@@ -59,9 +57,8 @@ napari = ["napari[pyside2]", "brainglobe-napari-io", "cellfinder-napari"]
 [project.urls]
 source = "https://github.com/brainglobe/cellfinder"
 bug_tracker = "https://github.com/brainglobe/cellfinder/issues"
-homepage = "https://brainglobe.info/cellfinder"
-documentation = "https://docs.brainglobe.info/cellfinder"
-
+homepage = "https://brainglobe.info"
+documentation = "https://brainglobe.info/documentation/cellfinder"
 [build-system]
 requires = ["setuptools>=45", "wheel", "setuptools_scm[toml]>=6.2"]
 build-backend = "setuptools.build_meta"
