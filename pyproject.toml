@@ -1,10 +1,88 @@
+[project]
+name = "cellfinder"
+description = "Automated 3D cell detection and registration of whole-brain images"
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.8"
+authors = [
+    { name = "Adam Tyson", email = "code@adamltyson.com" },
+    { name = "Christian Niedworok" },
+    { name = "Charly Rousseau" },
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: Microsoft :: Windows :: Windows 10",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Topic :: Scientific/Engineering :: Image Recognition",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+]
+dependencies = [
+    "brainreg",
+    "cellfinder-core>=0.2.4",
+    "configobj",
+    "fancylog>=0.0.7",
+    "imio",
+    "brainglobe-utils>=0.2.5",
+    "multiprocessing-logging>=0.3.4",
+    "natsort",
+    "numpy",
+    "pandas",
+    "packaging",
+    "scikit-image",
+    "tifffile",
+    "tqdm",
+]
+dynamic = ["version"]
+
+[project.scripts]
+cellfinder = "cellfinder.main:main"
+
+[project.optional-dependencies]
+dev = [
+    "black",
+    "pytest-cov",
+    "pytest",
+    "gitpython",
+    "coverage>=5.0.3",
+    "pre-commit",
+    "setuptools_scm",
+]
+napari = ["napari[pyside2]", "brainglobe-napari-io", "cellfinder-napari"]
+
+[project.urls]
+source = "https://github.com/brainglobe/cellfinder"
+bug_tracker = "https://github.com/brainglobe/cellfinder/issues"
+homepage = "https://brainglobe.info"
+documentation = "https://brainglobe.info/documentation/cellfinder"
+[build-system]
+requires = ["setuptools>=45", "wheel", "setuptools_scm[toml]>=6.2"]
+build-backend = "setuptools.build_meta"
+
 [tool.black]
 target-version = ['py38', 'py39', 'py310']
 skip-string-normalization = false
 line-length = 79
 
+[tool.check-manifest]
+ignore = ["*.yaml"]
+
 [tool.ruff]
 line-length = 79
-exclude = ["__init__.py","build",".eggs"]
+exclude = ["__init__.py", "build", ".eggs"]
 select = ["I", "E", "F"]
 fix = true
+
+[tool.setuptools]
+include-package-data = true
+zip-safe = false
+
+[tool.setuptools.packages.find]
+include = ["cellfinder"]
+exclude = ["tests", "resources"]
+
+[tool.setuptools_scm]
