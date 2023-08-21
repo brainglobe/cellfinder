@@ -1,21 +1,35 @@
-# This workflows will upload a Python Package using Twine when a release is created
-# For more information see: https://help.github.com/en/actions/language-and-framework-guides/using-python-with-github-actions#publishing-to-package-registries
+name: Test (and Deploy on tag)
 
-name: tests
+on:
+  # Only run on pushes to main, or when version tags are pushed
+  push:
+    branches:
+      - 'main'
+    tags:
+      - 'v**'
+  # Run on all pull-requests
+  pull_request:
+  # Allow workflow dispatch from GitHub
+  workflow_dispatch:
 
-on: [push, pull_request]
+concurrency:
+  # Cancel this workflow if it is running,
+  # and then changes are applied on top of the HEAD of the branch,
+  # triggering another run of the workflow
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   linting:
     runs-on: ubuntu-latest
     steps:
-      - uses: brainglobe/actions/lint@v1
+      - uses: neuroinformatics-unit/actions/lint@v2
 
   manifest:
     name: Check Manifest
     runs-on: ubuntu-latest
     steps:
-      - uses: brainglobe/actions/check_manifest@v1
+      - uses: neuroinformatics-unit/actions/check_manifest@v2
 
   test:
     needs: [linting, manifest]
@@ -38,33 +52,30 @@ jobs:
       # Setup pyqt libraries
       - uses: tlambert03/setup-qt-libs@v1
       # Run tests
-      - uses:  neuroinformatics-unit/actions/test@v1
+      - uses: neuroinformatics-unit/actions/test@v2
         with:
           python-version: ${{ matrix.python-version }}
           use-xvfb: true
 
-  deploy:
-    # this will run when you have tagged a commit, starting with "v*"
-    # and requires that you have put your twine API key in your
-    # github secrets (see readme for details)
+  build_sdist_wheels:
+    name: Build source distribution
     needs: [test]
+    if: github.event_name == 'push' && github.ref_type == 'tag'
     runs-on: ubuntu-latest
-    if: contains(github.ref, 'tags')
     steps:
-      - uses: actions/checkout@v2
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: "3.x"
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -U setuptools setuptools_scm wheel twine
-      - name: Build and publish
-        env:
-          TWINE_USERNAME: __token__
-          TWINE_PASSWORD: ${{ secrets.TWINE_API_KEY }}
-        run: |
-          git tag
-          python setup.py sdist bdist_wheel
-          twine upload dist/*
+    - uses: neuroinformatics-unit/actions/build_sdist_wheels@v2
+
+
+  upload_all:
+    name: Publish build distributions
+    needs: [build_sdist_wheels]
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/download-artifact@v3
+      with:
+        name: artifact
+        path: dist
+    - uses: pypa/gh-action-pypi-publish@v1.5.0
+      with:
+        user: __token__
+        password: ${{ secrets.TWINE_API_KEY }}
