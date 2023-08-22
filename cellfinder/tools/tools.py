@@ -80,9 +80,9 @@ def get_number_of_bins_nd(array_size, binning):
     :param binning: How many pixels in each edge of nD equal sized bins
     :return:
     """
-    if type(array_size) is tuple:
+    if isinstance(array_size, tuple):
         bins = [int(size / binning) for size in array_size]
-    elif type(array_size) is dict:
+    elif isinstance(array_size, dict):
         bins = [int(size / binning) for size in array_size.values()]
     else:
         raise NotImplementedError(
