@@ -7,7 +7,7 @@ exclude *.yaml
 exclude tox.ini
 exclude CHANGELOG.md
 
-graft src
+graft cellfinder
 
 prune benchmarks
 prune tests
