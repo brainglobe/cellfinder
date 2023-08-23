@@ -1,9 +1,9 @@
 from importlib.metadata import PackageNotFoundError, version
 
 try:
-    __version__ = version("cellfinder-core")
+    __version__ = version("cellfinder")
 except PackageNotFoundError as e:
-    raise PackageNotFoundError("cellfinder-core package not installed") from e
+    raise PackageNotFoundError("cellfinder package not installed") from e
 
 # If tensorflow is not present, tools cannot be used.
 # Throw an error in this case to prevent invocation of functions.

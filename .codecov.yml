@@ -9,7 +9,7 @@ comment: false
 flags:
   numba:
     paths:
-      - src/cellfinder_core/detect/filters/plane/tile_walker.py
-      - src/cellfinder_core/detect/filters/volume/ball_filter.py
-      - src/cellfinder_core/detect/filters/volume/structure_detection.py
+      - cellfinder/core/detect/filters/plane/tile_walker.py
+      - cellfinder/core/detect/filters/volume/ball_filter.py
+      - cellfinder/core/detect/filters/volume/structure_detection.py
     carryforward: true

@@ -1,9 +1,9 @@
 [project]
-name = "cellfinder-core"
+name = "cellfinder"
 description = "Automated 3D cell detection in large microscopy images"
 readme = "README.md"
 authors = [
-    {name = "Adam Tyson, Christian Niedworok, Charly Rousseau", email = "code@adamltyson.com"},
+    { name = "Adam Tyson, Christian Niedworok, Charly Rousseau", email = "code@adamltyson.com" },
 ]
 classifiers = [
     "Development Status :: 3 - Alpha",
@@ -59,11 +59,7 @@ cellfinder_download = "cellfinder_core.download.cli:main"
 cellfinder_train = "cellfinder_core.train.train_yml:cli"
 
 [build-system]
-requires = [
-    "setuptools>=45",
-    "wheel",
-    "setuptools_scm[toml]>=6.2",
-]
+requires = ["setuptools>=45", "wheel", "setuptools_scm[toml]>=6.2"]
 build-backend = 'setuptools.build_meta'
 
 [tool.setuptools]
@@ -85,7 +81,7 @@ filterwarnings = [
     # https://github.com/tensorflow/tensorflow/commit/b23c5750c9f35a87872793eef7c56e74ec55d4a7
     "ignore:`np.bool8` is a deprecated alias for `np.bool_`",
     # See https://github.com/numba/numba/issues/8676
-    "ignore:.*:numba.core.errors.NumbaTypeSafetyWarning"
+    "ignore:.*:numba.core.errors.NumbaTypeSafetyWarning",
 ]
 markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
@@ -100,7 +96,7 @@ line-length = 79
 
 [tool.ruff]
 line-length = 79
-exclude = ["__init__.py","build",".eggs"]
+exclude = ["__init__.py", "build", ".eggs"]
 select = ["I", "E", "F"]
 fix = true
 
@@ -128,10 +124,7 @@ module = [
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
-module = [
-    "cellfinder_core.detect.*",
-    "cellfinder_core.classify.*",
-]
+module = ["cellfinder_core.detect.*", "cellfinder_core.classify.*"]
 disallow_untyped_defs = true
 disallow_incomplete_defs = true
 disallow_untyped_calls = true
