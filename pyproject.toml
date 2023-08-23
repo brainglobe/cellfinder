@@ -2,15 +2,18 @@
 name = "cellfinder"
 description = "Automated 3D cell detection in large microscopy images"
 readme = "README.md"
+license = { text = "BSD-3-Clause" }
 authors = [
     { name = "Adam Tyson, Christian Niedworok, Charly Rousseau", email = "code@adamltyson.com" },
 ]
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 4 - Beta",
+    "Framework :: napari",
     "Intended Audience :: Developers",
     "Intended Audience :: Science/Research",
     "Operating System :: OS Independent",
     "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
@@ -18,12 +21,19 @@ classifiers = [
 ]
 requires-python = ">=3.8"
 dependencies = [
+    "brainglobe-napari-io",
+    "brainglobe-utils",
     "dask[array]",
     "fancylog>=0.0.7",
-    "brainglobe-utils",
+    "magicgui",
+    "napari-ndtiffs",
+    "napari-plugin-engine >= 0.1.4",
+    "napari",
     "natsort",
     "numba",
     "numpy",
+    "pooch>=1",
+    "qtpy",
     "scikit-image",
     "scikit-learn",
     # See https://github.com/brainglobe/cellfinder-core/issues/103 for < 2.12.0 pin
@@ -32,27 +42,31 @@ dependencies = [
     "tifffile",
     "tqdm",
 ]
-dynamic = ['version']
+dynamic = ["version"]
 
 [project.urls]
-Homepage = "https://brainglobe.info"
+Homepage = "https://brainglobe.info/documentation/cellfinder/index.html"
 "Source Code" = "https://github.com/brainglobe/cellfinder-core"
 "Bug Tracker" = "https://github.com/brainglobe/cellfinder-core/issues"
 Documentation = "https://brainglobe.info/documentation/cellfinder/index.html"
+"User Support" = "https://forum.image.sc/tag/brainglobe"
 
 [project.optional-dependencies]
 dev = [
     "black",
-    "gitpython",
     "pre-commit",
     "pyinstrument",
-    "pytest",
     "pytest-cov",
     "pytest-lazy-fixture",
     "pytest-mock",
+    "pytest-qt",
     "pytest-timeout",
+    "pytest",
     "tox",
 ]
+
+[project.entry-points."napari-manifest"]
+cellfinder-napari = "cellfinder.napari:napari.yaml"
 
 [project.scripts]
 cellfinder_download = "cellfinder.core.download.cli:main"
@@ -62,48 +76,13 @@ cellfinder_train = "cellfinder.core.train.train_yml:cli"
 requires = ["setuptools>=45", "wheel", "setuptools_scm[toml]>=6.2"]
 build-backend = 'setuptools.build_meta'
 
-[tool.setuptools]
-include-package-data = true
-
-[tool.setuptools_scm]
-
-[tool.cibuildwheel]
-build = "cp38-* cp39-* cp310-*"
-
-[tool.cibuildwheel.macos]
-archs = ["x86_64", "arm64"]
-
-[tool.pytest.ini_options]
-addopts = "--cov=cellfinder --cov-report=xml"
-filterwarnings = [
-    "error",
-    # Raised by tensorflow; should be removed when tensorflow 2.12.0 is released. Fix is:
-    # https://github.com/tensorflow/tensorflow/commit/b23c5750c9f35a87872793eef7c56e74ec55d4a7
-    "ignore:`np.bool8` is a deprecated alias for `np.bool_`",
-    # See https://github.com/numba/numba/issues/8676
-    "ignore:.*:numba.core.errors.NumbaTypeSafetyWarning",
-]
-markers = [
-    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
-    "serial",
-]
-log_level = "WARNING"
-
 [tool.black]
 target-version = ['py38', 'py39', 'py310']
 skip-string-normalization = false
 line-length = 79
 
-[tool.ruff]
-line-length = 79
-exclude = ["__init__.py", "build", ".eggs"]
-select = ["I", "E", "F"]
-fix = true
-
-[tool.ruff.isort]
-known-first-party = ["cellfinder"]
-
-[tool.mypy]
+[tool.cibuildwheel.macos]
+archs = ["x86_64", "arm64"]
 
 [[tool.mypy.overrides]]
 module = [
@@ -120,11 +99,27 @@ module = [
     "skimage.*",
     "sklearn.*",
     "cellfinder.core.tools.prep.*",
+    "cellfinder.core.detect.*",
+    "cellfinder.core.classify.*",
 ]
 ignore_missing_imports = true
-
-[[tool.mypy.overrides]]
-module = ["cellfinder.core.detect.*", "cellfinder.core.classify.*"]
 disallow_untyped_defs = true
 disallow_incomplete_defs = true
 disallow_untyped_calls = true
+
+[tool.ruff]
+line-length = 79
+exclude = ["__init__.py", "build", ".eggs"]
+select = ["I", "E", "F"]
+fix = true
+
+[tool.ruff.isort]
+known-first-party = ["cellfinder"]
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools_scm]
+
+[tool.cibuildwheel]
+build = "cp38-* cp39-* cp310-*"
