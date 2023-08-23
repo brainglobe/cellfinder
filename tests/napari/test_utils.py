@@ -2,7 +2,12 @@ import pytest
 from brainglobe_utils.cells.cells import Cell
 from qtpy.QtWidgets import QGridLayout
 
-from ..utils import add_button, add_combobox, add_layers, html_label_widget
+from cellfinder.napari.utils import (
+    add_button,
+    add_combobox,
+    add_layers,
+    html_label_widget,
+)
 
 
 def test_add_layers(make_napari_viewer):
