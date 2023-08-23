@@ -6,9 +6,9 @@ import numpy as np
 import pytest
 from napari.layers import Image, Points
 
-from cellfinder_napari import sample_data
-from cellfinder_napari.curation import CurationWidget
-from cellfinder_napari.sample_data import load_sample
+from cellfinder.napari import sample_data
+from cellfinder.napari.curation import CurationWidget
+from cellfinder.napari.sample_data import load_sample
 
 
 @pytest.fixture
@@ -142,7 +142,7 @@ def test_check_image_data_wrong_shape(valid_curation_widget):
     Check curation widget shows expected user message if images don't have
     identical shape.
     """
-    with patch("cellfinder_napari.curation.show_info") as show_info:
+    with patch("cellfinder.napari.curation.show_info") as show_info:
         signal_layer_with_wrong_shape = napari.layers.Image(
             np.zeros(shape=(1, 1)), name="Wrong shape"
         )
@@ -161,7 +161,7 @@ def test_check_image_data_missing_signal(valid_curation_widget):
     Check curation widget shows expected user message if signal image is
     missing.
     """
-    with patch("cellfinder_napari.curation.show_info") as show_info:
+    with patch("cellfinder.napari.curation.show_info") as show_info:
         valid_curation_widget.signal_layer = None
         valid_curation_widget.check_image_data_for_extraction()
         show_info.assert_called_once_with(
@@ -179,7 +179,7 @@ def test_is_data_extractable(curation_widget, valid_curation_widget):
 def test_get_output_directory(valid_curation_widget):
     """Check get_output_directory returns expected value."""
     with patch(
-        "cellfinder_napari.curation.QFileDialog.getExistingDirectory"
+        "cellfinder.napari.curation.QFileDialog.getExistingDirectory"
     ) as get_directory:
         get_directory.return_value = ""
         valid_curation_widget.get_output_directory()

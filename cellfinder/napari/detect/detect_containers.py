@@ -4,8 +4,8 @@ from typing import Optional
 
 import numpy
 
-from cellfinder_napari.input_container import InputContainer
-from cellfinder_napari.utils import html_label_widget
+from cellfinder.napari.input_container import InputContainer
+from cellfinder.napari.utils import html_label_widget
 
 
 @dataclass

@@ -2,9 +2,7 @@
 name = "cellfinder-napari"
 description = "Efficient cell detection in large images"
 readme = "README.md"
-authors = [
-    {name = "Adam Tyson", email = "code@adamltyson.com"},
-]
+authors = [{ name = "Adam Tyson", email = "code@adamltyson.com" }]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Framework :: napari",
@@ -33,7 +31,7 @@ dependencies = [
     "scikit-image",
     "tifffile",
 ]
-license = {text = "BSD-3-Clause"}
+license = { text = "BSD-3-Clause" }
 dynamic = ['version']
 
 [project.urls]
@@ -44,32 +42,21 @@ Documentation = "https://docs.brainglobe.info/cellfinder-napari/"
 "User Support" = "https://forum.image.sc/tag/brainglobe"
 
 [project.optional-dependencies]
-dev = [
-    "black",
-    "gitpython",
-    "pre-commit",
-    "pytest",
-    "pytest-cov",
-    "pytest-qt",
-]
+dev = ["black", "gitpython", "pre-commit", "pytest", "pytest-cov", "pytest-qt"]
 
 [project.entry-points."napari.manifest"]
-cellfinder-napari = "cellfinder_napari:napari.yaml"
+cellfinder-napari = "cellfinder.napari:napari.yaml"
 
 
 [build-system]
-requires = [
-    "setuptools>=45",
-    "wheel",
-    "setuptools_scm[toml]>=6.2",
-]
+requires = ["setuptools>=45", "wheel", "setuptools_scm[toml]>=6.2"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
 include-package-data = true
 
 [tool.setuptools.packages.find]
-include = ["cellfinder_napari*"]
+include = ["cellfinder*"]
 
 [tool.setuptools_scm]
 
@@ -80,6 +67,6 @@ line-length = 79
 
 [tool.ruff]
 line-length = 79
-exclude = ["__init__.py","build",".eggs"]
+exclude = ["__init__.py", "build", ".eggs"]
 select = ["I", "E", "F"]
 fix = true

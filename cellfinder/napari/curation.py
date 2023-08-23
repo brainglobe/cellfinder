@@ -529,7 +529,7 @@ class CurationWidget(QWidget):
             Attributes used to update a progress bar. The keys can be any of
             the properties of `magicgui.widgets.ProgressBar`.
         """
-        from cellfinder_core.classify.cube_generator import (
+        from cellfinder.core.classify.cube_generator import (
             CubeGeneratorFromFile,
         )
 

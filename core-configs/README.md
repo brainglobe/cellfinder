@@ -77,7 +77,7 @@ so you can adjust the parameters in a GUI.
 
 #### To run the full pipeline (cell candidate detection and classification)
 ```python
-from cellfinder_core.main import main as cellfinder_run
+from cellfinder.core.main import main as cellfinder_run
 import tifffile
 
 signal_array = tifffile.imread("/path/to/signal_image.tif")
@@ -133,8 +133,8 @@ load a series of image files (e.g. a directory of 2D tiff files) as a Dask
 array. `cellfinder-core` can then be used in the same way as with a numpy array.
 
 ```python
-from cellfinder_core.main import main as cellfinder_run
-from cellfinder_core.tools.IO import read_with_dask
+from cellfinder.core.main import main as cellfinder_run
+from cellfinder.core.tools.IO import read_with_dask
 
 signal_array = read_with_dask("/path/to/signal_image_directory")
 background_array = read_with_dask("/path/to/background_image_directory")
@@ -149,9 +149,9 @@ detected_cells = cellfinder_run(signal_array,background_array,voxel_sizes)
 import tifffile
 from pathlib import Path
 
-from cellfinder_core.detect import detect
-from cellfinder_core.classify import classify
-from cellfinder_core.tools.prep import prep_classification
+from cellfinder.core.detect import detect
+from cellfinder.core.classify import classify
+from cellfinder.core.tools.prep import prep_classification
 
 signal_array = tifffile.imread("/path/to/signal_image.tif")
 background_array = tifffile.imread("/path/to/background_image.tif")
@@ -236,7 +236,7 @@ but it is possible through the Python API.
 
 ```python
 from pathlib import Path
-from cellfinder_core.train.train_yml import run as run_training
+from cellfinder.core.train.train_yml import run as run_training
 
 # list of training yml files
 yaml_files = [Path("/path/to/training_yml.yml)]

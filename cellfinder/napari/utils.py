@@ -15,7 +15,7 @@ from qtpy.QtWidgets import (
 )
 
 brainglobe_logo = resource_filename(
-    "cellfinder_napari", "images/brainglobe.png"
+    "cellfinder", "napari/images/brainglobe.png"
 )
 
 

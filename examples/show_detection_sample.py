@@ -9,7 +9,7 @@ This example:
 """
 import napari
 
-from cellfinder_napari.sample_data import load_sample
+from cellfinder.napari.sample_data import load_sample
 
 viewer = napari.Viewer()
 # Open plugin

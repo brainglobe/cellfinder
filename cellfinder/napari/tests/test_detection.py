@@ -3,15 +3,15 @@ from unittest.mock import patch
 import napari
 import pytest
 
-from cellfinder_napari.detect import detect_widget
-from cellfinder_napari.detect.detect_containers import (
+from cellfinder.napari.detect import detect_widget
+from cellfinder.napari.detect.detect_containers import (
     ClassificationInputs,
     DataInputs,
     DetectionInputs,
     MiscInputs,
 )
-from cellfinder_napari.detect.thread_worker import Worker
-from cellfinder_napari.sample_data import load_sample
+from cellfinder.napari.detect.thread_worker import Worker
+from cellfinder.napari.sample_data import load_sample
 
 
 @pytest.fixture
@@ -51,7 +51,7 @@ def test_run_detect(get_detect_widget, analyse_local):
     """
     Test backend is called
     """
-    with patch("cellfinder_napari.detect.detect.Worker") as worker:
+    with patch("cellfinder.napari.detect.detect.Worker") as worker:
         get_detect_widget.analyse_local.value = analyse_local
         get_detect_widget.call_button.clicked()
         assert worker.called
@@ -59,7 +59,7 @@ def test_run_detect(get_detect_widget, analyse_local):
 
 def test_run_detect_without_inputs():
     """ """
-    with patch("cellfinder_napari.detect.detect.show_info") as show_info:
+    with patch("cellfinder.napari.detect.detect.show_info") as show_info:
         widget = (
             detect_widget()
         )  # won't have image layers, so should notice and show info

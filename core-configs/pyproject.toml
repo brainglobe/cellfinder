@@ -55,8 +55,8 @@ dev = [
 ]
 
 [project.scripts]
-cellfinder_download = "cellfinder_core.download.cli:main"
-cellfinder_train = "cellfinder_core.train.train_yml:cli"
+cellfinder_download = "cellfinder.core.download.cli:main"
+cellfinder_train = "cellfinder.core.train.train_yml:cli"
 
 [build-system]
 requires = ["setuptools>=45", "wheel", "setuptools_scm[toml]>=6.2"]
@@ -74,7 +74,7 @@ build = "cp38-* cp39-* cp310-*"
 archs = ["x86_64", "arm64"]
 
 [tool.pytest.ini_options]
-addopts = "--cov=cellfinder_core --cov-report=xml"
+addopts = "--cov=cellfinder --cov-report=xml"
 filterwarnings = [
     "error",
     # Raised by tensorflow; should be removed when tensorflow 2.12.0 is released. Fix is:
@@ -101,7 +101,7 @@ select = ["I", "E", "F"]
 fix = true
 
 [tool.ruff.isort]
-known-first-party = ["cellfinder_core"]
+known-first-party = ["cellfinder"]
 
 [tool.mypy]
 
@@ -119,12 +119,12 @@ module = [
     "scipy.*",
     "skimage.*",
     "sklearn.*",
-    "cellfinder_core.tools.prep.*",
+    "cellfinder.core.tools.prep.*",
 ]
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
-module = ["cellfinder_core.detect.*", "cellfinder_core.classify.*"]
+module = ["cellfinder.core.detect.*", "cellfinder.core.classify.*"]
 disallow_untyped_defs = true
 disallow_incomplete_defs = true
 disallow_untyped_calls = true

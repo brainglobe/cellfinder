@@ -31,7 +31,7 @@ jobs:
         with:
           fail-on-error: true
           script: |
-            import cellfinder_core
+            import cellfinder.core
 
       - name: Uninstall tensorflow
         run: python -m pip uninstall -y tensorflow
@@ -42,7 +42,7 @@ jobs:
         with:
           fail-on-error: false
           script: |
-            import cellfinder_core
+            import cellfinder.core
 
       # exit 1 will force an actions exit with a failure reported
       - name: Flag error thrown by broken import
