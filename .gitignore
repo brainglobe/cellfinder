@@ -15,6 +15,7 @@ __pycache__/
 
 # Distribution / packaging
 .Python
+env/
 build/
 develop-eggs/
 dist/
@@ -53,6 +54,7 @@ coverage.xml
 *.cover
 .hypothesis/
 .pytest_cache/
+.napari_cache/
 
 # Translations
 *.mo
@@ -77,10 +79,13 @@ doc/build/
 _build/
 mkdocs.yml
 
+# MkDocs documentation
+/site/
+
 # PyBuilder
 target/
 
-# Jupyter Notebook
+# IPython Notebook
 .ipynb_checkpoints
 
 # pyenv
@@ -130,3 +135,11 @@ mprofile*.dat
 benchmarks/results
 benchmarks/html
 benchmarks/env
+
+# OS
+.DS_Store
+
+# written by setuptools_scm
+*/_version.py
+
+.idea/

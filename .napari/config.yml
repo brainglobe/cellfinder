@@ -1,0 +1,14 @@
+# Add labels from the EDAM Bioimaging ontology
+labels:
+  ontology: EDAM-BIOIMAGING:alpha06
+  terms:
+  - Image feature detection
+  - 3D image
+  - Image registration
+  - Multi-photon microscopy
+  - Light-sheet microscopy
+  - Image segmentation
+  - Image thresholding
+  - Image annotation
+  - Object classification
+  - Object feature extraction
