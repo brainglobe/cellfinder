@@ -10,8 +10,8 @@ from scipy.ndimage import zoom
 from skimage.io import imread
 from tensorflow.keras.utils import Sequence
 
-from cellfinder_core import types
-from cellfinder_core.classify.augment import AugmentationParameters, augment
+from cellfinder.core import types
+from cellfinder.core.classify.augment import AugmentationParameters, augment
 
 # TODO: rename, as now using dask arrays -
 #  actually should combine to one generator

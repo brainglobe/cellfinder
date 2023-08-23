@@ -3,11 +3,11 @@ from typing import Tuple
 
 import numpy as np
 
-from cellfinder_core.detect.filters.volume.ball_filter import BallFilter
-from cellfinder_core.detect.filters.volume.structure_detection import (
+from cellfinder.core.detect.filters.volume.ball_filter import BallFilter
+from cellfinder.core.detect.filters.volume.structure_detection import (
     CellDetector,
 )
-from cellfinder_core.tools.tools import get_max_possible_value
+from cellfinder.core.tools.tools import get_max_possible_value
 
 
 def get_ball_filter(

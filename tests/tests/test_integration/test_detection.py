@@ -6,8 +6,8 @@ import numpy as np
 import pytest
 from brainglobe_utils.general.system import get_num_processes
 
-from cellfinder_core.main import main
-from cellfinder_core.tools.IO import read_with_dask
+from cellfinder.core.main import main
+from cellfinder.core.tools.IO import read_with_dask
 
 data_dir = os.path.join(
     os.getcwd(), "tests", "data", "integration", "detection"
@@ -86,7 +86,7 @@ def test_detection_small_planes(
     n_planes = 2
 
     # Don't want to bother classifying in this test, so mock classifcation
-    mocker.patch("cellfinder_core.classify.classify.main")
+    mocker.patch("cellfinder.core.classify.classify.main")
 
     pytest.mark.skipif(
         nproc < n_planes,

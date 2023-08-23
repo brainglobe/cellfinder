@@ -2,9 +2,9 @@ from typing import List, Tuple
 
 import numpy as np
 
-from cellfinder_core import logger
-from cellfinder_core.detect.filters.volume.ball_filter import BallFilter
-from cellfinder_core.detect.filters.volume.structure_detection import (
+from cellfinder.core import logger
+from cellfinder.core.detect.filters.volume.ball_filter import BallFilter
+from cellfinder.core.detect.filters.volume.structure_detection import (
     CellDetector,
     get_structure_centre,
 )

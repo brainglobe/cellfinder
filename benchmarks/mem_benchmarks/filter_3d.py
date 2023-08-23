@@ -1,7 +1,7 @@
 import numpy as np
 from pyinstrument import Profiler
 
-from cellfinder_core.detect.filters.volume.volume_filter import VolumeFilter
+from cellfinder.core.detect.filters.volume.volume_filter import VolumeFilter
 
 # Use random data for signal data
 ball_z_size = 3

@@ -3,7 +3,7 @@ import sys
 
 import pytest
 
-from cellfinder_core.train.train_yml import cli as train_run
+from cellfinder.core.train.train_yml import cli as train_run
 
 data_dir = os.path.join(
     os.getcwd(), "tests", "data", "integration", "training"

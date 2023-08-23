@@ -1,6 +1,6 @@
 import dask.array as d_array
 
-from cellfinder_core.tools import IO
+from cellfinder.core.tools import IO
 
 BRAIN_DIR = "tests/data/brain"
 BRAIN_PATHS = f"{BRAIN_DIR}/brain_paths.txt"

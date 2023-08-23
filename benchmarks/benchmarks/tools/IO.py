@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from cellfinder_core.tools.IO import get_tiff_meta, read_with_dask
+from cellfinder.core.tools.IO import get_tiff_meta, read_with_dask
 
 CELLFINDER_CORE_PATH = Path(__file__).parents[3]
 TESTS_DATA_INTEGRATION_PATH = (

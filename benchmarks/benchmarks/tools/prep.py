@@ -3,7 +3,7 @@ from pathlib import Path
 
 from brainglobe_utils.general.system import get_num_processes
 
-from cellfinder_core.tools.prep import (
+from cellfinder.core.tools.prep import (
     prep_classification,
     prep_models,
     prep_tensorflow,

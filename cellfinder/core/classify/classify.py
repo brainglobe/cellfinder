@@ -6,10 +6,10 @@ from brainglobe_utils.cells.cells import Cell
 from brainglobe_utils.general.system import get_num_processes
 from tensorflow import keras
 
-from cellfinder_core import logger, types
-from cellfinder_core.classify.cube_generator import CubeGeneratorFromFile
-from cellfinder_core.classify.tools import get_model
-from cellfinder_core.train.train_yml import depth_type, models
+from cellfinder.core import logger, types
+from cellfinder.core.classify.cube_generator import CubeGeneratorFromFile
+from cellfinder.core.classify.tools import get_model
+from cellfinder.core.train.train_yml import depth_type, models
 
 
 def main(

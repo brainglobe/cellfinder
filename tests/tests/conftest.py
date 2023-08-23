@@ -5,8 +5,8 @@ import numpy as np
 import pytest
 from skimage.filters import gaussian
 
-from cellfinder_core.download import models
-from cellfinder_core.tools.prep import DEFAULT_INSTALL_PATH
+from cellfinder.core.download import models
+from cellfinder.core.tools.prep import DEFAULT_INSTALL_PATH
 
 
 @pytest.fixture(scope="session")

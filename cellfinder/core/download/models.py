@@ -2,8 +2,8 @@ import os
 from pathlib import Path
 from typing import Literal
 
-from cellfinder_core import logger
-from cellfinder_core.download.download import download
+from cellfinder.core import logger
+from cellfinder.core.download.download import download
 
 model_weight_urls = {
     "resnet50_tv": "https://gin.g-node.org/cellfinder/models/raw/"

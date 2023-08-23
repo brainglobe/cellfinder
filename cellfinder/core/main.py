@@ -8,9 +8,9 @@ from typing import Callable, List, Optional, Tuple
 import numpy as np
 from brainglobe_utils.general.logging import suppress_specific_logs
 
-from cellfinder_core import logger
-from cellfinder_core.download.models import model_type
-from cellfinder_core.train.train_yml import depth_type
+from cellfinder.core import logger
+from cellfinder.core.download.models import model_type
+from cellfinder.core.train.train_yml import depth_type
 
 tf_suppress_log_messages = [
     "multiprocessing can interact badly with TensorFlow"
@@ -60,9 +60,9 @@ def main(
     """
     suppress_tf_logging(tf_suppress_log_messages)
 
-    from cellfinder_core.classify import classify
-    from cellfinder_core.detect import detect
-    from cellfinder_core.tools import prep
+    from cellfinder.core.classify import classify
+    from cellfinder.core.detect import detect
+    from cellfinder.core.tools import prep
 
     logger.info("Detecting cell candidates")
 

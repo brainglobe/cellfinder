@@ -1,6 +1,6 @@
 import multiprocessing
 
-from cellfinder_core.detect.detect import _map_with_locks
+from cellfinder.core.detect.detect import _map_with_locks
 
 
 def add_one(a: int) -> int:

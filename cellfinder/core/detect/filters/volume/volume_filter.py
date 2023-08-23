@@ -9,15 +9,15 @@ from brainglobe_utils.cells.cells import Cell
 from tifffile import tifffile
 from tqdm import tqdm
 
-from cellfinder_core import logger
-from cellfinder_core.detect.filters.setup_filters import (
+from cellfinder.core import logger
+from cellfinder.core.detect.filters.setup_filters import (
     get_ball_filter,
     get_cell_detector,
 )
-from cellfinder_core.detect.filters.volume.structure_detection import (
+from cellfinder.core.detect.filters.volume.structure_detection import (
     get_structure_centre,
 )
-from cellfinder_core.detect.filters.volume.structure_splitting import (
+from cellfinder.core.detect.filters.volume.structure_splitting import (
     StructureSplitException,
     split_cells,
 )

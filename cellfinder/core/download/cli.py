@@ -2,8 +2,8 @@ import tempfile
 from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser
 from pathlib import Path
 
-from cellfinder_core.download import models
-from cellfinder_core.download.download import amend_cfg
+from cellfinder.core.download import models
+from cellfinder.core.download.download import amend_cfg
 
 home = Path.home()
 DEFAULT_DOWNLOAD_DIRECTORY = home / ".cellfinder"

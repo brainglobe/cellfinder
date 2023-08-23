@@ -23,10 +23,10 @@ import numpy as np
 from brainglobe_utils.cells.cells import Cell
 from brainglobe_utils.general.system import get_num_processes
 
-from cellfinder_core import logger, types
-from cellfinder_core.detect.filters.plane import TileProcessor
-from cellfinder_core.detect.filters.setup_filters import setup_tile_filtering
-from cellfinder_core.detect.filters.volume.volume_filter import VolumeFilter
+from cellfinder.core import logger, types
+from cellfinder.core.detect.filters.plane import TileProcessor
+from cellfinder.core.detect.filters.setup_filters import setup_tile_filtering
+from cellfinder.core.detect.filters.volume.volume_filter import VolumeFilter
 
 
 def calculate_parameters_in_pixels(

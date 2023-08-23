@@ -28,10 +28,10 @@ from brainglobe_utils.IO.yaml import read_yaml_section
 from fancylog import fancylog
 from sklearn.model_selection import train_test_split
 
-import cellfinder_core as program_for_log
-from cellfinder_core import logger
-from cellfinder_core.classify.resnet import layer_type
-from cellfinder_core.tools.prep import DEFAULT_INSTALL_PATH
+import cellfinder.core as program_for_log
+from cellfinder.core import logger
+from cellfinder.core.classify.resnet import layer_type
+from cellfinder.core.tools.prep import DEFAULT_INSTALL_PATH
 
 tf_suppress_log_messages = [
     "sample_weight modes were coerced from",
@@ -111,7 +111,7 @@ def misc_parse(parser):
 
 
 def training_parse():
-    from cellfinder_core.download.cli import (
+    from cellfinder.core.download.cli import (
         download_directory_parser,
         model_parser,
     )
@@ -238,7 +238,7 @@ def parse_yaml(yaml_files, section="data"):
 
 
 def get_tiff_files(yaml_contents):
-    from cellfinder_core.tools.tiff import TiffDir, TiffList
+    from cellfinder.core.tools.tiff import TiffDir, TiffList
 
     tiff_lists = []
     for d in yaml_contents:
@@ -320,7 +320,7 @@ def run(
     save_progress=False,
     epochs=100,
 ):
-    from cellfinder_core.main import suppress_tf_logging
+    from cellfinder.core.main import suppress_tf_logging
 
     suppress_tf_logging(tf_suppress_log_messages)
 
@@ -330,9 +330,9 @@ def run(
         TensorBoard,
     )
 
-    from cellfinder_core.classify.cube_generator import CubeGeneratorFromDisk
-    from cellfinder_core.classify.tools import get_model, make_lists
-    from cellfinder_core.tools.prep import prep_training
+    from cellfinder.core.classify.cube_generator import CubeGeneratorFromDisk
+    from cellfinder.core.classify.tools import get_model, make_lists
+    from cellfinder.core.tools.prep import prep_training
 
     start_time = datetime.now()
 

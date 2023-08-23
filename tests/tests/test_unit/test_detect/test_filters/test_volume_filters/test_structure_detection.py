@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from cellfinder_core.detect.filters.volume.structure_detection import (
+from cellfinder.core.detect.filters.volume.structure_detection import (
     CellDetector,
     Point,
     get_non_zero_dtype_min,

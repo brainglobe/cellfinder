@@ -1,7 +1,7 @@
 import dask.array as da
 import numpy as np
 
-from cellfinder_core.main import main
+from cellfinder.core.main import main
 
 voxel_sizes = (5, 2, 2)
 

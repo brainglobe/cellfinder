@@ -10,11 +10,11 @@ from typing import Optional
 from brainglobe_utils.general.config import get_config_obj
 from brainglobe_utils.general.system import get_num_processes
 
-import cellfinder_core.tools.tf as tf_tools
-from cellfinder_core import logger
-from cellfinder_core.download import models as model_download
-from cellfinder_core.download.download import amend_cfg
-from cellfinder_core.tools.source_files import source_custom_config_cellfinder
+import cellfinder.core.tools.tf as tf_tools
+from cellfinder.core import logger
+from cellfinder.core.download import models as model_download
+from cellfinder.core.download.download import amend_cfg
+from cellfinder.core.tools.source_files import source_custom_config_cellfinder
 
 home = Path.home()
 DEFAULT_INSTALL_PATH = home / ".cellfinder"

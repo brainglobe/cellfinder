@@ -1,8 +1,8 @@
 import numpy as np
 from numba import njit
 
-from cellfinder_core.tools.array_operations import bin_mean_3d
-from cellfinder_core.tools.geometry import make_sphere
+from cellfinder.core.tools.array_operations import bin_mean_3d
+from cellfinder.core.tools.geometry import make_sphere
 
 DEBUG = False
 

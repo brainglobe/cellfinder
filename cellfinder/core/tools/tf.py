@@ -1,6 +1,6 @@
 import tensorflow as tf
 
-from cellfinder_core import logger
+from cellfinder.core import logger
 
 
 def allow_gpu_memory_growth():

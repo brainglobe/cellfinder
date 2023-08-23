@@ -5,8 +5,8 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.keras import Model
 
-from cellfinder_core import logger
-from cellfinder_core.classify.resnet import build_model, layer_type
+from cellfinder.core import logger
+from cellfinder.core.classify.resnet import build_model, layer_type
 
 
 def get_model(

@@ -6,7 +6,7 @@ import urllib.request
 from brainglobe_utils.general.config import get_config_obj
 from brainglobe_utils.general.system import disk_free_gb
 
-from cellfinder_core.tools.source_files import (
+from cellfinder.core.tools.source_files import (
     source_config_cellfinder,
     source_custom_config_cellfinder,
 )

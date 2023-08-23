@@ -5,9 +5,9 @@ from typing import Optional, Tuple
 import dask.array as da
 import numpy as np
 
-from cellfinder_core import types
-from cellfinder_core.detect.filters.plane.classical_filter import enhance_peaks
-from cellfinder_core.detect.filters.plane.tile_walker import TileWalker
+from cellfinder.core import types
+from cellfinder.core.detect.filters.plane.classical_filter import enhance_peaks
+from cellfinder.core.detect.filters.plane.tile_walker import TileWalker
 
 
 @dataclass

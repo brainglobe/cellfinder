@@ -1,8 +1,8 @@
 import numpy as np
 from pyinstrument import Profiler
 
-from cellfinder_core.detect.filters.plane import TileProcessor
-from cellfinder_core.detect.filters.setup_filters import setup_tile_filtering
+from cellfinder.core.detect.filters.plane import TileProcessor
+from cellfinder.core.detect.filters.setup_filters import setup_tile_filtering
 
 # Use random 16-bit integer data for signal plane
 shape = (10000, 10000)

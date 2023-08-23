@@ -1,6 +1,6 @@
 import numpy as np
 
-import cellfinder_core.tools.geometry as geometry
+import cellfinder.core.tools.geometry as geometry
 
 
 def test_make_sphere():

@@ -3,7 +3,7 @@ from typing import List, Tuple
 import numpy as np
 from scipy.ndimage import rotate, zoom
 
-from cellfinder_core.tools.tools import (
+from cellfinder.core.tools.tools import (
     all_elements_equal,
     random_bool,
     random_probability,
