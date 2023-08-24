@@ -1,6 +1,7 @@
-from cellfinder.core.main import main as cellfinder_run
 from napari.qt.threading import WorkerBase, WorkerBaseSignals
 from qtpy.QtCore import Signal
+
+from cellfinder.core.main import main as cellfinder_run
 
 from .detect_containers import (
     ClassificationInputs,

@@ -1,12 +1,12 @@
 from pathlib import Path
 from typing import Optional
 
-from cellfinder.core.train.train_yml import run as train_yml
 from magicgui import magicgui
 from magicgui.widgets import FunctionGui, PushButton
 from napari.qt.threading import thread_worker
 from napari.utils.notifications import show_info
 
+from cellfinder.core.train.train_yml import run as train_yml
 from cellfinder.napari.utils import (
     header_label_widget,
     html_label_widget,

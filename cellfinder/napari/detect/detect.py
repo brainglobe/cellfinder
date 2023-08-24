@@ -3,12 +3,12 @@ from pathlib import Path
 from typing import Optional
 
 import napari
-from cellfinder.core.classify.cube_generator import get_cube_depth_min_max
 from magicgui import magicgui
 from magicgui.widgets import FunctionGui, ProgressBar
 from napari.utils.notifications import show_info
 from qtpy.QtWidgets import QScrollArea
 
+from cellfinder.core.classify.cube_generator import get_cube_depth_min_max
 from cellfinder.napari.utils import (
     add_layers,
     header_label_widget,
