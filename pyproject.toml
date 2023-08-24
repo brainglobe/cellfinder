@@ -65,7 +65,7 @@ dev = [
     "tox",
 ]
 
-[project.entry-points."napari-manifest"]
+[project.entry-points.'napari.manifest']
 cellfinder-napari = "cellfinder.napari:napari.yaml"
 
 [project.scripts]
@@ -118,6 +118,7 @@ known-first-party = ["cellfinder"]
 
 [tool.setuptools]
 include-package-data = true
+py-modules = ["cellfinder"]
 
 [tool.setuptools_scm]
 
