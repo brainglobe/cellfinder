@@ -1,12 +1,23 @@
 name: tests
 
 on:
+  # Only run on pushes to main, or when version tags are pushed
   push:
-    branches: [ main ]
+    branches: 
+      - "main"
     tags:
-      - '*'
+      - "v**"
+  # Run on all pull-requests
   pull_request:
-    branches: [ '*' ]
+  # Allow workflow dispatch from GitHub
+  workflow_dispatch:
+
+concurrency:
+  # Cancel this workflow if it is running,
+  # and then changes are applied on top of the HEAD of the branch,
+  # triggering another run of the workflow
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   linting:
@@ -22,6 +33,7 @@ jobs:
 
   test:
     needs: [linting, manifest]
+    name: Run package tests
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -31,20 +43,25 @@ jobs:
         # Include one windows, one macos run
         include:
         - os: macos-latest
-          python-version: "3.9"
+          python-version: "3.10"
         - os: windows-latest
-          python-version: "3.9"
+          python-version: "3.10"
 
     steps:
+      # Cache the tensorflow model so we don't have to remake it every time
       - name: Cache tensorflow model
         uses: actions/cache@v3
         with:
           path: "~/.cellfinder"
           key: models-${{ hashFiles('~/.cellfinder/**') }}
+      # Setup pyqt libraries
+      - name: Setup qtpy libraries
+        uses: tlambert03/setup-qt-libs@v1
+      # Run all tests
       - uses: neuroinformatics-unit/actions/test@v2
         with:
           python-version: ${{ matrix.python-version }}
-
+          use-xvfb: true
 
   # Run cellfinder tests to make sure cellfinder is still compatible
   # with cellfinder-core
@@ -76,7 +93,6 @@ jobs:
           python -m pip install git+$GITHUB_SERVER_URL/$GITHUB_REPOSITORY@$GITHUB_SHA
           # Install checked out copy of cellfinder
           python -m pip install .[dev]
-
 
       - name: Run cellfinder tests
         run: |
