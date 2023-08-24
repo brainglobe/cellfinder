@@ -2,10 +2,10 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
 
-from cellfinder.core.download.models import model_weight_urls
-from cellfinder.core.train.train_yml import models
 from magicgui.types import FileDialogMode
 
+from cellfinder.core.download.models import model_weight_urls
+from cellfinder.core.train.train_yml import models
 from cellfinder.napari.input_container import InputContainer
 from cellfinder.napari.utils import html_label_widget
 
