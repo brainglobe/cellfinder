@@ -1,0 +1,14 @@
+include .napari/config.yml
+include LICENSE
+include README.md
+
+exclude .pre-commit-config.yaml
+exclude CHANGELOG.md
+exclude tox.ini
+
+graft cellfinder
+
+prune benchmarks
+prune examples
+prune resources
+prune tests
