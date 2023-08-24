@@ -3,7 +3,7 @@ include LICENSE
 include README.md
 
 exclude .pre-commit-config.yaml
-exclude CHANGELOG.md
+exclude CORE_CHANGELOG.md
 exclude tox.ini
 
 graft cellfinder
