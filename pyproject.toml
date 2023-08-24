@@ -28,7 +28,7 @@ dependencies = [
     "magicgui",
     "napari-ndtiffs",
     "napari-plugin-engine >= 0.1.4",
-    "napari",
+    "napari[all]",
     "natsort",
     "numba",
     "numpy",
@@ -83,30 +83,6 @@ line-length = 79
 
 [tool.cibuildwheel.macos]
 archs = ["x86_64", "arm64"]
-
-[[tool.mypy.overrides]]
-module = [
-    "fancylog.*",
-    "brainglobe_utils.*",
-    "natsort.*",
-    "numba.*",
-    "tensorflow.*",
-    "tifffile.*",
-    "pyinstrument.*",
-    "pytest.*",
-    "pytest_lazyfixture.*",
-    "scipy.*",
-    "skimage.*",
-    "sklearn.*",
-    "cellfinder.core.tools.prep.*",
-    "cellfinder.core.detect.*",
-    "cellfinder.core.classify.*",
-    "cellfinder.napari.*",
-]
-ignore_missing_imports = true
-disallow_untyped_defs = true
-disallow_incomplete_defs = true
-disallow_untyped_calls = true
 
 [tool.ruff]
 line-length = 79
