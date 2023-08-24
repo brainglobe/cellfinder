@@ -1,32 +1,32 @@
-name: cellfinder-napari
+name: cellfinder
 schema_version: 0.1.0
 contributions:
   commands:
-  - id: cellfinder-napari.detect_widget
+  - id: cellfinder.detect_widget
     title: Create Cell detection
     python_name: cellfinder.napari.detect:detect_widget
 
-  - id: cellfinder-napari.training_widget
+  - id: cellfinder.training_widget
     title: Create Train network
     python_name: cellfinder.napari.train:training_widget
 
-  - id: cellfinder-napari.CurationWidget
+  - id: cellfinder.CurationWidget
     title: Create Curation
     python_name: cellfinder.napari.curation:CurationWidget
 
-  - id: cellfinder-napari.SampleData
+  - id: cellfinder.SampleData
     title: Sample data
     python_name: cellfinder.napari.sample_data:load_sample
 
   widgets:
-  - command: cellfinder-napari.detect_widget
+  - command: cellfinder.detect_widget
     display_name: Cell detection
-  - command: cellfinder-napari.training_widget
+  - command: cellfinder.training_widget
     display_name: Train network
-  - command: cellfinder-napari.CurationWidget
+  - command: cellfinder.CurationWidget
     display_name: Curation
 
   sample_data:
   - key: sample
     display_name: Sample data
-    command: cellfinder-napari.SampleData
+    command: cellfinder.SampleData

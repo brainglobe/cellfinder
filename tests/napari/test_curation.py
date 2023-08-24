@@ -19,7 +19,7 @@ def curation_widget(make_napari_viewer):
     """
     viewer = make_napari_viewer()
     _, widget = viewer.window.add_plugin_dock_widget(
-        plugin_name="cellfinder-napari", widget_name="Curation"
+        plugin_name="cellfinder", widget_name="Curation"
     )
     return widget
 
@@ -103,7 +103,7 @@ def valid_curation_widget(make_napari_viewer) -> CurationWidget:
 
     num_dw = len(viewer.window._dock_widgets)
     _, curation_widget = viewer.window.add_plugin_dock_widget(
-        plugin_name="cellfinder-napari", widget_name="Curation"
+        plugin_name="cellfinder", widget_name="Curation"
     )
     assert len(viewer.window._dock_widgets) == num_dw + 1
 

@@ -5,7 +5,8 @@ name: Test Tensorflow include guards
 on:
   pull_request:
   push:
-    branches: [main]
+    branches:
+      - main
 
 jobs:
   tensorflow_guards:
@@ -32,6 +33,7 @@ jobs:
           fail-on-error: true
           script: |
             import cellfinder.core
+            import cellfinder.napari
 
       - name: Uninstall tensorflow
         run: python -m pip uninstall -y tensorflow
