@@ -28,10 +28,14 @@ repos:
       hooks:
           - id: mypy
             args: [--config-file, pyproject.toml]
-            exclude: benchmarks/benchmarks/tools/IO.py
+            exclude: 
+              - benchmarks/benchmarks/tools/IO.py
+              - examples/*
+              - resources/*
+              - cellfinder/napari*
             additional_dependencies:
-                - types-setuptools
-                - types-requests
-                - types-tqdm
-                - dask
-                - numpy
+              - types-setuptools
+              - types-requests
+              - types-tqdm
+              - dask
+              - numpy

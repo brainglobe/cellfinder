@@ -101,6 +101,7 @@ module = [
     "cellfinder.core.tools.prep.*",
     "cellfinder.core.detect.*",
     "cellfinder.core.classify.*",
+    "cellfinder.napari.*",
 ]
 ignore_missing_imports = true
 disallow_untyped_defs = true
