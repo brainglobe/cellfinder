@@ -66,7 +66,7 @@ dev = [
 ]
 
 [project.entry-points."napari.manifest"]
-cellfinder = "cellfinder:napari.yaml"
+cellfinder = "cellfinder.napari:napari.yaml"
 
 [project.scripts]
 cellfinder_download = "cellfinder.core.download.cli:main"
@@ -96,8 +96,11 @@ known-first-party = ["cellfinder"]
 [tool.setuptools]
 include-package-data = true
 
+[tool.setuptools.packages.find]
+include = ["cellfinder*"]
+
 [tool.setuptools.package-data]
-cellfinder = ["*.yaml", "*.png"]
+include = ["cellfinder*"]
 
 [tool.setuptools_scm]
 

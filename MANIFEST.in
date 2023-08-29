@@ -10,7 +10,7 @@ exclude .codecov.yml
 exclude CORE_CHANGELOG.md
 exclude tox.ini
 
-graft src
+graft cellfinder
 
 prune benchmarks
 prune examples
