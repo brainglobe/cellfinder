@@ -21,19 +21,12 @@ classifiers = [
 ]
 requires-python = ">=3.8"
 dependencies = [
-    "brainglobe-napari-io",
     "brainglobe-utils",
     "dask[array]",
     "fancylog>=0.0.7",
-    "magicgui",
-    "napari-ndtiffs",
-    "napari-plugin-engine >= 0.1.4",
-    "napari[all]",
     "natsort",
     "numba",
     "numpy",
-    "pooch>=1",
-    "qtpy",
     "scikit-image",
     "scikit-learn",
     # See https://github.com/brainglobe/cellfinder-core/issues/103 for < 2.12.0 pin
@@ -44,12 +37,8 @@ dependencies = [
 ]
 dynamic = ["version"]
 
-[project.urls]
-Homepage = "https://brainglobe.info/documentation/cellfinder/index.html"
-"Source Code" = "https://github.com/brainglobe/cellfinder-core"
-"Bug Tracker" = "https://github.com/brainglobe/cellfinder-core/issues"
-Documentation = "https://brainglobe.info/documentation/cellfinder/index.html"
-"User Support" = "https://forum.image.sc/tag/brainglobe"
+[project.entry-points."napari.manifest"]
+cellfinder = "cellfinder.napari:napari.yaml"
 
 [project.optional-dependencies]
 dev = [
@@ -64,13 +53,26 @@ dev = [
     "pytest",
     "tox",
 ]
-
-[project.entry-points."napari.manifest"]
-cellfinder = "cellfinder.napari:napari.yaml"
+napari = [
+    "brainglobe-napari-io",
+    "magicgui",
+    "napari-ndtiffs",
+    "napari-plugin-engine >= 0.1.4",
+    "napari[all]",
+    "pooch >= 1",
+    "qtpy",
+]
 
 [project.scripts]
 cellfinder_download = "cellfinder.core.download.cli:main"
 cellfinder_train = "cellfinder.core.train.train_yml:cli"
+
+[project.urls]
+Homepage = "https://brainglobe.info/documentation/cellfinder/index.html"
+"Source Code" = "https://github.com/brainglobe/cellfinder-core"
+"Bug Tracker" = "https://github.com/brainglobe/cellfinder-core/issues"
+Documentation = "https://brainglobe.info/documentation/cellfinder/index.html"
+"User Support" = "https://forum.image.sc/tag/brainglobe"
 
 [build-system]
 requires = ["setuptools>=45", "wheel", "setuptools_scm[toml]>=6.2"]
