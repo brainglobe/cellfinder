@@ -22,7 +22,7 @@ classifiers = [
     "Intended Audience :: Science/Research",
 ]
 dependencies = [
-    "brainreg",
+    "brainreg>=1.0.0",
     "cellfinder-core>=0.2.4",
     "configobj",
     "fancylog>=0.0.7",

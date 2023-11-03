@@ -14,7 +14,7 @@ from pathlib import PurePath
 from bg_atlasapi import BrainGlobeAtlas
 from brainglobe_utils.general.exceptions import CommandLineInputError
 from brainglobe_utils.general.system import ensure_directory_exists
-from brainreg.paths import Paths as BrainRegPaths
+from brainreg.core.paths import Paths as BrainRegPaths
 from fancylog import fancylog
 
 import cellfinder as program_for_log

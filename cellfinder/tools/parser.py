@@ -16,8 +16,8 @@ from brainglobe_utils.general.numerical import (
     check_positive_float,
     check_positive_int,
 )
-from brainreg.cli import atlas_parse, geometry_parser, niftyreg_parse
-from brainreg.cli import backend_parse as brainreg_backend_parse
+from brainreg.core.cli import atlas_parse, geometry_parser, niftyreg_parse
+from brainreg.core.cli import backend_parse as brainreg_backend_parse
 from cellfinder_core.download.cli import (
     download_directory_parser,
     model_parser,
