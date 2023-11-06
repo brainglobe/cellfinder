@@ -3,7 +3,7 @@ name = "cellfinder"
 description = "Automated 3D cell detection and registration of whole-brain images"
 readme = "README.md"
 license = { file = "LICENSE" }
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 authors = [
     { name = "Adam Tyson", email = "code@adamltyson.com" },
     { name = "Christian Niedworok" },
