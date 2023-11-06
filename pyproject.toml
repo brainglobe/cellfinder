@@ -3,7 +3,7 @@ name = "cellfinder"
 description = "Automated 3D cell detection and registration of whole-brain images"
 readme = "README.md"
 license = { file = "LICENSE" }
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 authors = [
     { name = "Adam Tyson", email = "code@adamltyson.com" },
     { name = "Christian Niedworok" },
@@ -22,7 +22,7 @@ classifiers = [
     "Intended Audience :: Science/Research",
 ]
 dependencies = [
-    "brainreg",
+    "brainreg>=1.0.0",
     "cellfinder-core>=0.2.4",
     "configobj",
     "fancylog>=0.0.7",

@@ -42,7 +42,7 @@ def cells_exist(points_file):
 
 def main():
     suppress_tf_logging(tf_suppress_log_messages)
-    from brainreg.main import main as register
+    from brainreg.core.main import main as register
 
     from cellfinder.tools import prep
 
