@@ -16,7 +16,7 @@ import pandas as pd
 import tifffile
 from bg_atlasapi import BrainGlobeAtlas
 from brainglobe_utils.general.system import ensure_directory_exists
-from brainglobe_utils.pandas.misc import sanitise_df
+from brainglobe_utils.pandas.misc import safe_pandas_concat, sanitise_df
 
 from cellfinder.export.export import export_points
 
@@ -155,19 +155,16 @@ def get_region_totals(
                 ]
             )
             if n_points:
-                point_numbers = pd.concat(
-                    [
-                        point_numbers,
-                        pd.DataFrame(
-                            data=[[structure, hemisphere, n_points]],
-                            columns=[
-                                "structure_name",
-                                "hemisphere",
-                                "cell_count",
-                            ],
-                        ),
-                    ],
-                    ignore_index=True,
+                point_numbers = safe_pandas_concat(
+                    point_numbers,
+                    pd.DataFrame(
+                        data=[[structure, hemisphere, n_points]],
+                        columns=[
+                            "structure_name",
+                            "hemisphere",
+                            "cell_count",
+                        ],
+                    ),
                 )
     sorted_point_numbers = point_numbers.sort_values(
         by=["cell_count"], ascending=False
