@@ -1,4 +1,5 @@
 import filecmp
+from importlib.resources import files
 from pathlib import Path
 
 import pytest
@@ -33,16 +34,18 @@ def structures_with_points():
     ]
 
 
-def test_get_region_totals(points, structures_with_points):
-    """Regression test for get_region_totals"""
-    volumes_path = Path("./tests/data/analyse/volumes.csv")
-    output_path = Path("./tests/data/analyse/region_totals.csv")
-    output_path.unlink(missing_ok=True)
+def test_get_region_totals(tmp_path, points, structures_with_points):
+    """Regression test for get_region_totals for pandas 1.5.3 -> 2.1.3+.
+    pd.Dataframe.append was deprecated and remove in this time."""
+    volumes_path = files("cellfinder").joinpath(
+        "../tests/data/analyse/volumes.csv"
+    )
+    output_path = Path(tmp_path / "tmp_region_totals.csv")
     get_region_totals(
         points, structures_with_points, volumes_path, output_path
     )
     assert output_path.exists()
-    expected_output = Path(
-        "./tests/data/analyse/region_totals_regression_pandas1_5_3.csv"
+    expected_output = files("cellfinder").joinpath(
+        "../tests/data/analyse/region_totals_regression_pandas1_5_3.csv"
     )
     assert filecmp.cmp(output_path, expected_output)
