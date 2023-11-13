@@ -155,12 +155,18 @@ def get_region_totals(
                 ]
             )
             if n_points:
-                point_numbers = point_numbers.append(
-                    {
-                        "structure_name": structure,
-                        "hemisphere": hemisphere,
-                        "cell_count": n_points,
-                    },
+                point_numbers = pd.concat(
+                    [
+                        point_numbers,
+                        pd.DataFrame(
+                            data=[[structure, hemisphere, n_points]],
+                            columns=[
+                                "structure_name",
+                                "hemisphere",
+                                "cell_count",
+                            ],
+                        ),
+                    ],
                     ignore_index=True,
                 )
     sorted_point_numbers = point_numbers.sort_values(
