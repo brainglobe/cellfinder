@@ -1,0 +1,5 @@
+structure_name,left_cell_count,right_cell_count,total_cells,left_volume_mm3,right_volume_mm3,total_volume_mm3,left_cells_per_mm3,right_cells_per_mm3
+Anterodorsal nucleus,1.0,0.0,1.0,0.083,0.075,0.158,12.048192771084336,0.0
+"Paraventricular hypothalamic nucleus, descending division",0.0,1.0,1.0,0.075,0.065,0.14,0.0,15.384615384615383
+Lateral terminal nucleus of the accessory optic tract,0.0,0.0,0.0,0.01,0.009,0.019,0.0,0.0
+Interstitial nucleus of Cajal,0.0,0.0,0.0,0.049,0.047,0.096,0.0,0.0
