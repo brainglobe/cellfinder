@@ -1,7 +1,7 @@
 import warnings
 
 warnings.warn(
-    "cellfinder (CLI) has migrated. Please use brainglobe-workflows instead: https://github.com/brainglobe/brainglobe-workflows",
+    "cellfinder (the command line tool) has migrated. Please use brainglobe-workflows instead: https://github.com/brainglobe/brainglobe-workflows",
     DeprecationWarning,
 )
 
