@@ -1,0 +1,27 @@
+name: Test with numba turned off
+# These tests are relatively slow (~20 minutes), but are used
+# to collect code coverage on areas of code that are otherwise
+# optimised by numba.
+
+on:
+  push:
+    branches: [ main ]
+
+
+jobs:
+  test_numba_disabled:
+    name: Run tests
+    runs-on: ubuntu-latest
+    env:
+       NUMBA_DISABLE_JIT: "1"
+
+    steps:
+      - name: Cache tensorflow model
+        uses: actions/cache@v3
+        with:
+          path: "~/.cellfinder"
+          key: models-${{ hashFiles('~/.cellfinder/**') }}
+      - uses: neuroinformatics-unit/actions/test@v2
+        with:
+          python-version: "3.10"
+          codecov-flags: "numba"

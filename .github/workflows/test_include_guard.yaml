@@ -1,0 +1,60 @@
+name: Test Tensorflow include guards
+# These tests check that the include guards checking for tensorflow's availability
+# behave as expected on ubuntu and macOS.
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  tensorflow_guards:
+    name: Test include guards
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install via pip
+        run: python -m pip install -e .
+
+      - name: Test (working) import
+        uses: jannekem/run-python-script-action@v1
+        with:
+          fail-on-error: true
+          script: |
+            import cellfinder.core
+            import cellfinder.napari
+
+      - name: Uninstall tensorflow
+        run: python -m pip uninstall -y tensorflow
+
+      - name: Test (broken) import
+        id: broken_import
+        uses: jannekem/run-python-script-action@v1
+        with:
+          fail-on-error: false
+          script: |
+            import cellfinder.core
+
+      # exit 1 will force an actions exit with a failure reported
+      - name: Flag error thrown by broken import
+        if: steps.broken_import.outputs.error == 'false'
+        run: |
+          echo "Broken import test result was: ${{ steps.broken_import.outputs.error }}"
+          exit 1
+
+      # add an additional step to confirm an error occurred in the import
+      - name: Confirm error was thrown by broken import
+        if: steps.broken_import.outputs.error == 'true'
+        run: |
+          echo "Broken import test result was: ${{ steps.broken_import.outputs.error }}"

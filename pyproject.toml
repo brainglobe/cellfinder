@@ -1,0 +1,110 @@
+[project]
+name = "cellfinder"
+description = "Automated 3D cell detection in large microscopy images"
+readme = "README.md"
+license = { text = "BSD-3-Clause" }
+authors = [
+    { name = "Adam Tyson, Christian Niedworok, Charly Rousseau", email = "code@adamltyson.com" },
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Framework :: napari",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Topic :: Scientific/Engineering :: Image Recognition",
+]
+requires-python = ">=3.8"
+dependencies = [
+    "brainglobe-utils",
+    "dask[array]",
+    "fancylog>=0.0.7",
+    "natsort",
+    "numba",
+    "numpy",
+    "scikit-image",
+    "scikit-learn",
+    # See https://github.com/brainglobe/cellfinder-core/issues/103 for < 2.12.0 pin
+    "tensorflow-macos>=2.5.0,<2.12.0; platform_system=='Darwin' and platform_machine=='arm64'",
+    "tensorflow>=2.5.0,<2.12.0; platform_system!='Darwin' or platform_machine!='arm64'",
+    "tifffile",
+    "tqdm",
+]
+dynamic = ["version"]
+
+[project.entry-points."napari.manifest"]
+cellfinder = "cellfinder.napari:napari.yaml"
+
+[project.optional-dependencies]
+dev = [
+    "black",
+    "pre-commit",
+    "pyinstrument",
+    "pytest-cov",
+    "pytest-lazy-fixture",
+    "pytest-mock",
+    "pytest-qt",
+    "pytest-timeout",
+    "pytest",
+    "tox",
+]
+napari = [
+    "brainglobe-napari-io",
+    "magicgui",
+    "napari-ndtiffs",
+    "napari-plugin-engine >= 0.1.4",
+    "napari[all]",
+    "pooch >= 1",
+    "qtpy",
+]
+
+[project.scripts]
+cellfinder_download = "cellfinder.core.download.cli:main"
+cellfinder_train = "cellfinder.core.train.train_yml:cli"
+
+[project.urls]
+Homepage = "https://brainglobe.info/documentation/cellfinder/index.html"
+"Source Code" = "https://github.com/brainglobe/cellfinder-core"
+"Bug Tracker" = "https://github.com/brainglobe/cellfinder-core/issues"
+Documentation = "https://brainglobe.info/documentation/cellfinder/index.html"
+"User Support" = "https://forum.image.sc/tag/brainglobe"
+
+[build-system]
+requires = ["setuptools>=45", "wheel", "setuptools_scm[toml]>=6.2"]
+build-backend = 'setuptools.build_meta'
+
+[tool.black]
+target-version = ['py38', 'py39', 'py310']
+skip-string-normalization = false
+line-length = 79
+
+[tool.cibuildwheel.macos]
+archs = ["x86_64", "arm64"]
+
+[tool.ruff]
+line-length = 79
+exclude = ["__init__.py", "build", ".eggs"]
+select = ["I", "E", "F"]
+fix = true
+
+[tool.ruff.isort]
+known-first-party = ["cellfinder"]
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+include = ["cellfinder*"]
+
+[tool.setuptools.package-data]
+include = ["cellfinder*"]
+
+[tool.setuptools_scm]
+
+[tool.cibuildwheel]
+build = "cp38-* cp39-* cp310-*"

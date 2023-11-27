@@ -1,0 +1,122 @@
+name: tests
+
+on:
+  # Only run on pushes to main, or when version tags are pushed
+  push:
+    branches:
+      - "main"
+    tags:
+      - "v**"
+  # Run on all pull-requests
+  pull_request:
+  # Allow workflow dispatch from GitHub
+  workflow_dispatch:
+
+concurrency:
+  # Cancel this workflow if it is running,
+  # and then changes are applied on top of the HEAD of the branch,
+  # triggering another run of the workflow
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  linting:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: neuroinformatics-unit/actions/lint@v2
+
+  manifest:
+    name: Check Manifest
+    runs-on: ubuntu-latest
+    steps:
+      - uses: neuroinformatics-unit/actions/check_manifest@v2
+
+  test:
+    needs: [linting, manifest]
+    name: Run package tests
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        # Run all supported Python versions on linux
+        os: [ubuntu-latest]
+        python-version: ["3.8", "3.9", "3.10"]
+        # Include one windows, one macos run
+        include:
+        - os: macos-latest
+          python-version: "3.10"
+        - os: windows-latest
+          python-version: "3.10"
+
+    steps:
+      # Cache the tensorflow model so we don't have to remake it every time
+      - name: Cache tensorflow model
+        uses: actions/cache@v3
+        with:
+          path: "~/.cellfinder"
+          key: models-${{ hashFiles('~/.cellfinder/**') }}
+      # Setup pyqt libraries
+      - name: Setup qtpy libraries
+        uses: tlambert03/setup-qt-libs@v1
+      # Run all tests
+      - uses: neuroinformatics-unit/actions/test@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+          use-xvfb: true
+
+  # Run cellfinder tests to make sure cellfinder is still compatible
+  # with cellfinder-core
+  test_cellfinder:
+    needs: [linting, manifest]
+    name: Run cellfinder tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cache tensorflow model
+        uses: actions/cache@v3
+        with:
+          path: "~/.cellfinder"
+          key: models-${{ hashFiles('~/.cellfinder/**') }}
+
+      - name: Checkout cellfinder
+        uses: actions/checkout@v3
+        with:
+          repository: 'brainglobe/cellfinder'
+
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.10"
+
+      - name: Install test dependencies
+        run: |
+          python -m pip install --upgrade pip wheel
+          # Install latest SHA on this cellfinder-core branch
+          python -m pip install git+$GITHUB_SERVER_URL/$GITHUB_REPOSITORY@$GITHUB_SHA
+          # Install checked out copy of cellfinder
+          python -m pip install .[dev]
+
+      - name: Run cellfinder tests
+        run: |
+          python -m pytest --color=yes -v
+
+  build_sdist_wheel:
+    name: Build source distribution and wheel
+    needs: [test, test_cellfinder]
+    if: github.event_name == 'push' && github.ref_type == 'tag'
+    runs-on: ubuntu-latest
+    steps:
+    - uses:  neuroinformatics-unit/actions/build_sdist_wheels@v2
+
+  upload_all:
+    name: Publish build distributions
+    needs: [build_sdist_wheel]
+    if: github.event_name == 'push' && github.ref_type == 'tag'
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/download-artifact@v3
+      with:
+        name: artifact
+        path: dist
+    - uses: pypa/gh-action-pypi-publish@v1.5.0
+      with:
+        user: __token__
+        password: ${{ secrets.TWINE_API_KEY }}
