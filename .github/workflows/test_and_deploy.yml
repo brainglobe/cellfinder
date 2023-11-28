@@ -57,17 +57,19 @@ jobs:
       # Setup pyqt libraries
       - name: Setup qtpy libraries
         uses: tlambert03/setup-qt-libs@v1
+      # Setup VTK with headless display
+      - uses: pyvista/setup-headless-display-action@v2
       # Run all tests
       - uses: neuroinformatics-unit/actions/test@v2
         with:
           python-version: ${{ matrix.python-version }}
           use-xvfb: true
 
-  # Run cellfinder tests to make sure cellfinder is still compatible
-  # with cellfinder-core
-  test_cellfinder:
+  # Run brainglobe-workflows cellfinder-CLI tests to check for
+  # breakages
+  test_cellfinder_cli:
     needs: [linting, manifest]
-    name: Run cellfinder tests
+    name: Run cellfinder CLI to check for breakages
     runs-on: ubuntu-latest
     steps:
       - name: Cache tensorflow model
@@ -76,10 +78,10 @@ jobs:
           path: "~/.cellfinder"
           key: models-${{ hashFiles('~/.cellfinder/**') }}
 
-      - name: Checkout cellfinder
+      - name: Checkout brainglobe-workflows
         uses: actions/checkout@v3
         with:
-          repository: 'brainglobe/cellfinder'
+          repository: 'brainglobe/brainglobe-workflows'
 
       - name: Set up Python 3.10
         uses: actions/setup-python@v3
@@ -89,18 +91,18 @@ jobs:
       - name: Install test dependencies
         run: |
           python -m pip install --upgrade pip wheel
-          # Install latest SHA on this cellfinder-core branch
+          # Install latest SHA on this brainglobe-workflows branch
           python -m pip install git+$GITHUB_SERVER_URL/$GITHUB_REPOSITORY@$GITHUB_SHA
-          # Install checked out copy of cellfinder
+          # Install checked out copy of brainglobe-workflows
           python -m pip install .[dev]
 
-      - name: Run cellfinder tests
+      - name: Run cellfinder CLI test of brainglobe-workflows
         run: |
-          python -m pytest --color=yes -v
+          python -m pytest --color=yes -v tests/cellfinder
 
   build_sdist_wheel:
     name: Build source distribution and wheel
-    needs: [test, test_cellfinder]
+    needs: [test, test_cellfinder_cli]
     if: github.event_name == 'push' && github.ref_type == 'tag'
     runs-on: ubuntu-latest
     steps:
