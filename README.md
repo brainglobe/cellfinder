@@ -1,3 +1,12 @@
+# Cellfinder has moved!
+
+As part of [our BrainGlobe version 1 update](https://brainglobe.info/blog/version1/version_1_announcement.html), the `cellfinder` workflow that can be run from the command line [has moved into `brainglobe-workflows`](https://github.com/brainglobe/brainglobe-workflows).
+Please head over to that package to install an up-to-date version of `cellfinder`.
+
+You can keep up to date with the version 1 rollout by [visiting our blog page](https://brainglobe.info/blog/index.html), or joining us [over on Zulip](https://brainglobe.zulipchat.com).
+
+---
+
 [![Python Version](https://img.shields.io/pypi/pyversions/cellfinder.svg)](https://pypi.org/project/cellfinder)
 [![PyPI](https://img.shields.io/pypi/v/cellfinder.svg)](https://pypi.org/project/cellfinder)
 [![Downloads](https://pepy.tech/badge/cellfinder)](https://pepy.tech/project/cellfinder)

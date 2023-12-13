@@ -23,11 +23,11 @@ classifiers = [
 ]
 dependencies = [
     "brainreg>=1.0.0",
-    "cellfinder-core>=0.2.4",
+    "cellfinder-core>=0.2.4,<1.0.0",
     "configobj",
     "fancylog>=0.0.7",
     "imio",
-    "brainglobe-utils>=0.2.5",
+    "brainglobe-utils>=0.2.5,<1.0.0",
     "multiprocessing-logging>=0.3.4",
     "natsort",
     "numpy",
@@ -52,7 +52,11 @@ dev = [
     "pre-commit",
     "setuptools_scm",
 ]
-napari = ["napari[pyside2]", "brainglobe-napari-io", "cellfinder-napari"]
+napari = [
+    "napari[pyside2]",
+    "brainglobe-napari-io<1.0.0",
+    "cellfinder-napari<1.0.0",
+]
 
 [project.urls]
 source = "https://github.com/brainglobe/cellfinder"
