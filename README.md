@@ -29,7 +29,8 @@ You can find [the installation instructions](https://brainglobe.info/documentati
 However, we recommend that users install `cellfinder` either through installing BrainGlobe version 1, or (if you also want the command-line interface) installing `brainglobe-workflows`:
 
 ```bash
-pip install brainglobe>=1.0.0 # If you just want the napari plugin and Python API
+pip install cellfinder>=1.0.0 # If you just want the napari plugin and Python API
+pip install brainglobe>=1.0.0 # If you want to install all BrainGlobe tools, including cellfinder, in a consistent manner with one command
 pip install brainglobe-workflows>=1.0.0 # If you want to include the CLI
 ```
 
