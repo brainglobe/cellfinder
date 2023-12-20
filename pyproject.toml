@@ -66,6 +66,7 @@ napari = [
 [project.scripts]
 cellfinder_download = "cellfinder.core.download.cli:main"
 cellfinder_train = "cellfinder.core.train.train_yml:cli"
+cellfinder = "cellfinder.cli_migration_warning:cli_catch"
 
 [project.urls]
 Homepage = "https://brainglobe.info/documentation/cellfinder/index.html"
