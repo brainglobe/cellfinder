@@ -19,7 +19,7 @@ For more details, head over to [the documentation website](https://brainglobe.in
 
 At a glance:
 
-- There is a [command-line interface](https://brainglobe.info/documentation/cellfinder/user-guide/command-line/index.html) that integrates [with `brainreg`](https://github.com/brainglobe/brainreg) for automated cell detection and classification.
+- There is a command-line interface called [brainmapper](https://brainglobe.info/documentation/brainglobe-workflows/brainmapper/index.html) that integrates [with `brainreg`](https://github.com/brainglobe/brainreg) for automated cell detection and classification. You can install it through [`brainglobe-workflows`](https://brainglobe.info/documentation/brainglobe-workflows/index.html).
 - There is a [napari plugin](https://brainglobe.info/documentation/cellfinder/user-guide/napari-plugin/index.html) for interacting graphically with the cellfinder tool.
 - There is a [Python API](https://brainglobe.info/documentation/cellfinder/user-guide/cellfinder-core.html) to allow users to integrate BrainGlobe tools into their custom workflows.
 
