@@ -127,7 +127,7 @@ jobs:
 
   build_sdist_wheel:
     name: Build source distribution and wheel
-    # needs: [test, test_brainmapper_cli, test_numba_disabled]
+    needs: [test, test_brainmapper_cli, test_numba_disabled]
     if: github.event_name == 'push' && github.ref_type == 'tag'
     runs-on: ubuntu-latest
     steps:
