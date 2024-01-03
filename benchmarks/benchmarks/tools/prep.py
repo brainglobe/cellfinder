@@ -4,10 +4,9 @@ from pathlib import Path
 from brainglobe_utils.general.system import get_num_processes
 
 from cellfinder.core.tools.prep import (
-    prep_classification,
+    prep_model_weights,
     prep_models,
     prep_tensorflow,
-    prep_training,
 )
 
 
@@ -50,21 +49,12 @@ class PrepModels:
         )
 
     def time_prep_classification(self, model_name):
-        prep_classification(
+        prep_model_weights(
             self.trained_model,
             self.model_weights,
             self.install_path,
             model_name,
             self.n_free_cpus,
-        )
-
-    def time_prep_training(self, model_name):
-        prep_training(
-            self.n_free_cpus,
-            self.trained_model,
-            self.model_weights,
-            self.install_path,
-            model_name,
         )
 
 

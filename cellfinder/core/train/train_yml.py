@@ -332,17 +332,13 @@ def run(
 
     from cellfinder.core.classify.cube_generator import CubeGeneratorFromDisk
     from cellfinder.core.classify.tools import get_model, make_lists
-    from cellfinder.core.tools.prep import prep_training
+    from cellfinder.core.tools.prep import prep_model_weights
 
     start_time = datetime.now()
 
     ensure_directory_exists(output_dir)
-    model_weights = prep_training(
-        n_free_cpus,
-        trained_model,
-        install_path,
-        model_weights,
-        model,
+    model_weights = prep_model_weights(
+        trained_model, install_path, model_weights, model, n_free_cpus
     )
 
     yaml_contents = parse_yaml(yaml_file)
