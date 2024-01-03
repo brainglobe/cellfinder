@@ -40,7 +40,7 @@ jobs:
       matrix:
         # Run all supported Python versions on linux
         os: [ubuntu-latest]
-        python-version: ["3.8", "3.9", "3.10"]
+        python-version: ["3.9", "3.10"]
         # Include one windows, one macos run
         include:
         - os: macos-latest
