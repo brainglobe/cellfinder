@@ -42,7 +42,6 @@ class PrepModels:
 
     def time_prep_models(self, model_name):
         prep_models(
-            self.trained_model,
             self.model_weights,
             self.install_path,
             model_name,
@@ -50,7 +49,6 @@ class PrepModels:
 
     def time_prep_classification(self, model_name):
         prep_model_weights(
-            self.trained_model,
             self.model_weights,
             self.install_path,
             model_name,
