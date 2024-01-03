@@ -19,20 +19,30 @@ For more details, head over to [the documentation website](https://brainglobe.in
 
 At a glance:
 
-- There is a [command-line interface](https://brainglobe.info/documentation/cellfinder/user-guide/command-line/index.html) that integrates [with `brainreg`](https://github.com/brainglobe/brainreg) for automated cell detection and classification.
+- There is a command-line interface called [brainmapper](https://brainglobe.info/documentation/brainglobe-workflows/brainmapper/index.html) that integrates [with `brainreg`](https://github.com/brainglobe/brainreg) for automated cell detection and classification. You can install it through [`brainglobe-workflows`](https://brainglobe.info/documentation/brainglobe-workflows/index.html).
 - There is a [napari plugin](https://brainglobe.info/documentation/cellfinder/user-guide/napari-plugin/index.html) for interacting graphically with the cellfinder tool.
 - There is a [Python API](https://brainglobe.info/documentation/cellfinder/user-guide/cellfinder-core.html) to allow users to integrate BrainGlobe tools into their custom workflows.
 
 ## Installation
 
 You can find [the installation instructions](https://brainglobe.info/documentation/cellfinder/installation.html#installation) on the BrainGlobe website, which will go into more detail about the installation process if you want to minimise your installation to suit your needs.
-However, we recommend that users install `cellfinder` either through installing BrainGlobe version 1, or (if you also want the command-line interface) installing `brainglobe-workflows`:
+However, we recommend that users install `cellfinder` either through installing BrainGlobe version 1, or (if you also want the command-line interface) installing `brainglobe-workflows`.
 
 ```bash
-pip install cellfinder>=1.0.0 # If you just want the napari plugin and Python API
-pip install brainglobe>=1.0.0 # If you want to install all BrainGlobe tools, including cellfinder, in a consistent manner with one command
-pip install brainglobe-workflows>=1.0.0 # If you want to include the CLI
+# If you want to install all BrainGlobe tools, including cellfinder, in a consistent manner with one command:
+pip install brainglobe>=1.0.0
+# If you want to install the brainmapper CLI tool as well:
+pip install brainglobe-workflows>=1.0.0
 ```
+
+If you only want the `cellfinder` package by itself, you can `pip install` it alone:
+
+```bash
+pip install cellfinder>=1.0.0
+```
+
+Be sure to specify a version greater than version `v1.0.0` - prior to this version the `cellfinder` package had a very different structure that is incompatible with BrainGlobe version 1 and the other tools in the BrainGlobe suite.
+See [our blog posts](https://brainglobe.info/blog/) for more information on the release of BrainGlobe version 1.
 
 ## Contributing
 
