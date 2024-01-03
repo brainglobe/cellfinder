@@ -14,18 +14,18 @@ background_im_dir = os.path.join(data_dir, "background")
 
 def test_get_subdirectories():
     subdirs = system.get_subdirectories(data_dir)
-    assert len(subdirs) == 9
+    assert len(subdirs) == 8
     assert Path(data_dir / "cells") in subdirs
-    assert Path(data_dir / "brain") in subdirs
+    assert Path(data_dir / "background") in subdirs
 
     subdir_names = system.get_subdirectories(data_dir, names_only=True)
-    assert len(subdir_names) == 9
+    assert len(subdir_names) == 8
     assert "cells" in subdir_names
-    assert "brain" in subdir_names
+    assert "background" in subdir_names
 
 
 def test_get_number_of_files_in_dir():
-    assert system.get_number_of_files_in_dir(background_im_dir) == 26
+    assert system.get_number_of_files_in_dir(background_im_dir) == 27
 
 
 def write_file_single_size(directory, file_size):
