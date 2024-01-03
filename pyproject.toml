@@ -111,6 +111,7 @@ include = ["cellfinder*"]
 build = "cp38-* cp39-* cp310-*"
 
 [tool.pytest.ini_options]
+addopts = "--cov=cellfinder"
 markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
 ]
