@@ -103,6 +103,10 @@ include = ["cellfinder*"]
 
 [tool.setuptools_scm]
 
+[tool.pytest.ini_options]
+addopts = "--cov=cellfinder"
+markers = ["slow: marks tests as slow (deselect with '-m \"not slow\"')"]
+
 [tool.tox]
 legacy_tox_ini = """
 # For more information about tox, see https://tox.readthedocs.io/en/latest/

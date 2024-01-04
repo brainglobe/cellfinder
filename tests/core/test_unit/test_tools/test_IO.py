@@ -2,8 +2,8 @@ import dask.array as d_array
 
 from cellfinder.core.tools import IO
 
-BRAIN_DIR = "tests/data/brain"
-BRAIN_PATHS = f"{BRAIN_DIR}/brain_paths.txt"
+BRAIN_DIR = "tests/data/background"
+BRAIN_PATHS = f"{BRAIN_DIR}/background_paths.txt"
 
 
 def test_read_with_dask_txt():
