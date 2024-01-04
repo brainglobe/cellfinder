@@ -23,7 +23,7 @@ widget_header = """
 <p>Efficient cell detection in large images.</p>
 <p><a href="https://brainglobe.info" style="color:gray;">Website</a></p>
 <p><a href="https://brainglobe.info/documentation/cellfinder/user-guide/napari-plugin/index.html" style="color:gray;">Documentation</a></p>
-<p><a href="https://github.com/brainglobe/cellfinder-napari" style="color:gray;">Source</a></p>
+<p><a href="https://github.com/brainglobe/cellfinder" style="color:gray;">Source</a></p>
 <p><a href="https://doi.org/10.1371/journal.pcbi.1009074" style="color:gray;">Citation</a></p>
 <p><small>For help, hover the cursor over each parameter.</small>
 """  # noqa: E501
