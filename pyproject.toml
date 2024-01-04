@@ -14,7 +14,6 @@ classifiers = [
     "Operating System :: OS Independent",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Topic :: Scientific/Engineering :: Image Recognition",
@@ -80,12 +79,9 @@ requires = ["setuptools>=45", "wheel", "setuptools_scm[toml]>=6.2"]
 build-backend = 'setuptools.build_meta'
 
 [tool.black]
-target-version = ['py38', 'py39', 'py310']
+target-version = ['py39', 'py310']
 skip-string-normalization = false
 line-length = 79
-
-[tool.cibuildwheel.macos]
-archs = ["x86_64", "arm64"]
 
 [tool.ruff]
 line-length = 79
@@ -107,5 +103,38 @@ include = ["cellfinder*"]
 
 [tool.setuptools_scm]
 
-[tool.cibuildwheel]
-build = "cp38-* cp39-* cp310-*"
+[tool.tox]
+legacy_tox_ini = """
+# For more information about tox, see https://tox.readthedocs.io/en/latest/
+[tox]
+envlist = py{39,310}
+isolated_build = true
+
+[gh-actions]
+python =
+    3.9: py39
+    3.10: py310
+
+[testenv]
+commands = python -m pytest -v --color=yes
+deps =
+    pytest
+    pytest-cov
+    pytest-lazy-fixture
+    pytest-mock
+    pytest-timeout
+    # Even though napari is a requirement for cellfinder.napari, we have to
+    # ensure it is installed with the default Qt backend here.
+    napari[all]
+    pytest-qt
+extras =
+    napari
+passenv =
+    NUMBA_DISABLE_JIT
+    CI
+    GITHUB_ACTIONS
+    DISPLAY
+    XAUTHORITY
+    NUMPY_EXPERIMENTAL_ARRAY_FUNCTION
+    PYVISTA_OFF_SCREEN
+"""
