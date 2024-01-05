@@ -87,8 +87,8 @@ def main(
         detect_finished_callback(points)
 
     install_path = None
-    model_weights = prep.prep_classification(
-        trained_model, model_weights, install_path, model, n_free_cpus
+    model_weights = prep.prep_model_weights(
+        model_weights, install_path, model, n_free_cpus
     )
     if len(points) > 0:
         logger.info("Running classification")
