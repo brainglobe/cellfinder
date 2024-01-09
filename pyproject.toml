@@ -21,6 +21,7 @@ classifiers = [
 requires-python = ">=3.9"
 dependencies = [
     "brainglobe-utils",
+    "brainglobe-napari-io",
     "dask[array]",
     "fancylog>=0.0.7",
     "natsort",
