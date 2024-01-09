@@ -51,6 +51,16 @@ def calculate_parameters_in_pixels(
     ball_xy_size = int(round(ball_xy_size_um / mean_in_plane_pixel_size))
     ball_z_size = int(round(ball_z_size_um / float(voxel_sizes[0])))
 
+    if ball_z_size == 0:
+        raise ValueError(
+            "Ball z size has been calculated to be 0 voxels."
+            " This may be due to large axial spacing of your data or the "
+            "ball_z_size_um parameter being too small. "
+            "Please check input parameters are correct. "
+            "Note that cellfinder requires high resolution data in all "
+            "dimensions, so that cells can be detected in multiple "
+            "image planes."
+        )
     return soma_diameter, max_cluster_size, ball_xy_size, ball_z_size
 
 
