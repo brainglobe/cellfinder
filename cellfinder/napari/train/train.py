@@ -5,6 +5,7 @@ from magicgui import magicgui
 from magicgui.widgets import FunctionGui, PushButton
 from napari.qt.threading import thread_worker
 from napari.utils.notifications import show_info
+from qtpy.QtWidgets import QScrollArea
 
 from cellfinder.core.train.train_yml import run as train_yml
 from cellfinder.napari.utils import (
@@ -48,6 +49,7 @@ def training_widget() -> FunctionGui:
         **MiscTrainingInputs.widget_representation(),
         call_button=True,
         reset_button=dict(widget_type="PushButton", text="Reset defaults"),
+        scrollable=True,
     )
     def widget(
         header: dict,
@@ -174,5 +176,9 @@ def training_widget() -> FunctionGui:
             # ignore fields with no default
             if value is not None:
                 getattr(widget, name).value = value
+
+    scroll = QScrollArea()
+    scroll.setWidget(widget._widget._qwidget)
+    widget._widget._qwidget = scroll
 
     return widget
