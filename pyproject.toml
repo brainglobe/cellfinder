@@ -70,8 +70,8 @@ cellfinder = "cellfinder.cli_migration_warning:cli_catch"
 
 [project.urls]
 Homepage = "https://brainglobe.info/documentation/cellfinder/index.html"
-"Source Code" = "https://github.com/brainglobe/cellfinder-core"
-"Bug Tracker" = "https://github.com/brainglobe/cellfinder-core/issues"
+"Source Code" = "https://github.com/brainglobe/cellfinder"
+"Bug Tracker" = "https://github.com/brainglobe/cellfinder/issues"
 Documentation = "https://brainglobe.info/documentation/cellfinder/index.html"
 "User Support" = "https://forum.image.sc/tag/brainglobe"
 
