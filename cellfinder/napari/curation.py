@@ -9,6 +9,7 @@ from brainglobe_utils.cells.cells import Cell
 from brainglobe_utils.general.system import delete_directory_contents
 from brainglobe_utils.IO.yaml import save_yaml
 from brainglobe_utils.qtpy.dialog import display_warning
+from brainglobe_utils.qtpy.interaction import add_button, add_combobox
 from magicgui.widgets import ProgressBar
 from napari.qt.threading import thread_worker
 from napari.utils.notifications import show_info
@@ -21,8 +22,6 @@ from qtpy.QtWidgets import (
     QLabel,
     QWidget,
 )
-
-from .utils import add_button, add_combobox, display_question
 
 # Constants used throughout
 WINDOW_HEIGHT = 750
@@ -175,33 +174,33 @@ class CurationWidget(QWidget):
             self.load_data_layout,
             "Training_data (non_cells)",
             self.point_layer_names,
-            4,
+            row=4,
             callback=self.set_training_data_non_cell,
         )
         self.mark_as_cell_button = add_button(
             "Mark as cell(s)",
             self.load_data_layout,
             self.mark_as_cell,
-            5,
+            row=5,
         )
         self.mark_as_non_cell_button = add_button(
             "Mark as non cell(s)",
             self.load_data_layout,
             self.mark_as_non_cell,
-            5,
+            row=5,
             column=1,
         )
         self.add_training_data_button = add_button(
             "Add training data layers",
             self.load_data_layout,
             self.add_training_data,
-            6,
+            row=6,
         )
         self.save_training_data_button = add_button(
             "Save training data",
             self.load_data_layout,
             self.save_training_data,
-            6,
+            row=6,
             column=1,
         )
         self.load_data_layout.setColumnMinimumWidth(0, COLUMN_WIDTH)
@@ -365,7 +364,10 @@ class CurationWidget(QWidget):
             )
 
     def save_training_data(
-        self, *, block: bool = False, prompt_for_directory: bool = True
+        self,
+        *,
+        block: bool = False,
+        prompt_for_directory: bool = True,
     ) -> None:
         """
         Parameters
