@@ -6,7 +6,10 @@ import numpy as np
 import tifffile
 from brainglobe_napari_io.cellfinder.utils import convert_layer_to_cells
 from brainglobe_utils.cells.cells import Cell
+from brainglobe_utils.general.system import delete_directory_contents
 from brainglobe_utils.IO.yaml import save_yaml
+from brainglobe_utils.qtpy.dialog import display_warning
+from brainglobe_utils.qtpy.interaction import add_button, add_combobox
 from magicgui.widgets import ProgressBar
 from napari.qt.threading import thread_worker
 from napari.utils.notifications import show_info
@@ -19,8 +22,6 @@ from qtpy.QtWidgets import (
     QLabel,
     QWidget,
 )
-
-from .utils import add_button, add_combobox, display_question
 
 # Constants used throughout
 WINDOW_HEIGHT = 750
@@ -173,33 +174,33 @@ class CurationWidget(QWidget):
             self.load_data_layout,
             "Training_data (non_cells)",
             self.point_layer_names,
-            4,
+            row=4,
             callback=self.set_training_data_non_cell,
         )
         self.mark_as_cell_button = add_button(
             "Mark as cell(s)",
             self.load_data_layout,
             self.mark_as_cell,
-            5,
+            row=5,
         )
         self.mark_as_non_cell_button = add_button(
             "Mark as non cell(s)",
             self.load_data_layout,
             self.mark_as_non_cell,
-            5,
+            row=5,
             column=1,
         )
         self.add_training_data_button = add_button(
             "Add training data layers",
             self.load_data_layout,
             self.add_training_data,
-            6,
+            row=6,
         )
         self.save_training_data_button = add_button(
             "Save training data",
             self.load_data_layout,
             self.save_training_data,
-            6,
+            row=6,
             column=1,
         )
         self.load_data_layout.setColumnMinimumWidth(0, COLUMN_WIDTH)
@@ -256,7 +257,7 @@ class CurationWidget(QWidget):
 
         overwrite = False
         if self.training_data_cell_layer or self.training_data_non_cell_layer:
-            overwrite = display_question(
+            overwrite = display_warning(
                 self,
                 "Training data layers exist",
                 "Training data layers already exist,  "
@@ -363,7 +364,10 @@ class CurationWidget(QWidget):
             )
 
     def save_training_data(
-        self, *, block: bool = False, prompt_for_directory: bool = True
+        self,
+        *,
+        block: bool = False,
+        prompt_for_directory: bool = True,
     ) -> None:
         """
         Parameters
@@ -373,15 +377,44 @@ class CurationWidget(QWidget):
         prompt_for_directory :
             If `True` show a file dialog for the user to select a directory.
         """
+
         if self.is_data_extractable():
             if prompt_for_directory:
                 self.get_output_directory()
+                # if the directory is not empty
+                if any(self.output_directory.iterdir()):
+                    choice = display_warning(
+                        self,
+                        "About to save training data",
+                        "Existing files will be will be deleted. Proceed?",
+                    )
+                    if not choice:
+                        return
             if self.output_directory is not None:
+                self.__prep_directories_for_save()
                 self.__extract_cubes(block=block)
                 self.__save_yaml_file()
                 show_info("Done")
 
             self.update_status_label("Ready")
+
+    def __prep_directories_for_save(self):
+        self.yaml_filename = self.output_directory / "training.yml"
+        self.cell_cube_dir = self.output_directory / "cells"
+        self.no_cell_cube_dir = self.output_directory / "non_cells"
+
+        self.__delete_existing_saved_training_data()
+
+    def __delete_existing_saved_training_data(self):
+        self.yaml_filename.unlink(missing_ok=True)
+        for directory in (
+            self.cell_cube_dir,
+            self.no_cell_cube_dir,
+        ):
+            if directory.exists():
+                delete_directory_contents(directory)
+            else:
+                directory.mkdir(exist_ok=True, parents=True)
 
     def __extract_cubes(self, *, block=False):
         """
@@ -489,18 +522,16 @@ class CurationWidget(QWidget):
         self.non_cells_to_extract = list(set(self.non_cells_to_extract))
 
     def __save_yaml_file(self):
-        # TODO: implement this in a portable way
-        yaml_filename = self.output_directory / "training.yml"
         yaml_section = [
             {
-                "cube_dir": str(self.output_directory / "cells"),
+                "cube_dir": str(self.cell_cube_dir),
                 "cell_def": "",
                 "type": "cell",
                 "signal_channel": 0,
                 "bg_channel": 1,
             },
             {
-                "cube_dir": str(self.output_directory / "non_cells"),
+                "cube_dir": str(self.no_cell_cube_dir),
                 "cell_def": "",
                 "type": "no_cell",
                 "signal_channel": 0,
@@ -509,7 +540,7 @@ class CurationWidget(QWidget):
         ]
 
         yaml_contents = {"data": yaml_section}
-        save_yaml(yaml_contents, yaml_filename)
+        save_yaml(yaml_contents, self.yaml_filename)
 
     def update_progress(self, attributes: dict):
         """
@@ -538,9 +569,15 @@ class CurationWidget(QWidget):
             "non_cells": self.non_cells_to_extract,
         }
 
-        for cell_type, cell_list in to_extract.items():
-            cell_type_output_directory = self.output_directory / cell_type
-            cell_type_output_directory.mkdir(exist_ok=True, parents=True)
+        directories = {
+            "cells": self.cell_cube_dir,
+            "non_cells": self.no_cell_cube_dir,
+        }
+
+        for cell_type in ["cells", "non_cells"]:
+            cell_type_output_directory = directories[cell_type]
+            cell_list = to_extract[cell_type]
+
             self.update_status_label(f"Saving {cell_type}...")
 
             cube_generator = CubeGeneratorFromFile(
