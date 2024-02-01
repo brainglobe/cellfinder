@@ -46,11 +46,11 @@ dev = [
     "pre-commit",
     "pyinstrument",
     "pytest-cov",
-    "pytest-lazy-fixture",
     "pytest-mock",
     "pytest-qt",
     "pytest-timeout",
     "pytest",
+    "scikit-image",
     "tox",
 ]
 napari = [
@@ -125,7 +125,6 @@ commands = python -m pytest -v --color=yes
 deps =
     pytest
     pytest-cov
-    pytest-lazy-fixture
     pytest-mock
     pytest-timeout
     # Even though napari is a requirement for cellfinder.napari, we have to
