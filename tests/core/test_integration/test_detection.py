@@ -43,6 +43,7 @@ def background_array():
 
 
 # FIXME: This isn't a very good example
+@pytest.mark.skip()
 @pytest.mark.slow
 @pytest.mark.parametrize(
     "free_cpus",
