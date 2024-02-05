@@ -324,7 +324,7 @@ def run(
 
     suppress_tf_logging(tf_suppress_log_messages)
 
-    from tensorflow.keras.callbacks import (
+    from keras.callbacks import (
         CSVLogger,
         ModelCheckpoint,
         TensorBoard,
