@@ -2,6 +2,7 @@
 N.B imports are within functions to prevent tensorflow being imported before
 it's warnings are silenced
 """
+
 import os
 from typing import Callable, List, Optional, Tuple
 
