@@ -2,13 +2,13 @@ from pathlib import Path
 from random import shuffle
 from typing import Dict, List, Optional, Tuple, Union
 
+import keras
 import numpy as np
-import tensorflow as tf
 from brainglobe_utils.cells.cells import Cell, group_cells_by_z
 from brainglobe_utils.general.numerical import is_even
+from keras.utils import Sequence
 from scipy.ndimage import zoom
 from skimage.io import imread
-from keras.utils import Sequence
 
 from cellfinder.core import types
 from cellfinder.core.classify.augment import AugmentationParameters, augment

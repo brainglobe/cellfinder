@@ -1,10 +1,10 @@
 import os
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
+import keras
 import numpy as np
 from brainglobe_utils.cells.cells import Cell
 from brainglobe_utils.general.system import get_num_processes
-import keras
 
 from cellfinder.core import logger, types
 from cellfinder.core.classify.cube_generator import CubeGeneratorFromFile

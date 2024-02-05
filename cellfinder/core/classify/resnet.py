@@ -1,6 +1,5 @@
 from typing import Callable, Dict, List, Literal, Optional, Tuple, Union
 
-from tensorflow import Tensor
 from keras import Model
 from keras.initializers import Initializer
 from keras.layers import (
@@ -15,6 +14,7 @@ from keras.layers import (
     ZeroPadding3D,
 )
 from keras.optimizers import Adam, Optimizer
+from tensorflow import Tensor
 
 #####################################################################
 # Define the types of ResNet

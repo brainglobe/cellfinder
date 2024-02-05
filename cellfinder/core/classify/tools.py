@@ -39,7 +39,8 @@ def get_model(
     else:
         logger.debug(f"Creating a new instance of model: {network_depth}")
         model = build_model(
-            network_depth=network_depth, learning_rate=learning_rate,
+            network_depth=network_depth,
+            learning_rate=learning_rate,
         )
         if inference or continue_training:
             logger.debug(
@@ -52,7 +53,8 @@ def get_model(
 
 
 def make_lists(
-    tiff_files: Sequence, train: bool = True,
+    tiff_files: Sequence,
+    train: bool = True,
 ) -> Union[Tuple[List, List], Tuple[List, List, np.ndarray]]:
     signal_list = []
     background_list = []
