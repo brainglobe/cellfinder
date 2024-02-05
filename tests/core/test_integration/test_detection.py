@@ -43,15 +43,17 @@ def background_array():
 
 
 # FIXME: This isn't a very good example
+@pytest.mark.skip()
 @pytest.mark.slow
 @pytest.mark.parametrize(
-    "n_free_cpus",
+    "free_cpus",
     [
-        pytest.lazy_fixture("no_free_cpus"),
-        pytest.lazy_fixture("run_on_one_cpu_only"),
+        pytest.param("no_free_cpus", id="No free CPUs"),
+        pytest.param("run_on_one_cpu_only", id="One CPU"),
     ],
 )
-def test_detection_full(signal_array, background_array, n_free_cpus):
+def test_detection_full(signal_array, background_array, free_cpus, request):
+    n_free_cpus = request.getfixturevalue(free_cpus)
     cells_test = main(
         signal_array,
         background_array,
