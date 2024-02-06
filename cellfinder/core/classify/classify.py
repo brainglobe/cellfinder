@@ -63,6 +63,8 @@ def main(
         cube_width=cube_width,
         cube_height=cube_height,
         cube_depth=cube_depth,
+        use_multiprocessing=True,
+        workers=workers,
     )
 
     model = get_model(
@@ -73,10 +75,11 @@ def main(
     )
 
     logger.info("Running inference")
+    # in Keras 3.0, multiprocessing params are now specified in the generator
     predictions = model.predict(
         inference_generator,
-        use_multiprocessing=True,
-        workers=workers,
+        # use_multiprocessing=True,
+        # workers=workers,
         verbose=True,
         callbacks=callbacks,
     )

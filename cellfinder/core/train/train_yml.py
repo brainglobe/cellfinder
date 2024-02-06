@@ -386,7 +386,7 @@ def run(
             labels=labels_test,
             batch_size=batch_size,
             train=True,
-        )  # PyDataset
+        )  # PyDataset, validation_generator.use_multiprocessing=False; assert?
 
         # for saving checkpoints
         base_checkpoint_file_name = "-epoch.{epoch:02d}-loss-{val_loss:.3f}"
@@ -446,7 +446,7 @@ def run(
         callbacks.append(csv_logger)
 
     logger.info("Beginning training.")
-    # Keras 3.0: for model the `use_multiprocessing` input does not exist
+    # Keras 3.0: for model.fit() the `use_multiprocessing` input does not exist
     # anymore, it is set in `training_generator` instead and it is False
     # by default
     model.fit(
@@ -454,7 +454,7 @@ def run(
         validation_data=validation_generator,
         epochs=epochs,
         callbacks=callbacks,
-    )
+    )  # training_generator.use_multiprocessing = False
 
     if save_weights:
         logger.info("Saving model weights")
