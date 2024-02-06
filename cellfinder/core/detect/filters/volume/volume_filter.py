@@ -161,7 +161,6 @@ class VolumeFilter(object):
                         Cell.UNKNOWN,
                     )
                 )
-                logger.debug("Found cell < max_cell_volume.")
             else:
                 if cell_volume < self.max_cluster_size:
                     try:
@@ -183,7 +182,6 @@ class VolumeFilter(object):
                                 Cell.UNKNOWN,
                             )
                         )
-                    logger.debug("Found cell < max_cluster_size.")
                 else:
                     cell_centre = get_structure_centre(cell_points)
                     cells.append(
@@ -196,7 +194,6 @@ class VolumeFilter(object):
                             Cell.ARTIFACT,
                         )
                     )
-                    logger.debug("Found artifact cell.")
 
         logger.debug("Finished splitting cell clusters.")
         return cells
