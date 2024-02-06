@@ -43,17 +43,45 @@ def background_array():
 
 
 # FIXME: This isn't a very good example
-@pytest.mark.skip()
 @pytest.mark.slow
 @pytest.mark.parametrize(
-    "free_cpus",
+    "cpus_to_leave_available",
     [
-        pytest.param("no_free_cpus", id="No free CPUs"),
-        pytest.param("run_on_one_cpu_only", id="One CPU"),
+        pytest.param(0, id="Leave no CPUS free"),
+        pytest.param(-1, id="Only use one CPU"),
     ],
 )
-def test_detection_full(signal_array, background_array, free_cpus, request):
-    n_free_cpus = request.getfixturevalue(free_cpus)
+def test_detection_full(
+    signal_array, background_array, cpus_to_leave_available: int
+):
+    """
+    cpus_to_leave_available is interpreted as follows:
+
+    - For values >=0, this is the number of CPUs to leave available
+    to the system when running this test.
+    - For values <0, this is HOW MANY CPUS to request be used to
+    run the test.
+
+    In each case, we check that we will be running on at least one CPU,
+    and not requesting more CPUs than the system can provide.
+    """
+    # Determine the number of CPUs to leave available
+    system_cpus = os.cpu_count()
+    # How many CPUs do we want to leave free?
+    if cpus_to_leave_available >= 0:
+        n_free_cpus = cpus_to_leave_available
+    else:
+        # Number of CPUs to keep free is <0, interpret as
+        # number of CPUs _to use_. Thus;
+        # n_free_cpus = system_cpus - |cpus_to_leave_available|
+        n_free_cpus = system_cpus - abs(cpus_to_leave_available)
+    # Check that there are enough CPUs
+    if not 0 <= n_free_cpus < system_cpus:
+        RuntimeError(
+            f"Not enough CPUS available (you want to leave {n_free_cpus} "
+            f"available, but there are only {system_cpus} on the system)."
+        )
+
     cells_test = main(
         signal_array,
         background_array,
@@ -81,10 +109,13 @@ def test_detection_full(signal_array, background_array, free_cpus, request):
 
 
 def test_detection_small_planes(
-    signal_array, background_array, no_free_cpus, mocker
+    signal_array,
+    background_array,
+    mocker,
+    cpus_to_leave_free: int = 0,
 ):
     # Check that processing works when number of planes < number of processes
-    nproc = get_num_processes(no_free_cpus)
+    nproc = get_num_processes(cpus_to_leave_free)
     n_planes = 2
 
     # Don't want to bother classifying in this test, so mock classifcation
@@ -101,11 +132,13 @@ def test_detection_small_planes(
         background_array[0:n_planes],
         voxel_sizes,
         ball_z_size=5,
-        n_free_cpus=no_free_cpus,
+        n_free_cpus=cpus_to_leave_free,
     )
 
 
-def test_callbacks(signal_array, background_array, no_free_cpus):
+def test_callbacks(
+    signal_array, background_array, cpus_to_leave_free: int = 0
+):
     # 20 is minimum number of planes needed to find > 0 cells
     signal_array = signal_array[0:20]
     background_array = background_array[0:20]
@@ -130,7 +163,7 @@ def test_callbacks(signal_array, background_array, no_free_cpus):
         detect_callback=detect_callback,
         classify_callback=classify_callback,
         detect_finished_callback=detect_finished_callback,
-        n_free_cpus=no_free_cpus,
+        n_free_cpus=cpus_to_leave_free,
     )
 
     np.testing.assert_equal(planes_done, np.arange(len(signal_array)))
@@ -148,13 +181,13 @@ def test_floating_point_error(signal_array, background_array):
         main(signal_array, background_array, voxel_sizes)
 
 
-def test_synthetic_data(synthetic_bright_spots, no_free_cpus):
+def test_synthetic_data(synthetic_bright_spots, cpus_to_leave_free: int = 0):
     signal_array, background_array = synthetic_bright_spots
     detected = main(
         signal_array,
         background_array,
         voxel_sizes,
-        n_free_cpus=no_free_cpus,
+        n_free_cpus=cpus_to_leave_free,
     )
     assert len(detected) == 8
 
