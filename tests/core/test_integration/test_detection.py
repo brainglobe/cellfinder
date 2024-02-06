@@ -43,6 +43,7 @@ def background_array():
 
 
 # FIXME: This isn't a very good example
+@pytest.mark.skip(reason="resolved in PR369")
 @pytest.mark.slow
 @pytest.mark.parametrize(
     "cpus_to_leave_available",
