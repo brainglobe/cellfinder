@@ -8,7 +8,7 @@ except PackageNotFoundError as e:
 # If Keras is not present with a backend, tools cannot be used.
 # Throw an error in this case to prevent invocation of functions.
 try:
-    KERAS_VERSION = version("keras")  # replace by keras?
+    KERAS_VERSION = version("keras")
 except PackageNotFoundError as e:
     raise PackageNotFoundError(
         f"cellfinder tools cannot be invoked without Keras. "
