@@ -458,10 +458,10 @@ def run(
 
     if save_weights:
         logger.info("Saving model weights")
-        model.save_weights(str(output_dir / "model.weights.h5"))
+        model.save_weights(output_dir / "model.weights.h5")
     else:
         logger.info("Saving model")
-        model.save(str(output_dir / "model.keras"))
+        model.save(output_dir / "model.keras")
 
     logger.info(
         "Finished training, " "Total time taken: %s",
