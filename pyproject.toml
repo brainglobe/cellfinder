@@ -50,7 +50,6 @@ dev = [
     "pytest-qt",
     "pytest-timeout",
     "pytest",
-    "scikit-image",
     "tox",
 ]
 napari = [
