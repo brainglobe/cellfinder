@@ -180,12 +180,10 @@ def main(
         cells = mp_3d_filter.process(async_results, locks, callback=callback)
 
     time_elapsed = datetime.now() - start_time
-    logger.debug(f"All Planes done. Found {len(cells)} cells in {format(time_elapsed)}")
-    print(
-        "Detection complete - all planes done in : {}".format(
-            time_elapsed
-        )
+    logger.debug(
+        f"All Planes done. Found {len(cells)} cells in {format(time_elapsed)}"
     )
+    print("Detection complete - all planes done in : {}".format(time_elapsed))
     return cells
 
 

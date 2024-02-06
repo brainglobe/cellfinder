@@ -143,7 +143,9 @@ class VolumeFilter(object):
 
         cells = []
 
-        logger.debug(f"Processing {len(self.cell_detector.coords_maps.items())} cells")
+        logger.debug(
+            f"Processing {len(self.cell_detector.coords_maps.items())} cells"
+        )
         for cell_id, cell_points in self.cell_detector.coords_maps.items():
             cell_volume = len(cell_points)
 
@@ -159,7 +161,7 @@ class VolumeFilter(object):
                         Cell.UNKNOWN,
                     )
                 )
-                logger.debug(f"Found cell < max_cell_volume.")
+                logger.debug("Found cell < max_cell_volume.")
             else:
                 if cell_volume < self.max_cluster_size:
                     try:
@@ -181,7 +183,7 @@ class VolumeFilter(object):
                                 Cell.UNKNOWN,
                             )
                         )
-                    logger.debug(f"Found cell < max_cluster_size.")
+                    logger.debug("Found cell < max_cluster_size.")
                 else:
                     cell_centre = get_structure_centre(cell_points)
                     cells.append(
@@ -194,7 +196,7 @@ class VolumeFilter(object):
                             Cell.ARTIFACT,
                         )
                     )
-                    logger.debug(f"Found artifact cell.")
+                    logger.debug("Found artifact cell.")
 
         logger.debug("Finished splitting cell clusters.")
         return cells
