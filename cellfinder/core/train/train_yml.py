@@ -386,7 +386,8 @@ def run(
             labels=labels_test,
             batch_size=batch_size,
             train=True,
-        )  # PyDataset, validation_generator.use_multiprocessing=False; assert?
+            use_multiprocessing=False,
+        )
 
         # for saving checkpoints
         base_checkpoint_file_name = "-epoch.{epoch:02d}-loss-{val_loss:.3f}"
@@ -404,9 +405,8 @@ def run(
         shuffle=True,
         train=True,
         augment=not no_augment,
-    )  # PyDataset - in Keras 3.0, multiprocessing should be specified here
-    # (rather than in input to fit() for ex)
-    # by default: use_multiprocessing=False
+        use_multiprocessing=False,
+    )
     callbacks = []
 
     if tensorboard:
@@ -421,9 +421,10 @@ def run(
         callbacks.append(tensorboard)
 
     if not no_save_checkpoints:
-        # Keras 3.0: filepath name needs to end with
+        # In Keras 3.0, the name of the checkpoint needs to end with
         # - ".weights.h5" when save_weights_only=True or
-        # - ".keras" when checkpoint saving the whole model (default)
+        # - ".keras" when saving the whole model
+        # see https://keras.io/api/callbacks/model_checkpoint/#modelcheckpoint-class
         if save_weights:
             filepath = str(
                 output_dir
@@ -446,15 +447,14 @@ def run(
         callbacks.append(csv_logger)
 
     logger.info("Beginning training.")
-    # Keras 3.0: for model.fit() the `use_multiprocessing` input does not exist
-    # anymore, it is set in `training_generator` instead and it is False
-    # by default
+    # Keras 3.0: `use_multiprocessing` input is set in the
+    # `training_generator` instead (False by default)
     model.fit(
         training_generator,
         validation_data=validation_generator,
         epochs=epochs,
         callbacks=callbacks,
-    )  # training_generator.use_multiprocessing = False
+    )
 
     if save_weights:
         logger.info("Saving model weights")

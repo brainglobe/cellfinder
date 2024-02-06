@@ -75,11 +75,9 @@ def main(
     )
 
     logger.info("Running inference")
-    # in Keras 3.0, multiprocessing params are now specified in the generator
+    # in Keras 3.0 multiprocessing params are specified in the generator
     predictions = model.predict(
         inference_generator,
-        # use_multiprocessing=True,
-        # workers=workers,
         verbose=True,
         callbacks=callbacks,
     )

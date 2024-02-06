@@ -58,21 +58,7 @@ class CubeGeneratorFromFile(Sequence):
         interpolation_order: int = 2,
         *args,
         **kwargs,
-        # use_multiprocessing: bool = False,
-        # workers: int = 3, # 3 from max num workers
     ):
-        # Multiprocessing parameters
-        # Option 1
-        # use_multiprocessing will set _use_multiprocessing too,
-        # see https://github.com/keras-team/keras/blob/5bc8488c0ea3f43c70c70ebca919093cd56066eb/keras/trainers/data_adapters/py_dataset_adapter.py#L134
-        # self.use_multiprocessing = use_multiprocessing
-        # self.workers = workers
-        # ----------
-        # Option 2:
-        # call constructor of superclass to avoid redundance instead?
-        # Sequence.__init__(self, use_multiprocessing, workers)
-        # ----------
-        # Option 3:
         # pass any additional arguments not specified in signature to the
         # constructor of the superclass (e.g.: `use_multiprocessing` or
         # `workers`)
@@ -375,8 +361,6 @@ class CubeGeneratorFromDisk(Sequence):
         interpolation_order: int = 2,
         *args,
         **kwargs,
-        # use_multiprocessing: bool = False,
-        # workers: int = 3, # 3 from max num workers
     ):
         # pass any additional arguments not specified in signature to the
         # constructor of the superclass (e.g.: `use_multiprocessing` or
