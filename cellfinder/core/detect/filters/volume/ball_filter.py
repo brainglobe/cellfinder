@@ -327,6 +327,6 @@ def _walk(
                     THRESHOLD_VALUE,
                     kernel,
                 ):
-                    volume[
-                        ball_centre_x, ball_centre_y, middle_z
-                    ] = SOMA_CENTRE_VALUE
+                    volume[ball_centre_x, ball_centre_y, middle_z] = (
+                        SOMA_CENTRE_VALUE
+                    )

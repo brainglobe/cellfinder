@@ -197,9 +197,7 @@ class CubeGeneratorFromFile(Sequence):
         """
         return len(self.batches)
 
-    def __getitem__(
-        self, index: int
-    ) -> Union[
+    def __getitem__(self, index: int) -> Union[
         np.ndarray,
         Tuple[np.ndarray, List[Dict[str, float]]],
         Tuple[np.ndarray, Dict],
@@ -389,9 +387,7 @@ class CubeGeneratorFromDisk(Sequence):
         """
         return int(np.ceil(len(self.signal_list) / self.batch_size))
 
-    def __getitem__(
-        self, index: int
-    ) -> Union[
+    def __getitem__(self, index: int) -> Union[
         np.ndarray,
         Tuple[np.ndarray, List[Dict[str, float]]],
         Tuple[np.ndarray, Dict],

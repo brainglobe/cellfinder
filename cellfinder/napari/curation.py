@@ -253,9 +253,9 @@ class CurationWidget(QWidget):
             self.training_data_non_cell_layer = self.viewer.layers[
                 self.training_data_non_cell_choice.currentText()
             ]
-            self.training_data_non_cell_layer.metadata[
-                "point_type"
-            ] = Cell.UNKNOWN
+            self.training_data_non_cell_layer.metadata["point_type"] = (
+                Cell.UNKNOWN
+            )
             self.training_data_non_cell_layer.metadata["training_data"] = True
 
     def add_training_data(self):
