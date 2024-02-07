@@ -3,10 +3,12 @@ prep
 ==================
 Functions to prepare files and directories needed for other functions
 """
+
 import os
 from pathlib import Path
 from typing import Optional
 
+import keras
 from brainglobe_utils.general.config import get_config_obj
 from brainglobe_utils.general.system import get_num_processes
 
@@ -26,8 +28,13 @@ def prep_model_weights(
     model_name: model_download.model_type,
     n_free_cpus: int,
 ) -> Path:
-    n_processes = get_num_processes(min_free_cpu_cores=n_free_cpus)
-    prep_tensorflow(n_processes)
+    # if TF backend:
+    if keras.config.backend() == "tensorflow":
+        # prep TF
+        n_processes = get_num_processes(min_free_cpu_cores=n_free_cpus)
+        prep_tensorflow(n_processes)
+
+    # prep models (get default weights or provided ones?)
     model_weights = prep_models(model_weights, install_path, model_name)
 
     return model_weights
@@ -44,7 +51,8 @@ def prep_models(
     model_name: model_download.model_type,
 ) -> Path:
     install_path = install_path or DEFAULT_INSTALL_PATH
-    # if no model or weights, set default weights
+
+    # if no model or weights, set to default weights
     if model_weights_path is None:
         logger.debug("No model supplied, so using the default")
 

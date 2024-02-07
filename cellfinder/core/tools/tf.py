@@ -1,5 +1,3 @@
-import tensorflow as tf
-
 from cellfinder.core import logger
 
 
@@ -9,6 +7,8 @@ def allow_gpu_memory_growth():
     away. Allows multiple processes to use the GPU (and avoid occasional
     errors on some systems) at the cost of a slight performance penalty.
     """
+    import tensorflow as tf  # import inside fns?
+
     gpus = tf.config.experimental.list_physical_devices("GPU")
     if gpus:
         logger.debug("Allowing GPU memory growth")
@@ -37,6 +37,8 @@ def set_tf_threads(max_threads):
         f"Setting maximum number of threads for tensorflow "
         f"to: {max_threads}"
     )
+
+    import tensorflow as tf  # import inside fns?
 
     # If statements are for testing. If tf is initialised, then setting these
     # parameters throws an error
