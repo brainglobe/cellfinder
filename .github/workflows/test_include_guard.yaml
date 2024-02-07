@@ -35,8 +35,8 @@ jobs:
             import cellfinder.core
             import cellfinder.napari
 
-      - name: Uninstall tensorflow
-        run: python -m pip uninstall -y tensorflow
+      - name: Uninstall keras
+        run: python -m pip uninstall -y keras
 
       - name: Test (broken) import
         id: broken_import
