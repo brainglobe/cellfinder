@@ -29,8 +29,7 @@ dependencies = [
     "numpy",
     "scikit-image",
     "scikit-learn",
-    "keras",
-    "tf-nightly==2.16.0.dev20240101", # pinning to same TF as Keras 3.0
+    "keras==3.0.0",
     "tifffile",
     "tqdm",
 ]
@@ -59,6 +58,16 @@ napari = [
     "napari[pyqt5]",
     "pooch >= 1",
     "qtpy",
+]
+tf_backend = [
+    "tf-nightly==2.16.0.dev20240101", # pinning to same TF as Keras 3.0 --> tensorflow==2.15.0 and keras==3.0.0
+]
+jax_backend = [
+    "jax==0.4.20",
+    "jaxlib==0.4.20"
+]
+torch_backend = [
+    "torch==2.1.0"
 ]
 
 [project.scripts]
