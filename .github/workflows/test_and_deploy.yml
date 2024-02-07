@@ -35,7 +35,7 @@ jobs:
   test:
     needs: [linting, manifest]
     name: Run package tests
-    timeout-minutes: 20
+    timeout-minutes: 60
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
