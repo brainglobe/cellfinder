@@ -77,7 +77,7 @@ def test_detection_full(
         n_free_cpus = system_cpus - abs(cpus_to_leave_available)
     # Check that there are enough CPUs
     if not 0 <= n_free_cpus < system_cpus:
-        raise RuntimeError(
+        RuntimeError(
             f"Not enough CPUS available (you want to leave {n_free_cpus} "
             f"available, but there are only {system_cpus} on the system)."
         )
