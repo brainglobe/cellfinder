@@ -421,10 +421,6 @@ def run(
         callbacks.append(tensorboard)
 
     if not no_save_checkpoints:
-        # In Keras 3.0, the name of the checkpoint needs to end with
-        # - ".weights.h5" when save_weights_only=True or
-        # - ".keras" when saving the whole model
-        # see https://keras.io/api/callbacks/model_checkpoint/#modelcheckpoint-class
         if save_weights:
             filepath = str(
                 output_dir
@@ -448,7 +444,7 @@ def run(
 
     logger.info("Beginning training.")
     # Keras 3.0: `use_multiprocessing` input is set in the
-    # `training_generator` instead (False by default)
+    # `training_generator` (False by default)
     model.fit(
         training_generator,
         validation_data=validation_generator,
