@@ -22,6 +22,8 @@ from cellfinder.core.detect.filters.volume.structure_splitting import (
     split_cells,
 )
 
+from multiprocessing import active_children
+
 
 class VolumeFilter(object):
     def __init__(
@@ -90,6 +92,7 @@ class VolumeFilter(object):
             # .get() blocks until the result is available
             plane, mask = result.get()
             logger.debug(f"🏐 Got plane {z}")
+            logger.debug(f"Currently running {len(active_children())} child processes from the main process")
 
             self.ball_filter.append(plane, mask)
 
@@ -108,6 +111,8 @@ class VolumeFilter(object):
 
         progress_bar.close()
         logger.debug("3D filter done")
+        logger.debug(f"Currently running {len(active_children())} child processes from the main process")
+        assert len(active_children)==0
         return self.get_results()
 
     def _run_filter(self) -> None:
