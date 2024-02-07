@@ -12,7 +12,7 @@ try:
 except PackageNotFoundError as e:
     raise PackageNotFoundError(
         f"cellfinder tools cannot be invoked without Keras. "
-        f"Please install tensorflow into your environment to use cellfinder tools. "
+        f"Please install Keras into your environment to use cellfinder tools. "
         f"For more information, please see "
         f"https://github.com/brainglobe/brainglobe-meta#readme."
     ) from e
