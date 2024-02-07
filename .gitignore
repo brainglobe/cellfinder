@@ -143,3 +143,4 @@ benchmarks/env
 */_version.py
 
 .idea/
+.vscode/
