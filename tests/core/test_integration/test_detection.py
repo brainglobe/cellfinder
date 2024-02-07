@@ -43,46 +43,17 @@ def background_array():
 
 
 # FIXME: This isn't a very good example
-@pytest.mark.skip(reason="resolved in PR369")
+@pytest.mark.skip()
 @pytest.mark.slow
 @pytest.mark.parametrize(
-    "cpus_to_leave_available",
+    "free_cpus",
     [
-        pytest.param(0, id="Leave no CPUS free"),
-        pytest.param(-1, id="Only use one CPU"),
+        pytest.param("no_free_cpus", id="No free CPUs"),
+        pytest.param("run_on_one_cpu_only", id="One CPU"),
     ],
 )
-def test_detection_full(
-    signal_array, background_array, cpus_to_leave_available: int
-):
-    """
-    cpus_to_leave_available is interpreted as follows:
-
-    - For values >=0, this is the number of CPUs to leave available
-    to the system when running this test.
-    - For values <0, this is HOW MANY CPUS to request be used to
-    run the test.
-
-    In each case, we check that we will be running on at least one CPU,
-    and not requesting more CPUs than the system can provide.
-    """
-    # Determine the number of CPUs to leave available
-    system_cpus = os.cpu_count()
-    # How many CPUs do we want to leave free?
-    if cpus_to_leave_available >= 0:
-        n_free_cpus = cpus_to_leave_available
-    else:
-        # Number of CPUs to keep free is <0, interpret as
-        # number of CPUs _to use_. Thus;
-        # n_free_cpus = system_cpus - |cpus_to_leave_available|
-        n_free_cpus = system_cpus - abs(cpus_to_leave_available)
-    # Check that there are enough CPUs
-    if not 0 <= n_free_cpus < system_cpus:
-        raise RuntimeError(
-            f"Not enough CPUS available (you want to leave {n_free_cpus} "
-            f"available, but there are only {system_cpus} on the system)."
-        )
-
+def test_detection_full(signal_array, background_array, free_cpus, request):
+    n_free_cpus = request.getfixturevalue(free_cpus)
     cells_test = main(
         signal_array,
         background_array,
