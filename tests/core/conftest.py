@@ -9,26 +9,18 @@ from cellfinder.core.download import models
 from cellfinder.core.tools.prep import DEFAULT_INSTALL_PATH
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def no_free_cpus() -> int:
     """
-    Set number of free CPUs,
-    so all available CPUs are used by the tests.
-
-    Note that this is passed to min_cpus_to_keep_free,
-    so a value of 0 implies no CPUs will be kept free,
-    IE all will be used.
+    Set number of free CPUs so all available CPUs are used by the tests.
     """
     return 0
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def run_on_one_cpu_only() -> int:
     """
     Set number of free CPUs so tests can use exactly one CPU.
-
-    Note that this is passed to min_cpus_to_keep_free,
-    so a value of #cpus-1 implies all but one CPU will be kept free.
     """
     cpus = os.cpu_count()
     if cpus is not None:
