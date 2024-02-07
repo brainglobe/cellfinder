@@ -1,4 +1,3 @@
-import gc
 import os
 from math import isclose
 
@@ -107,9 +106,6 @@ def test_detection_full(
     assert isclose(
         num_cells_validation, num_cells_test, abs_tol=DETECTION_TOLERANCE
     )
-
-    # Force explicit memory cleanup
-    gc.collect()
 
 
 def test_detection_small_planes(
