@@ -142,6 +142,10 @@ class VolumeFilter(object):
         )
 
         cells = []
+
+        logger.debug(
+            f"Processing {len(self.cell_detector.coords_maps.items())} cells"
+        )
         for cell_id, cell_points in self.cell_detector.coords_maps.items():
             cell_volume = len(cell_points)
 
@@ -191,6 +195,7 @@ class VolumeFilter(object):
                         )
                     )
 
+        logger.debug("Finished splitting cell clusters.")
         return cells
 
 
