@@ -152,6 +152,8 @@ class VolumeFilter(object):
         )
         for cell_id, cell_points in self.cell_detector.coords_maps.items():
             cell_volume = len(cell_points)
+            logger.debug(f"Cell id {cell_id} has {len(cell_points)} points.")
+            logger.debug(f"There are {len(self.cell_detector.coords_maps.keys())} cell_ids")
 
             if cell_volume < max_cell_volume:
                 logger.debug("max_cell_volume case")
