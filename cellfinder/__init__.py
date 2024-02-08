@@ -26,8 +26,11 @@ except PackageNotFoundError as e:
 try:
     import os
 
-    # check if environment variable exists?
-    os.environ["KERAS_BACKEND"] = "jax"  # "torch" "jax", "tensorflow"
+    # check if environment variable exists, otherwise set to tensorflow?
+    if not os.getenv("KERAS_BACKEND"):
+        os.environ[
+            "KERAS_BACKEND"
+        ] = "tensorflow"  # "torch" "jax", "tensorflow"
 
 except PackageNotFoundError as e:
     raise PackageNotFoundError("error setting up Keras backend") from e

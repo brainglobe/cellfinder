@@ -59,14 +59,14 @@ napari = [
     "pooch >= 1",
     "qtpy",
 ]
-tf_backend = [
-    "tf-nightly==2.16.0.dev20240101", # pinning to same TF as Keras 3.0 --> tensorflow==2.15.0 and keras==3.0.0
+tf-backend = [
+    "tf-nightly==2.16.0.dev20240101", # pinning to same TF as Keras 3.0
 ]
-jax_backend = [
+jax-backend = [
     "jax==0.4.20",
     "jaxlib==0.4.20"
 ]
-torch_backend = [
+torch-backend = [
     "torch==2.1.0"
 ]
 
@@ -140,6 +140,7 @@ deps =
     pytest-qt
 extras =
     napari
+    tf-backend
 passenv =
     NUMBA_DISABLE_JIT
     CI
@@ -148,4 +149,5 @@ passenv =
     XAUTHORITY
     NUMPY_EXPERIMENTAL_ARRAY_FUNCTION
     PYVISTA_OFF_SCREEN
+    KERAS_BACKEND
 """
