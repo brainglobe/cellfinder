@@ -1,5 +1,5 @@
-name: Test Tensorflow include guards
-# These tests check that the include guards checking for tensorflow's availability
+name: Test Keras include guards
+# These tests check that the include guards checking for Keras availability
 # behave as expected on ubuntu and macOS.
 
 on:
@@ -9,7 +9,7 @@ on:
       - main
 
 jobs:
-  tensorflow_guards:
+  keras_guards:
     name: Test include guards
     strategy:
       matrix:

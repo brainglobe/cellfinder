@@ -48,8 +48,8 @@ jobs:
           python-version: "3.10"
 
     steps:
-      # Cache the tensorflow model so we don't have to remake it every time
-      - name: Cache tensorflow model
+      # Cache the Keras model so we don't have to remake it every time
+      - name: Cache Keras model
         uses: actions/cache@v3
         with:
           path: "~/.cellfinder"
@@ -73,7 +73,7 @@ jobs:
        NUMBA_DISABLE_JIT: "1"
 
     steps:
-      - name: Cache tensorflow model
+      - name: Cache Keras model
         uses: actions/cache@v3
         with:
           path: "~/.cellfinder"
@@ -96,7 +96,7 @@ jobs:
     name: Run brainmapper tests to check for breakages
     runs-on: ubuntu-latest
     steps:
-      - name: Cache tensorflow model
+      - name: Cache Keras model
         uses: actions/cache@v3
         with:
           path: "~/.cellfinder"
