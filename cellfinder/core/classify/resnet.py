@@ -1,7 +1,7 @@
 from typing import Callable, Dict, List, Literal, Optional, Tuple, Union
 
 from keras import (
-    KerasTensor as Tensor,  # from tensorflow import Tensor  # tf.Tensor
+    KerasTensor as Tensor,
 )
 from keras import Model
 from keras.initializers import Initializer

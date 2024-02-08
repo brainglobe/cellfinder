@@ -7,7 +7,7 @@ def allow_gpu_memory_growth():
     away. Allows multiple processes to use the GPU (and avoid occasional
     errors on some systems) at the cost of a slight performance penalty.
     """
-    import tensorflow as tf  # import inside fns?
+    import tensorflow as tf
 
     gpus = tf.config.experimental.list_physical_devices("GPU")
     if gpus:
@@ -38,7 +38,7 @@ def set_tf_threads(max_threads):
         f"to: {max_threads}"
     )
 
-    import tensorflow as tf  # import inside fns?
+    import tensorflow as tf
 
     # If statements are for testing. If tf is initialised, then setting these
     # parameters throws an error

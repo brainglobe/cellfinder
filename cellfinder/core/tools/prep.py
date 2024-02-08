@@ -28,13 +28,12 @@ def prep_model_weights(
     model_name: model_download.model_type,
     n_free_cpus: int,
 ) -> Path:
-    # if TF backend:
+    # if tensorflow backend: do required prep
     if keras.config.backend() == "tensorflow":
-        # prep TF
         n_processes = get_num_processes(min_free_cpu_cores=n_free_cpus)
         prep_tensorflow(n_processes)
 
-    # prep models (get default weights or provided ones?)
+    # prepare models (get default weights or provided ones)
     model_weights = prep_models(model_weights, install_path, model_name)
 
     return model_weights
