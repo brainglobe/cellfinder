@@ -1,5 +1,8 @@
+import os
+import warnings
 from importlib.metadata import PackageNotFoundError, version
 
+# Check cellfinder is installed
 try:
     __version__ = version("cellfinder")
 except PackageNotFoundError as e:
@@ -12,26 +15,36 @@ try:
 except PackageNotFoundError as e:
     raise PackageNotFoundError(
         f"cellfinder tools cannot be invoked without Keras. "
-        f"Please install Keras into your environment to use cellfinder tools. "
-        f"For more information, please see "
+        f"Please install Keras with a backend into your environment "
+        f"to use cellfinder tools. "
+        f"For more information on Keras backends, please see "
+        f"https://keras.io/getting_started/#installing-keras-3."
+        f"For more information on brainglobe, please see "
         f"https://github.com/brainglobe/brainglobe-meta#readme."
     ) from e
 
-# Configure Keras backend:
-# Note that Keras should only be imported after the backend
-# has been configured. The backend cannot be changed once the
-# package is imported.
-try:
-    import os
 
-    # if environment variable does not exist, assign TF
-    # options: "torch" "jax", "tensorflow"
-    if not os.getenv("KERAS_BACKEND"):
-        os.environ["KERAS_BACKEND"] = "tensorflow"
+# If no backend is configured and installed for Keras, tools cannot be used
+# Check backend is configured
+if not os.getenv("KERAS_BACKEND"):
+    os.environ["KERAS_BACKEND"] = "tensorflow"
+    warnings.warn(
+        "Keras backend not configured, automatically set to Tensorflow"
+    )
 
-
-except PackageNotFoundError as e:
-    raise PackageNotFoundError("error setting up Keras backend") from e
+# Check backend is installed
+if os.getenv("KERAS_BACKEND") in ["tensorflow", "jax", "torch"]:
+    backend = os.getenv("KERAS_BACKEND")
+    try:
+        BACKEND_VERSION = version(backend)
+    except PackageNotFoundError as e:
+        raise PackageNotFoundError(
+            f"{backend} package set as Keras backend but not installed"
+        ) from e
+else:
+    raise PackageNotFoundError(
+        "Keras backend must be one of 'tensorflow', 'jax', or 'torch'"
+    )
 
 
 __author__ = "Adam Tyson, Christian Niedworok, Charly Rousseau"
