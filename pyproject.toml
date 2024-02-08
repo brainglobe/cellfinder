@@ -119,13 +119,13 @@ markers = ["slow: marks tests as slow (deselect with '-m \"not slow\"')"]
 legacy_tox_ini = """
 # For more information about tox, see https://tox.readthedocs.io/en/latest/
 [tox]
-envlist = py{39,310}
+envlist = py{39,310}-{tf,jax}
 isolated_build = true
 
 [gh-actions]
 python =
-    3.9: py39
-    3.10: py310
+    3.9: py39-{tf,jax}  # On GA python=3.9 job, run tox with the tf and jax environments
+    3.10: py310-{tf,jax}  # On GA python=3.10 job, run tox with the tf and jax environments
 
 [testenv]
 commands = python -m pytest -v --color=yes
@@ -140,7 +140,11 @@ deps =
     pytest-qt
 extras =
     napari
-    tf-backend
+    tf: tf-backend
+    jax: jax-backend
+setenv =
+    tf: KERAS_BACKEND = tensorflow
+    jax: KERAS_BACKEND = jax
 passenv =
     NUMBA_DISABLE_JIT
     CI
@@ -149,5 +153,4 @@ passenv =
     XAUTHORITY
     NUMPY_EXPERIMENTAL_ARRAY_FUNCTION
     PYVISTA_OFF_SCREEN
-    KERAS_BACKEND
 """
