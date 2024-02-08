@@ -451,6 +451,9 @@ def run(
         epochs=epochs,
         callbacks=callbacks,
     )
+    # model.built = True,
+    # model.compiled=True, and
+    # compile_metrics_unbuilt ---> I get error
 
     if save_weights:
         logger.info("Saving model weights")
