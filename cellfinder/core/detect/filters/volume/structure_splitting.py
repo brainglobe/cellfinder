@@ -53,9 +53,10 @@ def ball_filter_imgs(
 ) -> Tuple[np.ndarray, np.ndarray]:
     # OPTIMISE: reuse ball filter instance
     logger.debug(f"ball_filter_imgs called with volume={volume} with shape {volume.shape}, threshold={threshold_value}, soma_centre_value={soma_centre_value}, ball_xy={ball_xy_size}, ball_z={ball_z_size}")
-    logger.debug(f"volume has all zeros is {np.all(volume)==0}")
-    logger.debug(f"volume has all soma centre values is {np.all(volume)==soma_centre_value}")
-    logger.debug(f"volume has all threshold values is {np.all(volume)==threshold_value}")
+    logger.debug(f"volume has all zeros is {np.all(volume==0)}")
+    logger.debug(f"volume has all soma centre values is {np.all(volume==np.uint16(soma_centre_value))}")
+    logger.debug(f"volume has all threshold values is {np.all(volume==np.uint16(threshold_value))}")
+    logger.debug(f"volume has all values between threshold and soma inclusive {np.all((volume >= threshold_value) & (volume<=soma_centre_value))}")
     good_tiles_mask = np.ones((1, 1, volume.shape[2]), dtype=bool)
 
     plane_width, plane_height = volume.shape[:2]
