@@ -324,7 +324,7 @@ def run(
 
     suppress_tf_logging(tf_suppress_log_messages)
 
-    from tensorflow.keras.callbacks import (
+    from keras.callbacks import (
         CSVLogger,
         ModelCheckpoint,
         TensorBoard,
@@ -386,15 +386,16 @@ def run(
             labels=labels_test,
             batch_size=batch_size,
             train=True,
+            use_multiprocessing=False,
         )
 
         # for saving checkpoints
-        base_checkpoint_file_name = "-epoch.{epoch:02d}-loss-{val_loss:.3f}.h5"
+        base_checkpoint_file_name = "-epoch.{epoch:02d}-loss-{val_loss:.3f}"
 
     else:
         logger.info("No validation data selected.")
         validation_generator = None
-        base_checkpoint_file_name = "-epoch.{epoch:02d}.h5"
+        base_checkpoint_file_name = "-epoch.{epoch:02d}"
 
     training_generator = CubeGeneratorFromDisk(
         signal_train,
@@ -404,6 +405,7 @@ def run(
         shuffle=True,
         train=True,
         augment=not no_augment,
+        use_multiprocessing=False,
     )
     callbacks = []
 
@@ -420,9 +422,14 @@ def run(
 
     if not no_save_checkpoints:
         if save_weights:
-            filepath = str(output_dir / ("weight" + base_checkpoint_file_name))
+            filepath = str(
+                output_dir
+                / ("weight" + base_checkpoint_file_name + ".weights.h5")
+            )
         else:
-            filepath = str(output_dir / ("model" + base_checkpoint_file_name))
+            filepath = str(
+                output_dir / ("model" + base_checkpoint_file_name + ".keras")
+            )
 
         checkpoints = ModelCheckpoint(
             filepath,
@@ -431,25 +438,26 @@ def run(
         callbacks.append(checkpoints)
 
     if save_progress:
-        filepath = str(output_dir / "training.csv")
-        csv_logger = CSVLogger(filepath)
+        csv_filepath = str(output_dir / "training.csv")
+        csv_logger = CSVLogger(csv_filepath)
         callbacks.append(csv_logger)
 
     logger.info("Beginning training.")
+    # Keras 3.0: `use_multiprocessing` input is set in the
+    # `training_generator` (False by default)
     model.fit(
         training_generator,
         validation_data=validation_generator,
-        use_multiprocessing=False,
         epochs=epochs,
         callbacks=callbacks,
     )
 
     if save_weights:
         logger.info("Saving model weights")
-        model.save_weights(str(output_dir / "model_weights.h5"))
+        model.save_weights(output_dir / "model.weights.h5")
     else:
         logger.info("Saving model")
-        model.save(output_dir / "model.h5")
+        model.save(output_dir / "model.keras")
 
     logger.info(
         "Finished training, " "Total time taken: %s",

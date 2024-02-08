@@ -81,10 +81,13 @@ def test_detection_full(signal_array, background_array, free_cpus, request):
 
 
 def test_detection_small_planes(
-    signal_array, background_array, no_free_cpus, mocker
+    signal_array,
+    background_array,
+    mocker,
+    cpus_to_leave_free: int = 0,
 ):
     # Check that processing works when number of planes < number of processes
-    nproc = get_num_processes(no_free_cpus)
+    nproc = get_num_processes(cpus_to_leave_free)
     n_planes = 2
 
     # Don't want to bother classifying in this test, so mock classifcation
@@ -101,11 +104,13 @@ def test_detection_small_planes(
         background_array[0:n_planes],
         voxel_sizes,
         ball_z_size=5,
-        n_free_cpus=no_free_cpus,
+        n_free_cpus=cpus_to_leave_free,
     )
 
 
-def test_callbacks(signal_array, background_array, no_free_cpus):
+def test_callbacks(
+    signal_array, background_array, cpus_to_leave_free: int = 0
+):
     # 20 is minimum number of planes needed to find > 0 cells
     signal_array = signal_array[0:20]
     background_array = background_array[0:20]
@@ -130,7 +135,7 @@ def test_callbacks(signal_array, background_array, no_free_cpus):
         detect_callback=detect_callback,
         classify_callback=classify_callback,
         detect_finished_callback=detect_finished_callback,
-        n_free_cpus=no_free_cpus,
+        n_free_cpus=cpus_to_leave_free,
     )
 
     np.testing.assert_equal(planes_done, np.arange(len(signal_array)))
@@ -148,13 +153,13 @@ def test_floating_point_error(signal_array, background_array):
         main(signal_array, background_array, voxel_sizes)
 
 
-def test_synthetic_data(synthetic_bright_spots, no_free_cpus):
+def test_synthetic_data(synthetic_bright_spots, cpus_to_leave_free: int = 0):
     signal_array, background_array = synthetic_bright_spots
     detected = main(
         signal_array,
         background_array,
         voxel_sizes,
-        n_free_cpus=no_free_cpus,
+        n_free_cpus=cpus_to_leave_free,
     )
     assert len(detected) == 8
 
