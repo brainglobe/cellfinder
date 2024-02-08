@@ -162,6 +162,7 @@ class CellDetector:
         """
         SOMA_CENTRE_VALUE = np.iinfo(plane.dtype).max
         for y in range(plane.shape[1]):
+            print(y, "of", plane.shape[1])
             for x in range(plane.shape[0]):
                 if plane[x, y] == SOMA_CENTRE_VALUE:
                     # Labels of structures below, left and behind
@@ -177,6 +178,8 @@ class CellDetector:
                     if is_new_structure(neighbour_ids):
                         neighbour_ids[0] = self.next_structure_id
                         self.next_structure_id += 1
+                    print("calling self.add with x,y,z ", x, ",", y, ",", self.z)
+                    print("neighbour ids", neighbour_ids)
                     struct_id = self.add(x, y, self.z, neighbour_ids)
                 else:
                     # reset so that grayscale value does not count as
@@ -256,6 +259,7 @@ class CellDetector:
         - self.coords_maps
         - self.obsolete_ids
         """
+        print("merge_structures called with updated id ", updated_id, " and neighbour ids ", neighbour_ids)
         for neighbour_id in np.unique(neighbour_ids):
             # minimise ID so if neighbour with higher ID, reassign its points
             # to current

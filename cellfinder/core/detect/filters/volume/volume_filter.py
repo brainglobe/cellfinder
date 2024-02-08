@@ -171,7 +171,7 @@ class VolumeFilter(object):
             else:
                 if cell_volume < self.max_cluster_size:
                     try:
-                        logger.debug("max_cluster_size try")
+                        logger.debug(f"max_cluster_size try with cell volume={cell_volume} < {self.max_cluster_size}")
                         cell_centres = split_cells(
                             cell_points, outlier_keep=self.outlier_keep
                         )
