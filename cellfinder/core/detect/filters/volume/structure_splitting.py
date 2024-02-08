@@ -15,6 +15,7 @@ class StructureSplitException(Exception):
 
 
 def get_shape(xs: np.ndarray, ys: np.ndarray, zs: np.ndarray) -> List[int]:
+    logger.debug("get_shape called")
     # +1 because difference. TEST:
     shape = [int((dim.max() - dim.min()) + 1) for dim in (xs, ys, zs)]
     return shape
@@ -23,6 +24,7 @@ def get_shape(xs: np.ndarray, ys: np.ndarray, zs: np.ndarray) -> List[int]:
 def coords_to_volume(
     xs: np.ndarray, ys: np.ndarray, zs: np.ndarray, ball_radius: int = 1
 ) -> np.ndarray:
+    logger.debug("coords_to_volume called")
     ball_diameter = ball_radius * 2
     # Expanded to ensure the ball fits even at the border
     expanded_shape = [
@@ -50,6 +52,7 @@ def ball_filter_imgs(
     ball_z_size: int = 3,
 ) -> Tuple[np.ndarray, np.ndarray]:
     # OPTIMISE: reuse ball filter instance
+    logger.debug("ball_filter_imgs called")
 
     good_tiles_mask = np.ones((1, 1, volume.shape[2]), dtype=bool)
 
@@ -83,12 +86,16 @@ def ball_filter_imgs(
             previous_plane = cell_detector.process(
                 middle_plane.copy(), previous_plane
             )
+
+    logger.debug("ball_filter_imgs returning")
     return ball_filtered_volume, cell_detector.get_cell_centres()
 
 
 def iterative_ball_filter(
     volume: np.ndarray, n_iter: int = 10
 ) -> Tuple[List[int], List[np.ndarray]]:
+    
+    logger.debug("iterative_ball_filter called")
     ns = []
     centres = []
 
@@ -107,6 +114,8 @@ def iterative_ball_filter(
         centres.append(cell_centres)
         if n_structures == 0:
             break
+
+    logger.debug("iterative_ball_filter returning")
     return ns, centres
 
 
@@ -117,20 +126,24 @@ def check_centre_in_cuboid(centre: np.ndarray, max_coords: np.ndarray) -> bool:
     :param max_coords: far corner of cuboid
     :return: True if within cuboid, otherwise False
     """
+    logger.debug("check_centre_in_cuboid called")
     relative_coords = centre
     if (relative_coords > max_coords).all():
         logger.info(
             'Relative coordinates "{}" exceed maximum volume '
             'dimension of "{}"'.format(relative_coords, max_coords)
         )
+        logger.debug("check_centre_in_cuboid returning false")
         return False
     else:
+        logger.debug("check_centre_in_cuboid returning true")
         return True
 
 
 def split_cells(
     cell_points: np.ndarray, outlier_keep: bool = False
 ) -> np.ndarray:
+    logger.debug("split_cells called ")
     orig_centre = get_structure_centre(cell_points)
 
     xs = cell_points[:, 0]
@@ -185,4 +198,5 @@ def split_cells(
     absolute_centres[:, 1] = orig_corner[1] + relative_centres[:, 1]
     absolute_centres[:, 2] = orig_corner[2] + relative_centres[:, 2]
 
+    logger.debug("split_cells returning ")
     return absolute_centres

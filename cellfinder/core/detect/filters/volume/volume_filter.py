@@ -112,7 +112,6 @@ class VolumeFilter(object):
         progress_bar.close()
         logger.debug("3D filter done")
         logger.debug(f"Currently running {len(active_children())} child processes from the main process")
-        assert len(active_children())==0
         return self.get_results()
 
     def _run_filter(self) -> None:
@@ -155,6 +154,7 @@ class VolumeFilter(object):
             cell_volume = len(cell_points)
 
             if cell_volume < max_cell_volume:
+                logger.debug("max_cell_volume case")
                 cell_centre = get_structure_centre(cell_points)
                 cells.append(
                     Cell(
@@ -169,10 +169,12 @@ class VolumeFilter(object):
             else:
                 if cell_volume < self.max_cluster_size:
                     try:
+                        logger.debug("max_cluster_size try")
                         cell_centres = split_cells(
                             cell_points, outlier_keep=self.outlier_keep
                         )
                     except (ValueError, AssertionError) as err:
+                        logger.debug("max_cluster_size except")
                         raise StructureSplitException(
                             f"Cell {cell_id}, error; {err}"
                         )
@@ -188,6 +190,7 @@ class VolumeFilter(object):
                             )
                         )
                 else:
+                    logger.debug("artifact case")
                     cell_centre = get_structure_centre(cell_points)
                     cells.append(
                         Cell(

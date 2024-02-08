@@ -179,6 +179,8 @@ def main(
         # processes.
         cells = mp_3d_filter.process(async_results, locks, callback=callback)
 
+    assert len(multiprocessing.active_children())==0
+
     time_elapsed = datetime.now() - start_time
     logger.debug(
         f"All Planes done. Found {len(cells)} cells in {format(time_elapsed)}"
