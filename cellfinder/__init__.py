@@ -21,16 +21,14 @@ except PackageNotFoundError as e:
 # Note that Keras should only be imported after the backend
 # has been configured. The backend cannot be changed once the
 # package is imported.
-# https://keras.io/getting_started/intro_to_keras_for_engineers/
-# https://github.com/keras-team/keras/blob/5bc8488c0ea3f43c70c70ebca919093cd56066eb/keras/backend/config.py#L263
 try:
     import os
 
-    # check if environment variable exists, otherwise set to tensorflow?
+    # if environment variable does not exist, assign TF
+    # options: "torch" "jax", "tensorflow"
     if not os.getenv("KERAS_BACKEND"):
-        os.environ[
-            "KERAS_BACKEND"
-        ] = "tensorflow"  # "torch" "jax", "tensorflow"
+        os.environ["KERAS_BACKEND"] = "tensorflow"
+
 
 except PackageNotFoundError as e:
     raise PackageNotFoundError("error setting up Keras backend") from e
