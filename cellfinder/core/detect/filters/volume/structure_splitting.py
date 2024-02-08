@@ -52,12 +52,13 @@ def ball_filter_imgs(
     ball_z_size: int = 3,
 ) -> Tuple[np.ndarray, np.ndarray]:
     # OPTIMISE: reuse ball filter instance
-    logger.debug("ball_filter_imgs called")
+    logger.debug(f"ball_filter_imgs called with volume={volume}, threshold={threshold_value}, soma_centre_value={soma_centre_value}, ball_xy={ball_xy_size}, ball_z={ball_z_size}")
 
     good_tiles_mask = np.ones((1, 1, volume.shape[2]), dtype=bool)
 
     plane_width, plane_height = volume.shape[:2]
 
+    logger.debug("initialising BallFilter")
     bf = BallFilter(
         plane_width,
         plane_height,
@@ -69,6 +70,7 @@ def ball_filter_imgs(
         threshold_value=threshold_value,
         soma_centre_value=soma_centre_value,
     )
+    logger.debug("initialised BallFilter, initialising Celldetector")
     cell_detector = CellDetector(
         plane_width, plane_height, start_z=ball_z_size // 2
     )
@@ -77,15 +79,21 @@ def ball_filter_imgs(
     ball_filtered_volume = np.zeros(volume.shape, dtype=np.uint16)
     previous_plane = None
     for z in range(volume.shape[2]):
+        logger.debug(f"In loop with z={z}")
         bf.append(volume[:, :, z].astype(np.uint16), good_tiles_mask[:, :, z])
         if bf.ready:
+            logger.debug("Ballfilter ready")
             bf.walk()
+
+            logger.debug("Walked")
             middle_plane = bf.get_middle_plane()
             ball_filtered_volume[:, :, z] = middle_plane[:]
             # DEBUG: TEST: transpose
+            logger.debug("processing")
             previous_plane = cell_detector.process(
                 middle_plane.copy(), previous_plane
             )
+            logger.debug("Processed")
 
     logger.debug("ball_filter_imgs returning")
     return ball_filtered_volume, cell_detector.get_cell_centres()
@@ -105,6 +113,7 @@ def iterative_ball_filter(
     vol = volume.copy()  # TODO: check if required
 
     for i in range(n_iter):
+        logger.debug(f"\n iter {i}\n , n_structures {ns}\n,  appending these centres {centres} \n ---")
         vol, cell_centres = ball_filter_imgs(
             vol, threshold_value, soma_centre_value
         )
@@ -112,6 +121,7 @@ def iterative_ball_filter(
         n_structures = len(cell_centres)
         ns.append(n_structures)
         centres.append(cell_centres)
+        
         if n_structures == 0:
             break
 
