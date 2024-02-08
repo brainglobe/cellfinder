@@ -112,7 +112,7 @@ class VolumeFilter(object):
         progress_bar.close()
         logger.debug("3D filter done")
         logger.debug(f"Currently running {len(active_children())} child processes from the main process")
-        return self.get_results()
+        return
 
     def _run_filter(self) -> None:
         logger.debug(f"🏐 Ball filtering plane {self.z}")

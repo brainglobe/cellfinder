@@ -9,7 +9,6 @@ from numba.core import types
 from numba.experimental import jitclass
 from numba.types import DictType
 
-
 @dataclass
 class Point:
     x: int
