@@ -28,9 +28,7 @@ except PackageNotFoundError as e:
 # Check backend is configured
 if not os.getenv("KERAS_BACKEND"):
     os.environ["KERAS_BACKEND"] = "torch"  # "tensorflow"
-    warnings.warn(
-        "Keras backend not configured, automatically set to torch" 
-    )
+    warnings.warn("Keras backend not configured, automatically set to torch")
 
 # Check backend is installed
 if os.getenv("KERAS_BACKEND") in ["tensorflow", "jax", "torch"]:
