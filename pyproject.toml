@@ -29,7 +29,7 @@ dependencies = [
     "numpy",
     "scikit-image",
     "scikit-learn",
-    "keras==3.0.0",
+    "keras>=3.0.0",
     "tifffile",
     "tqdm",
 ]
