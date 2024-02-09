@@ -1,0 +1,60 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: cellfinder
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Adam
+    family-names: Tyson
+    email: hello@brainglobe.info
+    affiliation: 'Sainsbury Wellcome Centre, University College London'
+  - given-names: Christian
+    family-names: Niedworok
+  - given-names: Charly
+    family-names: Rousseau
+  - given-names: BrainGlobe
+    family-names: Developers
+    email: hello@brainglobe.info
+repository-code: 'https://github.com/brainglobe/cellfinder'
+url: 'https://brainglobe.info'
+abstract: >-
+  Automated 3D cell detection in very large 3D images (e.g.,
+  serial two-photon or lightsheet volumes of whole mouse
+  brains).
+license: BSD-3-Clause
+date-released: '2024-01-05'
+year: 2024
+preferred-citation:
+  type: article
+  authors:
+  - given-names: Adam
+    family-names: Tyson
+    affiliation: 'Sainsbury Wellcome Centre, University College London'
+  - given-names: Charly V.
+    family-names: Rousseau
+  - given-names: Christian J.
+    family-names: Niedworok
+  - given-names: Sepiedeh
+    family-names: Keshavarzi
+  - given-names: Chryssanthi
+    family-names: Tsitoura
+  - given-names: Lee
+    family-names: Cossell
+  - given-names: Molly
+    family-names: Strom
+  - given-names: Troy W.
+    family-names: Margrie
+  doi: "10.1371/journal.pcbi.1009074"
+  url: "https://doi.org/10.1371/journal.pcbi.1009074"
+  journal: "PLOS Computational Biology"
+  month: 5
+  year: 2021
+  title: "A deep learning algorithm for 3D cell detection in whole mouse brain image datasets"
+  issue: 5
+  volume: 17
+  pages: 1-17
+citation-sentence: "This work makes use of the cellfinder detection algorithm,"

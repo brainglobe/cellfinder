@@ -1,9 +1,8 @@
 include .napari/config.yml
+include CITATION.cff
 include LICENSE
 include README.md
 include requirements.txt
-include CF-CORE-README.md
-include CF-NAPARI-README.md
 
 exclude .pre-commit-config.yaml
 exclude .codecov.yml
