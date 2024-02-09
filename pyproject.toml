@@ -59,14 +59,15 @@ napari = [
     "pooch >= 1",
     "qtpy",
 ]
-tf-backend = [
+# Keras backends
+tf = [
     "tf-nightly==2.16.0.dev20240101", # pinning to same TF as Keras 3.0
 ]
-jax-backend = [
+jax = [
     "jax==0.4.20",
     "jaxlib==0.4.20"
 ]
-torch-backend = [
+torch = [
     "torch==2.1.0"
 ]
 
@@ -140,8 +141,8 @@ deps =
     pytest-qt
 extras =
     napari
-    tf: tf-backend
-    jax: jax-backend
+    tf: tf
+    jax: jax
 setenv =
     tf: KERAS_BACKEND = tensorflow
     jax: KERAS_BACKEND = jax
