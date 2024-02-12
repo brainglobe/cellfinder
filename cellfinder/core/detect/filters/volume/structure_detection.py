@@ -119,6 +119,8 @@ class CellDetector:
         self.z = start_z
         self.next_structure_id = 1
 
+        self.start_z = start_z
+
         # Mapping from obsolete IDs to the IDs that they have been
         # made obsolete by
         self.obsolete_ids = numba.typed.Dict.empty(
@@ -139,6 +141,9 @@ class CellDetector:
             raise ValueError("plane does not have correct shape")
 
         plane = self.connect_four(plane, previous_plane)
+        print("self.z = ". self.z)
+        assert self.z < np.uint16.max()
+        assert self.z >= self.start_z
         self.z += 1
         return plane
 
@@ -162,7 +167,6 @@ class CellDetector:
         """
         SOMA_CENTRE_VALUE = np.iinfo(plane.dtype).max
         for y in range(plane.shape[1]):
-            print(y, "of", plane.shape[1])
             for x in range(plane.shape[0]):
                 if plane[x, y] == SOMA_CENTRE_VALUE:
                     # Labels of structures below, left and behind
