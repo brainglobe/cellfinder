@@ -46,6 +46,8 @@ jobs:
         include:
         - os: macos-latest
           python-version: "3.10"
+        - os: windows-latest
+          python-version: "3.10"
 
     steps:
       # Cache the Keras model so we don't have to remake it every time
