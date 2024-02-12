@@ -140,6 +140,10 @@ deps =
 extras =
     napari
     tf: tf
+    # default-jax: ---now shipping with normal dependencies
+setenv =
+    tf: KERAS_BACKEND = tensorflow  # if I dont set this, it will default to JAX
+    # default-jax: ---now shipping with normal dependencies
 passenv =
     NUMBA_DISABLE_JIT
     CI
@@ -148,4 +152,7 @@ passenv =
     XAUTHORITY
     NUMPY_EXPERIMENTAL_ARRAY_FUNCTION
     PYVISTA_OFF_SCREEN
+platform =
+    default-jax:  # any
+    tf: linux|darwin  # only run if platform is either linux or darwin
 """
