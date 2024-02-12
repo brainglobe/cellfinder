@@ -191,13 +191,16 @@ class CellDetector:
                     # structure in next iterations
                     struct_id = 0
 
-                print("z, start_z, struct_id")
-                print(self.z)
-                print(self.start_z)
-                print(struct_id)
+                if(struct_id==1 or struct_id%10000==0):
+                    print("z, start_z, struct_id")
+                    print(self.z)
+                    print(self.start_z)
+                    print(struct_id)
                 assert self.z >= self.start_z, "something wrong with a z < start_z"
                 assert self.z < 65535, "something wrong with overflow z"
                 assert struct_id < 65535, "something wrong with overflow structure id"
+                assert self.next_structure_id < 65535, "something wrong with too big self.next_structure_id"
+                assert self.next_structure_id > 0, "something wrong with too small self.next_structure_id"
                 plane[x, y] = struct_id
 
         return plane
