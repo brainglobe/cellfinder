@@ -1,6 +1,7 @@
 import os
 import warnings
 from importlib.metadata import PackageNotFoundError, version
+from importlib.util import find_spec
 
 # Check cellfinder is installed
 try:
@@ -26,6 +27,8 @@ except PackageNotFoundError as e:
 
 # If no backend is configured and installed for Keras, tools cannot be used
 # Check backend is configured (default: JAX)
+# do not use default in getenv: any changes to environment after importing
+# os module are not picked up except if directly modifying the dict
 if not os.getenv("KERAS_BACKEND"):
     os.environ["KERAS_BACKEND"] = "jax"
     warnings.warn("Keras backend not configured, automatically set to JAX")
@@ -36,6 +39,9 @@ if backend in ["tensorflow", "jax", "torch"]:
     try:
         backend_package = "tf-nightly" if backend == "tensorflow" else backend
         BACKEND_VERSION = version(backend_package)
+
+        warnings.warn(f"Using Keras with {backend} backend")
+
     except PackageNotFoundError as e:
         raise PackageNotFoundError(
             f"{backend}, ({backend_package}) set as Keras backend "
@@ -43,8 +49,18 @@ if backend in ["tensorflow", "jax", "torch"]:
         ) from e
 else:
     raise PackageNotFoundError(
-        "Keras backend must be one of 'tensorflow', 'jax', or 'torch'"
+        f"Keras backend must be one of 'tensorflow', "
+        f"'jax', or 'torch' (not {backend})."
     )
+
+# If TF is installed but backend not set to TF, raise an error
+tf_spec = find_spec("tensorflow")
+if tf_spec:
+    if tf_spec.name != backend:
+        raise ImportError(
+            f"Tensorflow package installed"
+            f"but not set as Keras backend ({backend})"
+        )  # replace by ImportWarning?
 
 
 __author__ = "Adam Tyson, Christian Niedworok, Charly Rousseau"
