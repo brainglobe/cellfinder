@@ -79,11 +79,11 @@ def ball_filter_imgs(
     )
 
     # FIXME: hard coded type
-    ball_filtered_volume = np.zeros(volume.shape, dtype=np.uint16)
+    ball_filtered_volume = np.zeros(volume.shape, dtype=np.uint32)
     previous_plane = None
     for z in range(volume.shape[2]):
         logger.debug(f"In loop with z={z}")
-        bf.append(volume[:, :, z].astype(np.uint16), good_tiles_mask[:, :, z])
+        bf.append(volume[:, :, z].astype(np.uint32), good_tiles_mask[:, :, z])
         if bf.ready:
             logger.debug("Ballfilter ready")
             bf.walk()
