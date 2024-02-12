@@ -30,6 +30,8 @@ dependencies = [
     "scikit-image",
     "scikit-learn",
     "keras>=3.0.0",
+    "jax==0.4.20",
+    "jaxlib==0.4.20",
     "tifffile",
     "tqdm",
 ]
@@ -62,10 +64,6 @@ napari = [
 # Keras backends
 tf = [
     "tf-nightly==2.16.0.dev20240101", # pinning to same TF as Keras 3.0
-]
-jax = [
-    "jax==0.4.20",
-    "jaxlib==0.4.20"
 ]
 torch = [
     "torch==2.1.0"
@@ -120,13 +118,13 @@ markers = ["slow: marks tests as slow (deselect with '-m \"not slow\"')"]
 legacy_tox_ini = """
 # For more information about tox, see https://tox.readthedocs.io/en/latest/
 [tox]
-envlist = py{39,310}-{tf,jax}
+envlist = py{39,310}-{default-jax, tf}
 isolated_build = true
 
 [gh-actions]
 python =
-    3.9: py39-{tf,jax}  # On GA python=3.9 job, run tox with the tf and jax environments
-    3.10: py310-{tf,jax}  # On GA python=3.10 job, run tox with the tf and jax environments
+    3.9: py39-{default-jax,tf}  # On GA python=3.9 job, run tox with the jax (default) and tf environments
+    3.10: py310-{default-jax, tf}  # On GA python=3.10 job, run tox with jax (default) and tf environments
 
 [testenv]
 commands = python -m pytest -v --color=yes
@@ -142,10 +140,6 @@ deps =
 extras =
     napari
     tf: tf
-    jax: jax
-setenv =
-    tf: KERAS_BACKEND = tensorflow
-    jax: KERAS_BACKEND = jax
 passenv =
     NUMBA_DISABLE_JIT
     CI
