@@ -73,6 +73,7 @@ uint_2d_type = types.uint64[:, :]
 
 spec = [
     ("z", types.uint64),
+    ("start_z", types.uint64),
     ("next_structure_id", types.uint64),
     ("shape", types.UniTuple(types.int64, 2)),
     ("obsolete_ids", DictType(types.int64, types.int64)),
@@ -141,8 +142,8 @@ class CellDetector:
             raise ValueError("plane does not have correct shape")
 
         plane = self.connect_four(plane, previous_plane)
-        print("self.z = ". self.z)
-        assert self.z < np.uint16.max()
+        print("self.z = ", self.z)
+        assert self.z < 65535
         assert self.z >= self.start_z
         self.z += 1
         return plane
