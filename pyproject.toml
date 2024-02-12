@@ -140,10 +140,10 @@ deps =
 extras =
     napari
     tf: tf
-    # default-jax: ---now shipping with normal dependencies
+    # default-jax: ---now shipping JAX with normal dependencies
 setenv =
     tf: KERAS_BACKEND = tensorflow  # if I dont set this, it will default to JAX
-    # default-jax: ---now shipping with normal dependencies
+    # default-jax: ---now shipping JAX with normal dependencies
 passenv =
     NUMBA_DISABLE_JIT
     CI
