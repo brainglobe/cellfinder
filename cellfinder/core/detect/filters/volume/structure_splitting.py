@@ -163,6 +163,11 @@ def split_cells(
     ys = cell_points[:, 1]
     zs = cell_points[:, 2]
 
+    logger.debug("orig_centre is", orig_centre)
+    logger.debug("xs are ", xs)
+    logger.debug("ys are ", ys)
+    logger.debug("zs are ", zs)
+
     orig_corner = np.array(
         [
             orig_centre[0] - (orig_centre[0] - xs.min()),
@@ -170,6 +175,9 @@ def split_cells(
             orig_centre[2] - (orig_centre[2] - zs.min()),
         ]
     )
+
+
+    logger.debug("orig_corner is", orig_corner)
 
     relative_orig_centre = np.array(
         [
@@ -179,10 +187,15 @@ def split_cells(
         ]
     )
 
+    logger.debug("relative_orig_centre is", relative_orig_centre)
+
     original_bounding_cuboid_shape = get_shape(xs, ys, zs)
 
     ball_radius = 1
     vol = coords_to_volume(xs, ys, zs, ball_radius=ball_radius)
+
+
+    logger.debug("origBBox is", original_bounding_cuboid_shape)
 
     # centres is a list of arrays of centres (1 array of centres per ball run)
     ns, centres = iterative_ball_filter(vol)
@@ -193,6 +206,9 @@ def split_cells(
 
     # TODO: put constraint on minimum centres distance ?
     relative_centres = centres[best_iteration]
+
+
+    logger.debug("best_iteration_relative_centres: \n", relative_centres)
 
     if not outlier_keep:
         # TODO: change to checking whether in original cluster shape
@@ -210,6 +226,8 @@ def split_cells(
     absolute_centres[:, 0] = orig_corner[0] + relative_centres[:, 0]
     absolute_centres[:, 1] = orig_corner[1] + relative_centres[:, 1]
     absolute_centres[:, 2] = orig_corner[2] + relative_centres[:, 2]
+
+    logger.debug("abs centres are: ", absolute_centres)
 
     logger.debug("split_cells returning ")
     return absolute_centres
