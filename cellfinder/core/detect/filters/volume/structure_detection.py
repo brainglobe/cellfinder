@@ -142,9 +142,6 @@ class CellDetector:
             raise ValueError("plane does not have correct shape")
 
         plane = self.connect_four(plane, previous_plane)
-        print("self.z = ", self.z)
-        assert self.z < 65535
-        assert self.z >= self.start_z
         self.z += 1
         return plane
 
@@ -191,11 +188,6 @@ class CellDetector:
                     # structure in next iterations
                     struct_id = 0
 
-                assert self.z >= self.start_z, "something wrong with a z < start_z"
-                assert self.z < 65535, "something wrong with overflow z"
-                assert struct_id < 65535, "something wrong with overflow structure id"
-                assert self.next_structure_id < 65535, "something wrong with too big self.next_structure_id"
-                assert self.next_structure_id > 0, "something wrong with too small self.next_structure_id"
                 plane[x, y] = struct_id
 
         return plane
