@@ -118,7 +118,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip wheel
           # Install cellfinder from the latest SHA on this branch (Keras with JAX backend)
-          python -m pip install git+$GITHUB_SERVER_URL/$GITHUB_REPOSITORY@$GITHUB_SHA#egg=$GITHUB_REPOSITORY[jax]
+          python -m pip install "cellfinder[jax] @ git+$GITHUB_SERVER_URL/$GITHUB_REPOSITORY@$GITHUB_SHA"
           # Install checked out copy of brainglobe-workflows
           python -m pip install .[dev]
 
