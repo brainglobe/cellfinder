@@ -61,7 +61,7 @@ def ball_filter_imgs(
 
     plane_width, plane_height = volume.shape[:2]
 
-    logger.debug("initialising BallFilter")
+    logger.debug(f"initialising BallFilter with threshold {threshold_value}")
     bf = BallFilter(
         plane_width,
         plane_height,

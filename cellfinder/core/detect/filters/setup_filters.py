@@ -8,7 +8,7 @@ from cellfinder.core.detect.filters.volume.structure_detection import (
     CellDetector,
 )
 from cellfinder.core.tools.tools import get_max_possible_value
-
+from cellfinder.core import logger
 
 def get_ball_filter(
     *,
@@ -28,6 +28,7 @@ def get_ball_filter(
     tile_width = soma_diameter * 2
     plane_height, plane_width = plane.shape
 
+    logger.debug(f"Setting threshold to {thrsh_val}")
     ball_filter = BallFilter(
         plane_width,
         plane_height,
