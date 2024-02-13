@@ -30,7 +30,7 @@ def coords_to_volume(
     expanded_shape = [
         dim_size + ball_diameter for dim_size in get_shape(xs, ys, zs)
     ]
-    volume = np.zeros(expanded_shape, dtype=np.uint16)
+    volume = np.zeros(expanded_shape, dtype=np.uint32)
 
     x_min, y_min, z_min = xs.min(), ys.min(), zs.min()
 
@@ -54,8 +54,8 @@ def ball_filter_imgs(
     # OPTIMISE: reuse ball filter instance
     logger.debug(f"ball_filter_imgs called with volume={volume} with shape {volume.shape}, threshold={threshold_value}, soma_centre_value={soma_centre_value}, ball_xy={ball_xy_size}, ball_z={ball_z_size}")
     logger.debug(f"volume has all zeros is {np.all(volume==0)}")
-    logger.debug(f"volume has all soma centre values is {np.all(volume==np.uint16(soma_centre_value))}")
-    logger.debug(f"volume has all threshold values is {np.all(volume==np.uint16(threshold_value))}")
+    logger.debug(f"volume has all soma centre values is {np.all(volume==np.uint32(soma_centre_value))}")
+    logger.debug(f"volume has all threshold values is {np.all(volume==np.uint32(threshold_value))}")
     logger.debug(f"volume has all values between threshold and soma inclusive {np.all((volume >= threshold_value) & (volume<=soma_centre_value))}")
     good_tiles_mask = np.ones((1, 1, volume.shape[2]), dtype=bool)
 
