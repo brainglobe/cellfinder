@@ -97,6 +97,8 @@ jobs:
     needs: [linting, manifest]
     name: Run brainmapper tests to check for breakages
     runs-on: ubuntu-latest
+    env:
+      KERAS_BACKEND: jax
     steps:
       - name: Cache Keras model
         uses: actions/cache@v3
