@@ -22,7 +22,10 @@ from brainglobe_utils.general.numerical import (
     check_positive_float,
     check_positive_int,
 )
-from brainglobe_utils.general.system import ensure_directory_exists
+from brainglobe_utils.general.system import (
+    ensure_directory_exists,
+    get_num_processes,
+)
 from brainglobe_utils.IO.cells import find_relevant_tiffs
 from brainglobe_utils.IO.yaml import read_yaml_section
 from fancylog import fancylog
@@ -338,7 +341,7 @@ def run(
 
     ensure_directory_exists(output_dir)
     model_weights = prep_model_weights(
-        install_path, model_weights, model, n_free_cpus
+        model_weights, install_path, model, n_free_cpus
     )
 
     yaml_contents = parse_yaml(yaml_file)
@@ -360,6 +363,7 @@ def run(
 
     signal_train, background_train, labels_train = make_lists(tiff_files)
 
+    n_processes = get_num_processes(min_free_cpu_cores=n_free_cpus)
     if test_fraction > 0:
         logger.info("Splitting data into training and validation datasets")
         (
@@ -386,7 +390,8 @@ def run(
             labels=labels_test,
             batch_size=batch_size,
             train=True,
-            use_multiprocessing=False,
+            use_multiprocessing=True,
+            workers=n_processes,
         )
 
         # for saving checkpoints
@@ -405,7 +410,8 @@ def run(
         shuffle=True,
         train=True,
         augment=not no_augment,
-        use_multiprocessing=False,
+        use_multiprocessing=True,
+        workers=n_processes,
     )
     callbacks = []
 
