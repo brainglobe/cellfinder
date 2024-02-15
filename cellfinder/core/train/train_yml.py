@@ -337,27 +337,31 @@ def run(
     start_time = datetime.now()
 
     ensure_directory_exists(output_dir)
+
     model_weights = prep_model_weights(
         model_weights, install_path, model, n_free_cpus
-    )
+    )  # path
 
     yaml_contents = parse_yaml(yaml_file)
 
     tiff_files = get_tiff_files(yaml_contents)
+
     logger.info(
         f"Found {sum(len(imlist) for imlist in tiff_files)} images "
         f"from {len(yaml_contents)} datasets "
         f"in {len(yaml_file)} yaml files"
     )
 
+    ### Get model ready
     model = get_model(
         existing_model=trained_model,
         model_weights=model_weights,
         network_depth=models[network_depth],
         learning_rate=learning_rate,
         continue_training=continue_training,
-    )
+    )  # keras.src.models.functional.Functional
 
+    ### Prep data
     signal_train, background_train, labels_train = make_lists(tiff_files)
 
     if test_fraction > 0:
@@ -397,6 +401,7 @@ def run(
         validation_generator = None
         base_checkpoint_file_name = "-epoch.{epoch:02d}"
 
+    ### Generate "dataloader"
     training_generator = CubeGeneratorFromDisk(
         signal_train,
         background_train,
@@ -407,6 +412,11 @@ def run(
         augment=not no_augment,
         use_multiprocessing=False,
     )
+
+    ### Prepare callbacks
+    # - tensorboard
+    # - checkpoint saving
+    # - csv logger
     callbacks = []
 
     if tensorboard:
@@ -442,6 +452,7 @@ def run(
         csv_logger = CSVLogger(csv_filepath)
         callbacks.append(csv_logger)
 
+    ### Begin training
     logger.info("Beginning training.")
     # Keras 3.0: `use_multiprocessing` input is set in the
     # `training_generator` (False by default)
