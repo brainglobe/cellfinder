@@ -22,6 +22,7 @@ home = Path.home()
 DEFAULT_INSTALL_PATH = home / ".cellfinder"
 
 
+# should this be called prep_models, and the other one prep_model_weights?
 def prep_model_weights(
     model_weights: Optional[os.PathLike],
     install_path: Optional[os.PathLike],
@@ -32,6 +33,11 @@ def prep_model_weights(
     if keras.config.backend() == "tensorflow":
         n_processes = get_num_processes(min_free_cpu_cores=n_free_cpus)
         prep_tensorflow(n_processes)
+
+    # if torch backend: change image data format to channels first
+    # (this expects batch size last)
+    elif keras.config.backend() == "torch":
+        keras.config.set_image_data_format("channels_first")
 
     # prepare models (get default weights or provided ones)
     model_weights = prep_models(model_weights, install_path, model_name)
