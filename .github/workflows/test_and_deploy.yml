@@ -116,9 +116,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip wheel
           # Install cellfinder from the latest SHA on this branch
-          python -m pip install git+$GITHUB_SERVER_URL/$GITHUB_REPOSITORY@$GITHUB_SHA
-          # Install tensorflow as keras' default backend
-          python -m pip install "tf-nightly==2.16.0.dev20240101"
+          python -m pip install "cellfinder[tf] @ git+$GITHUB_SERVER_URL/$GITHUB_REPOSITORY@$GITHUB_SHA"
           # Install checked out copy of brainglobe-workflows
           python -m pip install .[dev]
 

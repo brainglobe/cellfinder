@@ -29,7 +29,7 @@ except PackageNotFoundError as e:
 if not os.getenv("KERAS_BACKEND"):
     os.environ["KERAS_BACKEND"] = "tensorflow"
     warnings.warn(
-        "Keras backend not configured, automatically set to Tensorflow"
+        "Keras backend not configured, automatically set to tensorflow"
     )
 
 # Check backend is installed
@@ -47,6 +47,11 @@ else:
     raise PackageNotFoundError(
         "Keras backend must be one of 'tensorflow', 'jax', or 'torch'"
     )
+
+# # Change image data format for Keras --- better somewhere else!
+# import keras
+# if keras.config.backend() == "torch":
+#     keras.config.set_image_data_format('channels_first')
 
 
 __author__ = "Adam Tyson, Christian Niedworok, Charly Rousseau"
