@@ -28,7 +28,7 @@ def coords_to_volume(
     expanded_shape = [
         dim_size + ball_diameter for dim_size in get_shape(xs, ys, zs)
     ]
-    volume = np.zeros(expanded_shape, dtype=np.uint16)
+    volume = np.zeros(expanded_shape, dtype=np.uint32)
 
     x_min, y_min, z_min = xs.min(), ys.min(), zs.min()
 
@@ -71,10 +71,10 @@ def ball_filter_imgs(
     )
 
     # FIXME: hard coded type
-    ball_filtered_volume = np.zeros(volume.shape, dtype=np.uint16)
+    ball_filtered_volume = np.zeros(volume.shape, dtype=np.uint32)
     previous_plane = None
     for z in range(volume.shape[2]):
-        bf.append(volume[:, :, z].astype(np.uint16), good_tiles_mask[:, :, z])
+        bf.append(volume[:, :, z].astype(np.uint32), good_tiles_mask[:, :, z])
         if bf.ready:
             bf.walk()
             middle_plane = bf.get_middle_plane()
@@ -92,8 +92,8 @@ def iterative_ball_filter(
     ns = []
     centres = []
 
-    threshold_value = 65534
-    soma_centre_value = 65535
+    threshold_value = np.iinfo(volume.dtype).max - 1
+    soma_centre_value = np.iinfo(volume.dtype).max
 
     vol = volume.copy()  # TODO: check if required
 

@@ -117,6 +117,7 @@ def main(
     if end_plane == -1:
         end_plane = len(signal_array)
     signal_array = signal_array[start_plane:end_plane]
+    signal_array = signal_array.astype(np.uint32)
 
     callback = callback or (lambda *args, **kwargs: None)
 
