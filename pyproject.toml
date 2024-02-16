@@ -154,4 +154,6 @@ passenv =
     XAUTHORITY
     NUMPY_EXPERIMENTAL_ARRAY_FUNCTION
     PYVISTA_OFF_SCREEN
+platform =
+    tf: linux|darwin  # skip TF backend on windows
 """
