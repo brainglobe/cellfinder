@@ -163,10 +163,10 @@ def test_data_dimension_error(ndim):
     # Check for an error when non-3D data input
     shape = (2, 3, 4, 5)[:ndim]
     signal_array = np.random.randint(
-        low=0, high=2**16, size=shape, dtype=np.uint16
+        low=0, high=2**16, size=shape, dtype=np.uint32
     )
     background_array = np.random.randint(
-        low=0, high=2**16, size=shape, dtype=np.uint16
+        low=0, high=2**16, size=shape, dtype=np.uint32
     )
 
     with pytest.raises(ValueError, match="Input data must be 3D"):
