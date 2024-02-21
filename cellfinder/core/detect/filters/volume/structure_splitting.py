@@ -38,7 +38,7 @@ def coords_to_volume(
 
     # OPTIMISE: vectorize
     for rel_x, rel_y, rel_z in zip(relative_xs, relative_ys, relative_zs):
-        volume[rel_x, rel_y, rel_z] = 65534
+        volume[rel_x, rel_y, rel_z] = np.iinfo(volume.dtype).max - 1
     return volume
 
 
