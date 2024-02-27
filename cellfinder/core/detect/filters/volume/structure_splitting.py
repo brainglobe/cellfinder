@@ -28,7 +28,7 @@ def coords_to_volume(
     expanded_shape = [
         dim_size + ball_diameter for dim_size in get_shape(xs, ys, zs)
     ]
-    volume = np.zeros(expanded_shape, dtype=np.uint16)
+    volume = np.zeros(expanded_shape, dtype=np.uint32)
 
     x_min, y_min, z_min = xs.min(), ys.min(), zs.min()
 
@@ -38,7 +38,7 @@ def coords_to_volume(
 
     # OPTIMISE: vectorize
     for rel_x, rel_y, rel_z in zip(relative_xs, relative_ys, relative_zs):
-        volume[rel_x, rel_y, rel_z] = 65534
+        volume[rel_x, rel_y, rel_z] = np.iinfo(volume.dtype).max - 1
     return volume
 
 
@@ -49,6 +49,26 @@ def ball_filter_imgs(
     ball_xy_size: int = 3,
     ball_z_size: int = 3,
 ) -> Tuple[np.ndarray, np.ndarray]:
+    """
+    Apply ball filtering to a 3D volume and detect cell centres.
+
+    Uses the `BallFilter` class to perform ball filtering on the volume
+    and the `CellDetector` class to detect cell centres.
+
+    Args:
+        volume (np.ndarray): The 3D volume to be filtered.
+        threshold_value (int): The threshold value for ball filtering.
+        soma_centre_value (int): The value representing the soma centre.
+        ball_xy_size (int, optional):
+            The size of the ball filter in the XY plane. Defaults to 3.
+        ball_z_size (int, optional):
+            The size of the ball filter in the Z plane. Defaults to 3.
+
+    Returns:
+        Tuple[np.ndarray, np.ndarray]:
+            A tuple containing the filtered volume and the cell centres.
+
+    """
     # OPTIMISE: reuse ball filter instance
 
     good_tiles_mask = np.ones((1, 1, volume.shape[2]), dtype=bool)
@@ -71,10 +91,10 @@ def ball_filter_imgs(
     )
 
     # FIXME: hard coded type
-    ball_filtered_volume = np.zeros(volume.shape, dtype=np.uint16)
+    ball_filtered_volume = np.zeros(volume.shape, dtype=np.uint32)
     previous_plane = None
     for z in range(volume.shape[2]):
-        bf.append(volume[:, :, z].astype(np.uint16), good_tiles_mask[:, :, z])
+        bf.append(volume[:, :, z].astype(np.uint32), good_tiles_mask[:, :, z])
         if bf.ready:
             bf.walk()
             middle_plane = bf.get_middle_plane()
@@ -89,11 +109,24 @@ def ball_filter_imgs(
 def iterative_ball_filter(
     volume: np.ndarray, n_iter: int = 10
 ) -> Tuple[List[int], List[np.ndarray]]:
+    """
+    Apply iterative ball filtering to the given volume.
+    The volume is eroded at each iteration, by subtracting 1 from the volume.
+
+    Parameters:
+        volume (np.ndarray): The input volume.
+        n_iter (int): The number of iterations to perform. Default is 10.
+
+    Returns:
+        Tuple[List[int], List[np.ndarray]]: A tuple containing two lists:
+            The structures found in each iteration.
+            The cell centres found in each iteration.
+    """
     ns = []
     centres = []
 
-    threshold_value = 65534
-    soma_centre_value = 65535
+    threshold_value = np.iinfo(volume.dtype).max - 1
+    soma_centre_value = np.iinfo(volume.dtype).max
 
     vol = volume.copy()  # TODO: check if required
 
@@ -131,6 +164,21 @@ def check_centre_in_cuboid(centre: np.ndarray, max_coords: np.ndarray) -> bool:
 def split_cells(
     cell_points: np.ndarray, outlier_keep: bool = False
 ) -> np.ndarray:
+    """
+    Split the given cell points into individual cell centres.
+
+    Args:
+        cell_points (np.ndarray): Array of cell points with shape (N, 3),
+            where N is the number of cell points and each point is represented
+            by its x, y, and z coordinates.
+        outlier_keep (bool, optional): Flag indicating whether to keep outliers
+            during the splitting process. Defaults to False.
+
+    Returns:
+        np.ndarray: Array of absolute cell centres with shape (M, 3),
+            where M is the number of individual cells and each centre is
+            represented by its x, y, and z coordinates.
+    """
     orig_centre = get_structure_centre(cell_points)
 
     xs = cell_points[:, 0]
