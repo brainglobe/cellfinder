@@ -1,4 +1,3 @@
-import os
 from typing import Tuple
 
 import numpy as np
@@ -7,26 +6,6 @@ from skimage.filters import gaussian
 
 from cellfinder.core.download import models
 from cellfinder.core.tools.prep import DEFAULT_INSTALL_PATH
-
-
-@pytest.fixture(scope="session")
-def no_free_cpus() -> int:
-    """
-    Set number of free CPUs so all available CPUs are used by the tests.
-    """
-    return 0
-
-
-@pytest.fixture(scope="session")
-def run_on_one_cpu_only() -> int:
-    """
-    Set number of free CPUs so tests can use exactly one CPU.
-    """
-    cpus = os.cpu_count()
-    if cpus is not None:
-        return cpus - 1
-    else:
-        raise ValueError("No CPUs available.")
 
 
 @pytest.fixture(scope="session")

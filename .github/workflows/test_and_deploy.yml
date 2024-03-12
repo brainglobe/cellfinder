@@ -42,7 +42,7 @@ jobs:
         # Run all supported Python versions on linux
         os: [ubuntu-latest]
         python-version: ["3.9", "3.10"]
-        # Include one windows, one macos run
+        # Include one macos run
         include:
         - os: macos-latest
           python-version: "3.10"
@@ -50,8 +50,8 @@ jobs:
           python-version: "3.10"
 
     steps:
-      # Cache the tensorflow model so we don't have to remake it every time
-      - name: Cache tensorflow model
+      # Cache the Keras model so we don't have to remake it every time
+      - name: Cache Keras model
         uses: actions/cache@v3
         with:
           path: "~/.cellfinder"
@@ -75,7 +75,7 @@ jobs:
        NUMBA_DISABLE_JIT: "1"
 
     steps:
-      - name: Cache tensorflow model
+      - name: Cache Keras model
         uses: actions/cache@v3
         with:
           path: "~/.cellfinder"
@@ -97,8 +97,10 @@ jobs:
     needs: [linting, manifest]
     name: Run brainmapper tests to check for breakages
     runs-on: ubuntu-latest
+    env:
+      KERAS_BACKEND: jax
     steps:
-      - name: Cache tensorflow model
+      - name: Cache Keras model
         uses: actions/cache@v3
         with:
           path: "~/.cellfinder"
@@ -117,8 +119,8 @@ jobs:
       - name: Install test dependencies
         run: |
           python -m pip install --upgrade pip wheel
-          # Install latest SHA on this brainglobe-workflows branch
-          python -m pip install git+$GITHUB_SERVER_URL/$GITHUB_REPOSITORY@$GITHUB_SHA
+          # Install cellfinder from the latest SHA on this branch (Keras with JAX backend)
+          python -m pip install "cellfinder[jax] @ git+$GITHUB_SERVER_URL/$GITHUB_REPOSITORY@$GITHUB_SHA"
           # Install checked out copy of brainglobe-workflows
           python -m pip install .[dev]
 

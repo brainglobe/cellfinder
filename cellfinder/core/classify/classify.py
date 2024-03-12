@@ -1,10 +1,10 @@
 import os
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
+import keras
 import numpy as np
 from brainglobe_utils.cells.cells import Cell
 from brainglobe_utils.general.system import get_num_processes
-from tensorflow import keras
 
 from cellfinder.core import logger, types
 from cellfinder.core.classify.cube_generator import CubeGeneratorFromFile
@@ -63,6 +63,8 @@ def main(
         cube_width=cube_width,
         cube_height=cube_height,
         cube_depth=cube_depth,
+        use_multiprocessing=True,
+        workers=workers,
     )
 
     model = get_model(
@@ -73,10 +75,9 @@ def main(
     )
 
     logger.info("Running inference")
+    # in Keras 3.0 multiprocessing params are specified in the generator
     predictions = model.predict(
         inference_generator,
-        use_multiprocessing=True,
-        workers=workers,
         verbose=True,
         callbacks=callbacks,
     )

@@ -35,5 +35,5 @@ def test_train(tmpdir):
     sys.argv = train_args
     train_run()
 
-    model_file = os.path.join(tmpdir, "model.h5")
+    model_file = os.path.join(tmpdir, "model.keras")
     assert os.path.exists(model_file)

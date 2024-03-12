@@ -29,9 +29,7 @@ dependencies = [
     "numpy",
     "scikit-image",
     "scikit-learn",
-    # See https://github.com/brainglobe/cellfinder-core/issues/103 for < 2.12.0 pin
-    "tensorflow-macos>=2.5.0,<2.12.0; platform_system=='Darwin' and platform_machine=='arm64'",
-    "tensorflow>=2.5.0,<2.12.0; platform_system!='Darwin' or platform_machine!='arm64'",
+    "keras>=3.0.0",
     "tifffile",
     "tqdm",
 ]
@@ -60,6 +58,17 @@ napari = [
     "napari[pyqt5]",
     "pooch >= 1",
     "qtpy",
+]
+# Keras backends
+tf = [
+    "tf-nightly==2.16.0.dev20240101", # pinning to same TF as Keras 3.0
+]
+jax = [
+    "jax==0.4.20",
+    "jaxlib==0.4.20"
+]
+torch = [
+    "torch==2.1.0"
 ]
 
 [project.scripts]
@@ -111,13 +120,13 @@ markers = ["slow: marks tests as slow (deselect with '-m \"not slow\"')"]
 legacy_tox_ini = """
 # For more information about tox, see https://tox.readthedocs.io/en/latest/
 [tox]
-envlist = py{39,310}
+envlist = py{39,310}-{tf,jax}
 isolated_build = true
 
 [gh-actions]
 python =
-    3.9: py39
-    3.10: py310
+    3.9: py39-{tf,jax}  # On GA python=3.9 job, run tox with the tf and jax environments
+    3.10: py310-{tf,jax}  # On GA python=3.10 job, run tox with the tf and jax environments
 
 [testenv]
 commands = python -m pytest -v --color=yes
@@ -132,6 +141,11 @@ deps =
     pytest-qt
 extras =
     napari
+    tf: tf
+    jax: jax
+setenv =
+    tf: KERAS_BACKEND = tensorflow
+    jax: KERAS_BACKEND = jax
 passenv =
     NUMBA_DISABLE_JIT
     CI
@@ -140,4 +154,6 @@ passenv =
     XAUTHORITY
     NUMPY_EXPERIMENTAL_ARRAY_FUNCTION
     PYVISTA_OFF_SCREEN
+platform =
+    tf: linux|darwin  # skip TF backend on windows
 """
