@@ -11,12 +11,12 @@ def default_configuration_path():
     return Path(__file__).parent.parent / "config" / "cellfinder.conf"
 
 
-def custom_configuration_path():
+def user_specific_configuration_path():
     """
-    Returns the path to the custom configuration file for cellfinder.
+    Returns the path to the user-specific configuration file for cellfinder.
 
-    This function returns the path to the custom configuration file
-    for cellfinder. The custom configuration file is located in the
+    This function returns the path to the user-specific configuration file
+    for cellfinder. The user-specific configuration file is located in the
     user's home directory under the ".cellfinder" folder and is named
     "cellfinder.conf.custom".
 
