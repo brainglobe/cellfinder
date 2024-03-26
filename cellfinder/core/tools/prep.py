@@ -15,7 +15,7 @@ import cellfinder.core.tools.tf as tf_tools
 from cellfinder.core import logger
 from cellfinder.core.download import models as model_download
 from cellfinder.core.download.download import amend_cfg
-from cellfinder.core.tools.source_files import source_custom_config_cellfinder
+from cellfinder.core.tools.source_files import custom_configuration_path
 
 home = Path.home()
 DEFAULT_INSTALL_PATH = home / ".cellfinder"
@@ -49,7 +49,7 @@ def prep_models(
     if model_weights_path is None:
         logger.debug("No model supplied, so using the default")
 
-        config_file = source_custom_config_cellfinder()
+        config_file = custom_configuration_path()
 
         if not Path(config_file).exists():
             logger.debug("Custom config does not exist, downloading models")

@@ -7,8 +7,8 @@ from brainglobe_utils.general.config import get_config_obj
 from brainglobe_utils.general.system import disk_free_gb
 
 from cellfinder.core.tools.source_files import (
-    source_config_cellfinder,
-    source_custom_config_cellfinder,
+    custom_configuration_path,
+    default_configuration_path,
 )
 
 
@@ -78,8 +78,8 @@ def download(
 def amend_cfg(new_model_path=None):
     print("Ensuring custom config file is correct")
 
-    original_config = source_config_cellfinder()
-    new_config = source_custom_config_cellfinder()
+    original_config = default_configuration_path()
+    new_config = custom_configuration_path()
     if new_model_path is not None:
         write_model_to_cfg(new_model_path, original_config, new_config)
 
