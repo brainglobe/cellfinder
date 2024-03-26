@@ -6,4 +6,4 @@ def source_config_cellfinder():
 
 
 def source_custom_config_cellfinder():
-    return Path(__file__).parent.parent / "config" / "cellfinder.conf.custom"
+    return Path.home() / ".cellfinder" / "cellfinder.conf.custom"
