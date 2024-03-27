@@ -3,7 +3,7 @@ from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser
 from pathlib import Path
 
 from cellfinder.core.download import models
-from cellfinder.core.download.download import amend_cfg
+from cellfinder.core.download.download import amend_user_configuration
 
 home = Path.home()
 DEFAULT_DOWNLOAD_DIRECTORY = home / ".cellfinder"
@@ -65,7 +65,7 @@ def main():
         model_path = models.main(args.model, args.install_path)
 
     if not args.no_amend_config:
-        amend_cfg(new_model_path=model_path)
+        amend_user_configuration(new_model_path=model_path)
 
 
 if __name__ == "__main__":
