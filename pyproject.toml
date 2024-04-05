@@ -127,7 +127,7 @@ isolated_build = true
 python =
     3.9: py39-{torch}  # On GA python=3.9 job, run tox with the tf and jax environments
     3.10: py310-{torch}  # On GA python=3.10 job, run tox with the tf and jax environments
-    3.10: py310-{torch}  # On GA python=3.11 job, run tox with the tf and jax environments
+    3.11: py311-{torch}  # On GA python=3.11 job, run tox with the tf and jax environments
 
 
 [testenv]
