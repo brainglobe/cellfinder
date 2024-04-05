@@ -40,14 +40,14 @@ jobs:
     strategy:
       matrix:
         # Run all supported Python versions on linux
-        os: [ubuntu-latest]
-        python-version: ["3.9", "3.10"]
-        # Include one macos run
-        include:
-        - os: macos-latest
-          python-version: "3.10"
-        - os: windows-latest
-          python-version: "3.10"
+        os: [ubuntu-latest,macos-latest, windows-latest]
+        python-version: ["3.9", "3.10", "3.11"]
+#        # Include one macos run
+#        include:
+#        - os: macos-latest
+#          python-version: "3.10"
+#        - os: windows-latest
+#          python-version: "3.10"
 
     steps:
       # Cache the Keras model so we don't have to remake it every time
