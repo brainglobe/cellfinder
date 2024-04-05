@@ -125,8 +125,8 @@ isolated_build = true
 
 [gh-actions]
 python =
-    3.9: py39-{tf,jax}  # On GA python=3.9 job, run tox with the tf and jax environments
-    3.10: py310-{tf,jax}  # On GA python=3.10 job, run tox with the tf and jax environments
+    3.9: py39-{tf,jax,torch}  # On GA python=3.9 job, run tox with the tf and jax environments
+    3.10: py310-{tf,jax,torch}  # On GA python=3.10 job, run tox with the tf and jax environments
 
 [testenv]
 commands = python -m pytest -v --color=yes
@@ -143,9 +143,11 @@ extras =
     napari
     tf: tf
     jax: jax
+    torch: torch
 setenv =
     tf: KERAS_BACKEND = tensorflow
     jax: KERAS_BACKEND = jax
+    torch: KERAS_BACKEND = torch
 passenv =
     NUMBA_DISABLE_JIT
     CI
