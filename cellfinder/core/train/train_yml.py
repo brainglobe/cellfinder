@@ -341,7 +341,10 @@ def run(
 
     ensure_directory_exists(output_dir)
     model_weights = prep_model_weights(
-        model_weights, install_path, model, n_free_cpus
+        model_weights=model_weights,
+        install_path=install_path,
+        model_name=model,
+        n_free_cpus=n_free_cpus,
     )
 
     yaml_contents = parse_yaml(yaml_file)

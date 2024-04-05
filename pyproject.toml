@@ -128,6 +128,7 @@ python =
     3.9: py39-{tf,jax,torch}  # On GA python=3.9 job, run tox with the tf and jax environments
     3.10: py310-{tf,jax,torch}  # On GA python=3.10 job, run tox with the tf and jax environments
 
+
 [testenv]
 commands = python -m pytest -v --color=yes
 deps =
@@ -156,4 +157,6 @@ passenv =
     XAUTHORITY
     NUMPY_EXPERIMENTAL_ARRAY_FUNCTION
     PYVISTA_OFF_SCREEN
+platform =
+    tf: linux|darwin  # skip TF backend on windows
 """
