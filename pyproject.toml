@@ -61,7 +61,7 @@ napari = [
 ]
 # Keras backends
 tf = [
-    "tf-nightly==2.16.0.dev20240101", # pinning to same TF as Keras 3.0
+    "tensorflow", # pinning to same TF as Keras 3.0
 ]
 jax = [
     "jax==0.4.20",
@@ -120,13 +120,13 @@ markers = ["slow: marks tests as slow (deselect with '-m \"not slow\"')"]
 legacy_tox_ini = """
 # For more information about tox, see https://tox.readthedocs.io/en/latest/
 [tox]
-envlist = py{39,310}-{tf,jax}
+envlist = py{39,310}-{torch}
 isolated_build = true
 
 [gh-actions]
 python =
-    3.9: py39-{tf,jax,torch}  # On GA python=3.9 job, run tox with the tf and jax environments
-    3.10: py310-{tf,jax,torch}  # On GA python=3.10 job, run tox with the tf and jax environments
+    3.9: py39-{torch}  # On GA python=3.9 job, run tox with the tf and jax environments
+    3.10: py310-{torch}  # On GA python=3.10 job, run tox with the tf and jax environments
 
 
 [testenv]

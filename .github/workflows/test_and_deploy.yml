@@ -4,9 +4,9 @@ on:
   # Only run on pushes to main, or when version tags are pushed
   push:
     branches:
-      - "*"
+      - "main"
     tags:
-      - "*"
+      - "v**"
   # Run on all pull-requests
   pull_request:
   # Allow workflow dispatch from GitHub
@@ -120,7 +120,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip wheel
           # Install cellfinder from the latest SHA on this branch (Keras with JAX backend)
-          python -m pip install "cellfinder[jax] @ git+$GITHUB_SERVER_URL/$GITHUB_REPOSITORY@$GITHUB_SHA"
+          python -m pip install "cellfinder[torch] @ git+$GITHUB_SERVER_URL/$GITHUB_REPOSITORY@$GITHUB_SHA"
           # Install checked out copy of brainglobe-workflows
           python -m pip install .[dev]
 
