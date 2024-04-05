@@ -104,7 +104,7 @@ class BallFilter:
 
         # Stores the current planes that are being filtered
         self.volume = np.empty(
-            (plane_width, plane_height, ball_z_size), dtype=np.uint16
+            (plane_width, plane_height, ball_z_size), dtype=np.uint32
         )
         # Index of the middle plane in the volume
         self.middle_z_idx = int(np.floor(ball_z_size / 2))
@@ -165,7 +165,7 @@ class BallFilter:
         Get the plane in the middle of self.volume.
         """
         z = self.middle_z_idx
-        return np.array(self.volume[:, :, z], dtype=np.uint16)
+        return np.array(self.volume[:, :, z], dtype=np.uint32)
 
     def walk(self) -> None:  # Highly optimised because most time critical
         ball_radius = self.ball_xy_size // 2
@@ -327,6 +327,6 @@ def _walk(
                     THRESHOLD_VALUE,
                     kernel,
                 ):
-                    volume[
-                        ball_centre_x, ball_centre_y, middle_z
-                    ] = SOMA_CENTRE_VALUE
+                    volume[ball_centre_x, ball_centre_y, middle_z] = (
+                        SOMA_CENTRE_VALUE
+                    )

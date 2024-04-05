@@ -70,6 +70,7 @@ class CurationWidget(QWidget):
         self.output_directory: Optional[Path] = None
 
         self.setup_main_layout()
+        self.setup_keybindings()
 
         @self.viewer.layers.events.connect
         def update_layer_list(v: napari.viewer.Viewer):
@@ -182,6 +183,7 @@ class CurationWidget(QWidget):
             self.load_data_layout,
             self.mark_as_cell,
             row=5,
+            tooltip="Mark all selected points as non cell. Shortcut: 'c'",
         )
         self.mark_as_non_cell_button = add_button(
             "Mark as non cell(s)",
@@ -189,6 +191,7 @@ class CurationWidget(QWidget):
             self.mark_as_non_cell,
             row=5,
             column=1,
+            tooltip="Mark all selected points as non cell. Shortcut: 'x'",
         )
         self.add_training_data_button = add_button(
             "Add training data layers",
@@ -207,6 +210,10 @@ class CurationWidget(QWidget):
         self.load_data_panel.setLayout(self.load_data_layout)
         self.load_data_panel.setVisible(True)
         self.layout.addWidget(self.load_data_panel, row, column, 1, 1)
+
+    def setup_keybindings(self):
+        self.viewer.bind_key("c", self.mark_as_cell)
+        self.viewer.bind_key("x", self.mark_as_non_cell)
 
     def set_signal_image(self):
         """
@@ -246,9 +253,9 @@ class CurationWidget(QWidget):
             self.training_data_non_cell_layer = self.viewer.layers[
                 self.training_data_non_cell_choice.currentText()
             ]
-            self.training_data_non_cell_layer.metadata[
-                "point_type"
-            ] = Cell.UNKNOWN
+            self.training_data_non_cell_layer.metadata["point_type"] = (
+                Cell.UNKNOWN
+            )
             self.training_data_non_cell_layer.metadata["training_data"] = True
 
     def add_training_data(self):
@@ -304,10 +311,10 @@ class CurationWidget(QWidget):
         )
         self.training_data_non_cell_choice.setCurrentText(non_cell_name)
 
-    def mark_as_cell(self):
+    def mark_as_cell(self, viewer=None):
         self.mark_point_as_type("cell")
 
-    def mark_as_non_cell(self):
+    def mark_as_non_cell(self, viewer=None):
         self.mark_point_as_type("non-cell")
 
     def mark_point_as_type(self, point_type: str):

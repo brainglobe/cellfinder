@@ -15,8 +15,8 @@ from brainglobe_utils.general.system import get_num_processes
 import cellfinder.core.tools.tf as tf_tools
 from cellfinder.core import logger
 from cellfinder.core.download import models as model_download
-from cellfinder.core.download.download import amend_cfg
-from cellfinder.core.tools.source_files import source_custom_config_cellfinder
+from cellfinder.core.download.download import amend_user_configuration
+from cellfinder.core.tools.source_files import user_specific_configuration_path
 
 home = Path.home()
 DEFAULT_INSTALL_PATH = home / ".cellfinder"
@@ -55,18 +55,18 @@ def prep_models(
     if model_weights_path is None:
         logger.debug("No model supplied, so using the default")
 
-        config_file = source_custom_config_cellfinder()
+        config_file = user_specific_configuration_path()
 
         if not Path(config_file).exists():
             logger.debug("Custom config does not exist, downloading models")
             model_path = model_download.main(model_name, install_path)
-            amend_cfg(new_model_path=model_path)
+            amend_user_configuration(new_model_path=model_path)
 
         model_weights = get_model_weights(config_file)
         if not model_weights.exists():
             logger.debug("Model weights do not exist, downloading")
             model_path = model_download.main(model_name, install_path)
-            amend_cfg(new_model_path=model_path)
+            amend_user_configuration(new_model_path=model_path)
             model_weights = get_model_weights(config_file)
     else:
         model_weights = Path(model_weights_path)

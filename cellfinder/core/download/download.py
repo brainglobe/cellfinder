@@ -7,8 +7,8 @@ from brainglobe_utils.general.config import get_config_obj
 from brainglobe_utils.general.system import disk_free_gb
 
 from cellfinder.core.tools.source_files import (
-    source_config_cellfinder,
-    source_custom_config_cellfinder,
+    default_configuration_path,
+    user_specific_configuration_path,
 )
 
 
@@ -75,16 +75,45 @@ def download(
         os.remove(download_path)
 
 
-def amend_cfg(new_model_path=None):
-    print("Ensuring custom config file is correct")
+def amend_user_configuration(new_model_path=None) -> None:
+    """
+    Amends the user configuration to contain the configuration
+    in new_model_path, if specified.
 
-    original_config = source_config_cellfinder()
-    new_config = source_custom_config_cellfinder()
+    Parameters
+    ----------
+    new_model_path : str, optional
+        The path to the new model configuration.
+    """
+    print("(Over-)writing custom user configuration")
+
+    original_config = default_configuration_path()
+    new_config = user_specific_configuration_path()
     if new_model_path is not None:
-        write_model_to_cfg(new_model_path, original_config, new_config)
+        write_model_to_config(new_model_path, original_config, new_config)
 
 
-def write_model_to_cfg(new_model_path, orig_config, custom_config):
+def write_model_to_config(new_model_path, orig_config, custom_config):
+    """
+    Update the model path in the custom configuration file, by
+    reading the lines in the original configuration file, replacing
+    the line starting with "model_path =" and writing these
+    lines to the custom file.
+
+    Parameters
+    ----------
+    new_model_path : str
+        The new path to the model.
+    orig_config : str
+        The path to the original configuration file.
+    custom_config : str
+        The path to the custom configuration file to be created.
+
+    Returns
+    -------
+    None
+
+    """
     config_obj = get_config_obj(orig_config)
     model_conf = config_obj["model"]
     orig_path = model_conf["model_path"]
