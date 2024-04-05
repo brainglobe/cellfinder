@@ -4,9 +4,9 @@ on:
   # Only run on pushes to main, or when version tags are pushed
   push:
     branches:
-      - "main"
+      - "*"
     tags:
-      - "v**"
+      - "*"
   # Run on all pull-requests
   pull_request:
   # Allow workflow dispatch from GitHub
