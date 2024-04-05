@@ -120,13 +120,14 @@ markers = ["slow: marks tests as slow (deselect with '-m \"not slow\"')"]
 legacy_tox_ini = """
 # For more information about tox, see https://tox.readthedocs.io/en/latest/
 [tox]
-envlist = py{39,310}-{torch}
+envlist = py{39,310,311}-{torch}
 isolated_build = true
 
 [gh-actions]
 python =
     3.9: py39-{torch}  # On GA python=3.9 job, run tox with the tf and jax environments
     3.10: py310-{torch}  # On GA python=3.10 job, run tox with the tf and jax environments
+    3.10: py310-{torch}  # On GA python=3.11 job, run tox with the tf and jax environments
 
 
 [testenv]
