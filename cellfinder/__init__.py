@@ -36,11 +36,10 @@ if not os.getenv("KERAS_BACKEND"):
 if os.getenv("KERAS_BACKEND") in ["tensorflow", "jax", "torch"]:
     backend = os.getenv("KERAS_BACKEND")
     try:
-        backend_package = "tf-nightly" if backend == "tensorflow" else backend
-        BACKEND_VERSION = version(backend_package)
+        BACKEND_VERSION = version(backend)
     except PackageNotFoundError as e:
         raise PackageNotFoundError(
-            f"{backend}, ({backend_package}) set as Keras backend "
+            f"{backend}, ({backend}) set as Keras backend "
             f"but not installed"
         ) from e
 else:
