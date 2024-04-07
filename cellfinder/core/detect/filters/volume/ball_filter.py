@@ -104,7 +104,9 @@ class BallFilter:
 
         # Stores the current planes that are being filtered
         self.volume = np.empty(
-            (plane_width, plane_height, ball_z_size), dtype=np.uint32
+            (plane_width, plane_height, ball_z_size),
+            dtype=np.uint32,
+            order="F",
         )
         # Index of the middle plane in the volume
         self.middle_z_idx = int(np.floor(ball_z_size / 2))
@@ -117,6 +119,7 @@ class BallFilter:
                 ball_z_size,
             ),
             dtype=bool,
+            order="F",
         )
         # Stores the z-index in volume at which new planes are inserted when
         # append() is called
@@ -150,12 +153,9 @@ class BallFilter:
             self.__current_z += 1
         else:
             # Shift everything down by one to make way for the new plane
-            self.volume = np.roll(
-                self.volume, -1, axis=2
-            )  # WARNING: not in place
-            self.inside_brain_tiles = np.roll(
-                self.inside_brain_tiles, -1, axis=2
-            )
+            self.volume[:, :, :-1] = self.volume[:, :, 1:]
+            self.inside_brain_tiles[:, :, :-1] = self.inside_brain_tiles[:, :, 1:]
+
         # Add the new plane to the top of volume and inside_brain_tiles
         self.volume[:, :, self.__current_z] = plane[:, :]
         self.inside_brain_tiles[:, :, self.__current_z] = mask[:, :]
