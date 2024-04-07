@@ -144,19 +144,21 @@ class BallFilter:
         self.overlap_threshold = np.sum(self.overlap_fraction * self.kernel)
 
         # Stores the current planes that are being filtered
+        # first axis is z
         self.volume = np.empty(
-            (plane_width, plane_height, ball_z_size),
+            (ball_z_size, plane_width, plane_height),
             dtype=np.uint32,
         )
         # Index of the middle plane in the volume
         self.middle_z_idx = int(np.floor(ball_z_size / 2))
         self._num_z_added = 0
 
+        # first axis is z
         self.inside_brain_tiles = np.empty(
             (
+                ball_z_size,
                 int(np.ceil(plane_width / tile_step_width)),
                 int(np.ceil(plane_height / tile_step_height)),
-                ball_z_size,
             ),
             dtype=np.bool_,
         )
@@ -174,45 +176,45 @@ class BallFilter:
         """
         # if DEBUG:
         #     assert [e for e in plane.shape[:2]] == [
-        #         e for e in self.volume.shape[:2]
+        #         e for e in self.volume.shape[1:]
         #     ], 'plane shape mismatch, expected "{}", got "{}"'.format(
-        #         [e for e in self.volume.shape[:2]],
+        #         [e for e in self.volume.shape[1:]],
         #         [e for e in plane.shape[:2]],
         #     )
         #     assert [e for e in mask.shape[:2]] == [
-        #         e for e in self.inside_brain_tiles.shape[:2]
+        #         e for e in self.inside_brain_tiles.shape[1:]
         #     ], 'mask shape mismatch, expected"{}", got {}"'.format(
-        #         [e for e in self.inside_brain_tiles.shape[:2]],
+        #         [e for e in self.inside_brain_tiles.shape[1:]],
         #         [e for e in mask.shape[:2]],
         #     )
 
         if self.ready:
             # Shift everything down by one to make way for the new plane
             # this is faster than np.roll, especially with fortran memory layout
-            self.volume[:, :, :-1] = self.volume[:, :, 1:]
-            self.inside_brain_tiles[:, :, :-1] = self.inside_brain_tiles[:, :, 1:]
+            self.volume[:-1, :, :] = self.volume[1:, :, :]
+            self.inside_brain_tiles[:-1, :, :] = self.inside_brain_tiles[1:, :, :]
 
         idx = min(self._num_z_added, self.ball_z_size - 1)
         self._num_z_added += 1
 
         # Add the new plane to the top of volume and inside_brain_tiles
-        self.volume[:, :, idx] = plane
-        self.inside_brain_tiles[:, :, idx] = mask
+        self.volume[idx, :, :] = plane
+        self.inside_brain_tiles[idx, :, :] = mask
 
     def get_middle_plane(self) -> np.ndarray:
         """
         Get the plane in the middle of self.volume.
         """
-        return self.volume[:, :, self.middle_z_idx].copy()
+        return self.volume[self.middle_z_idx, :, :].copy()
 
     def walk(self) -> None:  # Highly optimised because most time critical
         ball_radius = self.ball_xy_size // 2
         # Get extents of image that are covered by tiles
         tile_mask_covered_img_width = (
-            self.inside_brain_tiles.shape[0] * self.tile_step_width
+            self.inside_brain_tiles.shape[1] * self.tile_step_width
         )
         tile_mask_covered_img_height = (
-            self.inside_brain_tiles.shape[1] * self.tile_step_height
+            self.inside_brain_tiles.shape[2] * self.tile_step_height
         )
         # Get maximum offsets for the ball
         max_width = tile_mask_covered_img_width - self.ball_xy_size
@@ -267,12 +269,12 @@ def _cube_overlaps(
     """
     current_overlap_value = 0.
 
-    middle = np.floor(volume.shape[2] / 2) + 1
+    middle = np.floor(volume.shape[0] / 2) + 1
     halfway_overlap_thresh = (
         overlap_threshold * 0.4
     )  # FIXME: do not hard code value
 
-    for z in range(volume.shape[2]):
+    for z in range(volume.shape[0]):
         # TODO: OPTIMISE: step from middle to outer boundaries to check
         # more data first
         #
@@ -284,7 +286,7 @@ def _cube_overlaps(
         for y in range(y_start, y_end):
             for x in range(x_start, x_end):
                 # includes self.SOMA_CENTRE_VALUE
-                if volume[x, y, z] >= THRESHOLD_VALUE:
+                if volume[z, x, y] >= THRESHOLD_VALUE:
                     current_overlap_value += kernel[x - x_start, y - y_start, z]
 
     return current_overlap_value > overlap_threshold
@@ -304,7 +306,7 @@ def _is_tile_to_check(
     """
     x_in_mask = x // tile_step_width  # TEST: test bounds (-1 range)
     y_in_mask = y // tile_step_height  # TEST: test bounds (-1 range)
-    return inside_brain_tiles[x_in_mask, y_in_mask, middle_z]
+    return inside_brain_tiles[middle_z, x_in_mask, y_in_mask]
 
 
 @njit
@@ -370,6 +372,6 @@ def _walk(
                     THRESHOLD_VALUE,
                     kernel,
                 ):
-                    volume[ball_centre_x, ball_centre_y, middle_z] = (
+                    volume[middle_z, ball_centre_x, ball_centre_y] = (
                         SOMA_CENTRE_VALUE
                     )
