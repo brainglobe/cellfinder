@@ -1,13 +1,21 @@
 from dataclasses import dataclass
-from typing import Dict, Optional, TypeVar
+from typing import Dict, Optional, TypeVar, Tuple
 
 import numba.typed
 import numpy as np
+from numba import typed
 import numpy.typing as npt
 from numba import njit
 from numba.core import types
 from numba.experimental import jitclass
 from numba.types import DictType
+
+
+T = TypeVar("T")
+VolDomainNPT = np.int64
+VolDomainNumbaT = types.int64
+SIDDomainNPT = np.int64
+SIDDomainNumbaT = types.int64
 
 
 @dataclass
@@ -32,9 +40,6 @@ def get_non_zero_dtype_min(values: np.ndarray) -> int:
     return min_val
 
 
-T = TypeVar("T")
-
-
 @njit
 def traverse_dict(d: Dict[T, T], a: T) -> T:
     """
@@ -54,14 +59,27 @@ def get_structure_centre(structure: np.ndarray) -> np.ndarray:
     Centre calculated as the mean of each pixel coordinate,
     rounded to the nearest integer.
     """
-    # can't do np.mean(structure, axis=0)
-    # because axis is not supported by numba
+    # numba support axis for sum, but not mean
+    return np.round(np.sum(structure, axis=0) / structure.shape[0])
+
+
+@njit
+def _get_structure_centre(structure: types.ListType) -> np.ndarray:
+    # See get_structure_centre.
+    a_sum = 0.
+    b_sum = 0.
+    c_sum = 0.
+    for a, b, c in structure:
+        a_sum += a
+        b_sum += b
+        c_sum += c
+
     return np.round(
         np.array(
             [
-                np.mean(structure[:, 0]),
-                np.mean(structure[:, 1]),
-                np.mean(structure[:, 2]),
+                a_sum / len(structure),
+                b_sum / len(structure),
+                c_sum / len(structure),
             ]
         )
     )
@@ -69,15 +87,16 @@ def get_structure_centre(structure: np.ndarray) -> np.ndarray:
 
 # Type declaration has to come outside of the class,
 # see https://github.com/numba/numba/issues/8808
-uint_2d_type = types.uint64[:, :]
+tuple_point_type = types.Tuple((VolDomainNumbaT, VolDomainNumbaT, VolDomainNumbaT))
+list_of_points_type = types.ListType(tuple_point_type)
 
 
 spec = [
-    ("z", types.uint64),
-    ("next_structure_id", types.uint64),
-    ("shape", types.UniTuple(types.int64, 2)),
-    ("obsolete_ids", DictType(types.int64, types.int64)),
-    ("coords_maps", DictType(types.uint64, uint_2d_type)),
+    ("z", VolDomainNumbaT),
+    ("next_structure_id", SIDDomainNumbaT),
+    ("shape", types.UniTuple(VolDomainNumbaT, 2)),
+    ("obsolete_ids", DictType(SIDDomainNumbaT, SIDDomainNumbaT)),
+    ("coords_maps", DictType(SIDDomainNumbaT, list_of_points_type)),
 ]
 
 
@@ -123,11 +142,11 @@ class CellDetector:
         # Mapping from obsolete IDs to the IDs that they have been
         # made obsolete by
         self.obsolete_ids = numba.typed.Dict.empty(
-            key_type=types.int64, value_type=types.int64
+            key_type=SIDDomainNumbaT, value_type=SIDDomainNumbaT
         )
         # Mapping from IDs to list of points in that structure
         self.coords_maps = numba.typed.Dict.empty(
-            key_type=types.int64, value_type=uint_2d_type
+            key_type=SIDDomainNumbaT, value_type=list_of_points_type
         )
 
     def process(
@@ -136,7 +155,7 @@ class CellDetector:
         """
         Process a new plane.
         """
-        if [e for e in plane.shape[:2]] != [e for e in self.shape]:
+        if plane.shape[:2] != self.shape:
             raise ValueError("plane does not have correct shape")
 
         plane = self.connect_four(plane, previous_plane)
@@ -166,7 +185,7 @@ class CellDetector:
             for x in range(plane.shape[0]):
                 if plane[x, y] == SOMA_CENTRE_VALUE:
                     # Labels of structures below, left and behind
-                    neighbour_ids = np.zeros(3, dtype=np.uint64)
+                    neighbour_ids = np.zeros(3, dtype=SIDDomainNPT)
                     # If in bounds look at neighbours
                     if x > 0:
                         neighbour_ids[0] = plane[x - 1, y]
@@ -191,17 +210,45 @@ class CellDetector:
     def get_cell_centres(self) -> np.ndarray:
         return self.structures_to_cells()
 
-    def get_coords_dict(self) -> Dict:
-        return self.coords_maps
+    def get_structures(self) -> Dict[int, np.ndarray]:
+        d = {}
+        for sid, points in self.coords_maps.items():
+            # numba silliness
+            item = np.empty((len(points), 3), dtype=VolDomainNPT)
+            d[sid] = item
 
-    def add_point(self, sid: int, point: np.ndarray) -> None:
+            for i, point in enumerate(points):
+                item[i, :] = point
+
+        return d
+
+    def add_point(self, sid: int, point: tuple | list | np.ndarray) -> None:
         """
-        Add *point* to the structure with the given *sid*.
+        Add single 3d *point* to the structure with the given *sid*.
         """
-        self.coords_maps[sid] = np.row_stack((self.coords_maps[sid], point))
+        if sid not in self.coords_maps:
+            self.coords_maps[sid] = typed.List.empty_list(tuple_point_type)
+
+        self._add_point(sid, (int(point[0]), int(point[1]), int(point[2])))
+
+    def add_points(self, sid: int, points: np.ndarray):
+        """
+        Adds ndarray of *points* to the structure with the given *sid*.
+        Each row is a 3d point.
+        """
+        if sid not in self.coords_maps:
+            self.coords_maps[sid] = typed.List.empty_list(tuple_point_type)
+
+        append = self.coords_maps[sid].append
+        pts = np.round(points).astype(VolDomainNPT)
+        for point in pts:
+            append((point[0], point[1], point[2]))
+
+    def _add_point(self, sid: int, point: Tuple[int, int, int]) -> None:
+        self.coords_maps[sid].append(point)
 
     def add(
-        self, x: int, y: int, z: int, neighbour_ids: npt.NDArray[np.uint64]
+        self, x: int, y: int, z: int, neighbour_ids: npt.NDArray[SIDDomainNPT]
     ) -> int:
         """
         For the current coordinates takes all the neighbours and find the
@@ -215,17 +262,14 @@ class CellDetector:
         """
         updated_id = self.sanitise_ids(neighbour_ids)
         if updated_id not in self.coords_maps:
-            self.coords_maps[updated_id] = np.zeros(
-                shape=(0, 3), dtype=np.uint64
-            )
+            self.coords_maps[updated_id] = typed.List.empty_list(tuple_point_type)
         self.merge_structures(updated_id, neighbour_ids)
 
         # Add point for that structure
-        point = np.array([[x, y, z]], dtype=np.uint64)
-        self.add_point(updated_id, point)
+        self._add_point(updated_id, (int(x), int(y), int(z)))
         return updated_id
 
-    def sanitise_ids(self, neighbour_ids: npt.NDArray[np.uint64]) -> int:
+    def sanitise_ids(self, neighbour_ids: npt.NDArray[SIDDomainNPT]) -> int:
         """
         Get the smallest ID of all the structures that are connected to IDs
         in `neighbour_ids`.
@@ -246,7 +290,7 @@ class CellDetector:
         return int(updated_id)
 
     def merge_structures(
-        self, updated_id: int, neighbour_ids: npt.NDArray[np.uint64]
+        self, updated_id: int, neighbour_ids: npt.NDArray[SIDDomainNPT]
     ) -> None:
         """
         For all the neighbours, reassign all the points of neighbour to
@@ -261,14 +305,14 @@ class CellDetector:
             # minimise ID so if neighbour with higher ID, reassign its points
             # to current
             if neighbour_id > updated_id:
-                self.add_point(updated_id, self.coords_maps[neighbour_id])
+                self.coords_maps[updated_id].extend(self.coords_maps[neighbour_id])
                 self.coords_maps.pop(neighbour_id)
                 self.obsolete_ids[neighbour_id] = updated_id
 
     def structures_to_cells(self) -> np.ndarray:
-        cell_centres = np.empty((len(self.coords_maps.keys()), 3))
+        cell_centres = np.empty((len(self.coords_maps), 3))
         for idx, structure in enumerate(self.coords_maps.values()):
-            p = get_structure_centre(structure)
+            p = _get_structure_centre(structure)
             cell_centres[idx] = p
         return cell_centres
 

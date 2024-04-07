@@ -142,11 +142,10 @@ class VolumeFilter(object):
         )
 
         cells = []
+        structures = self.cell_detector.get_structures().items()
+        logger.debug(f"Processing {len(structures)} cells")
 
-        logger.debug(
-            f"Processing {len(self.cell_detector.coords_maps.items())} cells"
-        )
-        for cell_id, cell_points in self.cell_detector.coords_maps.items():
+        for cell_id, cell_points in structures:
             cell_volume = len(cell_points)
 
             if cell_volume < max_cell_volume:
