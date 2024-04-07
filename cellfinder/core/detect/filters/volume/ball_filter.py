@@ -1,15 +1,22 @@
-import numpy as np
 from functools import lru_cache
-from numba import njit
+
+import numpy as np
+from numba import njit, typed, objmode
+from numba.experimental import jitclass
+from numba.core import types
 
 from cellfinder.core.tools.array_operations import bin_mean_3d
 from cellfinder.core.tools.geometry import make_sphere
 
 DEBUG = False
 
+uint32_3d_type = types.uint32[:, :, :]
+bool_3d_type = types.bool_[:, :, :]
+float_3d_type = types.float64[:, :, :]
+
 
 @lru_cache(maxsize=50)
-def get_kernel(ball_xy_size: int, ball_z_size: int):
+def get_kernel(ball_xy_size: int, ball_z_size: int) -> np.ndarray:
     # Create a spherical kernel.
     #
     # This is done by:
@@ -52,6 +59,29 @@ def get_kernel(ball_xy_size: int, ball_z_size: int):
     return kernel
 
 
+spec = [
+    ("ball_xy_size", types.uint32),
+    ("ball_z_size", types.uint32),
+    ("tile_step_width", types.uint64),
+    ("tile_step_height", types.uint64),
+
+    ("THRESHOLD_VALUE", types.uint32),
+    ("SOMA_CENTRE_VALUE", types.uint32),
+
+    ("overlap_fraction", types.float64),
+    ("overlap_threshold", types.float64),
+
+    ("middle_z_idx", types.uint32),
+    ("_num_z_added", types.uint32),
+
+    ("kernel", float_3d_type),
+    ("volume", uint32_3d_type),
+    ("inside_brain_tiles", bool_3d_type),
+
+]
+
+
+@jitclass(spec=spec)
 class BallFilter:
     """
     A 3D ball filter.
@@ -107,7 +137,9 @@ class BallFilter:
         self.THRESHOLD_VALUE = threshold_value
         self.SOMA_CENTRE_VALUE = soma_centre_value
 
-        self.kernel = get_kernel(ball_xy_size, ball_z_size)
+        with objmode(kernel=float_3d_type):
+            kernel = get_kernel(ball_xy_size, ball_z_size)
+        self.kernel = kernel
 
         self.overlap_threshold = np.sum(self.overlap_fraction * self.kernel)
 
@@ -115,66 +147,63 @@ class BallFilter:
         self.volume = np.empty(
             (plane_width, plane_height, ball_z_size),
             dtype=np.uint32,
-            order="F",
         )
         # Index of the middle plane in the volume
         self.middle_z_idx = int(np.floor(ball_z_size / 2))
+        self._num_z_added = 0
 
-        # TODO: lazy initialisation
         self.inside_brain_tiles = np.empty(
             (
                 int(np.ceil(plane_width / tile_step_width)),
                 int(np.ceil(plane_height / tile_step_height)),
                 ball_z_size,
             ),
-            dtype=bool,
-            order="F",
+            dtype=np.bool_,
         )
-        # Stores the z-index in volume at which new planes are inserted when
-        # append() is called
-        self.__current_z = -1
 
     @property
     def ready(self) -> bool:
         """
         Return `True` if enough planes have been appended to run the filter.
         """
-        return self.__current_z == self.ball_z_size - 1
+        return self._num_z_added >= self.ball_z_size
 
     def append(self, plane: np.ndarray, mask: np.ndarray) -> None:
         """
         Add a new 2D plane to the filter.
         """
-        if DEBUG:
-            assert [e for e in plane.shape[:2]] == [
-                e for e in self.volume.shape[:2]
-            ], 'plane shape mismatch, expected "{}", got "{}"'.format(
-                [e for e in self.volume.shape[:2]],
-                [e for e in plane.shape[:2]],
-            )
-            assert [e for e in mask.shape[:2]] == [
-                e for e in self.inside_brain_tiles.shape[:2]
-            ], 'mask shape mismatch, expected"{}", got {}"'.format(
-                [e for e in self.inside_brain_tiles.shape[:2]],
-                [e for e in mask.shape[:2]],
-            )
-        if not self.ready:
-            self.__current_z += 1
-        else:
+        # if DEBUG:
+        #     assert [e for e in plane.shape[:2]] == [
+        #         e for e in self.volume.shape[:2]
+        #     ], 'plane shape mismatch, expected "{}", got "{}"'.format(
+        #         [e for e in self.volume.shape[:2]],
+        #         [e for e in plane.shape[:2]],
+        #     )
+        #     assert [e for e in mask.shape[:2]] == [
+        #         e for e in self.inside_brain_tiles.shape[:2]
+        #     ], 'mask shape mismatch, expected"{}", got {}"'.format(
+        #         [e for e in self.inside_brain_tiles.shape[:2]],
+        #         [e for e in mask.shape[:2]],
+        #     )
+
+        if self.ready:
             # Shift everything down by one to make way for the new plane
+            # this is faster than np.roll, especially with fortran memory layout
             self.volume[:, :, :-1] = self.volume[:, :, 1:]
             self.inside_brain_tiles[:, :, :-1] = self.inside_brain_tiles[:, :, 1:]
 
+        idx = min(self._num_z_added, self.ball_z_size - 1)
+        self._num_z_added += 1
+
         # Add the new plane to the top of volume and inside_brain_tiles
-        self.volume[:, :, self.__current_z] = plane[:, :]
-        self.inside_brain_tiles[:, :, self.__current_z] = mask[:, :]
+        self.volume[:, :, idx] = plane
+        self.inside_brain_tiles[:, :, idx] = mask
 
     def get_middle_plane(self) -> np.ndarray:
         """
         Get the plane in the middle of self.volume.
         """
-        z = self.middle_z_idx
-        return np.array(self.volume[:, :, z], dtype=np.uint32)
+        return self.volume[:, :, self.middle_z_idx].copy()
 
     def walk(self) -> None:  # Highly optimised because most time critical
         ball_radius = self.ball_xy_size // 2
@@ -207,7 +236,11 @@ class BallFilter:
 
 @njit(cache=True)
 def _cube_overlaps(
-    cube: np.ndarray,
+    volume: np.ndarray,
+    x_start: int,
+    x_end: int,
+    y_start: int,
+    y_end: int,
     overlap_threshold: float,
     THRESHOLD_VALUE: int,
     kernel: np.ndarray,
@@ -232,14 +265,14 @@ def _cube_overlaps(
     kernel :
         3D array, with the same shape as *cube*.
     """
-    current_overlap_value = 0
+    current_overlap_value = 0.
 
-    middle = np.floor(cube.shape[2] / 2) + 1
+    middle = np.floor(volume.shape[2] / 2) + 1
     halfway_overlap_thresh = (
         overlap_threshold * 0.4
     )  # FIXME: do not hard code value
 
-    for z in range(cube.shape[2]):
+    for z in range(volume.shape[2]):
         # TODO: OPTIMISE: step from middle to outer boundaries to check
         # more data first
         #
@@ -247,11 +280,13 @@ def _cube_overlaps(
         # 0.4 * the overlap threshold, return
         if z == middle and current_overlap_value < halfway_overlap_thresh:
             return False  # DEBUG: optimisation attempt
-        for y in range(cube.shape[1]):
-            for x in range(cube.shape[0]):
+
+        for y in range(y_start, y_end):
+            for x in range(x_start, x_end):
                 # includes self.SOMA_CENTRE_VALUE
-                if cube[x, y, z] >= THRESHOLD_VALUE:
-                    current_overlap_value += kernel[x, y, z]
+                if volume[x, y, z] >= THRESHOLD_VALUE:
+                    current_overlap_value += kernel[x - x_start, y - y_start, z]
+
     return current_overlap_value > overlap_threshold
 
 
@@ -298,8 +333,8 @@ def _walk(
     max_height, max_width :
         Maximum offsets for the ball filter.
     inside_brain_tiles :
-        Array containing information on whether a tile is inside the brain
-        or not. Tiles outside the brain are skipped.
+        3d array containing information on whether a tile is
+        inside the brain or not. Tiles outside the brain are skipped.
     volume :
         3D array containing the plane-filtered data.
     kernel :
@@ -325,13 +360,12 @@ def _walk(
                 tile_step_height,
                 inside_brain_tiles,
             ):
-                cube = volume[
-                    x : x + kernel.shape[0],
-                    y : y + kernel.shape[1],
-                    :,
-                ]
                 if _cube_overlaps(
-                    cube,
+                    volume,
+                    x,
+                    x + kernel.shape[0],
+                    y,
+                    y + kernel.shape[1],
                     overlap_threshold,
                     THRESHOLD_VALUE,
                     kernel,
