@@ -1,10 +1,55 @@
 import numpy as np
+from functools import lru_cache
 from numba import njit
 
 from cellfinder.core.tools.array_operations import bin_mean_3d
 from cellfinder.core.tools.geometry import make_sphere
 
 DEBUG = False
+
+
+@lru_cache(maxsize=50)
+def get_kernel(ball_xy_size: int, ball_z_size: int):
+    # Create a spherical kernel.
+    #
+    # This is done by:
+    # 1. Generating a binary sphere at a resolution *upscale_factor* larger
+    #    than desired.
+    # 2. Downscaling the binary sphere to get a 'fuzzy' sphere at the
+    #    original intended scale
+    upscale_factor: int = 7
+    upscaled_kernel_shape = (
+        upscale_factor * ball_xy_size,
+        upscale_factor * ball_xy_size,
+        upscale_factor * ball_z_size,
+    )
+    upscaled_ball_centre_position = (
+        np.floor(upscaled_kernel_shape[0] / 2),
+        np.floor(upscaled_kernel_shape[1] / 2),
+        np.floor(upscaled_kernel_shape[2] / 2),
+    )
+    upscaled_ball_radius = upscaled_kernel_shape[0] / 2.0
+
+    sphere_kernel = make_sphere(
+        upscaled_kernel_shape,
+        upscaled_ball_radius,
+        upscaled_ball_centre_position,
+    )
+    sphere_kernel = sphere_kernel.astype(np.float64)
+    kernel = bin_mean_3d(
+        sphere_kernel,
+        bin_height=upscale_factor,
+        bin_width=upscale_factor,
+        bin_depth=upscale_factor,
+    )
+
+    assert (
+            kernel.shape[2] == ball_z_size
+    ), "Kernel z dimension should be {}, got {}".format(
+        ball_z_size, kernel.shape[2]
+    )
+
+    return kernel
 
 
 class BallFilter:
@@ -62,43 +107,7 @@ class BallFilter:
         self.THRESHOLD_VALUE = threshold_value
         self.SOMA_CENTRE_VALUE = soma_centre_value
 
-        # Create a spherical kernel.
-        #
-        # This is done by:
-        # 1. Generating a binary sphere at a resolution *upscale_factor* larger
-        #    than desired.
-        # 2. Downscaling the binary sphere to get a 'fuzzy' sphere at the
-        #    original intended scale
-        upscale_factor: int = 7
-        upscaled_kernel_shape = (
-            upscale_factor * ball_xy_size,
-            upscale_factor * ball_xy_size,
-            upscale_factor * ball_z_size,
-        )
-        upscaled_ball_centre_position = (
-            np.floor(upscaled_kernel_shape[0] / 2),
-            np.floor(upscaled_kernel_shape[1] / 2),
-            np.floor(upscaled_kernel_shape[2] / 2),
-        )
-        upscaled_ball_radius = upscaled_kernel_shape[0] / 2.0
-        sphere_kernel = make_sphere(
-            upscaled_kernel_shape,
-            upscaled_ball_radius,
-            upscaled_ball_centre_position,
-        )
-        sphere_kernel = sphere_kernel.astype(np.float64)
-        self.kernel = bin_mean_3d(
-            sphere_kernel,
-            bin_height=upscale_factor,
-            bin_width=upscale_factor,
-            bin_depth=upscale_factor,
-        )
-
-        assert (
-            self.kernel.shape[2] == ball_z_size
-        ), "Kernel z dimension should be {}, got {}".format(
-            ball_z_size, self.kernel.shape[2]
-        )
+        self.kernel = get_kernel(ball_xy_size, ball_z_size)
 
         self.overlap_threshold = np.sum(self.overlap_fraction * self.kernel)
 
