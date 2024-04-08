@@ -45,10 +45,10 @@ def traverse_dict(d: Dict[T, T], a: T) -> T:
     """
     Traverse d, until a is not present as a key.
     """
-    if a in d:
-        return traverse_dict(d, d[a])
-    else:
-        return a
+    value = a
+    while value in d:
+        value = d[value]
+    return value
 
 
 @njit
