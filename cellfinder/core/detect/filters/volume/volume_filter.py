@@ -1,7 +1,9 @@
 import math
 import os
+from functools import partial
 from queue import Queue
 from threading import Lock
+import multiprocessing.pool
 from typing import Any, Callable, List, Optional, Tuple
 
 import numpy as np
@@ -77,7 +79,7 @@ class VolumeFilter(object):
         locks: List[Lock],
         *,
         callback: Callable[[int], None],
-    ) -> List[Cell]:
+    ) -> None:
         progress_bar = tqdm(total=self.n_planes, desc="Processing planes")
         for z in range(self.n_planes):
             # Get result from the queue.
@@ -108,7 +110,6 @@ class VolumeFilter(object):
 
         progress_bar.close()
         logger.debug("3D filter done")
-        return self.get_results()
 
     def _run_filter(self) -> None:
         logger.debug(f"🏐 Ball filtering plane {self.z}")
@@ -134,7 +135,7 @@ class VolumeFilter(object):
         f_path = os.path.join(self.plane_directory, plane_name)
         tifffile.imsave(f_path, plane.T)
 
-    def get_results(self) -> List[Cell]:
+    def get_results(self, worker_pool: multiprocessing.Pool) -> List[Cell]:
         logger.info("Splitting cell clusters and writing results")
 
         max_cell_volume = sphere_volume(
@@ -142,8 +143,9 @@ class VolumeFilter(object):
         )
 
         cells = []
+        needs_split = []
         structures = self.cell_detector.get_structures().items()
-        logger.debug(f"Processing {len(structures)} cells")
+        logger.debug(f"Processing {len(structures)} found cells")
 
         for cell_id, cell_points in structures:
             cell_volume = len(cell_points)
@@ -151,51 +153,50 @@ class VolumeFilter(object):
             if cell_volume < max_cell_volume:
                 cell_centre = get_structure_centre(cell_points)
                 cells.append(
-                    Cell(
-                        (
-                            cell_centre[0],
-                            cell_centre[1],
-                            cell_centre[2],
-                        ),
-                        Cell.UNKNOWN,
-                    )
+                    Cell(cell_centre.tolist(), Cell.UNKNOWN)
                 )
             else:
                 if cell_volume < self.max_cluster_size:
-                    try:
-                        cell_centres = split_cells(
-                            cell_points, outlier_keep=self.outlier_keep
-                        )
-                    except (ValueError, AssertionError) as err:
-                        raise StructureSplitException(
-                            f"Cell {cell_id}, error; {err}"
-                        )
-                    for cell_centre in cell_centres:
-                        cells.append(
-                            Cell(
-                                (
-                                    cell_centre[0],
-                                    cell_centre[1],
-                                    cell_centre[2],
-                                ),
-                                Cell.UNKNOWN,
-                            )
-                        )
+                    needs_split.append((cell_id, cell_points))
                 else:
                     cell_centre = get_structure_centre(cell_points)
                     cells.append(
-                        Cell(
-                            (
-                                cell_centre[0],
-                                cell_centre[1],
-                                cell_centre[2],
-                            ),
-                            Cell.ARTIFACT,
-                        )
+                        Cell(cell_centre.tolist(), Cell.ARTIFACT)
                     )
 
-        logger.debug("Finished splitting cell clusters.")
+        if not needs_split:
+            logger.debug("Finished splitting cell clusters - none found")
+            return cells
+
+        logger.debug(f"Splitting {len(needs_split)} clusters")
+        progress_bar = tqdm(total=len(needs_split), desc="Splitting cell clusters")
+
+        # we are not returning Cell instances from func because it'd be pickled
+        # by multiprocess which slows it down
+        func = partial(_split_cells, outlier_keep=self.outlier_keep)
+        for cell_centres in worker_pool.imap_unordered(func, needs_split):
+            for cell_centre in cell_centres:
+                cells.append(
+                    Cell(cell_centre.tolist(), Cell.UNKNOWN)
+                )
+            progress_bar.update()
+
+        progress_bar.close()
+        logger.debug(
+            f"Finished splitting cell clusters. Found {len(cells)} total cells"
+        )
+
         return cells
+
+
+def _split_cells(arg, outlier_keep):
+    cell_id, cell_points = arg
+    try:
+        return split_cells(cell_points, outlier_keep=outlier_keep)
+    except (ValueError, AssertionError) as err:
+        raise StructureSplitException(
+            f"Cell {cell_id}, error; {err}"
+        )
 
 
 def sphere_volume(radius: float) -> float:

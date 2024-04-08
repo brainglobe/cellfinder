@@ -236,7 +236,9 @@ def main(
         # then 3D filtering has finished. As batches of planes are filtered
         # by the 3D filter, it releases the locks of subsequent 2D filter
         # processes.
-        cells = mp_3d_filter.process(async_results, locks, callback=callback)
+        mp_3d_filter.process(async_results, locks, callback=callback)
+        # it's now done filtering, get results
+        cells = mp_3d_filter.get_results(worker_pool)
 
     time_elapsed = datetime.now() - start_time
     logger.debug(
