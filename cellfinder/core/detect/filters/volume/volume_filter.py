@@ -113,7 +113,10 @@ class VolumeFilter(object):
 
     def _run_filter(self) -> None:
         logger.debug(f"🏐 Ball filtering plane {self.z}")
-        self.ball_filter.walk()
+        # filtering original images, the images should be large enough in x/y
+        # to benefit from parallelization. Note: don't pass arg as keyword arg
+        # because numba gets stuck (probably b/c class jit is new)
+        self.ball_filter.walk(True)
 
         middle_plane = self.ball_filter.get_middle_plane()
         if self.save_planes:

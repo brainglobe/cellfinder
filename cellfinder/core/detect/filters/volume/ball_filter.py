@@ -1,7 +1,7 @@
 from functools import lru_cache
 
 import numpy as np
-from numba import njit, typed, objmode
+from numba import njit, typed, objmode, prange
 from numba.experimental import jitclass
 from numba.core import types
 
@@ -207,7 +207,9 @@ class BallFilter:
         """
         return self.volume[self.middle_z_idx, :, :].copy()
 
-    def walk(self) -> None:  # Highly optimised because most time critical
+    def walk(self, parallel: bool = False) -> None:
+        # **don't** pass parallel as keyword arg - numba struggles with it
+        # Highly optimised because most time critical
         ball_radius = self.ball_xy_size // 2
         # Get extents of image that are covered by tiles
         tile_mask_covered_img_width = (
@@ -220,7 +222,8 @@ class BallFilter:
         max_width = tile_mask_covered_img_width - self.ball_xy_size
         max_height = tile_mask_covered_img_height - self.ball_xy_size
 
-        _walk(
+        func = _walk_parallel if parallel else _walk_parallel
+        func(
             max_height,
             max_width,
             self.tile_step_width,
@@ -309,8 +312,7 @@ def _is_tile_to_check(
     return inside_brain_tiles[middle_z, x_in_mask, y_in_mask]
 
 
-@njit
-def _walk(
+def _walk_base(
     max_height: int,
     max_width: int,
     tile_step_width: int,
@@ -338,20 +340,20 @@ def _walk(
         3d array containing information on whether a tile is
         inside the brain or not. Tiles outside the brain are skipped.
     volume :
-        3D array containing the plane-filtered data.
+        3D array containing the plane-filtered data - edited in place.
     kernel :
         3D array
     ball_radius :
         Radius of the ball in the xy plane.
-    SOMA_CENTRE_VALUE :
+    soma_centre_value :
         Value that is used to mark pixels in *volume*.
 
     Notes
     -----
     Warning: modifies volume in place!
     """
-    for y in range(max_height):
-        for x in range(max_width):
+    for y in prange(max_height):
+        for x in prange(max_width):
             ball_centre_x = x + ball_radius
             ball_centre_y = y + ball_radius
             if _is_tile_to_check(
@@ -375,3 +377,7 @@ def _walk(
                     volume[middle_z, ball_centre_x, ball_centre_y] = (
                         SOMA_CENTRE_VALUE
                     )
+
+
+_walk_parallel = njit(parallel=True)(_walk_base)
+_walk_single = njit(parallel=False)(_walk_base)
