@@ -1,15 +1,13 @@
 from dataclasses import dataclass
-from typing import Dict, Optional, TypeVar, Tuple
+from typing import Dict, Optional, Tuple, TypeVar
 
 import numba.typed
 import numpy as np
-from numba import typed
 import numpy.typing as npt
-from numba import njit
+from numba import njit, typed
 from numba.core import types
 from numba.experimental import jitclass
 from numba.types import DictType
-
 
 T = TypeVar("T")
 # type used for the domain of the volume - the size of the vol
@@ -69,9 +67,9 @@ def get_structure_centre(structure: np.ndarray) -> np.ndarray:
 def _get_structure_centre(structure: types.ListType) -> np.ndarray:
     # See get_structure_centre.
     # this is for our own points stored as list optimized by numba
-    a_sum = 0.
-    b_sum = 0.
-    c_sum = 0.
+    a_sum = 0.0
+    b_sum = 0.0
+    c_sum = 0.0
     for a, b, c in structure:
         a_sum += a
         b_sum += b

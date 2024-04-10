@@ -1,9 +1,9 @@
 from functools import lru_cache
 
 import numpy as np
-from numba import njit, typed, objmode, prange
-from numba.experimental import jitclass
+from numba import njit, objmode, prange
 from numba.core import types
+from numba.experimental import jitclass
 
 from cellfinder.core.tools.array_operations import bin_mean_3d
 from cellfinder.core.tools.geometry import make_sphere
@@ -51,7 +51,7 @@ def get_kernel(ball_xy_size: int, ball_z_size: int) -> np.ndarray:
     )
 
     assert (
-            kernel.shape[2] == ball_z_size
+        kernel.shape[2] == ball_z_size
     ), "Kernel z dimension should be {}, got {}".format(
         ball_z_size, kernel.shape[2]
     )
@@ -65,20 +65,15 @@ spec = [
     ("ball_z_size", types.uint32),
     ("tile_step_width", types.uint64),
     ("tile_step_height", types.uint64),
-
     ("THRESHOLD_VALUE", types.uint32),
     ("SOMA_CENTRE_VALUE", types.uint32),
-
     ("overlap_fraction", types.float64),
     ("overlap_threshold", types.float64),
-
     ("middle_z_idx", types.uint32),
     ("_num_z_added", types.uint32),
-
     ("kernel", float_3d_type),
     ("volume", uint32_3d_type),
     ("inside_brain_tiles", bool_3d_type),
-
 ]
 
 
@@ -194,8 +189,9 @@ class BallFilter:
             # Shift everything down by one to make way for the new plane
             # this is faster than np.roll, especially with z-axis first
             self.volume[:-1, :, :] = self.volume[1:, :, :]
-            self.inside_brain_tiles[:-1, :, :] = \
-                self.inside_brain_tiles[1:, :, :]
+            self.inside_brain_tiles[:-1, :, :] = self.inside_brain_tiles[
+                1:, :, :
+            ]
 
         # index for *next* slice is num we added *so far* until max
         idx = min(self._num_z_added, self.ball_z_size - 1)
@@ -277,7 +273,7 @@ def _cube_overlaps(
     kernel :
         3D array, with the same shape as *cube* in the volume.
     """
-    current_overlap_value = 0.
+    current_overlap_value = 0.0
 
     middle = np.floor(volume.shape[0] / 2) + 1
     halfway_overlap_thresh = (
@@ -298,8 +294,9 @@ def _cube_overlaps(
                 # includes self.SOMA_CENTRE_VALUE
                 if volume[z, x, y] >= threshold_value:
                     # x/y must be shifted in kernel
-                    current_overlap_value += \
-                        kernel[x - x_start, y - y_start, z]
+                    current_overlap_value += kernel[
+                        x - x_start, y - y_start, z
+                    ]
 
     return current_overlap_value > overlap_threshold
 

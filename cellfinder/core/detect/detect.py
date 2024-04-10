@@ -19,10 +19,10 @@ from queue import Queue
 from threading import Lock
 from typing import Callable, List, Optional, Sequence, Tuple, TypeVar
 
-from numba import set_num_threads
 import numpy as np
 from brainglobe_utils.cells.cells import Cell
 from brainglobe_utils.general.system import get_num_processes
+from numba import set_num_threads
 
 from cellfinder.core import logger, types
 from cellfinder.core.detect.filters.plane import TileProcessor

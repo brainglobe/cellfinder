@@ -1,9 +1,9 @@
 import math
+import multiprocessing.pool
 import os
 from functools import partial
 from queue import Queue
 from threading import Lock
-import multiprocessing.pool
 from typing import Any, Callable, List, Optional, Tuple
 
 import numpy as np
@@ -156,17 +156,13 @@ class VolumeFilter(object):
 
             if cell_volume < max_cell_volume:
                 cell_centre = get_structure_centre(cell_points)
-                cells.append(
-                    Cell(cell_centre.tolist(), Cell.UNKNOWN)
-                )
+                cells.append(Cell(cell_centre.tolist(), Cell.UNKNOWN))
             else:
                 if cell_volume < self.max_cluster_size:
                     needs_split.append((cell_id, cell_points))
                 else:
                     cell_centre = get_structure_centre(cell_points)
-                    cells.append(
-                        Cell(cell_centre.tolist(), Cell.ARTIFACT)
-                    )
+                    cells.append(Cell(cell_centre.tolist(), Cell.ARTIFACT))
 
         if not needs_split:
             logger.debug("Finished splitting cell clusters - none found")
@@ -174,16 +170,16 @@ class VolumeFilter(object):
 
         # now split clusters into cells
         logger.debug(f"Splitting {len(needs_split)} clusters")
-        progress_bar = tqdm(total=len(needs_split), desc="Splitting cell clusters")
+        progress_bar = tqdm(
+            total=len(needs_split), desc="Splitting cell clusters"
+        )
 
         # we are not returning Cell instances from func because it'd be pickled
         # by multiprocess which slows it down
         func = partial(_split_cells, outlier_keep=self.outlier_keep)
         for cell_centres in worker_pool.imap_unordered(func, needs_split):
             for cell_centre in cell_centres:
-                cells.append(
-                    Cell(cell_centre.tolist(), Cell.UNKNOWN)
-                )
+                cells.append(Cell(cell_centre.tolist(), Cell.UNKNOWN))
             progress_bar.update()
 
         progress_bar.close()
@@ -199,9 +195,7 @@ def _split_cells(arg, outlier_keep):
     try:
         return split_cells(cell_points, outlier_keep=outlier_keep)
     except (ValueError, AssertionError) as err:
-        raise StructureSplitException(
-            f"Cell {cell_id}, error; {err}"
-        )
+        raise StructureSplitException(f"Cell {cell_id}, error; {err}")
 
 
 def sphere_volume(radius: float) -> float:
