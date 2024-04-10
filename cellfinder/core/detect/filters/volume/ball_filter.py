@@ -254,7 +254,6 @@ class BallFilter:
             )
 
 
-
 @njit(cache=True)
 def _cube_overlaps(
     volume: np.ndarray,
