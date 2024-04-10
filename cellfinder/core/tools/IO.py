@@ -50,7 +50,8 @@ def read_z_stack(path):
         if set(axes) != {"x", "y", "z"} or axes[0].lower() != "z":
             raise ValueError(
                 f"Attempted to load {path} but didn't find a zyx or "
-                f"zxy stack. Found {axes} axes")
+                f"zxy stack. Found {axes} axes"
+            )
 
         return imread(path)
 
