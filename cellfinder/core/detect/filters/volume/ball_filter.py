@@ -59,6 +59,7 @@ def get_kernel(ball_xy_size: int, ball_z_size: int) -> np.ndarray:
     return kernel
 
 
+# volume indices/size is 64 bit for very large brains(!)
 spec = [
     ("ball_xy_size", types.uint32),
     ("ball_z_size", types.uint32),
@@ -137,6 +138,7 @@ class BallFilter:
         self.THRESHOLD_VALUE = threshold_value
         self.SOMA_CENTRE_VALUE = soma_centre_value
 
+        # getting kernel is not jitted
         with objmode(kernel=float_3d_type):
             kernel = get_kernel(ball_xy_size, ball_z_size)
         self.kernel = kernel
@@ -144,7 +146,7 @@ class BallFilter:
         self.overlap_threshold = np.sum(self.overlap_fraction * self.kernel)
 
         # Stores the current planes that are being filtered
-        # first axis is z
+        # first axis is z for faster rotating the z-axis
         self.volume = np.empty(
             (ball_z_size, plane_width, plane_height),
             dtype=np.uint32,
@@ -174,26 +176,28 @@ class BallFilter:
         """
         Add a new 2D plane to the filter.
         """
-        # if DEBUG:
-        #     assert [e for e in plane.shape[:2]] == [
-        #         e for e in self.volume.shape[1:]
-        #     ], 'plane shape mismatch, expected "{}", got "{}"'.format(
-        #         [e for e in self.volume.shape[1:]],
-        #         [e for e in plane.shape[:2]],
-        #     )
-        #     assert [e for e in mask.shape[:2]] == [
-        #         e for e in self.inside_brain_tiles.shape[1:]
-        #     ], 'mask shape mismatch, expected"{}", got {}"'.format(
-        #         [e for e in self.inside_brain_tiles.shape[1:]],
-        #         [e for e in mask.shape[:2]],
-        #     )
+        if DEBUG:
+            assert [e for e in plane.shape[:2]] == [
+                e for e in self.volume.shape[1:]
+            ], 'plane shape mismatch, expected "{}", got "{}"'.format(
+                [e for e in self.volume.shape[1:]],
+                [e for e in plane.shape[:2]],
+            )
+            assert [e for e in mask.shape[:2]] == [
+                e for e in self.inside_brain_tiles.shape[1:]
+            ], 'mask shape mismatch, expected"{}", got {}"'.format(
+                [e for e in self.inside_brain_tiles.shape[1:]],
+                [e for e in mask.shape[:2]],
+            )
 
         if self.ready:
             # Shift everything down by one to make way for the new plane
-            # this is faster than np.roll, especially with fortran memory layout
+            # this is faster than np.roll, especially with z-axis first
             self.volume[:-1, :, :] = self.volume[1:, :, :]
-            self.inside_brain_tiles[:-1, :, :] = self.inside_brain_tiles[1:, :, :]
+            self.inside_brain_tiles[:-1, :, :] = \
+                self.inside_brain_tiles[1:, :, :]
 
+        # index for *next* slice is num we added *so far* until max
         idx = min(self._num_z_added, self.ball_z_size - 1)
         self._num_z_added += 1
 
@@ -247,11 +251,11 @@ def _cube_overlaps(
     y_start: int,
     y_end: int,
     overlap_threshold: float,
-    THRESHOLD_VALUE: int,
+    threshold_value: int,
     kernel: np.ndarray,
 ) -> bool:  # Highly optimised because most time critical
     """
-    For each pixel in cube that is greater than THRESHOLD_VALUE, sum
+    For each pixel in cube in volume that is greater than THRESHOLD_VALUE, sum
     up the corresponding pixels in *kernel*. If the total is less than
     overlap_threshold, return False, otherwise return True.
 
@@ -261,14 +265,17 @@ def _cube_overlaps(
 
     Parameters
     ----------
-    cube :
+    volume :
         3D array.
+    x_start, x_end, y_start, y_end :
+        The start and end indices in volume that form the cube. End is
+        exclusive
     overlap_threshold :
         Threshold above which to return True.
-    THRESHOLD_VALUE :
+    threshold_value :
         Value above which a pixel is marked as being part of a cell.
     kernel :
-        3D array, with the same shape as *cube*.
+        3D array, with the same shape as *cube* in the volume.
     """
     current_overlap_value = 0.
 
@@ -289,8 +296,10 @@ def _cube_overlaps(
         for y in range(y_start, y_end):
             for x in range(x_start, x_end):
                 # includes self.SOMA_CENTRE_VALUE
-                if volume[z, x, y] >= THRESHOLD_VALUE:
-                    current_overlap_value += kernel[x - x_start, y - y_start, z]
+                if volume[z, x, y] >= threshold_value:
+                    # x/y must be shifted in kernel
+                    current_overlap_value += \
+                        kernel[x - x_start, y - y_start, z]
 
     return current_overlap_value > overlap_threshold
 
@@ -323,8 +332,8 @@ def _walk_base(
     ball_radius: int,
     middle_z: int,
     overlap_threshold: float,
-    THRESHOLD_VALUE: int,
-    SOMA_CENTRE_VALUE: int,
+    threshold_value: int,
+    soma_centre_value: int,
 ) -> None:
     """
     Scan through *volume*, and mark pixels where there are enough surrounding
@@ -371,11 +380,11 @@ def _walk_base(
                     y,
                     y + kernel.shape[1],
                     overlap_threshold,
-                    THRESHOLD_VALUE,
+                    threshold_value,
                     kernel,
                 ):
                     volume[middle_z, ball_centre_x, ball_centre_y] = (
-                        SOMA_CENTRE_VALUE
+                        soma_centre_value
                     )
 
 

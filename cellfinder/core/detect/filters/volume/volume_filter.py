@@ -150,6 +150,7 @@ class VolumeFilter(object):
         structures = self.cell_detector.get_structures().items()
         logger.debug(f"Processing {len(structures)} found cells")
 
+        # first get all the cells that are not clusters
         for cell_id, cell_points in structures:
             cell_volume = len(cell_points)
 
@@ -171,6 +172,7 @@ class VolumeFilter(object):
             logger.debug("Finished splitting cell clusters - none found")
             return cells
 
+        # now split clusters into cells
         logger.debug(f"Splitting {len(needs_split)} clusters")
         progress_bar = tqdm(total=len(needs_split), desc="Splitting cell clusters")
 

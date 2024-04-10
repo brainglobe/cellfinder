@@ -12,10 +12,12 @@ from numba.types import DictType
 
 
 T = TypeVar("T")
-VolDomainNPT = np.int64
-VolDomainNumbaT = types.int64
-SIDDomainNPT = np.int64
-SIDDomainNumbaT = types.int64
+# type used for the domain of the volume - the size of the vol
+vol_np_type = np.int64
+vol_numba_type = types.int64
+# type used for the structure id
+sid_np_type = np.int64
+sid_numba_type = types.int64
 
 
 @dataclass
@@ -66,6 +68,7 @@ def get_structure_centre(structure: np.ndarray) -> np.ndarray:
 @njit
 def _get_structure_centre(structure: types.ListType) -> np.ndarray:
     # See get_structure_centre.
+    # this is for our own points stored as list optimized by numba
     a_sum = 0.
     b_sum = 0.
     c_sum = 0.
@@ -87,16 +90,18 @@ def _get_structure_centre(structure: types.ListType) -> np.ndarray:
 
 # Type declaration has to come outside of the class,
 # see https://github.com/numba/numba/issues/8808
-tuple_point_type = types.Tuple((VolDomainNumbaT, VolDomainNumbaT, VolDomainNumbaT))
+tuple_point_type = types.Tuple(
+    (vol_numba_type, vol_numba_type, vol_numba_type)
+)
 list_of_points_type = types.ListType(tuple_point_type)
 
 
 spec = [
-    ("z", VolDomainNumbaT),
-    ("next_structure_id", SIDDomainNumbaT),
-    ("shape", types.UniTuple(VolDomainNumbaT, 2)),
-    ("obsolete_ids", DictType(SIDDomainNumbaT, SIDDomainNumbaT)),
-    ("coords_maps", DictType(SIDDomainNumbaT, list_of_points_type)),
+    ("z", vol_numba_type),
+    ("next_structure_id", sid_numba_type),
+    ("shape", types.UniTuple(vol_numba_type, 2)),
+    ("obsolete_ids", DictType(sid_numba_type, sid_numba_type)),
+    ("coords_maps", DictType(sid_numba_type, list_of_points_type)),
 ]
 
 
@@ -122,8 +127,12 @@ class CellDetector:
         are scanned.
     coords_maps :
         Mapping from structure ID to the coordinates of pixels within that
-        structure. Coordinates are stored in a 2D array, with the second
-        axis indexing (x, y, z) coordinates.
+        structure. Coordinates are stored in a list of (x, y, z) tuples of
+        the coordinates.
+
+        Use `get_structures` to get it as a dict whose values are each
+        a 2D array, where rows are points, and columns x, y, z of the
+        points.
     """
 
     def __init__(self, width: int, height: int, start_z: int):
@@ -142,11 +151,11 @@ class CellDetector:
         # Mapping from obsolete IDs to the IDs that they have been
         # made obsolete by
         self.obsolete_ids = numba.typed.Dict.empty(
-            key_type=SIDDomainNumbaT, value_type=SIDDomainNumbaT
+            key_type=sid_numba_type, value_type=sid_numba_type
         )
         # Mapping from IDs to list of points in that structure
         self.coords_maps = numba.typed.Dict.empty(
-            key_type=SIDDomainNumbaT, value_type=list_of_points_type
+            key_type=sid_numba_type, value_type=list_of_points_type
         )
 
     def process(
@@ -185,7 +194,7 @@ class CellDetector:
             for x in range(plane.shape[0]):
                 if plane[x, y] == SOMA_CENTRE_VALUE:
                     # Labels of structures below, left and behind
-                    neighbour_ids = np.zeros(3, dtype=SIDDomainNPT)
+                    neighbour_ids = np.zeros(3, dtype=sid_np_type)
                     # If in bounds look at neighbours
                     if x > 0:
                         neighbour_ids[0] = plane[x - 1, y]
@@ -211,10 +220,14 @@ class CellDetector:
         return self.structures_to_cells()
 
     def get_structures(self) -> Dict[int, np.ndarray]:
+        """
+        Gets the structures as a dict of structure IDs mapped to the 2D array
+        of structure points.
+        """
         d = {}
         for sid, points in self.coords_maps.items():
             # numba silliness
-            item = np.empty((len(points), 3), dtype=VolDomainNPT)
+            item = np.empty((len(points), 3), dtype=vol_np_type)
             d[sid] = item
 
             for i, point in enumerate(points):
@@ -240,15 +253,16 @@ class CellDetector:
             self.coords_maps[sid] = typed.List.empty_list(tuple_point_type)
 
         append = self.coords_maps[sid].append
-        pts = np.round(points).astype(VolDomainNPT)
+        pts = np.round(points).astype(vol_np_type)
         for point in pts:
             append((point[0], point[1], point[2]))
 
     def _add_point(self, sid: int, point: Tuple[int, int, int]) -> None:
+        # sid must exist
         self.coords_maps[sid].append(point)
 
     def add(
-        self, x: int, y: int, z: int, neighbour_ids: npt.NDArray[SIDDomainNPT]
+        self, x: int, y: int, z: int, neighbour_ids: npt.NDArray[sid_np_type]
     ) -> int:
         """
         For the current coordinates takes all the neighbours and find the
@@ -262,14 +276,16 @@ class CellDetector:
         """
         updated_id = self.sanitise_ids(neighbour_ids)
         if updated_id not in self.coords_maps:
-            self.coords_maps[updated_id] = typed.List.empty_list(tuple_point_type)
+            self.coords_maps[updated_id] = typed.List.empty_list(
+                tuple_point_type
+            )
         self.merge_structures(updated_id, neighbour_ids)
 
         # Add point for that structure
         self._add_point(updated_id, (int(x), int(y), int(z)))
         return updated_id
 
-    def sanitise_ids(self, neighbour_ids: npt.NDArray[SIDDomainNPT]) -> int:
+    def sanitise_ids(self, neighbour_ids: npt.NDArray[sid_np_type]) -> int:
         """
         Get the smallest ID of all the structures that are connected to IDs
         in `neighbour_ids`.
@@ -290,7 +306,7 @@ class CellDetector:
         return int(updated_id)
 
     def merge_structures(
-        self, updated_id: int, neighbour_ids: npt.NDArray[SIDDomainNPT]
+        self, updated_id: int, neighbour_ids: npt.NDArray[sid_np_type]
     ) -> None:
         """
         For all the neighbours, reassign all the points of neighbour to
@@ -305,7 +321,9 @@ class CellDetector:
             # minimise ID so if neighbour with higher ID, reassign its points
             # to current
             if neighbour_id > updated_id:
-                self.coords_maps[updated_id].extend(self.coords_maps[neighbour_id])
+                self.coords_maps[updated_id].extend(
+                    self.coords_maps[neighbour_id]
+                )
                 self.coords_maps.pop(neighbour_id)
                 self.obsolete_ids[neighbour_id] = updated_id
 
