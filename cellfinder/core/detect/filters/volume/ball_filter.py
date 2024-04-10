@@ -222,21 +222,37 @@ class BallFilter:
         max_width = tile_mask_covered_img_width - self.ball_xy_size
         max_height = tile_mask_covered_img_height - self.ball_xy_size
 
-        func = _walk_parallel if parallel else _walk_parallel
-        func(
-            max_height,
-            max_width,
-            self.tile_step_width,
-            self.tile_step_height,
-            self.inside_brain_tiles,
-            self.volume,
-            self.kernel,
-            ball_radius,
-            self.middle_z_idx,
-            self.overlap_threshold,
-            self.THRESHOLD_VALUE,
-            self.SOMA_CENTRE_VALUE,
-        )
+        if parallel:
+            _walk_parallel(
+                max_height,
+                max_width,
+                self.tile_step_width,
+                self.tile_step_height,
+                self.inside_brain_tiles,
+                self.volume,
+                self.kernel,
+                ball_radius,
+                self.middle_z_idx,
+                self.overlap_threshold,
+                self.THRESHOLD_VALUE,
+                self.SOMA_CENTRE_VALUE,
+            )
+        else:
+            _walk_single(
+                max_height,
+                max_width,
+                self.tile_step_width,
+                self.tile_step_height,
+                self.inside_brain_tiles,
+                self.volume,
+                self.kernel,
+                ball_radius,
+                self.middle_z_idx,
+                self.overlap_threshold,
+                self.THRESHOLD_VALUE,
+                self.SOMA_CENTRE_VALUE,
+            )
+
 
 
 @njit(cache=True)
