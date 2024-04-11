@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Dict, Optional, Tuple, TypeVar
+from typing import Dict, Optional, Tuple, TypeVar, Union
 
 import numba.typed
 import numpy as np
@@ -233,7 +233,9 @@ class CellDetector:
 
         return d
 
-    def add_point(self, sid: int, point: tuple | list | np.ndarray) -> None:
+    def add_point(
+        self, sid: int, point: Union[tuple, list, np.ndarray]
+    ) -> None:
         """
         Add single 3d *point* to the structure with the given *sid*.
         """
