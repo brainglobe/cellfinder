@@ -17,13 +17,18 @@ def html_label_widget(label: str, *, tag: str = "b") -> dict:
     )
 
 
-cellfinder_header = header_widget(
-    "cellfinder",
-    "Efficient cell detection in large images.",
-    documentation_path="cellfinder/user-guide/napari-plugin/index.html",
-    citation_doi="https://doi.org/10.1371/journal.pcbi.1009074",
-    help_text="For help, hover the cursor over each parameter.",
-)
+def cellfinder_header():
+    """
+    Create the header containing the brainglobe logo and documentation links
+    for all cellfinder widgets.
+    """
+    return header_widget(
+        "cellfinder",
+        "Efficient cell detection in large images.",
+        documentation_path="cellfinder/user-guide/napari-plugin/index.html",
+        citation_doi="https://doi.org/10.1371/journal.pcbi.1009074",
+        help_text="For help, hover the cursor over each parameter.",
+    )
 
 
 def add_layers(points: List[Cell], viewer: napari.Viewer) -> None:

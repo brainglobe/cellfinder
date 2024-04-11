@@ -202,7 +202,7 @@ def detect_widget() -> FunctionGui:
         worker.update_progress_bar.connect(update_progress_bar)
         worker.start()
 
-    widget.native.layout().insertWidget(0, cellfinder_header)
+    widget.native.layout().insertWidget(0, cellfinder_header())
 
     @widget.reset_button.changed.connect
     def restore_defaults():

@@ -155,7 +155,7 @@ def training_widget() -> FunctionGui:
             )
             worker.start()
 
-    widget.native.layout().insertWidget(0, cellfinder_header)
+    widget.native.layout().insertWidget(0, cellfinder_header())
 
     @widget.reset_button.changed.connect
     def restore_defaults():
