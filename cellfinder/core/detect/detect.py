@@ -161,7 +161,7 @@ def main(
 
     # we parallelize 2d filtering, which typically lags behind the 3d
     # processing so for n_ball_procs 2d filtering threads, ball_z_size will
-    # typically be in us while the others stall waiting for 3d processing
+    # typically be in use while the others stall waiting for 3d processing
     # so we can use those for other things, such as numba threading
     set_num_threads(max(n_ball_procs - ball_z_size, 1))
 
