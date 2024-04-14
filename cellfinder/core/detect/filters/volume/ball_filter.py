@@ -222,6 +222,10 @@ class BallFilter:
         max_width = tile_mask_covered_img_width - self.ball_xy_size
         max_height = tile_mask_covered_img_height - self.ball_xy_size
 
+        # we have to pass the raw volume so walk doesn't use its edits as it
+        # processes the volume. self.volume is the one edited in place
+        input_volume = self.volume.copy()
+
         if parallel:
             _walk_parallel(
                 max_height,
@@ -229,6 +233,7 @@ class BallFilter:
                 self.tile_step_width,
                 self.tile_step_height,
                 self.inside_brain_tiles,
+                input_volume,
                 self.volume,
                 self.kernel,
                 ball_radius,
@@ -244,6 +249,7 @@ class BallFilter:
                 self.tile_step_width,
                 self.tile_step_height,
                 self.inside_brain_tiles,
+                input_volume,
                 self.volume,
                 self.kernel,
                 ball_radius,
@@ -308,7 +314,8 @@ def _cube_overlaps(
             for x in range(x_start, x_end):
                 # includes self.SOMA_CENTRE_VALUE
                 if volume[z, x, y] >= threshold_value:
-                    # x/y must be shifted in kernel
+                    # x/y must be shifted in kernel because we x/y is relative
+                    # to the full volume, so shift it to relative to the cube
                     current_overlap_value += kernel[
                         x - x_start, y - y_start, z
                     ]
@@ -339,6 +346,7 @@ def _walk_base(
     tile_step_width: int,
     tile_step_height: int,
     inside_brain_tiles: np.ndarray,
+    input_volume: np.ndarray,
     volume: np.ndarray,
     kernel: np.ndarray,
     ball_radius: int,
@@ -360,6 +368,11 @@ def _walk_base(
     inside_brain_tiles :
         3d array containing information on whether a tile is
         inside the brain or not. Tiles outside the brain are skipped.
+    input_volume :
+        3D array containing the plane-filtered data passed to the function
+        before walking. volume is edited in place, so this is the original
+        volume to prevent the changes for some cubes affective other cubes
+        during a single walk call.
     volume :
         3D array containing the plane-filtered data - edited in place.
     kernel :
@@ -386,7 +399,7 @@ def _walk_base(
                 inside_brain_tiles,
             ):
                 if _cube_overlaps(
-                    volume,
+                    input_volume,
                     x,
                     x + kernel.shape[0],
                     y,

@@ -224,7 +224,9 @@ class CellDetector:
         """
         d = {}
         for sid, points in self.coords_maps.items():
-            # numba silliness
+            # numba silliness - it cannot handle
+            # `item = np.array(points, dtype=vol_np_type)` so we need to create
+            # array and then fill in the point
             item = np.empty((len(points), 3), dtype=vol_np_type)
             d[sid] = item
 
