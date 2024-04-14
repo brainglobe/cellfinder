@@ -39,6 +39,59 @@ def detect_widget() -> FunctionGui:
     """
     progress_bar = ProgressBar()
 
+    # options that is filled in from the gui
+    options = {"signal_image": None, "background_image": None, "viewer": None}
+
+    # signal and background images are separated out from the main magicgui
+    # parameter selections and are inserted as widget children in their own
+    # sub-containers of the root. Because if these image parameters are
+    # included in the root widget, every time *any* parameter updates, the gui
+    # freezes for a bit likely because magicgui is processing something for
+    # all the parameters when any parameter changes. And this processing takes
+    # particularly long for image parameters. Placing them as sub-containers
+    # alleviates this
+    @magicgui(
+        call_button=False,
+        persist=False,
+        scrollable=False,
+        labels=False,
+        auto_call=True,
+    )
+    def signal_image_opt(
+        viewer: napari.Viewer,
+        signal_image: napari.layers.Image,
+    ):
+        """
+        Run detection and classification.
+
+        Parameters
+        ----------
+        signal_image : napari.layers.Image
+             Image layer containing the labelled cells
+        """
+        options["signal_image"] = signal_image
+        options["viewer"] = viewer
+
+    @magicgui(
+        call_button=False,
+        persist=False,
+        scrollable=False,
+        labels=False,
+        auto_call=True,
+    )
+    def background_image_opt(
+        background_image: napari.layers.Image,
+    ):
+        """
+        Run detection and classification.
+
+        Parameters
+        ----------
+        background_image : napari.layers.Image
+             Image layer without labelled cells
+        """
+        options["background_image"] = background_image
+
     @magicgui(
         header=header_label_widget,
         detection_label=html_label_widget("Cell detection", tag="h3"),
@@ -55,9 +108,6 @@ def detect_widget() -> FunctionGui:
         header,
         detection_label,
         data_options,
-        viewer: napari.Viewer,
-        signal_image: napari.layers.Image,
-        background_image: napari.layers.Image,
         voxel_size_z: float,
         voxel_size_y: float,
         voxel_size_x: float,
@@ -86,10 +136,6 @@ def detect_widget() -> FunctionGui:
 
         Parameters
         ----------
-        signal_image : napari.layers.Image
-             Image layer containing the labelled cells
-        background_image : napari.layers.Image
-             Image layer without labelled cells
         voxel_size_z : float
             Size of your voxels in the axial dimension
         voxel_size_y : float
@@ -132,9 +178,14 @@ def detect_widget() -> FunctionGui:
         reset_button :
             Reset parameters to default
         """
+        signal_image = options["signal_image"]
+        background_image = options["background_image"]
+        viewer = options["viewer"]
+
         if signal_image is None or background_image is None:
             show_info("Both signal and background images must be specified.")
             return
+
         data_inputs = DataInputs(
             signal_image.data,
             background_image.data,
@@ -225,6 +276,20 @@ def detect_widget() -> FunctionGui:
 
     # Insert progress bar before the run and reset buttons
     widget.insert(-3, progress_bar)
+
+    # add the signal and background image parameters
+    # make it look as if it's directly in the root container
+    signal_image_opt.margins = 0, 0, 0, 0
+    # the parameters are updated using `auto_call` only. If False, magicgui
+    # passes these as args to widget(), which doesn't list them as args
+    signal_image_opt.gui_only = True
+    widget.insert(3, signal_image_opt)
+    widget.signal_image_opt.label = "Signal image"
+
+    background_image_opt.margins = 0, 0, 0, 0
+    background_image_opt.gui_only = True
+    widget.insert(4, background_image_opt)
+    widget.background_image_opt.label = "Background image"
 
     scroll = QScrollArea()
     scroll.setWidget(widget._widget._qwidget)
