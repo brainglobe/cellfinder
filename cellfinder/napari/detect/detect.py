@@ -178,6 +178,16 @@ def detect_widget() -> FunctionGui:
         reset_button :
             Reset parameters to default
         """
+        # we must manually call so that the paramters of these functions are
+        # initialized and updated. Becuase, if the images are open in napari
+        # before we open cellfinder, then these functions may never be called,
+        # even though the image filenames are shown properly in the parameters
+        # in the gui. Likely auto_call doesn't make magicgui call the functions
+        # in this circumstance, only if the parameters are updated once
+        # cellfinder plugin is fully open and initialized
+        signal_image_opt()
+        background_image_opt()
+
         signal_image = options["signal_image"]
         background_image = options["background_image"]
         viewer = options["viewer"]
