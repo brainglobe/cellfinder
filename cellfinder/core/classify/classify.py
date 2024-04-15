@@ -48,9 +48,7 @@ def main(
         callbacks = None
 
     # Too many workers doesn't increase speed, and uses huge amounts of RAM
-    workers = get_num_processes(
-        min_free_cpu_cores=n_free_cpus, n_max_processes=max_workers
-    )
+    workers = get_num_processes(min_free_cpu_cores=n_free_cpus)
 
     logger.debug("Initialising cube generator")
     inference_generator = CubeGeneratorFromFile(
