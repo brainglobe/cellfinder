@@ -62,7 +62,7 @@ def detect_widget() -> FunctionGui:
         signal_image: napari.layers.Image,
     ):
         """
-        Run detection and classification.
+        magicgui widget for setting the signal_image parameter.
 
         Parameters
         ----------
@@ -83,7 +83,7 @@ def detect_widget() -> FunctionGui:
         background_image: napari.layers.Image,
     ):
         """
-        Run detection and classification.
+        magicgui widget for setting the background image parameter.
 
         Parameters
         ----------
@@ -178,8 +178,8 @@ def detect_widget() -> FunctionGui:
         reset_button :
             Reset parameters to default
         """
-        # we must manually call so that the paramters of these functions are
-        # initialized and updated. Becuase, if the images are open in napari
+        # we must manually call so that the parameters of these functions are
+        # initialized and updated. Because, if the images are open in napari
         # before we open cellfinder, then these functions may never be called,
         # even though the image filenames are shown properly in the parameters
         # in the gui. Likely auto_call doesn't make magicgui call the functions
