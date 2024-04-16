@@ -4,21 +4,7 @@ import napari
 import numpy as np
 import pandas as pd
 from brainglobe_utils.cells.cells import Cell
-from pkg_resources import resource_filename
-
-brainglobe_logo = resource_filename(
-    "cellfinder", "napari/images/brainglobe.png"
-)
-
-
-widget_header = """
-<p>Efficient cell detection in large images.</p>
-<p><a href="https://brainglobe.info" style="color:gray;">Website</a></p>
-<p><a href="https://brainglobe.info/documentation/cellfinder/user-guide/napari-plugin/index.html" style="color:gray;">Documentation</a></p>
-<p><a href="https://github.com/brainglobe/cellfinder" style="color:gray;">Source</a></p>
-<p><a href="https://doi.org/10.1371/journal.pcbi.1009074" style="color:gray;">Citation</a></p>
-<p><small>For help, hover the cursor over each parameter.</small>
-"""  # noqa: E501
+from brainglobe_utils.qtpy.logo import header_widget
 
 
 def html_label_widget(label: str, *, tag: str = "b") -> dict:
@@ -31,13 +17,18 @@ def html_label_widget(label: str, *, tag: str = "b") -> dict:
     )
 
 
-header_label_widget = html_label_widget(
-    f"""
-<img src="{brainglobe_logo}"width="100">
-<p>cellfinder</p>
-""",
-    tag="h1",
-)
+def cellfinder_header():
+    """
+    Create the header containing the brainglobe logo and documentation links
+    for all cellfinder widgets.
+    """
+    return header_widget(
+        "cellfinder",
+        "Efficient cell detection in large images.",
+        documentation_path="cellfinder/user-guide/napari-plugin/index.html",
+        citation_doi="https://doi.org/10.1371/journal.pcbi.1009074",
+        help_text="For help, hover the cursor over each parameter.",
+    )
 
 
 def add_layers(points: List[Cell], viewer: napari.Viewer) -> None:
