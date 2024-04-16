@@ -129,7 +129,6 @@ python =
     3.10: py310-{torch}  # On GA python=3.10 job, run tox with the torch environment
     3.11: py311-{torch}  # On GA python=3.11 job, run tox with the torch environment
 
-
 [testenv]
 commands = python -m pytest -v --color=yes
 deps =
