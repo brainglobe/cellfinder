@@ -7,6 +7,7 @@ This example:
 - loads the cellfinder-napari cell detection plugin
 - opens the napari viewer
 """
+
 import napari
 
 from cellfinder.napari.sample_data import load_sample

@@ -86,11 +86,69 @@ def main(
     callback: Optional[Callable[[int], None]] = None,
 ) -> List[Cell]:
     """
+    Perform cell candidate detection on a 3D signal array.
+
     Parameters
     ----------
+    signal_array : numpy.ndarray
+        3D array representing the signal data.
+
+    start_plane : int
+        Index of the starting plane for detection.
+
+    end_plane : int
+        Index of the ending plane for detection.
+
+    voxel_sizes : Tuple[float, float, float]
+        Tuple of voxel sizes in each dimension (x, y, z).
+
+    soma_diameter : float
+        Diameter of the soma in physical units.
+
+    max_cluster_size : float
+        Maximum size of a cluster in physical units.
+
+    ball_xy_size : float
+        Size of the XY ball used for filtering in physical units.
+
+    ball_z_size : float
+        Size of the Z ball used for filtering in physical units.
+
+    ball_overlap_fraction : float
+        Fraction of overlap allowed between balls.
+
+    soma_spread_factor : float
+        Spread factor for soma size.
+
+    n_free_cpus : int
+        Number of free CPU cores available for parallel processing.
+
+    log_sigma_size : float
+        Size of the sigma for the log filter.
+
+    n_sds_above_mean_thresh : float
+        Number of standard deviations above the mean threshold.
+
+    outlier_keep : bool, optional
+        Whether to keep outliers during detection. Defaults to False.
+
+    artifact_keep : bool, optional
+        Whether to keep artifacts during detection. Defaults to False.
+
+    save_planes : bool, optional
+        Whether to save the planes during detection. Defaults to False.
+
+    plane_directory : str, optional
+        Directory path to save the planes. Defaults to None.
+
     callback : Callable[int], optional
         A callback function that is called every time a plane has finished
         being processed. Called with the plane number that has finished.
+
+    Returns
+    -------
+    List[Cell]
+        List of detected cells.
     """
     if not np.issubdtype(signal_array.dtype, np.integer):
         raise ValueError(
@@ -117,6 +175,7 @@ def main(
     if end_plane == -1:
         end_plane = len(signal_array)
     signal_array = signal_array[start_plane:end_plane]
+    signal_array = signal_array.astype(np.uint32)
 
     callback = callback or (lambda *args, **kwargs: None)
 
