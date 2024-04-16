@@ -121,6 +121,7 @@ jobs:
           python -m pip install --upgrade pip wheel
           # Install cellfinder from the latest SHA on this branch (Keras with torch backend)
           python -m pip install "cellfinder[torch] @ git+$GITHUB_SERVER_URL/$GITHUB_REPOSITORY@$GITHUB_SHA"
+
           # Install checked out copy of brainglobe-workflows
           python -m pip install .[dev]
 
