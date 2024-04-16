@@ -2,6 +2,7 @@ import os
 import shutil
 import tarfile
 import urllib.request
+from pathlib import Path
 
 from brainglobe_utils.general.config import get_config_obj
 from brainglobe_utils.general.system import disk_free_gb
@@ -124,5 +125,8 @@ def write_model_to_config(new_model_path, orig_config, custom_config):
         data[i] = line.replace(
             f"model_path = '{orig_path}", f"model_path = '{new_model_path}"
         )
+
+    custom_config_path = Path(custom_config)
+    custom_config_path.parent.mkdir(parents=True, exist_ok=True)
     with open(custom_config, "w") as out_conf:
         out_conf.writelines(data)

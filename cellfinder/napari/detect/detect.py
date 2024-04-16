@@ -14,6 +14,7 @@ from cellfinder.core.classify.cube_generator import get_cube_depth_min_max
 from cellfinder.napari.utils import (
     add_classified_layers,
     add_single_layer,
+    cellfinder_header,
     header_label_widget,
     html_label_widget,
     napari_array_to_cells,
@@ -44,7 +45,6 @@ def detect_widget() -> FunctionGui:
     progress_bar = ProgressBar()
 
     @magicgui(
-        header=header_label_widget,
         detection_label=html_label_widget("Cell detection", tag="h3"),
         **DataInputs.widget_representation(),
         **DetectionInputs.widget_representation(),
@@ -56,7 +56,6 @@ def detect_widget() -> FunctionGui:
         scrollable=True,
     )
     def widget(
-        header,
         detection_label,
         data_options,
         viewer: napari.Viewer,
@@ -256,8 +255,7 @@ def detect_widget() -> FunctionGui:
         worker.update_progress_bar.connect(update_progress_bar)
         worker.start()
 
-    widget.header.value = widget_header
-    widget.header.native.setOpenExternalLinks(True)
+    widget.native.layout().insertWidget(0, cellfinder_header())
 
     @widget.reset_button.changed.connect
     def restore_defaults():
