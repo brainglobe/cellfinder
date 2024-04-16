@@ -39,14 +39,18 @@ def test_add_classified_layers(make_napari_viewer):
     # check data added in correct column order
     # CELL types
     cell_data = np.array([cell_pos])
-    assert np.all(cells_to_array(points, Cell.CELL) == cell_data)
+    assert np.all(
+        cells_to_array(points, Cell.CELL, napari_order=False) == cell_data
+    )
     # convert to napari order and check it is in napari
     cell_data = cell_data[:, napari_points_axis_order]
     assert np.all(cell_layer.data == cell_data)
 
     # UNKNOWN type
     rej_data = np.array([unknown_pos])
-    assert np.all(cells_to_array(points, Cell.UNKNOWN) == rej_data)
+    assert np.all(
+        cells_to_array(points, Cell.UNKNOWN, napari_order=False) == rej_data
+    )
     # convert to napari order and check it is in napari
     rej_data = rej_data[:, napari_points_axis_order]
     assert np.all(rej_layer.data == rej_data)
