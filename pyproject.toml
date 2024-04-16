@@ -120,7 +120,7 @@ python =
     3.10: py310
 
 [testenv]
-commands = python -m pytest -v --color=yes
+commands = python -m pytest -v --color=yes --cov=cellfinder --cov-report=xml
 deps =
     pytest
     pytest-cov
