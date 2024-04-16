@@ -15,10 +15,8 @@ from cellfinder.napari.utils import (
     add_classified_layers,
     add_single_layer,
     cellfinder_header,
-    header_label_widget,
     html_label_widget,
     napari_array_to_cells,
-    widget_header,
 )
 
 from .detect_containers import (
