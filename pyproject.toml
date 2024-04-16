@@ -61,14 +61,14 @@ napari = [
 ]
 # Keras backends
 tf = [
-    "tensorflow",
+    "tensorflow>=2.16.1",
 ]
 jax = [
     "jax==0.4.20",
     "jaxlib==0.4.20"
 ]
 torch = [
-    "torch==2.1.0"
+    "torch>=2.1.0"
 ]
 
 [project.scripts]
@@ -88,7 +88,7 @@ requires = ["setuptools>=45", "wheel", "setuptools_scm[toml]>=6.2"]
 build-backend = 'setuptools.build_meta'
 
 [tool.black]
-target-version = ['py39', 'py310']
+target-version = ['py39', 'py310','py311']
 skip-string-normalization = false
 line-length = 79
 
