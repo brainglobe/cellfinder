@@ -27,10 +27,8 @@ except PackageNotFoundError as e:
 # If no backend is configured and installed for Keras, tools cannot be used
 # Check backend is configured
 if not os.getenv("KERAS_BACKEND"):
-    os.environ["KERAS_BACKEND"] = "tensorflow"
-    warnings.warn(
-        "Keras backend not configured, automatically set to Tensorflow"
-    )
+    os.environ["KERAS_BACKEND"] = "torch"
+    warnings.warn("Keras backend not configured, automatically set to Torch")
 
 # Check backend is installed
 if os.getenv("KERAS_BACKEND") in ["tensorflow", "jax", "torch"]:
@@ -44,7 +42,7 @@ if os.getenv("KERAS_BACKEND") in ["tensorflow", "jax", "torch"]:
         ) from e
 else:
     raise PackageNotFoundError(
-        "Keras backend must be one of 'tensorflow', 'jax', or 'torch'"
+        "Keras backend must be one of 'torch', 'tensorflow', or 'jax'"
     )
 
 
