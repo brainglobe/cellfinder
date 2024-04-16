@@ -3,6 +3,8 @@ from pathlib import Path
 from typing import Optional
 
 import napari
+import napari.layers
+from brainglobe_utils.cells.cells import Cell
 from magicgui import magicgui
 from magicgui.widgets import FunctionGui, ProgressBar
 from napari.utils.notifications import show_info
@@ -10,9 +12,11 @@ from qtpy.QtWidgets import QScrollArea
 
 from cellfinder.core.classify.cube_generator import get_cube_depth_min_max
 from cellfinder.napari.utils import (
-    add_layers,
+    add_classified_layers,
+    add_single_layer,
     header_label_widget,
     html_label_widget,
+    napari_array_to_cells,
     widget_header,
 )
 
@@ -62,6 +66,8 @@ def detect_widget() -> FunctionGui:
         voxel_size_y: float,
         voxel_size_x: float,
         detection_options,
+        skip_detection: bool,
+        cell_layer: napari.layers.Points,
         soma_diameter: float,
         ball_xy_size: float,
         ball_z_size: float,
@@ -71,6 +77,7 @@ def detect_widget() -> FunctionGui:
         soma_spread_factor: float,
         max_cluster_size: int,
         classification_options,
+        skip_classification: bool,
         trained_model: Optional[Path],
         use_pre_trained_weights: bool,
         misc_options,
@@ -96,6 +103,13 @@ def detect_widget() -> FunctionGui:
             Size of your voxels in the y direction (top to bottom)
         voxel_size_x : float
             Size of your voxels in the x direction (left to right)
+        skip_detection : bool
+            If selected, the detection step is skipped and instead we get the
+            detected cells from the cell layer below (from a previous
+            detection run or import)
+        cell_layer : napari.layers.Points
+            If detection is skipped, select the cell layer containing the
+            detected cells to use for classification
         soma_diameter : float
             The expected in-plane soma diameter (microns)
         ball_xy_size : float
@@ -116,6 +130,9 @@ def detect_widget() -> FunctionGui:
             should be attempted
         use_pre_trained_weights : bool
             Select to use pre-trained model weights
+        skip_classification : bool
+            If selected, the classification step is skipped and all cells from
+            the detection stage are added
         trained_model : Optional[Path]
             Trained model file path (home directory (default) -> pretrained
             weights)
@@ -135,6 +152,19 @@ def detect_widget() -> FunctionGui:
         if signal_image is None or background_image is None:
             show_info("Both signal and background images must be specified.")
             return
+
+        detected_cells = []
+        if skip_detection:
+            if cell_layer is None:
+                show_info(
+                    "Skip detection selected, but no existing cell layer "
+                    "is selected."
+                )
+                return
+
+            # set cells as unknown so that classification will process them
+            detected_cells = napari_array_to_cells(cell_layer, Cell.UNKNOWN)
+
         data_inputs = DataInputs(
             signal_image.data,
             background_image.data,
@@ -144,6 +174,8 @@ def detect_widget() -> FunctionGui:
         )
 
         detection_inputs = DetectionInputs(
+            skip_detection,
+            detected_cells,
             soma_diameter,
             ball_xy_size,
             ball_z_size,
@@ -186,9 +218,28 @@ def detect_widget() -> FunctionGui:
             classification_inputs,
             misc_inputs,
         )
-        worker.returned.connect(
-            lambda points: add_layers(points, viewer=viewer)
-        )
+
+        if skip_classification:
+            # after detection w/o classification, everything is unknown
+            def done_func(points):
+                add_single_layer(
+                    points,
+                    viewer=viewer,
+                    name="Cell candidates",
+                    cell_type=Cell.UNKNOWN,
+                )
+
+        else:
+            # after classification we have either cell or unknown
+            def done_func(points):
+                add_classified_layers(
+                    points,
+                    viewer=viewer,
+                    unknown_name="Rejected",
+                    cell_name="Detected",
+                )
+
+        worker.returned.connect(done_func)
 
         # Make sure if the worker emits an error, it is propagated to this
         # thread

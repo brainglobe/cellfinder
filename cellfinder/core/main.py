@@ -7,6 +7,7 @@ import os
 from typing import Callable, List, Optional, Tuple
 
 import numpy as np
+from brainglobe_utils.cells.cells import Cell
 from brainglobe_utils.general.logging import suppress_specific_logs
 
 from cellfinder.core import logger
@@ -42,6 +43,9 @@ def main(
     cube_height: int = 50,
     cube_depth: int = 20,
     network_depth: depth_type = "50",
+    skip_detection: bool = False,
+    skip_classification: bool = False,
+    detected_cells: List[Cell] = None,
     *,
     detect_callback: Optional[Callable[[int], None]] = None,
     classify_callback: Optional[Callable[[int], None]] = None,
@@ -65,52 +69,57 @@ def main(
     from cellfinder.core.detect import detect
     from cellfinder.core.tools import prep
 
-    logger.info("Detecting cell candidates")
+    if not skip_detection:
+        logger.info("Detecting cell candidates")
 
-    points = detect.main(
-        signal_array,
-        start_plane,
-        end_plane,
-        voxel_sizes,
-        soma_diameter,
-        max_cluster_size,
-        ball_xy_size,
-        ball_z_size,
-        ball_overlap_fraction,
-        soma_spread_factor,
-        n_free_cpus,
-        log_sigma_size,
-        n_sds_above_mean_thresh,
-        callback=detect_callback,
-    )
-
-    if detect_finished_callback is not None:
-        detect_finished_callback(points)
-
-    install_path = None
-    model_weights = prep.prep_model_weights(
-        model_weights, install_path, model, n_free_cpus
-    )
-    if len(points) > 0:
-        logger.info("Running classification")
-        points = classify.main(
-            points,
+        points = detect.main(
             signal_array,
-            background_array,
-            n_free_cpus,
+            start_plane,
+            end_plane,
             voxel_sizes,
-            network_voxel_sizes,
-            batch_size,
-            cube_height,
-            cube_width,
-            cube_depth,
-            trained_model,
-            model_weights,
-            network_depth,
-            callback=classify_callback,
+            soma_diameter,
+            max_cluster_size,
+            ball_xy_size,
+            ball_z_size,
+            ball_overlap_fraction,
+            soma_spread_factor,
+            n_free_cpus,
+            log_sigma_size,
+            n_sds_above_mean_thresh,
+            callback=detect_callback,
         )
+
+        if detect_finished_callback is not None:
+            detect_finished_callback(points)
     else:
-        logger.info("No candidates, skipping classification")
+        points = detected_cells or []  # if None
+
+    if not skip_classification:
+        install_path = None
+        model_weights = prep.prep_model_weights(
+            model_weights, install_path, model, n_free_cpus
+        )
+        if len(points) > 0:
+            logger.info("Running classification")
+            points = classify.main(
+                points,
+                signal_array,
+                background_array,
+                n_free_cpus,
+                voxel_sizes,
+                network_voxel_sizes,
+                batch_size,
+                cube_height,
+                cube_width,
+                cube_depth,
+                trained_model,
+                model_weights,
+                network_depth,
+                callback=classify_callback,
+            )
+        else:
+            logger.info("No candidates, skipping classification")
+
     return points
 
 
