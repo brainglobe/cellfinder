@@ -1,6 +1,20 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from myterial import (
+    grey,
+    grey_dark,
+    indigo_dark,
+    indigo_light,
+    light_green_dark,
+    light_green_light,
+    purple_dark,
+    purple_light,
+    red_dark,
+    red_light,
+    teal_dark,
+    teal_light,
+)
 from sklearn.linear_model import LinearRegression
 
 POINT_SIZE = 50
@@ -23,6 +37,9 @@ def compare_counts(path1, name1, path2, name2, plot=True):
         suffixes=["_" + name1, "_" + name2],
     )
     combined_df.fillna(value=0, inplace=True)
+    combined_df.sort_values(
+        by="total_cells" + "_" + name1, inplace=True, ascending=False
+    )
     corr = combined_df.corr()
 
     X = combined_df["total_cells" + "_" + name1].values.reshape(-1, 1)
@@ -75,7 +92,7 @@ def compare_counts_to_average(
 
     mean = pd.DataFrame()
     mean["structure_name"] = combined_df["structure_name"]
-    mean["total_cells"] = combined_df.mean(axis=1)
+    mean["total_cells"] = combined_df.mean(numeric_only=True, axis=1)
 
     combined_df = pd.merge(
         left=mean,
@@ -87,7 +104,10 @@ def compare_counts_to_average(
     )
 
     combined_df.fillna(value=0, inplace=True)
-    corr = combined_df.corr()
+    combined_df.sort_values(
+        by="total_cells" + "_" + "consensus", inplace=True, ascending=False
+    )
+    corr = combined_df.corr(numeric_only=True)
 
     X = combined_df["total_cells" + "_" + "consensus"].values.reshape(-1, 1)
     Y = combined_df["total_cells" + "_" + name3].values.reshape(-1, 1)
@@ -120,14 +140,22 @@ right_rater_two = (
     "manual_cell_counts/rater2/brain2.csv"
 )
 
-left_torch_untrained = (
-    "home/igor/NIU-dev/cellfinder_data/"
-    "MS_CX_left_cellfinder_torch/analysis/summary.csv"
+left_cellfinder_untrained = (
+    "/home/igor/NIU-dev/cellfinder_data/"
+    "MS_CX_left_cellfinder_tensorflow/analysis/summary.csv"
+)
+right_cellfinder_untrained = (
+    "/home/igor/NIU-dev/cellfinder_data/"
+    "MS_CX_right_cellfinder/analysis/summary.csv"
 )
 
-left_torch_retrained = (
+left_cellfinder_retrained = (
     "/home/igor/NIU-dev/cellfinder_data/"
-    "MS_CX_left_cellfinder_torch_paper/analysis/summary.csv"
+    "cell_counts/algorithm_cell_counts/brain1.csv"
+)
+right_cellfinder_retrained = (
+    "/home/igor/NIU-dev/cellfinder_data/"
+    "cell_counts/algorithm_cell_counts/brain2.csv"
 )
 
 
@@ -135,18 +163,21 @@ fig, axs = plt.subplots(1, 2, figsize=FIG_SIZE, tight_layout=True)
 
 x = np.linspace(0, 1200, 1000)
 y = np.linspace(0, 1200, 1000)
+untrained_color = grey
+trained_color = grey_dark
+
 for idx, brain in enumerate(["left", "right"]):
     if brain == "right":
         rater_one = right_rater_one
         rater_two = right_rater_two
-        # torch = right_torch_untrained
-        # torch_retrained = right_torch_retrained
+        torch = right_cellfinder_untrained
+        torch_retrained = right_cellfinder_retrained
 
     else:
         rater_one = left_rater_one
         rater_two = left_rater_two
-        torch = left_torch_untrained
-        torch_retrained = left_torch_retrained
+        torch = left_cellfinder_untrained
+        torch_retrained = left_cellfinder_retrained
 
     (
         x_untrained,
@@ -174,29 +205,77 @@ for idx, brain in enumerate(["left", "right"]):
     trained_line = x * coeff
 
     splot = axs[idx].scatter(
-        x_untrained,
-        y_untrained,
+        np.array(x_untrained)[5:],
+        np.array(y_untrained)[5:],
         s=POINT_SIZE,
         alpha=ALPHA,
-        c="cornflowerblue",
+        c=untrained_color,
         label="Pre-trained\nnetwork",
     )
     splot = axs[idx].scatter(
-        x_trained,
-        y_trained,
+        np.array(x_trained)[5:],
+        np.array(y_trained)[5:],
         s=POINT_SIZE,
         alpha=ALPHA,
-        c="coral",
+        c=trained_color,
         label="Re-trained\nnetwork",
     )
+    colors_light = [
+        light_green_light,
+        teal_light,
+        indigo_light,
+        purple_light,
+        red_light,
+    ]
+    colors = [light_green_dark, teal_dark, indigo_dark, purple_dark, red_dark]
+    for point in range(0, 5):
+        splot = axs[idx].scatter(
+            np.array(x_untrained)[point],
+            np.array(y_untrained)[point],
+            s=POINT_SIZE,
+            alpha=ALPHA,
+            c=colors_light[point],
+            label="Pre-trained\nnetwork",
+        )
+        splot = axs[idx].scatter(
+            np.array(x_trained)[point],
+            np.array(y_trained)[point],
+            s=POINT_SIZE,
+            alpha=ALPHA,
+            c=colors[point],
+            label="Re-trained\nnetwork",
+        )
 
-    axs[idx].plot(x, y, color="0.50", ls="dashed", label="Slope = 1")
+    axs[idx].plot(x, y, color="0", ls="dashed", label="Slope = 1")
+    # axs[idx].plot(x, untrained_line, color=untrained_color, ls='dashed')
+    axs[idx].plot(
+        x, trained_line, color=trained_color, ls="dashed", label="Best fit"
+    )
 
-    axs[idx].plot(x, untrained_line, color="cornflowerblue", ls="dashed")
-    axs[idx].plot(x, trained_line, color="coral", ls="dashed")
+for axis in (0, 1):
+    handles, labels = axs[axis].get_legend_handles_labels()
+    handles = [
+        handles[12],
+        handles[13],
+        handles[3],
+        handles[7],
+        handles[7],
+        handles[9],
+        handles[11],
+    ]
+    labels = [
+        labels[-2],
+        labels[-1],
+        "VISp2/3",
+        "VISp5",
+        "LGd-co",
+        "LP",
+        "VISp4",
+    ]
+    axs[axis].legend(
+        handles, labels, loc="upper left", frameon=False, fontsize=10
+    )
 
-
-legend = axs[0].legend(loc="upper left", frameon=False, fontsize=10)
 axs[0].set_title("Brain 1")
 axs[1].set_title("Brain 2")
 
@@ -215,3 +294,4 @@ axs[0].spines["right"].set_visible(False)
 axs[0].spines["top"].set_visible(False)
 fig.supxlabel("Manual cell count", fontsize=12)
 plt.show()
+plt.savefig("comparison_torch.png")
