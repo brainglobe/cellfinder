@@ -71,6 +71,7 @@ jobs:
   test_numba_disabled:
     needs: [linting, manifest]
     name: Run tests with numba disabled
+    timeout-minutes: 60
     runs-on: ubuntu-latest
     env:
        NUMBA_DISABLE_JIT: "1"
@@ -98,6 +99,7 @@ jobs:
   test_brainmapper_cli:
     needs: [linting, manifest]
     name: Run brainmapper tests to check for breakages
+    timeout-minutes: 60
     runs-on: ubuntu-latest
     steps:
       - name: Cache tensorflow model
