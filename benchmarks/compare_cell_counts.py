@@ -146,7 +146,7 @@ left_cellfinder_untrained = (
 )
 right_cellfinder_untrained = (
     "/home/igor/NIU-dev/cellfinder_data/"
-    "MS_CX_right_cellfinder/analysis/summary.csv"
+    "MS_CX_right_cellfinder_tensorflow/analysis/summary.csv"
 )
 
 left_cellfinder_retrained = (
@@ -161,8 +161,8 @@ right_cellfinder_retrained = (
 
 fig, axs = plt.subplots(1, 2, figsize=FIG_SIZE, tight_layout=True)
 
-x = np.linspace(0, 1200, 1000)
-y = np.linspace(0, 1200, 1000)
+x = np.linspace(0, 1400, 1000)
+y = np.linspace(0, 1400, 1000)
 untrained_color = grey
 trained_color = grey_dark
 
@@ -283,6 +283,16 @@ axs[0].set_yticks(np.arange(0, 1001, 500))
 axs[0].set_xticks(np.arange(0, 1001, 500))
 axs[1].set_xticks(np.arange(0, 1001, 500))
 
+x_min = -60
+y_min = -60
+x_max = 1400
+y_max = 1400
+
+axs[0].set_xlim(x_min, x_max)
+axs[0].set_ylim(y_min, y_max)
+axs[1].set_xlim(x_min, x_max)
+axs[1].set_ylim(y_min, y_max)
+
 
 axs[0].set_ylabel("Algorithm cell count", fontsize=12)
 axs[1].set_yticks([])
@@ -293,5 +303,5 @@ axs[1].spines["top"].set_visible(False)
 axs[0].spines["right"].set_visible(False)
 axs[0].spines["top"].set_visible(False)
 fig.supxlabel("Manual cell count", fontsize=12)
+fig.savefig("comparison_tensorflow.png", dpi=300)
 plt.show()
-plt.savefig("comparison_torch.png")
