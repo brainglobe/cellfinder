@@ -105,6 +105,9 @@ def cells_to_array(
     of the 3 axes (napari_points_axis_order).
     """
     cells = [c for c in cells if c.type == cell_type]
+    if not cells:
+        # make sure we return 2d array if cells is empty
+        return np.zeros((0, 3), dtype=np.int_)
     points = np.array([(c.x, c.y, c.z) for c in cells])
 
     if napari_order:
