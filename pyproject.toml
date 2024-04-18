@@ -51,6 +51,7 @@ dev = [
     "pytest-timeout",
     "pytest",
     "tox",
+    "pooch >= 1",
 ]
 napari = [
     "brainglobe-napari-io",
@@ -129,10 +130,12 @@ setenv =
     KERAS_BACKEND = torch
 passenv =
     NUMBA_DISABLE_JIT
+    PYTORCH_JIT
     CI
     GITHUB_ACTIONS
     DISPLAY
     XAUTHORITY
     NUMPY_EXPERIMENTAL_ARRAY_FUNCTION
     PYVISTA_OFF_SCREEN
+    BRAINGLOBE_TEST_DATA_DIR
 """
