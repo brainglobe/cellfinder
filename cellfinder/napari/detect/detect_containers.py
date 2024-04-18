@@ -61,7 +61,7 @@ class DetectionInputs(InputContainer):
     """Container for cell candidate detection inputs."""
 
     skip_detection: bool = False
-    detected_cells: List[Cell] = None
+    detected_cells: Optional[List[Cell]] = None
     soma_diameter: float = 16.0
     ball_xy_size: float = 6
     ball_z_size: float = 15

@@ -35,6 +35,8 @@ def test_add_classified_layers(make_napari_viewer):
             rej_layer = layer
     assert cell_layer is not None
     assert rej_layer is not None
+    assert cell_layer.data is not None
+    assert rej_layer.data is not None
 
     # check data added in correct column order
     # CELL types
