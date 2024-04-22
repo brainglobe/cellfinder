@@ -11,9 +11,8 @@ from qtpy.QtWidgets import QScrollArea
 from cellfinder.core.classify.cube_generator import get_cube_depth_min_max
 from cellfinder.napari.utils import (
     add_layers,
-    header_label_widget,
+    cellfinder_header,
     html_label_widget,
-    widget_header,
 )
 
 from .detect_containers import (
@@ -39,8 +38,60 @@ def detect_widget() -> FunctionGui:
     """
     progress_bar = ProgressBar()
 
+    # options that is filled in from the gui
+    options = {"signal_image": None, "background_image": None, "viewer": None}
+
+    # signal and background images are separated out from the main magicgui
+    # parameter selections and are inserted as widget children in their own
+    # sub-containers of the root. Because if these image parameters are
+    # included in the root widget, every time *any* parameter updates, the gui
+    # freezes for a bit likely because magicgui is processing something for
+    # all the parameters when any parameter changes. And this processing takes
+    # particularly long for image parameters. Placing them as sub-containers
+    # alleviates this
     @magicgui(
-        header=header_label_widget,
+        call_button=False,
+        persist=False,
+        scrollable=False,
+        labels=False,
+        auto_call=True,
+    )
+    def signal_image_opt(
+        viewer: napari.Viewer,
+        signal_image: napari.layers.Image,
+    ):
+        """
+        magicgui widget for setting the signal_image parameter.
+
+        Parameters
+        ----------
+        signal_image : napari.layers.Image
+             Image layer containing the labelled cells
+        """
+        options["signal_image"] = signal_image
+        options["viewer"] = viewer
+
+    @magicgui(
+        call_button=False,
+        persist=False,
+        scrollable=False,
+        labels=False,
+        auto_call=True,
+    )
+    def background_image_opt(
+        background_image: napari.layers.Image,
+    ):
+        """
+        magicgui widget for setting the background image parameter.
+
+        Parameters
+        ----------
+        background_image : napari.layers.Image
+             Image layer without labelled cells
+        """
+        options["background_image"] = background_image
+
+    @magicgui(
         detection_label=html_label_widget("Cell detection", tag="h3"),
         **DataInputs.widget_representation(),
         **DetectionInputs.widget_representation(),
@@ -52,12 +103,8 @@ def detect_widget() -> FunctionGui:
         scrollable=True,
     )
     def widget(
-        header,
         detection_label,
         data_options,
-        viewer: napari.Viewer,
-        signal_image: napari.layers.Image,
-        background_image: napari.layers.Image,
         voxel_size_z: float,
         voxel_size_y: float,
         voxel_size_x: float,
@@ -86,10 +133,6 @@ def detect_widget() -> FunctionGui:
 
         Parameters
         ----------
-        signal_image : napari.layers.Image
-             Image layer containing the labelled cells
-        background_image : napari.layers.Image
-             Image layer without labelled cells
         voxel_size_z : float
             Size of your voxels in the axial dimension
         voxel_size_y : float
@@ -132,9 +175,24 @@ def detect_widget() -> FunctionGui:
         reset_button :
             Reset parameters to default
         """
+        # we must manually call so that the parameters of these functions are
+        # initialized and updated. Because, if the images are open in napari
+        # before we open cellfinder, then these functions may never be called,
+        # even though the image filenames are shown properly in the parameters
+        # in the gui. Likely auto_call doesn't make magicgui call the functions
+        # in this circumstance, only if the parameters are updated once
+        # cellfinder plugin is fully open and initialized
+        signal_image_opt()
+        background_image_opt()
+
+        signal_image = options["signal_image"]
+        background_image = options["background_image"]
+        viewer = options["viewer"]
+
         if signal_image is None or background_image is None:
             show_info("Both signal and background images must be specified.")
             return
+
         data_inputs = DataInputs(
             signal_image.data,
             background_image.data,
@@ -205,8 +263,7 @@ def detect_widget() -> FunctionGui:
         worker.update_progress_bar.connect(update_progress_bar)
         worker.start()
 
-    widget.header.value = widget_header
-    widget.header.native.setOpenExternalLinks(True)
+    widget.native.layout().insertWidget(0, cellfinder_header())
 
     @widget.reset_button.changed.connect
     def restore_defaults():
@@ -225,6 +282,20 @@ def detect_widget() -> FunctionGui:
 
     # Insert progress bar before the run and reset buttons
     widget.insert(-3, progress_bar)
+
+    # add the signal and background image parameters
+    # make it look as if it's directly in the root container
+    signal_image_opt.margins = 0, 0, 0, 0
+    # the parameters are updated using `auto_call` only. If False, magicgui
+    # passes these as args to widget(), which doesn't list them as args
+    signal_image_opt.gui_only = True
+    widget.insert(3, signal_image_opt)
+    widget.signal_image_opt.label = "Signal image"
+
+    background_image_opt.margins = 0, 0, 0, 0
+    background_image_opt.gui_only = True
+    widget.insert(4, background_image_opt)
+    widget.background_image_opt.label = "Background image"
 
     scroll = QScrollArea()
     scroll.setWidget(widget._widget._qwidget)
