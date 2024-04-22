@@ -8,11 +8,7 @@ from napari.utils.notifications import show_info
 from qtpy.QtWidgets import QScrollArea
 
 from cellfinder.core.train.train_yml import run as train_yml
-from cellfinder.napari.utils import (
-    header_label_widget,
-    html_label_widget,
-    widget_header,
-)
+from cellfinder.napari.utils import cellfinder_header, html_label_widget
 
 from .train_containers import (
     MiscTrainingInputs,
@@ -41,7 +37,6 @@ def run_training(
 
 def training_widget() -> FunctionGui:
     @magicgui(
-        header=header_label_widget,
         training_label=html_label_widget("Network training", tag="h3"),
         **TrainingDataInputs.widget_representation(),
         **OptionalNetworkInputs.widget_representation(),
@@ -52,7 +47,6 @@ def training_widget() -> FunctionGui:
         scrollable=True,
     )
     def widget(
-        header: dict,
         training_label: dict,
         data_options: dict,
         yaml_files: Path,
@@ -161,8 +155,7 @@ def training_widget() -> FunctionGui:
             )
             worker.start()
 
-    widget.header.value = widget_header
-    widget.header.native.setOpenExternalLinks(True)
+    widget.native.layout().insertWidget(0, cellfinder_header())
 
     @widget.reset_button.changed.connect
     def restore_defaults():
