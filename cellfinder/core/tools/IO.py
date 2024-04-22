@@ -36,22 +36,22 @@ def read_z_stack(path):
     :return: The data as a dask/numpy array.
     """
     if path.endswith(".tiff") or path.endswith(".tif"):
-        tiff = TiffFile(path)
-        if not len(tiff.series):
-            raise ValueError(
-                f"Attempted to load {path} but couldn't read a z-stack"
-            )
-        if len(tiff.series) != 1:
-            raise ValueError(
-                f"Attempted to load {path} but found multiple stacks"
-            )
+        with TiffFile(path) as tiff:
+            if not len(tiff.series):
+                raise ValueError(
+                    f"Attempted to load {path} but couldn't read a z-stack"
+                )
+            if len(tiff.series) != 1:
+                raise ValueError(
+                    f"Attempted to load {path} but found multiple stacks"
+                )
 
-        axes = tiff.series[0].axes.lower()
-        if set(axes) != {"x", "y", "z"} or axes[0].lower() != "z":
-            raise ValueError(
-                f"Attempted to load {path} but didn't find a zyx or "
-                f"zxy stack. Found {axes} axes"
-            )
+            axes = tiff.series[0].axes.lower()
+            if set(axes) != {"x", "y", "z"} or axes[0] != "z":
+                raise ValueError(
+                    f"Attempted to load {path} but didn't find a zyx or "
+                    f"zxy stack. Found {axes} axes"
+                )
 
         return imread(path)
 
