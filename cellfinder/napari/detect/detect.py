@@ -372,7 +372,7 @@ def detect_widget() -> FunctionGui:
         if use_pre_trained_weights:
             trained_model = None
         classification_inputs = ClassificationInputs(
-            use_pre_trained_weights, trained_model
+            skip_classification, use_pre_trained_weights, trained_model
         )
 
         if analyse_local:

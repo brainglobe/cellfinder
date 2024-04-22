@@ -93,6 +93,7 @@ def main(
             detect_finished_callback(points)
     else:
         points = detected_cells or []  # if None
+        detect_finished_callback(points)
 
     if not skip_classification:
         install_path = None

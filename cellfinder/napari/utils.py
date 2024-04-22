@@ -91,7 +91,7 @@ def add_single_layer(
         opacity=0.6,
         symbol="ring",
         face_color="lightskyblue",
-        visible=False,
+        visible=True,
         metadata=dict(point_type=cell_type),
     )
 
