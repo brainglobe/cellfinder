@@ -1,8 +1,11 @@
+from functools import partial
 from math import ceil
 from pathlib import Path
-from typing import Optional
+from typing import Any, Callable, Dict, Optional, Tuple
 
 import napari
+import napari.layers
+from brainglobe_utils.cells.cells import Cell
 from magicgui import magicgui
 from magicgui.widgets import FunctionGui, ProgressBar
 from napari.utils.notifications import show_info
@@ -10,9 +13,11 @@ from qtpy.QtWidgets import QScrollArea
 
 from cellfinder.core.classify.cube_generator import get_cube_depth_min_max
 from cellfinder.napari.utils import (
-    add_layers,
+    add_classified_layers,
+    add_single_layer,
     cellfinder_header,
     html_label_widget,
+    napari_array_to_cells,
 )
 
 from .detect_containers import (
@@ -32,16 +37,10 @@ CUBE_DEPTH = 20
 MIN_PLANES_ANALYSE = 0
 
 
-def detect_widget() -> FunctionGui:
-    """
-    Create a detection plugin GUI.
-    """
-    progress_bar = ProgressBar()
-
-    # options that is filled in from the gui
-    options = {"signal_image": None, "background_image": None, "viewer": None}
-
-    # signal and background images are separated out from the main magicgui
+def get_heavy_widgets(
+    options: Dict[str, Any]
+) -> Tuple[Callable, Callable, Callable]:
+    # signal and other input are separated out from the main magicgui
     # parameter selections and are inserted as widget children in their own
     # sub-containers of the root. Because if these image parameters are
     # included in the root widget, every time *any* parameter updates, the gui
@@ -92,6 +91,140 @@ def detect_widget() -> FunctionGui:
         options["background_image"] = background_image
 
     @magicgui(
+        call_button=False,
+        persist=False,
+        scrollable=False,
+        labels=False,
+        auto_call=True,
+    )
+    def cell_layer_opt(
+        cell_layer: napari.layers.Points,
+    ):
+        """
+        magicgui widget for setting the cell layer input when detection is
+        skipped.
+
+        Parameters
+        ----------
+        cell_layer : napari.layers.Points
+            If detection is skipped, select the cell layer containing the
+            detected cells to use for classification
+        """
+        options["cell_layer"] = cell_layer
+
+    return signal_image_opt, background_image_opt, cell_layer_opt
+
+
+def add_heavy_widgets(
+    root: FunctionGui,
+    widgets: Tuple[FunctionGui, ...],
+    new_names: Tuple[str, ...],
+    insertions: Tuple[str, ...],
+) -> None:
+    for widget, new_name, insertion in zip(widgets, new_names, insertions):
+        # make it look as if it's directly in the root container
+        widget.margins = 0, 0, 0, 0
+        # the parameters of these widgets are updated using `auto_call` only.
+        # If False, magicgui passes these as args to root() when the root's
+        # function runs. But that doesn't list them as args of its function
+        widget.gui_only = True
+        root.insert(root.index(insertion) + 1, widget)
+        getattr(root, widget.name).label = new_name
+
+
+def restore_options_defaults(widget: FunctionGui) -> None:
+    """
+    Restore default widget values.
+    """
+    defaults = {
+        **DataInputs.defaults(),
+        **DetectionInputs.defaults(),
+        **ClassificationInputs.defaults(),
+        **MiscInputs.defaults(),
+    }
+    for name, value in defaults.items():
+        if value is not None:  # ignore fields with no default
+            getattr(widget, name).value = value
+
+
+def get_results_callback(
+    skip_classification: bool, viewer: napari.Viewer
+) -> Callable:
+    """
+    Returns the callback that is connected to output of the pipeline.
+    It returns the detected points that we have to visualize.
+    """
+    if skip_classification:
+        # after detection w/o classification, everything is unknown
+        def done_func(points):
+            add_single_layer(
+                points,
+                viewer=viewer,
+                name="Cell candidates",
+                cell_type=Cell.UNKNOWN,
+            )
+
+    else:
+        # after classification we have either cell or unknown
+        def done_func(points):
+            add_classified_layers(
+                points,
+                viewer=viewer,
+                unknown_name="Rejected",
+                cell_name="Detected",
+            )
+
+    return done_func
+
+
+def find_local_planes(
+    viewer: napari.Viewer,
+    voxel_size_z: float,
+    signal_image: napari.layers.Image,
+) -> Tuple[int, int]:
+    """
+    When detecting only locally, it returns the start and end planes to use.
+    """
+    current_plane = viewer.dims.current_step[0]
+
+    # so a reasonable number of cells in the plane are detected
+    planes_needed = MIN_PLANES_ANALYSE + int(
+        ceil((CUBE_DEPTH * NETWORK_VOXEL_SIZES[0]) / voxel_size_z)
+    )
+
+    start_plane, end_plane = get_cube_depth_min_max(
+        current_plane, planes_needed
+    )
+    start_plane = max(0, start_plane)
+    end_plane = min(len(signal_image.data), end_plane)
+
+    return start_plane, end_plane
+
+
+def reraise(e: Exception) -> None:
+    """Re-raises the exception."""
+    raise Exception from e
+
+
+def detect_widget() -> FunctionGui:
+    """
+    Create a detection plugin GUI.
+    """
+    progress_bar = ProgressBar()
+
+    # options that is filled in from the gui
+    options = {
+        "signal_image": None,
+        "background_image": None,
+        "viewer": None,
+        "cell_layer": None,
+    }
+
+    signal_image_opt, background_image_opt, cell_layer_opt = get_heavy_widgets(
+        options
+    )
+
+    @magicgui(
         detection_label=html_label_widget("Cell detection", tag="h3"),
         **DataInputs.widget_representation(),
         **DetectionInputs.widget_representation(),
@@ -109,6 +242,7 @@ def detect_widget() -> FunctionGui:
         voxel_size_y: float,
         voxel_size_x: float,
         detection_options,
+        skip_detection: bool,
         soma_diameter: float,
         ball_xy_size: float,
         ball_z_size: float,
@@ -118,6 +252,7 @@ def detect_widget() -> FunctionGui:
         soma_spread_factor: float,
         max_cluster_size: int,
         classification_options,
+        skip_classification: bool,
         trained_model: Optional[Path],
         use_pre_trained_weights: bool,
         misc_options,
@@ -139,6 +274,10 @@ def detect_widget() -> FunctionGui:
             Size of your voxels in the y direction (top to bottom)
         voxel_size_x : float
             Size of your voxels in the x direction (left to right)
+        skip_detection : bool
+            If selected, the detection step is skipped and instead we get the
+            detected cells from the cell layer below (from a previous
+            detection run or import)
         soma_diameter : float
             The expected in-plane soma diameter (microns)
         ball_xy_size : float
@@ -159,6 +298,9 @@ def detect_widget() -> FunctionGui:
             should be attempted
         use_pre_trained_weights : bool
             Select to use pre-trained model weights
+        skip_classification : bool
+            If selected, the classification step is skipped and all cells from
+            the detection stage are added
         trained_model : Optional[Path]
             Trained model file path (home directory (default) -> pretrained
             weights)
@@ -184,24 +326,39 @@ def detect_widget() -> FunctionGui:
         # cellfinder plugin is fully open and initialized
         signal_image_opt()
         background_image_opt()
+        cell_layer_opt()
 
         signal_image = options["signal_image"]
-        background_image = options["background_image"]
-        viewer = options["viewer"]
 
-        if signal_image is None or background_image is None:
+        if signal_image is None or options["background_image"] is None:
             show_info("Both signal and background images must be specified.")
             return
 
+        detected_cells = []
+        if skip_detection:
+            if options["cell_layer"] is None:
+                show_info(
+                    "Skip detection selected, but no existing cell layer "
+                    "is selected."
+                )
+                return
+
+            # set cells as unknown so that classification will process them
+            detected_cells = napari_array_to_cells(
+                options["cell_layer"], Cell.UNKNOWN
+            )
+
         data_inputs = DataInputs(
             signal_image.data,
-            background_image.data,
+            options["background_image"].data,
             voxel_size_z,
             voxel_size_y,
             voxel_size_x,
         )
 
         detection_inputs = DetectionInputs(
+            skip_detection,
+            detected_cells,
             soma_diameter,
             ball_xy_size,
             ball_z_size,
@@ -215,24 +372,15 @@ def detect_widget() -> FunctionGui:
         if use_pre_trained_weights:
             trained_model = None
         classification_inputs = ClassificationInputs(
-            use_pre_trained_weights, trained_model
+            skip_classification, use_pre_trained_weights, trained_model
         )
 
-        end_plane = len(signal_image.data) if end_plane == 0 else end_plane
-
         if analyse_local:
-            current_plane = viewer.dims.current_step[0]
-
-            # so a reasonable number of cells in the plane are detected
-            planes_needed = MIN_PLANES_ANALYSE + int(
-                ceil((CUBE_DEPTH * NETWORK_VOXEL_SIZES[0]) / voxel_size_z)
+            start_plane, end_plane = find_local_planes(
+                options["viewer"], voxel_size_z, signal_image
             )
-
-            start_plane, end_plane = get_cube_depth_min_max(
-                current_plane, planes_needed
-            )
-            start_plane = max(0, start_plane)
-            end_plane = min(len(signal_image.data), end_plane)
+        elif not end_plane:
+            end_plane = len(signal_image.data)
 
         misc_inputs = MiscInputs(
             start_plane, end_plane, n_free_cpus, analyse_local, debug
@@ -244,58 +392,34 @@ def detect_widget() -> FunctionGui:
             classification_inputs,
             misc_inputs,
         )
-        worker.returned.connect(
-            lambda points: add_layers(points, viewer=viewer)
-        )
 
+        worker.returned.connect(
+            get_results_callback(skip_classification, options["viewer"])
+        )
         # Make sure if the worker emits an error, it is propagated to this
         # thread
-        def reraise(e):
-            raise Exception from e
-
         worker.errored.connect(reraise)
+        worker.connect_progress_bar_callback(progress_bar)
 
-        def update_progress_bar(label: str, max: int, value: int):
-            progress_bar.label = label
-            progress_bar.max = max
-            progress_bar.value = value
-
-        worker.update_progress_bar.connect(update_progress_bar)
         worker.start()
 
     widget.native.layout().insertWidget(0, cellfinder_header())
 
-    @widget.reset_button.changed.connect
-    def restore_defaults():
-        """
-        Restore default widget values.
-        """
-        defaults = {
-            **DataInputs.defaults(),
-            **DetectionInputs.defaults(),
-            **ClassificationInputs.defaults(),
-            **MiscInputs.defaults(),
-        }
-        for name, value in defaults.items():
-            if value is not None:  # ignore fields with no default
-                getattr(widget, name).value = value
+    # reset restores defaults
+    widget.reset_button.changed.connect(
+        partial(restore_options_defaults, widget)
+    )
 
     # Insert progress bar before the run and reset buttons
-    widget.insert(-3, progress_bar)
+    widget.insert(widget.index("debug") + 1, progress_bar)
 
-    # add the signal and background image parameters
-    # make it look as if it's directly in the root container
-    signal_image_opt.margins = 0, 0, 0, 0
-    # the parameters are updated using `auto_call` only. If False, magicgui
-    # passes these as args to widget(), which doesn't list them as args
-    signal_image_opt.gui_only = True
-    widget.insert(3, signal_image_opt)
-    widget.signal_image_opt.label = "Signal image"
-
-    background_image_opt.margins = 0, 0, 0, 0
-    background_image_opt.gui_only = True
-    widget.insert(4, background_image_opt)
-    widget.background_image_opt.label = "Background image"
+    # add the signal and background image etc.
+    add_heavy_widgets(
+        widget,
+        (background_image_opt, signal_image_opt, cell_layer_opt),
+        ("Background image", "Signal image", "Candidate cell layer"),
+        ("voxel_size_z", "voxel_size_z", "soma_diameter"),
+    )
 
     scroll = QScrollArea()
     scroll.setWidget(widget._widget._qwidget)
