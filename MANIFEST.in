@@ -12,7 +12,6 @@ exclude tox.ini
 graft cellfinder
 include cellfinder/napari/napari.yaml
 
-prune benchmarks
 prune examples
 prune resources
 prune tests
