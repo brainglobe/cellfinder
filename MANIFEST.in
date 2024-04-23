@@ -15,3 +15,4 @@ include cellfinder/napari/napari.yaml
 prune examples
 prune resources
 prune tests
+prune benchmarks
