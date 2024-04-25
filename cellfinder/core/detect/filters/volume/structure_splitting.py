@@ -71,7 +71,7 @@ def ball_filter_imgs(
     """
     # OPTIMISE: reuse ball filter instance
 
-    good_tiles_mask = np.ones((1, 1, volume.shape[2]), dtype=bool)
+    good_tiles_mask = np.ones((1, 1, volume.shape[2]), dtype=np.bool_)
 
     plane_width, plane_height = volume.shape[:2]
 

@@ -1,12 +1,83 @@
+from functools import lru_cache
+
 import numpy as np
-from numba import njit
+from numba import njit, objmode, prange
+from numba.core import types
+from numba.experimental import jitclass
 
 from cellfinder.core.tools.array_operations import bin_mean_3d
 from cellfinder.core.tools.geometry import make_sphere
 
 DEBUG = False
 
+uint32_3d_type = types.uint32[:, :, :]
+bool_3d_type = types.bool_[:, :, :]
+float_3d_type = types.float64[:, :, :]
 
+
+@lru_cache(maxsize=50)
+def get_kernel(ball_xy_size: int, ball_z_size: int) -> np.ndarray:
+    # Create a spherical kernel.
+    #
+    # This is done by:
+    # 1. Generating a binary sphere at a resolution *upscale_factor* larger
+    #    than desired.
+    # 2. Downscaling the binary sphere to get a 'fuzzy' sphere at the
+    #    original intended scale
+    upscale_factor: int = 7
+    upscaled_kernel_shape = (
+        upscale_factor * ball_xy_size,
+        upscale_factor * ball_xy_size,
+        upscale_factor * ball_z_size,
+    )
+    upscaled_ball_centre_position = (
+        np.floor(upscaled_kernel_shape[0] / 2),
+        np.floor(upscaled_kernel_shape[1] / 2),
+        np.floor(upscaled_kernel_shape[2] / 2),
+    )
+    upscaled_ball_radius = upscaled_kernel_shape[0] / 2.0
+
+    sphere_kernel = make_sphere(
+        upscaled_kernel_shape,
+        upscaled_ball_radius,
+        upscaled_ball_centre_position,
+    )
+    sphere_kernel = sphere_kernel.astype(np.float64)
+    kernel = bin_mean_3d(
+        sphere_kernel,
+        bin_height=upscale_factor,
+        bin_width=upscale_factor,
+        bin_depth=upscale_factor,
+    )
+
+    assert (
+        kernel.shape[2] == ball_z_size
+    ), "Kernel z dimension should be {}, got {}".format(
+        ball_z_size, kernel.shape[2]
+    )
+
+    return kernel
+
+
+# volume indices/size is 64 bit for very large brains(!)
+spec = [
+    ("ball_xy_size", types.uint32),
+    ("ball_z_size", types.uint32),
+    ("tile_step_width", types.uint64),
+    ("tile_step_height", types.uint64),
+    ("THRESHOLD_VALUE", types.uint32),
+    ("SOMA_CENTRE_VALUE", types.uint32),
+    ("overlap_fraction", types.float64),
+    ("overlap_threshold", types.float64),
+    ("middle_z_idx", types.uint32),
+    ("_num_z_added", types.uint32),
+    ("kernel", float_3d_type),
+    ("volume", uint32_3d_type),
+    ("inside_brain_tiles", bool_3d_type),
+]
+
+
+@jitclass(spec=spec)
 class BallFilter:
     """
     A 3D ball filter.
@@ -62,72 +133,39 @@ class BallFilter:
         self.THRESHOLD_VALUE = threshold_value
         self.SOMA_CENTRE_VALUE = soma_centre_value
 
-        # Create a spherical kernel.
-        #
-        # This is done by:
-        # 1. Generating a binary sphere at a resolution *upscale_factor* larger
-        #    than desired.
-        # 2. Downscaling the binary sphere to get a 'fuzzy' sphere at the
-        #    original intended scale
-        upscale_factor: int = 7
-        upscaled_kernel_shape = (
-            upscale_factor * ball_xy_size,
-            upscale_factor * ball_xy_size,
-            upscale_factor * ball_z_size,
-        )
-        upscaled_ball_centre_position = (
-            np.floor(upscaled_kernel_shape[0] / 2),
-            np.floor(upscaled_kernel_shape[1] / 2),
-            np.floor(upscaled_kernel_shape[2] / 2),
-        )
-        upscaled_ball_radius = upscaled_kernel_shape[0] / 2.0
-        sphere_kernel = make_sphere(
-            upscaled_kernel_shape,
-            upscaled_ball_radius,
-            upscaled_ball_centre_position,
-        )
-        sphere_kernel = sphere_kernel.astype(np.float64)
-        self.kernel = bin_mean_3d(
-            sphere_kernel,
-            bin_height=upscale_factor,
-            bin_width=upscale_factor,
-            bin_depth=upscale_factor,
-        )
-
-        assert (
-            self.kernel.shape[2] == ball_z_size
-        ), "Kernel z dimension should be {}, got {}".format(
-            ball_z_size, self.kernel.shape[2]
-        )
+        # getting kernel is not jitted
+        with objmode(kernel=float_3d_type):
+            kernel = get_kernel(ball_xy_size, ball_z_size)
+        self.kernel = kernel
 
         self.overlap_threshold = np.sum(self.overlap_fraction * self.kernel)
 
         # Stores the current planes that are being filtered
+        # first axis is z for faster rotating the z-axis
         self.volume = np.empty(
-            (plane_width, plane_height, ball_z_size), dtype=np.uint32
+            (ball_z_size, plane_width, plane_height),
+            dtype=np.uint32,
         )
         # Index of the middle plane in the volume
         self.middle_z_idx = int(np.floor(ball_z_size / 2))
+        self._num_z_added = 0
 
-        # TODO: lazy initialisation
+        # first axis is z
         self.inside_brain_tiles = np.empty(
             (
+                ball_z_size,
                 int(np.ceil(plane_width / tile_step_width)),
                 int(np.ceil(plane_height / tile_step_height)),
-                ball_z_size,
             ),
-            dtype=bool,
+            dtype=np.bool_,
         )
-        # Stores the z-index in volume at which new planes are inserted when
-        # append() is called
-        self.__current_z = -1
 
     @property
     def ready(self) -> bool:
         """
         Return `True` if enough planes have been appended to run the filter.
         """
-        return self.__current_z == self.ball_z_size - 1
+        return self._num_z_added >= self.ball_z_size
 
     def append(self, plane: np.ndarray, mask: np.ndarray) -> None:
         """
@@ -135,76 +173,106 @@ class BallFilter:
         """
         if DEBUG:
             assert [e for e in plane.shape[:2]] == [
-                e for e in self.volume.shape[:2]
+                e for e in self.volume.shape[1:]
             ], 'plane shape mismatch, expected "{}", got "{}"'.format(
-                [e for e in self.volume.shape[:2]],
+                [e for e in self.volume.shape[1:]],
                 [e for e in plane.shape[:2]],
             )
             assert [e for e in mask.shape[:2]] == [
-                e for e in self.inside_brain_tiles.shape[:2]
+                e for e in self.inside_brain_tiles.shape[1:]
             ], 'mask shape mismatch, expected"{}", got {}"'.format(
-                [e for e in self.inside_brain_tiles.shape[:2]],
+                [e for e in self.inside_brain_tiles.shape[1:]],
                 [e for e in mask.shape[:2]],
             )
-        if not self.ready:
-            self.__current_z += 1
-        else:
+
+        if self.ready:
             # Shift everything down by one to make way for the new plane
-            self.volume = np.roll(
-                self.volume, -1, axis=2
-            )  # WARNING: not in place
-            self.inside_brain_tiles = np.roll(
-                self.inside_brain_tiles, -1, axis=2
-            )
+            # this is faster than np.roll, especially with z-axis first
+            self.volume[:-1, :, :] = self.volume[1:, :, :]
+            self.inside_brain_tiles[:-1, :, :] = self.inside_brain_tiles[
+                1:, :, :
+            ]
+
+        # index for *next* slice is num we added *so far* until max
+        idx = min(self._num_z_added, self.ball_z_size - 1)
+        self._num_z_added += 1
+
         # Add the new plane to the top of volume and inside_brain_tiles
-        self.volume[:, :, self.__current_z] = plane[:, :]
-        self.inside_brain_tiles[:, :, self.__current_z] = mask[:, :]
+        self.volume[idx, :, :] = plane
+        self.inside_brain_tiles[idx, :, :] = mask
 
     def get_middle_plane(self) -> np.ndarray:
         """
         Get the plane in the middle of self.volume.
         """
-        z = self.middle_z_idx
-        return np.array(self.volume[:, :, z], dtype=np.uint32)
+        return self.volume[self.middle_z_idx, :, :].copy()
 
-    def walk(self) -> None:  # Highly optimised because most time critical
+    def walk(self, parallel: bool = False) -> None:
+        # **don't** pass parallel as keyword arg - numba struggles with it
+        # Highly optimised because most time critical
         ball_radius = self.ball_xy_size // 2
         # Get extents of image that are covered by tiles
         tile_mask_covered_img_width = (
-            self.inside_brain_tiles.shape[0] * self.tile_step_width
+            self.inside_brain_tiles.shape[1] * self.tile_step_width
         )
         tile_mask_covered_img_height = (
-            self.inside_brain_tiles.shape[1] * self.tile_step_height
+            self.inside_brain_tiles.shape[2] * self.tile_step_height
         )
         # Get maximum offsets for the ball
         max_width = tile_mask_covered_img_width - self.ball_xy_size
         max_height = tile_mask_covered_img_height - self.ball_xy_size
 
-        _walk(
-            max_height,
-            max_width,
-            self.tile_step_width,
-            self.tile_step_height,
-            self.inside_brain_tiles,
-            self.volume,
-            self.kernel,
-            ball_radius,
-            self.middle_z_idx,
-            self.overlap_threshold,
-            self.THRESHOLD_VALUE,
-            self.SOMA_CENTRE_VALUE,
-        )
+        # we have to pass the raw volume so walk doesn't use its edits as it
+        # processes the volume. self.volume is the one edited in place
+        input_volume = self.volume.copy()
+
+        if parallel:
+            _walk_parallel(
+                max_height,
+                max_width,
+                self.tile_step_width,
+                self.tile_step_height,
+                self.inside_brain_tiles,
+                input_volume,
+                self.volume,
+                self.kernel,
+                ball_radius,
+                self.middle_z_idx,
+                self.overlap_threshold,
+                self.THRESHOLD_VALUE,
+                self.SOMA_CENTRE_VALUE,
+            )
+        else:
+            _walk_single(
+                max_height,
+                max_width,
+                self.tile_step_width,
+                self.tile_step_height,
+                self.inside_brain_tiles,
+                input_volume,
+                self.volume,
+                self.kernel,
+                ball_radius,
+                self.middle_z_idx,
+                self.overlap_threshold,
+                self.THRESHOLD_VALUE,
+                self.SOMA_CENTRE_VALUE,
+            )
 
 
 @njit(cache=True)
 def _cube_overlaps(
-    cube: np.ndarray,
+    volume: np.ndarray,
+    x_start: int,
+    x_end: int,
+    y_start: int,
+    y_end: int,
     overlap_threshold: float,
-    THRESHOLD_VALUE: int,
+    threshold_value: int,
     kernel: np.ndarray,
 ) -> bool:  # Highly optimised because most time critical
     """
-    For each pixel in cube that is greater than THRESHOLD_VALUE, sum
+    For each pixel in cube in volume that is greater than THRESHOLD_VALUE, sum
     up the corresponding pixels in *kernel*. If the total is less than
     overlap_threshold, return False, otherwise return True.
 
@@ -214,23 +282,26 @@ def _cube_overlaps(
 
     Parameters
     ----------
-    cube :
+    volume :
         3D array.
+    x_start, x_end, y_start, y_end :
+        The start and end indices in volume that form the cube. End is
+        exclusive
     overlap_threshold :
         Threshold above which to return True.
-    THRESHOLD_VALUE :
+    threshold_value :
         Value above which a pixel is marked as being part of a cell.
     kernel :
-        3D array, with the same shape as *cube*.
+        3D array, with the same shape as *cube* in the volume.
     """
-    current_overlap_value = 0
+    current_overlap_value = 0.0
 
-    middle = np.floor(cube.shape[2] / 2) + 1
+    middle = np.floor(volume.shape[0] / 2) + 1
     halfway_overlap_thresh = (
         overlap_threshold * 0.4
     )  # FIXME: do not hard code value
 
-    for z in range(cube.shape[2]):
+    for z in range(volume.shape[0]):
         # TODO: OPTIMISE: step from middle to outer boundaries to check
         # more data first
         #
@@ -238,11 +309,17 @@ def _cube_overlaps(
         # 0.4 * the overlap threshold, return
         if z == middle and current_overlap_value < halfway_overlap_thresh:
             return False  # DEBUG: optimisation attempt
-        for y in range(cube.shape[1]):
-            for x in range(cube.shape[0]):
+
+        for y in range(y_start, y_end):
+            for x in range(x_start, x_end):
                 # includes self.SOMA_CENTRE_VALUE
-                if cube[x, y, z] >= THRESHOLD_VALUE:
-                    current_overlap_value += kernel[x, y, z]
+                if volume[z, x, y] >= threshold_value:
+                    # x/y must be shifted in kernel because we x/y is relative
+                    # to the full volume, so shift it to relative to the cube
+                    current_overlap_value += kernel[
+                        x - x_start, y - y_start, z
+                    ]
+
     return current_overlap_value > overlap_threshold
 
 
@@ -260,23 +337,23 @@ def _is_tile_to_check(
     """
     x_in_mask = x // tile_step_width  # TEST: test bounds (-1 range)
     y_in_mask = y // tile_step_height  # TEST: test bounds (-1 range)
-    return inside_brain_tiles[x_in_mask, y_in_mask, middle_z]
+    return inside_brain_tiles[middle_z, x_in_mask, y_in_mask]
 
 
-@njit
-def _walk(
+def _walk_base(
     max_height: int,
     max_width: int,
     tile_step_width: int,
     tile_step_height: int,
     inside_brain_tiles: np.ndarray,
+    input_volume: np.ndarray,
     volume: np.ndarray,
     kernel: np.ndarray,
     ball_radius: int,
     middle_z: int,
     overlap_threshold: float,
-    THRESHOLD_VALUE: int,
-    SOMA_CENTRE_VALUE: int,
+    threshold_value: int,
+    soma_centre_value: int,
 ) -> None:
     """
     Scan through *volume*, and mark pixels where there are enough surrounding
@@ -289,23 +366,28 @@ def _walk(
     max_height, max_width :
         Maximum offsets for the ball filter.
     inside_brain_tiles :
-        Array containing information on whether a tile is inside the brain
-        or not. Tiles outside the brain are skipped.
+        3d array containing information on whether a tile is
+        inside the brain or not. Tiles outside the brain are skipped.
+    input_volume :
+        3D array containing the plane-filtered data passed to the function
+        before walking. volume is edited in place, so this is the original
+        volume to prevent the changes for some cubes affective other cubes
+        during a single walk call.
     volume :
-        3D array containing the plane-filtered data.
+        3D array containing the plane-filtered data - edited in place.
     kernel :
         3D array
     ball_radius :
         Radius of the ball in the xy plane.
-    SOMA_CENTRE_VALUE :
+    soma_centre_value :
         Value that is used to mark pixels in *volume*.
 
     Notes
     -----
     Warning: modifies volume in place!
     """
-    for y in range(max_height):
-        for x in range(max_width):
+    for y in prange(max_height):
+        for x in prange(max_width):
             ball_centre_x = x + ball_radius
             ball_centre_y = y + ball_radius
             if _is_tile_to_check(
@@ -316,17 +398,20 @@ def _walk(
                 tile_step_height,
                 inside_brain_tiles,
             ):
-                cube = volume[
-                    x : x + kernel.shape[0],
-                    y : y + kernel.shape[1],
-                    :,
-                ]
                 if _cube_overlaps(
-                    cube,
+                    input_volume,
+                    x,
+                    x + kernel.shape[0],
+                    y,
+                    y + kernel.shape[1],
                     overlap_threshold,
-                    THRESHOLD_VALUE,
+                    threshold_value,
                     kernel,
                 ):
-                    volume[ball_centre_x, ball_centre_y, middle_z] = (
-                        SOMA_CENTRE_VALUE
+                    volume[middle_z, ball_centre_x, ball_centre_y] = (
+                        soma_centre_value
                     )
+
+
+_walk_parallel = njit(parallel=True)(_walk_base)
+_walk_single = njit(parallel=False)(_walk_base)
