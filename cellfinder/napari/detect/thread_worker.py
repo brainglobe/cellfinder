@@ -1,3 +1,4 @@
+from magicgui.widgets import ProgressBar
 from napari.qt.threading import WorkerBase, WorkerBaseSignals
 from qtpy.QtCore import Signal
 
@@ -40,6 +41,19 @@ class Worker(WorkerBase):
         self.detection_inputs = detection_inputs
         self.classification_inputs = classification_inputs
         self.misc_inputs = misc_inputs
+
+    def connect_progress_bar_callback(self, progress_bar: ProgressBar):
+        """
+        Connects the progress bar to the work so that updates are shown on
+        the bar.
+        """
+
+        def update_progress_bar(label: str, max: int, value: int):
+            progress_bar.label = label
+            progress_bar.max = max
+            progress_bar.value = value
+
+        self.update_progress_bar.connect(update_progress_bar)
 
     def work(self) -> list:
         self.update_progress_bar.emit("Setting up detection...", 1, 0)

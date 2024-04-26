@@ -1,8 +1,9 @@
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional
+from typing import List, Optional
 
 import numpy
+from brainglobe_utils.cells.cells import Cell
 
 from cellfinder.napari.input_container import InputContainer
 from cellfinder.napari.utils import html_label_widget
@@ -59,6 +60,8 @@ class DataInputs(InputContainer):
 class DetectionInputs(InputContainer):
     """Container for cell candidate detection inputs."""
 
+    skip_detection: bool = False
+    detected_cells: Optional[List[Cell]] = None
     soma_diameter: float = 16.0
     ball_xy_size: float = 6
     ball_z_size: float = 15
@@ -75,6 +78,7 @@ class DetectionInputs(InputContainer):
     def widget_representation(cls) -> dict:
         return dict(
             detection_options=html_label_widget("Detection:"),
+            skip_detection=dict(value=cls.defaults()["skip_detection"]),
             soma_diameter=cls._custom_widget("soma_diameter"),
             ball_xy_size=cls._custom_widget(
                 "ball_xy_size", custom_label="Ball filter (xy)"
@@ -107,6 +111,7 @@ class DetectionInputs(InputContainer):
 class ClassificationInputs(InputContainer):
     """Container for classification inputs."""
 
+    skip_classification: bool = False
     use_pre_trained_weights: bool = True
     trained_model: Optional[Path] = Path.home()
 
@@ -123,6 +128,9 @@ class ClassificationInputs(InputContainer):
                 value=cls.defaults()["use_pre_trained_weights"]
             ),
             trained_model=dict(value=cls.defaults()["trained_model"]),
+            skip_classification=dict(
+                value=cls.defaults()["skip_classification"]
+            ),
         )
 
 

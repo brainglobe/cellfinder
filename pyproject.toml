@@ -130,7 +130,7 @@ python =
     3.11: py311-{torch}  # On GA python=3.11 job, run tox with the torch environment
 
 [testenv]
-commands = python -m pytest -v --color=yes
+commands = python -m pytest -v --color=yes --cov=cellfinder --cov-report=xml
 deps =
     pytest
     pytest-cov

@@ -145,5 +145,5 @@ def test_detection(dtype, pixels, expected_coords):
     for plane in data:
         previous_plane = detector.process(plane, previous_plane)
 
-    coords = detector.get_coords_dict()
+    coords = detector.get_structures()
     assert coords_to_points(coords) == expected_coords
