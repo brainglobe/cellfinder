@@ -63,12 +63,6 @@ jobs:
         uses: tlambert03/setup-qt-libs@v1
       # Setup VTK with headless display
       - uses: pyvista/setup-headless-display-action@v2
-      # install additional Macos dependencies
-      - name: install HDF5 libraries
-        if: matrix.os == 'macos-latest'
-        run: |
-          brew install hdf5
-          export PATH="/usr/local/opt/hdf5/bin:$PATH"
       # Run all tests
       - uses: neuroinformatics-unit/actions/test@v2
         with:
