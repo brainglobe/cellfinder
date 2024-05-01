@@ -35,7 +35,12 @@ jobs:
             import cellfinder.core
             import cellfinder.napari
 
-      - name: Uninstall tensorflow
+      - name: Uninstall tensorflow-macos on Mac M1
+        if: matrix.os == 'macos-latest'
+        run: python -m pip uninstall -y tensorflow-macos
+
+      - name: Uninstall tensorflow on Ubuntu
+        if: matrix.os == 'ubuntu-latest'
         run: python -m pip uninstall -y tensorflow
 
       - name: Test (broken) import
