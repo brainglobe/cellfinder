@@ -130,11 +130,6 @@ mprofile*.dat
 
 *.DS_Store
 
-# asv
-.asv
-benchmarks/results
-benchmarks/html
-benchmarks/env
 
 # OS
 .DS_Store
