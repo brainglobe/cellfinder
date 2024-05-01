@@ -24,6 +24,40 @@ def get_tiff_meta(
 lazy_imread = delayed(imread)  # lazy reader
 
 
+def read_z_stack(path):
+    """
+    Reads z-stack, lazily, if possible.
+
+    If it's a text file or folder with 2D tiff files use dask to read lazily,
+    otherwise it's a single file tiff stack and is read into memory.
+
+    :param path: Filename of text file listing 2D tiffs, folder of 2D tiffs,
+        or single file tiff z-stack.
+    :return: The data as a dask/numpy array.
+    """
+    if path.endswith(".tiff") or path.endswith(".tif"):
+        with TiffFile(path) as tiff:
+            if not len(tiff.series):
+                raise ValueError(
+                    f"Attempted to load {path} but couldn't read a z-stack"
+                )
+            if len(tiff.series) != 1:
+                raise ValueError(
+                    f"Attempted to load {path} but found multiple stacks"
+                )
+
+            axes = tiff.series[0].axes.lower()
+            if set(axes) != {"x", "y", "z"} or axes[0] != "z":
+                raise ValueError(
+                    f"Attempted to load {path} but didn't find a zyx or "
+                    f"zxy stack. Found {axes} axes"
+                )
+
+        return imread(path)
+
+    return read_with_dask(path)
+
+
 def read_with_dask(path):
     """
     Based on https://github.com/tlambert03/napari-ndtiffs
