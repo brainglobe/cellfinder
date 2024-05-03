@@ -22,6 +22,7 @@ from typing import Callable, List, Optional, Sequence, Tuple, TypeVar
 import numpy as np
 from brainglobe_utils.cells.cells import Cell
 from brainglobe_utils.general.system import get_num_processes
+from numba import set_num_threads
 
 from cellfinder.core import logger, types
 from cellfinder.core.detect.filters.plane import TileProcessor
@@ -157,6 +158,13 @@ def main(
         )
     n_processes = get_num_processes(min_free_cpu_cores=n_free_cpus)
     n_ball_procs = max(n_processes - 1, 1)
+
+    # we parallelize 2d filtering, which typically lags behind the 3d
+    # processing so for n_ball_procs 2d filtering threads, ball_z_size will
+    # typically be in use while the others stall waiting for 3d processing
+    # so we can use those for other things, such as numba threading
+    set_num_threads(max(n_ball_procs - int(ball_z_size), 1))
+
     start_time = datetime.now()
 
     (
@@ -236,7 +244,10 @@ def main(
         # then 3D filtering has finished. As batches of planes are filtered
         # by the 3D filter, it releases the locks of subsequent 2D filter
         # processes.
-        cells = mp_3d_filter.process(async_results, locks, callback=callback)
+        mp_3d_filter.process(async_results, locks, callback=callback)
+
+        # it's now done filtering, get results with pool
+        cells = mp_3d_filter.get_results(worker_pool)
 
     time_elapsed = datetime.now() - start_time
     logger.debug(
