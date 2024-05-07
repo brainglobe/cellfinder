@@ -31,7 +31,7 @@ from sklearn.model_selection import train_test_split
 import cellfinder.core as program_for_log
 from cellfinder.core import logger
 from cellfinder.core.classify.resnet import layer_type
-from cellfinder.core.tools.prep import DEFAULT_INSTALL_PATH
+from cellfinder.core.download.download import DEFAULT_DOWNLOAD_DIRECTORY
 
 tf_suppress_log_messages = [
     "sample_weight modes were coerced from",
@@ -112,8 +112,7 @@ def misc_parse(parser):
 
 def training_parse():
     from cellfinder.core.download.cli import (
-        download_directory_parser,
-        model_parser,
+        download_parser,
     )
 
     training_parser = ArgumentParser(
@@ -223,8 +222,7 @@ def training_parse():
     )
 
     training_parser = misc_parse(training_parser)
-    training_parser = model_parser(training_parser)
-    training_parser = download_directory_parser(training_parser)
+    training_parser = download_parser(training_parser)
     args = training_parser.parse_args()
 
     return args
@@ -306,7 +304,7 @@ def run(
     n_free_cpus=2,
     trained_model=None,
     model_weights=None,
-    install_path=DEFAULT_INSTALL_PATH,
+    install_path=DEFAULT_DOWNLOAD_DIRECTORY,
     model="resnet50_tv",
     network_depth="50",
     learning_rate=0.0001,

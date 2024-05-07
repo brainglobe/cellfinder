@@ -5,8 +5,10 @@ import numpy as np
 import pytest
 from skimage.filters import gaussian
 
-from cellfinder.core.download import models
-from cellfinder.core.tools.prep import DEFAULT_INSTALL_PATH
+from cellfinder.core.download.download import (
+    DEFAULT_DOWNLOAD_DIRECTORY,
+    download_models,
+)
 
 
 @pytest.fixture(scope="session")
@@ -35,7 +37,7 @@ def download_default_model():
     Check that the classification model is already downloaded
     at the beginning of a pytest session.
     """
-    models.main("resnet50_tv", DEFAULT_INSTALL_PATH)
+    download_models("resnet50_tv", DEFAULT_DOWNLOAD_DIRECTORY)
 
 
 @pytest.fixture(scope="session")

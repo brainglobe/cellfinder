@@ -11,7 +11,7 @@ from brainglobe_utils.cells.cells import Cell
 from brainglobe_utils.general.logging import suppress_specific_logs
 
 from cellfinder.core import logger
-from cellfinder.core.download.models import model_type
+from cellfinder.core.download.download import model_type
 from cellfinder.core.train.train_yml import depth_type
 
 tf_suppress_log_messages = [

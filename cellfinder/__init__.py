@@ -1,4 +1,5 @@
 from importlib.metadata import PackageNotFoundError, version
+from pathlib import Path
 
 try:
     __version__ = version("cellfinder")
@@ -22,3 +23,5 @@ except PackageNotFoundError as e:
 
 __author__ = "Adam Tyson, Christian Niedworok, Charly Rousseau"
 __license__ = "BSD-3-Clause"
+
+DEFAULT_CELLFINDER_DIRECTORY = Path.home() / ".brainglobe" / "cellfinder"
