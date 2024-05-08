@@ -37,8 +37,7 @@ if backend in ["tensorflow", "jax", "torch"]:
         BACKEND_VERSION = version(backend)
     except PackageNotFoundError as e:
         raise PackageNotFoundError(
-            f"{backend} set as Keras backend "
-            f"but not installed"
+            f"{backend} set as Keras backend " f"but not installed"
         ) from e
 else:
     raise PackageNotFoundError(
