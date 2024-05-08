@@ -1,6 +1,6 @@
 from typing import Callable, Dict, List, Literal, Optional, Tuple, Union
 
-import keras.config
+import keras
 from keras import (
     KerasTensor as Tensor,
 )
