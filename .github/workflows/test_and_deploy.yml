@@ -54,7 +54,7 @@ jobs:
       - name: Cache Keras model
         uses: actions/cache@v3
         with:
-          path: "~/.cellfinder"
+          path: "~/.brainglobe"
           key: models-${{ hashFiles('~/.brainglobe/**') }}
       # Setup pyqt libraries
       - name: Setup qtpy libraries
@@ -80,7 +80,7 @@ jobs:
       - name: Cache Keras model
         uses: actions/cache@v3
         with:
-          path: "~/.cellfinder"
+          path: "~/.brainglobe"
           key: models-${{ hashFiles('~/.brainglobe/**') }}
       # Setup pyqt libraries
       - name: Setup qtpy libraries
@@ -107,7 +107,7 @@ jobs:
       - name: Cache Keras model
         uses: actions/cache@v3
         with:
-          path: "~/.cellfinder"
+          path: "~/.brainglobe"
           key: models-${{ hashFiles('~/.brainglobe/**') }}
 
       - name: Checkout brainglobe-workflows
