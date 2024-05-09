@@ -4,7 +4,6 @@ from math import isclose
 import brainglobe_utils.IO.cells as cell_io
 import numpy as np
 import pytest
-import torch
 from brainglobe_utils.general.system import get_num_processes
 
 from cellfinder.core.main import main
@@ -110,10 +109,9 @@ def test_detection_small_planes(
 
 
 def test_callbacks(
-    signal_array, background_array, cpus_to_leave_free: int = 0
+    signal_array, background_array, cpus_to_leave_free: int = 1
 ):
     # 20 is minimum number of planes needed to find > 0 cells
-    torch.set_default_device("cpu")
     signal_array = signal_array[0:20]
     background_array = background_array[0:20]
 

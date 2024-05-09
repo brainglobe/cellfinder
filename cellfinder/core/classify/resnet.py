@@ -131,7 +131,6 @@ def non_residual_block(
         strides=strides,
         use_bias=use_bias,
         name="conv1",
-        device="cpu",
     )(x)
     x = BatchNormalization(axis=axis, epsilon=bn_epsilon, name="conv1_bn")(x)
     x = Activation(activation, name="conv1_activation")(x)
