@@ -109,7 +109,7 @@ def test_detection_small_planes(
 
 
 def test_callbacks(
-    signal_array, background_array, cpus_to_leave_free: int = 1
+    signal_array, background_array, cpus_to_leave_free: int = 0
 ):
     # 20 is minimum number of planes needed to find > 0 cells
     signal_array = signal_array[0:20]
