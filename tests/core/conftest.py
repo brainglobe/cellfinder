@@ -1,9 +1,9 @@
+import os
 import platform
 from typing import Tuple
 
 import numpy as np
 import pytest
-import torch
 from skimage.filters import gaussian
 
 from cellfinder.core.download import models
@@ -16,7 +16,8 @@ def macos_use_cpu_only():
     Ensure torch only uses the CPU when running on arm based macOS.
     """
     if platform.system() == "Darwin" and platform.processor() == "arm":
-        torch.set_default_device("cpu")
+        os.environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
+        os.environ["PYTORCH_MPS_HIGH_WATERMARK_RATIO"] = "0.0"
 
 
 @pytest.fixture(scope="session")
