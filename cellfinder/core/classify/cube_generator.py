@@ -259,7 +259,8 @@ class CubeGeneratorFromFile(Sequence):
                 (number_images,)
                 + (self.cube_height, self.cube_width, self.cube_depth)
                 + (self.channels,)
-            )
+            ),
+            dtype=np.float32,
         )
 
         for idx, cell in enumerate(cell_batch):
@@ -438,7 +439,8 @@ class CubeGeneratorFromDisk(Sequence):
     ) -> np.ndarray:
         number_images = len(list_signal_tmp)
         images = np.empty(
-            ((number_images,) + self.im_shape + (self.channels,))
+            ((number_images,) + self.im_shape + (self.channels,)),
+            dtype=np.float32,
         )
 
         for idx, signal_im in enumerate(list_signal_tmp):
@@ -447,7 +449,7 @@ class CubeGeneratorFromDisk(Sequence):
                 images, idx, signal_im, background_im
             )
 
-        return images.astype(np.float16)
+        return images
 
     def __populate_array_with_cubes(
         self,
