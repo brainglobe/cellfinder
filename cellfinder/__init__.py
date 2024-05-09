@@ -1,6 +1,7 @@
 import os
 import warnings
 from importlib.metadata import PackageNotFoundError, version
+from pathlib import Path
 
 # Check cellfinder is installed
 try:
@@ -47,3 +48,5 @@ else:
 
 __author__ = "Adam Tyson, Christian Niedworok, Charly Rousseau"
 __license__ = "BSD-3-Clause"
+
+DEFAULT_CELLFINDER_DIRECTORY = Path.home() / ".brainglobe" / "cellfinder"
