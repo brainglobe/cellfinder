@@ -57,7 +57,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: "~/.cellfinder"
-          key: models-${{ hashFiles('~/.cellfinder/**') }}
+          key: models-${{ hashFiles('~/.brainglobe/**') }}
       # Setup pyqt libraries
       - name: Setup qtpy libraries
         uses: tlambert03/setup-qt-libs@v1
@@ -83,7 +83,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: "~/.cellfinder"
-          key: models-${{ hashFiles('~/.cellfinder/**') }}
+          key: models-${{ hashFiles('~/.brainglobe/**') }}
       # Setup pyqt libraries
       - name: Setup qtpy libraries
         uses: tlambert03/setup-qt-libs@v1
@@ -108,7 +108,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: "~/.cellfinder"
-          key: models-${{ hashFiles('~/.cellfinder/**') }}
+          key: models-${{ hashFiles('~/.brainglobe/**') }}
 
       - name: Checkout brainglobe-workflows
         uses: actions/checkout@v3

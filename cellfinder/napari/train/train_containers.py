@@ -4,7 +4,7 @@ from typing import Optional
 
 from magicgui.types import FileDialogMode
 
-from cellfinder.core.download.models import model_weight_urls
+from cellfinder.core.download.download import model_filenames
 from cellfinder.core.train.train_yml import models
 from cellfinder.napari.input_container import InputContainer
 from cellfinder.napari.utils import html_label_widget
@@ -46,7 +46,7 @@ class OptionalNetworkInputs(InputContainer):
     trained_model: Optional[Path] = Path.home()
     model_weights: Optional[Path] = Path.home()
     model_depth: str = list(models.keys())[2]
-    pretrained_model: str = str(list(model_weight_urls.keys())[0])
+    pretrained_model: str = str(list(model_filenames.keys())[0])
 
     def as_core_arguments(self) -> dict:
         arguments = super().as_core_arguments()
@@ -65,7 +65,7 @@ class OptionalNetworkInputs(InputContainer):
             ),
             pretrained_model=cls._custom_widget(
                 "pretrained_model",
-                choices=list(model_weight_urls.keys()),
+                choices=list(model_filenames.keys()),
             ),
         )
 
