@@ -29,7 +29,7 @@ except PackageNotFoundError as e:
 # Check if backend is configured. If not, set to "torch"
 if not os.getenv("KERAS_BACKEND"):
     os.environ["KERAS_BACKEND"] = "torch"
-    warnings.warn("Keras backend not configured, automatically set to Torch")
+    warnings.warn("Keras backend not configured, automatically set to torch")
 
 # Check backend is installed
 backend = os.getenv("KERAS_BACKEND")
