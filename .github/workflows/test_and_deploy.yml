@@ -37,6 +37,8 @@ jobs:
     name: Run package tests
     timeout-minutes: 60
     runs-on: ${{ matrix.os }}
+    env:
+      PYTORCH_ENABLE_MPS_FALLBACK: "1"
     strategy:
       matrix:
         # Run all supported Python versions on linux

@@ -30,6 +30,7 @@ dependencies = [
     "scikit-image",
     "scikit-learn",
     "keras>=3.0.0",
+    "torch>=2.1.0",
     "tifffile",
     "tqdm",
 ]
@@ -58,17 +59,6 @@ napari = [
     "napari[pyqt5]",
     "pooch >= 1",
     "qtpy",
-]
-# Keras backends
-tf = [
-    "tensorflow>=2.16.1",
-]
-jax = [
-    "jax==0.4.20",
-    "jaxlib==0.4.20"
-]
-torch = [
-    "torch>=2.1.0"
 ]
 
 [project.scripts]
@@ -120,14 +110,14 @@ markers = ["slow: marks tests as slow (deselect with '-m \"not slow\"')"]
 legacy_tox_ini = """
 # For more information about tox, see https://tox.readthedocs.io/en/latest/
 [tox]
-envlist = py{39,310,311}-{torch}
+envlist = py{39,310,311}
 isolated_build = true
 
 [gh-actions]
 python =
-    3.9: py39-{torch}  # On GA python=3.9 job, run tox with the torch environment
-    3.10: py310-{torch}  # On GA python=3.10 job, run tox with the torch environment
-    3.11: py311-{torch}  # On GA python=3.11 job, run tox with the torch environment
+    3.9: py39
+    3.10: py310
+    3.11: py311
 
 [testenv]
 commands = python -m pytest -v --color=yes
@@ -142,13 +132,8 @@ deps =
     pytest-qt
 extras =
     napari
-    tf: tf
-    jax: jax
-    torch: torch
 setenv =
-    tf: KERAS_BACKEND = tensorflow
-    jax: KERAS_BACKEND = jax
-    torch: KERAS_BACKEND = torch
+    KERAS_BACKEND = torch
 passenv =
     NUMBA_DISABLE_JIT
     CI
@@ -157,6 +142,4 @@ passenv =
     XAUTHORITY
     NUMPY_EXPERIMENTAL_ARRAY_FUNCTION
     PYVISTA_OFF_SCREEN
-platform =
-    tf: linux|darwin  # skip TF backend on windows
 """
