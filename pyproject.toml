@@ -61,6 +61,7 @@ napari = [
     "pooch >= 1",
     "qtpy",
 ]
+asv = ["asv"]
 
 [project.scripts]
 cellfinder_download = "cellfinder.core.download.cli:main"
