@@ -132,6 +132,23 @@ jobs:
         run: |
           python -m pytest --color=yes -v tests/brainmapper
 
+  benchmarks:
+    name: Check benchmarks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+      - name: Install dependencies
+        shell: bash
+        run: |
+          python -mpip install --upgrade pip
+          python -mpip install .[asv]
+      - name: Run asv check
+        shell: bash
+        run: asv check -v -E existing
+
   build_sdist_wheel:
     name: Build source distribution and wheel
     needs: [test, test_numba_disabled]
