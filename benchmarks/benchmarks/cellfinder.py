@@ -12,9 +12,7 @@ from workflows.cellfinder import (
     CellfinderConfig,
     run_workflow_from_cellfinder_run,
 )
-from workflows.cellfinder import (
-    setup as setup_cellfinder_workflow,
-)
+from workflows.cellfinder import setup as setup_cellfinder_workflow
 from workflows.utils import DEFAULT_JSON_CONFIG_PATH_CELLFINDER
 
 
