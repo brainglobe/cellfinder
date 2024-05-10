@@ -1,0 +1,33 @@
+{
+  "data_url": "https://gin.g-node.org/BrainGlobe/test-data/raw/master/cellfinder/cellfinder-test-data.zip",
+  "data_hash": "b0ef53b1530e4fa3128fcc0a752d0751909eab129d701f384fc0ea5f138c5914",
+  "voxel_sizes": [
+    5,
+    2,
+    2
+  ],
+  "start_plane": 0,
+  "end_plane": -1,
+  "trained_model": null,
+  "model_weights": null,
+  "model": "resnet50_tv",
+  "batch_size": 32,
+  "n_free_cpus": 2,
+  "network_voxel_sizes": [
+    5,
+    1,
+    1
+  ],
+  "soma_diameter": 16,
+  "ball_xy_size": 6,
+  "ball_z_size": 15,
+  "ball_overlap_fraction": 0.6,
+  "log_sigma_size": 0.2,
+  "n_sds_above_mean_thresh": 10,
+  "soma_spread_factor": 1.4,
+  "max_cluster_size": 100000,
+  "cube_width": 50,
+  "cube_height": 50,
+  "cube_depth": 20,
+  "network_depth": "50"
+}
