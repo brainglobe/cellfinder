@@ -50,7 +50,7 @@ jobs:
           python-version: "3.10"
 
     steps:
-      # Cache the Keras model so we don't have to remake it every time
+      # Cache the Keras model, so we don't have to remake it every time
       - name: Cache Keras model
         uses: actions/cache@v3
         with:

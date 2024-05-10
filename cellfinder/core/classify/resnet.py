@@ -1,6 +1,5 @@
 from typing import Callable, Dict, List, Literal, Optional, Tuple, Union
 
-import keras
 from keras import (
     KerasTensor as Tensor,
 )
@@ -116,7 +115,7 @@ def non_residual_block(
     activation: str = "relu",
     use_bias: bool = False,
     bn_epsilon: float = 1e-5,
-    pooling_padding: str = "same",
+    pooling_padding: str = "valid",
     axis: int = 3,
 ) -> Tensor:
     """
@@ -134,9 +133,6 @@ def non_residual_block(
     )(x)
     x = BatchNormalization(axis=axis, epsilon=bn_epsilon, name="conv1_bn")(x)
     x = Activation(activation, name="conv1_activation")(x)
-
-    if keras.config.backend() == "torch":
-        pooling_padding = "valid"
 
     x = MaxPooling3D(
         max_pool_size,
