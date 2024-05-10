@@ -1,6 +1,7 @@
 import os
 import warnings
 from importlib.metadata import PackageNotFoundError, version
+from pathlib import Path
 
 # Check cellfinder is installed
 try:
@@ -25,29 +26,27 @@ except PackageNotFoundError as e:
 
 
 # If no backend is configured and installed for Keras, tools cannot be used
-# Check backend is configured
+# Check if backend is configured. If not, set to "torch"
 if not os.getenv("KERAS_BACKEND"):
-    os.environ["KERAS_BACKEND"] = "tensorflow"
-    warnings.warn(
-        "Keras backend not configured, automatically set to Tensorflow"
-    )
+    os.environ["KERAS_BACKEND"] = "torch"
+    warnings.warn("Keras backend not configured, automatically set to torch")
 
 # Check backend is installed
-if os.getenv("KERAS_BACKEND") in ["tensorflow", "jax", "torch"]:
-    backend = os.getenv("KERAS_BACKEND")
+backend = os.getenv("KERAS_BACKEND")
+if backend in ["tensorflow", "jax", "torch"]:
     try:
-        backend_package = "tf-nightly" if backend == "tensorflow" else backend
-        BACKEND_VERSION = version(backend_package)
+        BACKEND_VERSION = version(backend)
     except PackageNotFoundError as e:
         raise PackageNotFoundError(
-            f"{backend}, ({backend_package}) set as Keras backend "
-            f"but not installed"
+            f"{backend} set as Keras backend " f"but not installed"
         ) from e
 else:
     raise PackageNotFoundError(
-        "Keras backend must be one of 'tensorflow', 'jax', or 'torch'"
+        "Keras backend must be one of 'torch', 'tensorflow', or 'jax'"
     )
 
 
 __author__ = "Adam Tyson, Christian Niedworok, Charly Rousseau"
 __license__ = "BSD-3-Clause"
+
+DEFAULT_CELLFINDER_DIRECTORY = Path.home() / ".brainglobe" / "cellfinder"

@@ -1,79 +1,67 @@
 import os
-import shutil
-import tarfile
-import urllib.request
 from pathlib import Path
+from typing import Literal
 
+import pooch
 from brainglobe_utils.general.config import get_config_obj
-from brainglobe_utils.general.system import disk_free_gb
 
+from cellfinder import DEFAULT_CELLFINDER_DIRECTORY
 from cellfinder.core.tools.source_files import (
     default_configuration_path,
     user_specific_configuration_path,
 )
 
-
-class DownloadError(Exception):
-    pass
+DEFAULT_DOWNLOAD_DIRECTORY = DEFAULT_CELLFINDER_DIRECTORY / "models"
 
 
-def download_file(destination_path, file_url, filename):
-    direct_download = True
-    file_url = file_url.format(int(direct_download))
-    print(f"Downloading file: {filename}")
-    with urllib.request.urlopen(file_url) as response:
-        with open(destination_path, "wb") as outfile:
-            shutil.copyfileobj(response, outfile)
+MODEL_URL = "https://gin.g-node.org/cellfinder/models/raw/master"
+
+model_filenames = {
+    "resnet50_tv": "resnet50_tv.h5",
+    "resnet50_all": "resnet50_weights.h5",
+}
+
+model_hashes = {
+    "resnet50_tv": "63d36af456640590ba6c896dc519f9f29861015084f4c40777a54c18c1fc4edd",  # noqa: E501
+    "resnet50_all": None,
+}
 
 
-def extract_file(tar_file_path, destination_path):
-    tar = tarfile.open(tar_file_path)
-    tar.extractall(path=destination_path)
-    tar.close()
+model_type = Literal["resnet50_tv", "resnet50_all"]
 
 
-# TODO: check that intermediate folders exist
-def download(
-    download_path,
-    url,
-    file_name,
-    install_path=None,
-    download_requires=None,
-    extract_requires=None,
-):
-    if not os.path.exists(os.path.dirname(download_path)):
-        raise DownloadError(
-            f"Could not find directory '{os.path.dirname(download_path)}' "
-            f"to download file: {file_name}"
-        )
+def download_models(
+    model_name: model_type, download_path: os.PathLike
+) -> Path:
+    """
+    For a given model name and download path, download the model file
+    and return the path to the downloaded file.
 
-    if (download_requires is not None) and (
-        disk_free_gb(os.path.dirname(download_path)) < download_requires
-    ):
-        raise DownloadError(
-            f"Insufficient disk space in {os.path.dirname(download_path)} to"
-            f"download file: {file_name}"
-        )
+    Parameters
+    ----------
+    model_name : model_type
+        The name of the model to be downloaded.
+    download_path : os.PathLike
+        The path where the model file will be downloaded.
 
-    if install_path is not None:
-        if not os.path.exists(install_path):
-            raise DownloadError(
-                f"Could not find directory '{install_path}' "
-                f"to extract file: {file_name}"
-            )
+    Returns
+    -------
+    Path
+        The path to the downloaded model file.
 
-        if (extract_requires is not None) and (
-            disk_free_gb(install_path) < extract_requires
-        ):
-            raise DownloadError(
-                f"Insufficient disk space in {install_path} to"
-                f"extract file: {file_name}"
-            )
+    """
 
-    download_file(download_path, url, file_name)
-    if install_path is not None:
-        extract_file(download_path, install_path)
-        os.remove(download_path)
+    download_path = Path(download_path)
+    filename = model_filenames[model_name]
+    model_path = pooch.retrieve(
+        url=f"{MODEL_URL}/{filename}",
+        known_hash=model_hashes[model_name],
+        path=download_path,
+        fname=filename,
+        progressbar=True,
+    )
+
+    return Path(model_path)
 
 
 def amend_user_configuration(new_model_path=None) -> None:
@@ -83,7 +71,7 @@ def amend_user_configuration(new_model_path=None) -> None:
 
     Parameters
     ----------
-    new_model_path : str, optional
+    new_model_path : Path, optional
         The path to the new model configuration.
     """
     print("(Over-)writing custom user configuration")

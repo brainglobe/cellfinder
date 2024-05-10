@@ -22,7 +22,10 @@ from brainglobe_utils.general.numerical import (
     check_positive_float,
     check_positive_int,
 )
-from brainglobe_utils.general.system import ensure_directory_exists
+from brainglobe_utils.general.system import (
+    ensure_directory_exists,
+    get_num_processes,
+)
 from brainglobe_utils.IO.cells import find_relevant_tiffs
 from brainglobe_utils.IO.yaml import read_yaml_section
 from fancylog import fancylog
@@ -31,7 +34,7 @@ from sklearn.model_selection import train_test_split
 import cellfinder.core as program_for_log
 from cellfinder.core import logger
 from cellfinder.core.classify.resnet import layer_type
-from cellfinder.core.tools.prep import DEFAULT_INSTALL_PATH
+from cellfinder.core.download.download import DEFAULT_DOWNLOAD_DIRECTORY
 
 tf_suppress_log_messages = [
     "sample_weight modes were coerced from",
@@ -112,8 +115,7 @@ def misc_parse(parser):
 
 def training_parse():
     from cellfinder.core.download.cli import (
-        download_directory_parser,
-        model_parser,
+        download_parser,
     )
 
     training_parser = ArgumentParser(
@@ -223,8 +225,7 @@ def training_parse():
     )
 
     training_parser = misc_parse(training_parser)
-    training_parser = model_parser(training_parser)
-    training_parser = download_directory_parser(training_parser)
+    training_parser = download_parser(training_parser)
     args = training_parser.parse_args()
 
     return args
@@ -306,7 +307,7 @@ def run(
     n_free_cpus=2,
     trained_model=None,
     model_weights=None,
-    install_path=DEFAULT_INSTALL_PATH,
+    install_path=DEFAULT_DOWNLOAD_DIRECTORY,
     model="resnet50_tv",
     network_depth="50",
     learning_rate=0.0001,
@@ -363,6 +364,7 @@ def run(
 
     signal_train, background_train, labels_train = make_lists(tiff_files)
 
+    n_processes = get_num_processes(min_free_cpu_cores=n_free_cpus)
     if test_fraction > 0:
         logger.info("Splitting data into training and validation datasets")
         (
@@ -389,7 +391,8 @@ def run(
             labels=labels_test,
             batch_size=batch_size,
             train=True,
-            use_multiprocessing=False,
+            use_multiprocessing=True,
+            workers=n_processes,
         )
 
         # for saving checkpoints
@@ -408,7 +411,8 @@ def run(
         shuffle=True,
         train=True,
         augment=not no_augment,
-        use_multiprocessing=False,
+        use_multiprocessing=True,
+        workers=n_processes,
     )
     callbacks = []
 

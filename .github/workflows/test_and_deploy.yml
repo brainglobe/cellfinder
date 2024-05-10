@@ -41,10 +41,10 @@ jobs:
       matrix:
         # Run all supported Python versions on linux
         os: [ubuntu-latest]
-        python-version: ["3.9", "3.10"]
-        # Include one macos run
+        python-version: ["3.9", "3.10", "3.11"]
+        # Include one windows, one macos run (intel based macOS 13 runner)
         include:
-        - os: macos-latest
+        - os: macos-13
           python-version: "3.10"
         - os: windows-latest
           python-version: "3.10"
@@ -54,8 +54,8 @@ jobs:
       - name: Cache Keras model
         uses: actions/cache@v3
         with:
-          path: "~/.cellfinder"
-          key: models-${{ hashFiles('~/.cellfinder/**') }}
+          path: "~/.brainglobe"
+          key: models-${{ hashFiles('~/.brainglobe/**') }}
       # Setup pyqt libraries
       - name: Setup qtpy libraries
         uses: tlambert03/setup-qt-libs@v1
@@ -65,11 +65,13 @@ jobs:
       - uses: neuroinformatics-unit/actions/test@v2
         with:
           python-version: ${{ matrix.python-version }}
+          secret-codecov-token: ${{ secrets.CODECOV_TOKEN }}
           use-xvfb: true
 
   test_numba_disabled:
     needs: [linting, manifest]
     name: Run tests with numba disabled
+    timeout-minutes: 60
     runs-on: ubuntu-latest
     env:
        NUMBA_DISABLE_JIT: "1"
@@ -78,8 +80,8 @@ jobs:
       - name: Cache Keras model
         uses: actions/cache@v3
         with:
-          path: "~/.cellfinder"
-          key: models-${{ hashFiles('~/.cellfinder/**') }}
+          path: "~/.brainglobe"
+          key: models-${{ hashFiles('~/.brainglobe/**') }}
       # Setup pyqt libraries
       - name: Setup qtpy libraries
         uses: tlambert03/setup-qt-libs@v1
@@ -89,6 +91,7 @@ jobs:
       - uses: neuroinformatics-unit/actions/test@v2
         with:
           python-version: "3.10"
+          secret-codecov-token: ${{ secrets.CODECOV_TOKEN }}
           codecov-flags: "numba"
 
   # Run brainglobe-workflows brainmapper-CLI tests to check for
@@ -96,15 +99,16 @@ jobs:
   test_brainmapper_cli:
     needs: [linting, manifest]
     name: Run brainmapper tests to check for breakages
+    timeout-minutes: 60
     runs-on: ubuntu-latest
     env:
-      KERAS_BACKEND: jax
+      KERAS_BACKEND: torch
     steps:
       - name: Cache Keras model
         uses: actions/cache@v3
         with:
-          path: "~/.cellfinder"
-          key: models-${{ hashFiles('~/.cellfinder/**') }}
+          path: "~/.brainglobe"
+          key: models-${{ hashFiles('~/.brainglobe/**') }}
 
       - name: Checkout brainglobe-workflows
         uses: actions/checkout@v3
@@ -119,8 +123,9 @@ jobs:
       - name: Install test dependencies
         run: |
           python -m pip install --upgrade pip wheel
-          # Install cellfinder from the latest SHA on this branch (Keras with JAX backend)
-          python -m pip install "cellfinder[jax] @ git+$GITHUB_SERVER_URL/$GITHUB_REPOSITORY@$GITHUB_SHA"
+          # Install cellfinder from the latest SHA on this branch
+          python -m pip install "cellfinder @ git+$GITHUB_SERVER_URL/$GITHUB_REPOSITORY@$GITHUB_SHA"
+
           # Install checked out copy of brainglobe-workflows
           python -m pip install .[dev]
 

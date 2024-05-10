@@ -14,18 +14,19 @@ from brainglobe_utils.general.system import get_num_processes
 
 import cellfinder.core.tools.tf as tf_tools
 from cellfinder.core import logger
-from cellfinder.core.download import models as model_download
-from cellfinder.core.download.download import amend_user_configuration
+from cellfinder.core.download.download import (
+    DEFAULT_DOWNLOAD_DIRECTORY,
+    amend_user_configuration,
+    download_models,
+    model_type,
+)
 from cellfinder.core.tools.source_files import user_specific_configuration_path
-
-home = Path.home()
-DEFAULT_INSTALL_PATH = home / ".cellfinder"
 
 
 def prep_model_weights(
     model_weights: Optional[os.PathLike],
     install_path: Optional[os.PathLike],
-    model_name: model_download.model_type,
+    model_name: model_type,
     n_free_cpus: int,
 ) -> Path:
     # if tensorflow backend: do required prep
@@ -47,11 +48,10 @@ def prep_tensorflow(max_threads: int) -> None:
 def prep_models(
     model_weights_path: Optional[os.PathLike],
     install_path: Optional[os.PathLike],
-    model_name: model_download.model_type,
+    model_name: model_type,
 ) -> Path:
-    install_path = install_path or DEFAULT_INSTALL_PATH
-
-    # if no model or weights, set to default weights
+    install_path = install_path or DEFAULT_DOWNLOAD_DIRECTORY
+    # if no model or weights, set default weights
     if model_weights_path is None:
         logger.debug("No model supplied, so using the default")
 
@@ -59,13 +59,13 @@ def prep_models(
 
         if not Path(config_file).exists():
             logger.debug("Custom config does not exist, downloading models")
-            model_path = model_download.main(model_name, install_path)
+            model_path = download_models(model_name, install_path)
             amend_user_configuration(new_model_path=model_path)
 
         model_weights = get_model_weights(config_file)
         if not model_weights.exists():
             logger.debug("Model weights do not exist, downloading")
-            model_path = model_download.main(model_name, install_path)
+            model_path = download_models(model_name, install_path)
             amend_user_configuration(new_model_path=model_path)
             model_weights = get_model_weights(config_file)
     else:
