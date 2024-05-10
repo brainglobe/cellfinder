@@ -44,10 +44,10 @@ jobs:
         python-version: ["3.9", "3.10", "3.11"]
         # Include one windows, one macos run (intel based macOS 13 runner)
         include:
-        - os: macos-13
-          python-version: "3.10"
-        - os: windows-latest
-          python-version: "3.10"
+          - os: macos-13
+            python-version: "3.10"
+          - os: windows-latest
+            python-version: "3.10"
 
     steps:
       # Cache the Keras model, so we don't have to remake it every time

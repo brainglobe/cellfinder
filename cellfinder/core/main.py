@@ -108,5 +108,4 @@ def main(
             )
         else:
             logger.info("No candidates, skipping classification")
-
     return points
