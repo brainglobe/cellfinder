@@ -8,11 +8,8 @@ import os
 from pathlib import Path
 from typing import Optional
 
-import keras
 from brainglobe_utils.general.config import get_config_obj
-from brainglobe_utils.general.system import get_num_processes
 
-import cellfinder.core.tools.tf as tf_tools
 from cellfinder.core import logger
 from cellfinder.core.download.download import (
     DEFAULT_DOWNLOAD_DIRECTORY,
@@ -27,22 +24,11 @@ def prep_model_weights(
     model_weights: Optional[os.PathLike],
     install_path: Optional[os.PathLike],
     model_name: model_type,
-    n_free_cpus: int,
 ) -> Path:
-    # if tensorflow backend: do required prep
-    if keras.config.backend() == "tensorflow":
-        n_processes = get_num_processes(min_free_cpu_cores=n_free_cpus)
-        prep_tensorflow(n_processes)
-
     # prepare models (get default weights or provided ones)
     model_weights = prep_models(model_weights, install_path, model_name)
 
     return model_weights
-
-
-def prep_tensorflow(max_threads: int) -> None:
-    tf_tools.set_tf_threads(max_threads)
-    tf_tools.allow_gpu_memory_growth()
 
 
 def prep_models(

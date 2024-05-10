@@ -36,11 +36,6 @@ from cellfinder.core import logger
 from cellfinder.core.classify.resnet import layer_type
 from cellfinder.core.download.download import DEFAULT_DOWNLOAD_DIRECTORY
 
-tf_suppress_log_messages = [
-    "sample_weight modes were coerced from",
-    "multiprocessing can interact badly with TensorFlow",
-]
-
 depth_type = Literal["18", "34", "50", "101", "152"]
 
 models: Dict[depth_type, layer_type] = {
@@ -321,10 +316,6 @@ def run(
     save_progress=False,
     epochs=100,
 ):
-    from cellfinder.core.main import suppress_tf_logging
-
-    suppress_tf_logging(tf_suppress_log_messages)
-
     from keras.callbacks import (
         CSVLogger,
         ModelCheckpoint,
@@ -342,7 +333,6 @@ def run(
         model_weights=model_weights,
         install_path=install_path,
         model_name=model,
-        n_free_cpus=n_free_cpus,
     )
 
     yaml_contents = parse_yaml(yaml_file)
