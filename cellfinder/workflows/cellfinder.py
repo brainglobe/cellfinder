@@ -24,16 +24,16 @@ from typing import Optional, Union
 
 import pooch
 from brainglobe_utils.IO.cells import save_cells
-from utils import (
-    DEFAULT_JSON_CONFIG_PATH_CELLFINDER,
-    config_parser,
-    setup_logger,
-)
-from utils import __name__ as LOGGER_NAME
 
 from cellfinder.core.main import main as cellfinder_run
 from cellfinder.core.tools.IO import read_z_stack
 from cellfinder.core.train.train_yml import depth_type
+from cellfinder.workflows.utils import (
+    DEFAULT_JSON_CONFIG_PATH_CELLFINDER,
+    config_parser,
+    setup_logger,
+)
+from cellfinder.workflows.utils import __name__ as LOGGER_NAME
 
 Pathlike = Union[str, os.PathLike]
 

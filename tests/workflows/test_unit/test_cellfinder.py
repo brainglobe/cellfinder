@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from workflows.utils import setup_logger
+from cellfinder.workflows.utils import setup_logger
 
 
 @pytest.fixture()
@@ -200,9 +200,7 @@ def test_add_input_paths(
         Pytest fixture to enable requesting fixtures by name
     """
 
-    from workflows.cellfinder import (
-        CellfinderConfig,
-    )
+    from cellfinder.workflows.cellfinder import CellfinderConfig
 
     # instantiate custom logger
     _ = setup_logger()
@@ -245,9 +243,7 @@ def test_read_cellfinder_config(
         Pytest fixture to enable requesting fixtures by name
 
     """
-    from workflows.cellfinder import (
-        read_cellfinder_config,
-    )
+    from cellfinder.workflows.cellfinder import read_cellfinder_config
 
     # instantiate custom logger
     _ = setup_logger()
@@ -318,12 +314,8 @@ def test_setup(
     request : pytest.FixtureRequest
         Pytest fixture to enable requesting fixtures by name
     """
-    from workflows.cellfinder import (
-        CellfinderConfig,
-    )
-    from workflows.cellfinder import (
-        setup as setup_workflow,
-    )
+    from cellfinder.workflows.cellfinder import CellfinderConfig
+    from cellfinder.workflows.cellfinder import setup as setup_workflow
 
     # run setup on default configuration
     cfg = setup_workflow(str(request.getfixturevalue(input_config)))
@@ -358,12 +350,10 @@ def test_run_workflow_from_cellfinder_run(
     request : pytest.FixtureRequest
         Pytest fixture to enable requesting fixtures by name
     """
-    from workflows.cellfinder import (
+    from cellfinder.workflows.cellfinder import (
         run_workflow_from_cellfinder_run,
     )
-    from workflows.cellfinder import (
-        setup as setup_workflow,
-    )
+    from cellfinder.workflows.cellfinder import setup as setup_workflow
 
     # run setup
     cfg = setup_workflow(str(request.getfixturevalue(input_config)))

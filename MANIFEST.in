@@ -9,6 +9,8 @@ exclude .codecov.yml
 exclude CORE_CHANGELOG.md
 exclude tox.ini
 
+recursive-include workflows *
+
 graft cellfinder
 include cellfinder/napari/napari.yaml
 

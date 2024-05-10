@@ -3,7 +3,7 @@ from typing import List
 
 import pytest
 
-from workflows.utils import (
+from cellfinder.workflows.utils import (
     DEFAULT_JSON_CONFIG_PATH_CELLFINDER,
     config_parser,
     setup_logger,

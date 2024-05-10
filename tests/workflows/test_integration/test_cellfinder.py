@@ -11,7 +11,7 @@ def test_main():
     """
     # import inside the test function so that required functions are
     # monkeypatched first
-    from workflows.cellfinder import main
+    from cellfinder.workflows.cellfinder import main
 
     # run main
     cfg = main()
@@ -42,7 +42,7 @@ def test_main_w_inputs(
     request : pytest.FixtureRequest
         Pytest fixture to enable requesting fixtures by name
     """
-    from workflows.cellfinder import main
+    from cellfinder.workflows.cellfinder import main
 
     # run main
     cfg = main(str(request.getfixturevalue(input_config)))

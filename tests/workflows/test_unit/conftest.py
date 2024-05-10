@@ -10,6 +10,6 @@ def custom_logger_name() -> str:
     str
         Name of custom logger
     """
-    from workflows.utils import __name__ as logger_name
+    from cellfinder.workflows.utils import __name__ as logger_name
 
     return logger_name

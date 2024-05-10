@@ -48,7 +48,7 @@ def default_input_config_cellfinder() -> Path:
         Path to default input config
 
     """
-    from workflows.utils import DEFAULT_JSON_CONFIG_PATH_CELLFINDER
+    from cellfinder.workflows.utils import DEFAULT_JSON_CONFIG_PATH_CELLFINDER
 
     return DEFAULT_JSON_CONFIG_PATH_CELLFINDER
 
