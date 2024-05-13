@@ -20,7 +20,7 @@ classifiers = [
 ]
 requires-python = ">=3.9"
 dependencies = [
-    "brainglobe-utils>=0.4.3",
+    "brainglobe-utils>=0.5.0",
     "brainglobe-napari-io>=0.3.4",
     "dask[array]",
     "fancylog>=0.0.7",
