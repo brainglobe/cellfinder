@@ -15,6 +15,11 @@ from cellfinder.core.download.download import (
 
 @pytest.fixture(scope="session", autouse=True)
 def set_device_macos_ci_testing():
+    """
+    Ensure that the device is set to CPU when running on arm based macOS
+    GitHub runners. This is to avoid the following error:
+    https://discuss.pytorch.org/t/mps-back-end-out-of-memory-on-github-action/189773/5
+    """
     if (
         os.environ["GITHUB_ACTIONS"] == "true"
         and torch.backends.mps.is_available()
