@@ -1,13 +1,26 @@
+import os
 from typing import Tuple
 
+import keras.src.backend.common.global_state
 import numpy as np
 import pytest
+import torch.backends.mps
 from skimage.filters import gaussian
 
 from cellfinder.core.download.download import (
     DEFAULT_DOWNLOAD_DIRECTORY,
     download_models,
 )
+
+
+@pytest.fixture(scope="session", autouse=True)
+def set_device_macos_ci_testing():
+    device = os.environ["CELLFINDER_TEST_DEVICE"]
+
+    if device == "cpu" and torch.backends.mps.is_available():
+        keras.src.backend.common.global_state.set_global_attribute(
+            "torch_device", device
+        )
 
 
 @pytest.fixture(scope="session")

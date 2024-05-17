@@ -103,6 +103,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       KERAS_BACKEND: torch
+      CELLFINDER_TEST_DEVICE: cpu
     steps:
       - name: Cache Keras model
         uses: actions/cache@v3
