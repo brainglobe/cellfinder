@@ -15,11 +15,12 @@ from cellfinder.core.download.download import (
 
 @pytest.fixture(scope="session", autouse=True)
 def set_device_macos_ci_testing():
-    device = os.environ["CELLFINDER_TEST_DEVICE"]
-
-    if device == "cpu" and torch.backends.mps.is_available():
+    if (
+        os.environ["GITHUB_ACTIONS"] == "true"
+        and torch.backends.mps.is_available()
+    ):
         keras.src.backend.common.global_state.set_global_attribute(
-            "torch_device", device
+            "torch_device", "cpu"
         )
 
 
