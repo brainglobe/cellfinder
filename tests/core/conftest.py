@@ -14,7 +14,7 @@ from cellfinder.core.download.download import (
 
 
 @pytest.fixture(scope="session", autouse=True)
-def set_device_macos_ci_testing():
+def set_device_arm_macos_ci():
     """
     Ensure that the device is set to CPU when running on arm based macOS
     GitHub runners. This is to avoid the following error:
@@ -27,6 +27,26 @@ def set_device_macos_ci_testing():
         keras.src.backend.common.global_state.set_global_attribute(
             "torch_device", "cpu"
         )
+
+
+@pytest.fixture(scope="session")
+def no_free_cpus() -> int:
+    """
+    Set number of free CPUs so all available CPUs are used by the tests.
+    """
+    return 0
+
+
+@pytest.fixture(scope="session")
+def run_on_one_cpu_only() -> int:
+    """
+    Set number of free CPUs so tests can use exactly one CPU.
+    """
+    cpus = os.cpu_count()
+    if cpus is not None:
+        return cpus - 1
+    else:
+        raise ValueError("No CPUs available.")
 
 
 @pytest.fixture(scope="session")
