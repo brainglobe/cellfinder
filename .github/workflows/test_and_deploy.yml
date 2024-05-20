@@ -52,12 +52,13 @@ jobs:
             python-version: "3.10"
 
     steps:
-      # Cache the tensorflow model so we don't have to remake it every time
-      - name: Cache tensorflow model
+      - name: Cache atlases
         uses: actions/cache@v3
         with:
-          path: "~/.cellfinder"
-          key: models-${{ hashFiles('~/.brainglobe/**') }}
+          path: | # ensure we don't cache any interrupted atlas download and extraction, if e.g. we cancel the workflow manually
+            ~/.brainglobe
+            !~/.brainglobe/atlas.tar.gz
+          key: brainglobe
       # Setup pyqt libraries
       - name: Setup qtpy libraries
         uses: tlambert03/setup-qt-libs@v1
