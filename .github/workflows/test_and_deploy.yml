@@ -45,7 +45,7 @@ jobs:
         # Run all supported Python versions on linux
         os: [ubuntu-latest]
         python-version: ["3.9", "3.10", "3.11"]
-        # Include one windows, one macos run (intel based macOS 13 runner)
+        # Include one windows and two macOS (intel based and arm based) runs
         include:
           - os: macos-13
             python-version: "3.10"
