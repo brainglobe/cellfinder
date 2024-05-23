@@ -55,12 +55,13 @@ jobs:
             python-version: "3.10"
 
     steps:
-      # Cache the Keras model, so we don't have to remake it every time
-      - name: Cache Keras model
+      - name: Cache brainglobe directory
         uses: actions/cache@v3
         with:
-          path: "~/.brainglobe"
-          key: models-${{ hashFiles('~/.brainglobe/**') }}
+          path: | # ensure we don't cache any interrupted atlas download and extraction, if e.g. we cancel the workflow manually
+            ~/.brainglobe
+            !~/.brainglobe/atlas.tar.gz
+          key: brainglobe
       # Setup pyqt libraries
       - name: Setup qtpy libraries
         uses: tlambert03/setup-qt-libs@v1

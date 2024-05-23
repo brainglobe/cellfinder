@@ -9,9 +9,9 @@ real life data.
 import os
 
 import pytest
+from brainglobe_utils.IO.image.load import read_with_dask
 
 from cellfinder.core.main import main
-from cellfinder.core.tools.IO import read_with_dask
 
 data_dir = os.path.join(
     os.getcwd(), "tests", "data", "integration", "detection"
