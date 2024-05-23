@@ -83,11 +83,13 @@ jobs:
        NUMBA_DISABLE_JIT: "1"
 
     steps:
-      - name: Cache Keras model
+      - name: Cache brainglobe directory
         uses: actions/cache@v3
         with:
-          path: "~/.brainglobe"
-          key: models-${{ hashFiles('~/.brainglobe/**') }}
+          path: | # ensure we don't cache any interrupted atlas download and extraction, if e.g. we cancel the workflow manually
+            ~/.brainglobe
+            !~/.brainglobe/atlas.tar.gz
+          key: brainglobe
       # Setup pyqt libraries
       - name: Setup qtpy libraries
         uses: tlambert03/setup-qt-libs@v1
@@ -111,12 +113,13 @@ jobs:
       KERAS_BACKEND: torch
       CELLFINDER_TEST_DEVICE: cpu
     steps:
-      - name: Cache Keras model
+      - name: Cache brainglobe directory
         uses: actions/cache@v3
         with:
-          path: "~/.brainglobe"
-          key: models-${{ hashFiles('~/.brainglobe/**') }}
-
+          path: | # ensure we don't cache any interrupted atlas download and extraction, if e.g. we cancel the workflow manually
+            ~/.brainglobe
+            !~/.brainglobe/atlas.tar.gz
+          key: brainglobe
       - name: Checkout brainglobe-workflows
         uses: actions/checkout@v3
         with:
