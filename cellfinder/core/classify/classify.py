@@ -61,7 +61,7 @@ def main(
         cube_width=cube_width,
         cube_height=cube_height,
         cube_depth=cube_depth,
-        use_multiprocessing=True,
+        use_multiprocessing=False,
         workers=workers,
     )
 

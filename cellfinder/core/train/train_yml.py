@@ -381,7 +381,7 @@ def run(
             labels=labels_test,
             batch_size=batch_size,
             train=True,
-            use_multiprocessing=True,
+            use_multiprocessing=False,
             workers=n_processes,
         )
 
@@ -401,7 +401,7 @@ def run(
         shuffle=True,
         train=True,
         augment=not no_augment,
-        use_multiprocessing=True,
+        use_multiprocessing=False,
         workers=n_processes,
     )
     callbacks = []
