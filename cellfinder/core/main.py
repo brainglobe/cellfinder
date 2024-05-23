@@ -48,7 +48,7 @@ def main(
         Called every time a plane has finished being processed during the
         detection stage. Called with the plane number that has finished.
     classify_callback : Callable[int], optional
-        Called every time tensorflow has finished classifying a point.
+        Called every time a point has finished being classified.
         Called with the batch number that has just finished.
     detect_finished_callback : Callable[list], optional
         Called after detection is finished with the list of detected points.
