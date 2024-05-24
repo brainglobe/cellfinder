@@ -228,7 +228,7 @@ class CubeGeneratorFromFile(Sequence):
             batch_labels = keras.utils.to_categorical(
                 batch_labels, num_classes=self.classes
             )
-            return images, batch_labels
+            return images, batch_labels.astype(np.float32)
         elif self.extract:
             batch_info = self.__get_batch_dict(cell_batch)
             return images, batch_info
@@ -428,7 +428,7 @@ class CubeGeneratorFromDisk(Sequence):
             batch_labels = keras.utils.to_categorical(
                 batch_labels, num_classes=self.classes
             )
-            return images, batch_labels
+            return images, batch_labels.astype(np.float32)
         else:
             return images
 
