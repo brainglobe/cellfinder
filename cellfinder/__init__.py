@@ -25,9 +25,7 @@ except PackageNotFoundError as e:
 
 
 # If no backend is configured and installed for Keras, tools cannot be used
-# Check if backend is configured. If not, set to "torch"
-if not os.getenv("KERAS_BACKEND"):
-    os.environ["KERAS_BACKEND"] = "torch"
+os.environ["KERAS_BACKEND"] = "torch"
 
 # Check backend is installed
 backend = os.getenv("KERAS_BACKEND")
