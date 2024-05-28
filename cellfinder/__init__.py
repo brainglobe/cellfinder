@@ -21,7 +21,6 @@ except PackageNotFoundError as e:
             f"https://github.com/brainglobe/brainglobe-meta#readme."
         ) from e
 
-__author__ = "Adam Tyson, Christian Niedworok, Charly Rousseau"
 __license__ = "BSD-3-Clause"
 
 DEFAULT_CELLFINDER_DIRECTORY = Path.home() / ".brainglobe" / "cellfinder"
