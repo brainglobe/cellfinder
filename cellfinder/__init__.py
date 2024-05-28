@@ -27,7 +27,6 @@ except PackageNotFoundError as e:
 # Set the Keras backend to torch
 os.environ["KERAS_BACKEND"] = "torch"
 
-__author__ = "Adam Tyson, Christian Niedworok, Charly Rousseau"
 __license__ = "BSD-3-Clause"
 
 DEFAULT_CELLFINDER_DIRECTORY = Path.home() / ".brainglobe" / "cellfinder"
