@@ -2,13 +2,13 @@ from pathlib import Path
 from random import shuffle
 from typing import Dict, List, Optional, Tuple, Union
 
+import keras
 import numpy as np
-import tensorflow as tf
 from brainglobe_utils.cells.cells import Cell, group_cells_by_z
 from brainglobe_utils.general.numerical import is_even
+from keras.utils import Sequence
 from scipy.ndimage import zoom
 from skimage.io import imread
-from tensorflow.keras.utils import Sequence
 
 from cellfinder.core import types
 from cellfinder.core.classify.augment import AugmentationParameters, augment
@@ -56,7 +56,14 @@ class CubeGeneratorFromFile(Sequence):
         translate: Tuple[float, float, float] = (0.05, 0.05, 0.05),
         shuffle: bool = False,
         interpolation_order: int = 2,
+        *args,
+        **kwargs,
     ):
+        # pass any additional arguments not specified in signature to the
+        # constructor of the superclass (e.g.: `use_multiprocessing` or
+        # `workers`)
+        super().__init__(*args, **kwargs)
+
         self.points = points
         self.signal_array = signal_array
         self.background_array = background_array
@@ -218,10 +225,10 @@ class CubeGeneratorFromFile(Sequence):
 
         if self.train:
             batch_labels = [cell.type - 1 for cell in cell_batch]
-            batch_labels = tf.keras.utils.to_categorical(
+            batch_labels = keras.utils.to_categorical(
                 batch_labels, num_classes=self.classes
             )
-            return images, batch_labels
+            return images, batch_labels.astype(np.float32)
         elif self.extract:
             batch_info = self.__get_batch_dict(cell_batch)
             return images, batch_info
@@ -252,7 +259,8 @@ class CubeGeneratorFromFile(Sequence):
                 (number_images,)
                 + (self.cube_height, self.cube_width, self.cube_depth)
                 + (self.channels,)
-            )
+            ),
+            dtype=np.float32,
         )
 
         for idx, cell in enumerate(cell_batch):
@@ -350,7 +358,14 @@ class CubeGeneratorFromDisk(Sequence):
         translate: Tuple[float, float, float] = (0.2, 0.2, 0.2),
         train: bool = False,  # also return labels
         interpolation_order: int = 2,
+        *args,
+        **kwargs,
     ):
+        # pass any additional arguments not specified in signature to the
+        # constructor of the superclass (e.g.: `use_multiprocessing` or
+        # `workers`)
+        super().__init__(*args, **kwargs)
+
         self.im_shape = shape
         self.batch_size = batch_size
         self.labels = labels
@@ -410,10 +425,10 @@ class CubeGeneratorFromDisk(Sequence):
 
         if self.train and self.labels is not None:
             batch_labels = [self.labels[k] for k in indexes]
-            batch_labels = tf.keras.utils.to_categorical(
+            batch_labels = keras.utils.to_categorical(
                 batch_labels, num_classes=self.classes
             )
-            return images, batch_labels
+            return images, batch_labels.astype(np.float32)
         else:
             return images
 
@@ -424,7 +439,8 @@ class CubeGeneratorFromDisk(Sequence):
     ) -> np.ndarray:
         number_images = len(list_signal_tmp)
         images = np.empty(
-            ((number_images,) + self.im_shape + (self.channels,))
+            ((number_images,) + self.im_shape + (self.channels,)),
+            dtype=np.float32,
         )
 
         for idx, signal_im in enumerate(list_signal_tmp):
@@ -433,7 +449,7 @@ class CubeGeneratorFromDisk(Sequence):
                 images, idx, signal_im, background_im
             )
 
-        return images.astype(np.float16)
+        return images
 
     def __populate_array_with_cubes(
         self,

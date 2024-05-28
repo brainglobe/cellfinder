@@ -1,9 +1,11 @@
 from typing import Callable, Dict, List, Literal, Optional, Tuple, Union
 
-from tensorflow import Tensor
-from tensorflow.keras import Model
-from tensorflow.keras.initializers import Initializer
-from tensorflow.keras.layers import (
+from keras import (
+    KerasTensor as Tensor,
+)
+from keras import Model
+from keras.initializers import Initializer
+from keras.layers import (
     Activation,
     Add,
     BatchNormalization,
@@ -14,7 +16,7 @@ from tensorflow.keras.layers import (
     MaxPooling3D,
     ZeroPadding3D,
 )
-from tensorflow.keras.optimizers import Adam, Optimizer
+from keras.optimizers import Adam, Optimizer
 
 #####################################################################
 # Define the types of ResNet
@@ -113,7 +115,7 @@ def non_residual_block(
     activation: str = "relu",
     use_bias: bool = False,
     bn_epsilon: float = 1e-5,
-    pooling_padding: str = "same",
+    pooling_padding: str = "valid",
     axis: int = 3,
 ) -> Tensor:
     """
@@ -131,6 +133,7 @@ def non_residual_block(
     )(x)
     x = BatchNormalization(axis=axis, epsilon=bn_epsilon, name="conv1_bn")(x)
     x = Activation(activation, name="conv1_activation")(x)
+
     x = MaxPooling3D(
         max_pool_size,
         strides=strides,

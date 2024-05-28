@@ -80,7 +80,10 @@ def test_detection_full(signal_array, background_array, free_cpus, request):
 
 
 def test_detection_small_planes(
-    signal_array, background_array, no_free_cpus, mocker
+    signal_array,
+    background_array,
+    no_free_cpus,
+    mocker,
 ):
     # Check that processing works when number of planes < number of processes
     nproc = get_num_processes(no_free_cpus)

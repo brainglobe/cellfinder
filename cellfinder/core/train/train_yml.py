@@ -22,7 +22,10 @@ from brainglobe_utils.general.numerical import (
     check_positive_float,
     check_positive_int,
 )
-from brainglobe_utils.general.system import ensure_directory_exists
+from brainglobe_utils.general.system import (
+    ensure_directory_exists,
+    get_num_processes,
+)
 from brainglobe_utils.IO.cells import find_relevant_tiffs
 from brainglobe_utils.IO.yaml import read_yaml_section
 from fancylog import fancylog
@@ -32,11 +35,6 @@ import cellfinder.core as program_for_log
 from cellfinder.core import logger
 from cellfinder.core.classify.resnet import layer_type
 from cellfinder.core.download.download import DEFAULT_DOWNLOAD_DIRECTORY
-
-tf_suppress_log_messages = [
-    "sample_weight modes were coerced from",
-    "multiprocessing can interact badly with TensorFlow",
-]
 
 depth_type = Literal["18", "34", "50", "101", "152"]
 
@@ -318,11 +316,7 @@ def run(
     save_progress=False,
     epochs=100,
 ):
-    from cellfinder.core.main import suppress_tf_logging
-
-    suppress_tf_logging(tf_suppress_log_messages)
-
-    from tensorflow.keras.callbacks import (
+    from keras.callbacks import (
         CSVLogger,
         ModelCheckpoint,
         TensorBoard,
@@ -339,7 +333,6 @@ def run(
         model_weights=model_weights,
         install_path=install_path,
         model_name=model,
-        n_free_cpus=n_free_cpus,
     )
 
     yaml_contents = parse_yaml(yaml_file)
@@ -361,6 +354,7 @@ def run(
 
     signal_train, background_train, labels_train = make_lists(tiff_files)
 
+    n_processes = get_num_processes(min_free_cpu_cores=n_free_cpus)
     if test_fraction > 0:
         logger.info("Splitting data into training and validation datasets")
         (
@@ -387,15 +381,17 @@ def run(
             labels=labels_test,
             batch_size=batch_size,
             train=True,
+            use_multiprocessing=False,
+            workers=n_processes,
         )
 
         # for saving checkpoints
-        base_checkpoint_file_name = "-epoch.{epoch:02d}-loss-{val_loss:.3f}.h5"
+        base_checkpoint_file_name = "-epoch.{epoch:02d}-loss-{val_loss:.3f}"
 
     else:
         logger.info("No validation data selected.")
         validation_generator = None
-        base_checkpoint_file_name = "-epoch.{epoch:02d}.h5"
+        base_checkpoint_file_name = "-epoch.{epoch:02d}"
 
     training_generator = CubeGeneratorFromDisk(
         signal_train,
@@ -405,6 +401,8 @@ def run(
         shuffle=True,
         train=True,
         augment=not no_augment,
+        use_multiprocessing=False,
+        workers=n_processes,
     )
     callbacks = []
 
@@ -421,9 +419,14 @@ def run(
 
     if not no_save_checkpoints:
         if save_weights:
-            filepath = str(output_dir / ("weight" + base_checkpoint_file_name))
+            filepath = str(
+                output_dir
+                / ("weight" + base_checkpoint_file_name + ".weights.h5")
+            )
         else:
-            filepath = str(output_dir / ("model" + base_checkpoint_file_name))
+            filepath = str(
+                output_dir / ("model" + base_checkpoint_file_name + ".keras")
+            )
 
         checkpoints = ModelCheckpoint(
             filepath,
@@ -432,25 +435,26 @@ def run(
         callbacks.append(checkpoints)
 
     if save_progress:
-        filepath = str(output_dir / "training.csv")
-        csv_logger = CSVLogger(filepath)
+        csv_filepath = str(output_dir / "training.csv")
+        csv_logger = CSVLogger(csv_filepath)
         callbacks.append(csv_logger)
 
     logger.info("Beginning training.")
+    # Keras 3.0: `use_multiprocessing` input is set in the
+    # `training_generator` (False by default)
     model.fit(
         training_generator,
         validation_data=validation_generator,
-        use_multiprocessing=False,
         epochs=epochs,
         callbacks=callbacks,
     )
 
     if save_weights:
         logger.info("Saving model weights")
-        model.save_weights(str(output_dir / "model_weights.h5"))
+        model.save_weights(output_dir / "model.weights.h5")
     else:
         logger.info("Saving model")
-        model.save(output_dir / "model.h5")
+        model.save(output_dir / "model.keras")
 
     logger.info(
         "Finished training, " "Total time taken: %s",

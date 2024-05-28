@@ -1,22 +1,12 @@
-"""
-N.B imports are within functions to prevent tensorflow being imported before
-it's warnings are silenced
-"""
-
 import os
 from typing import Callable, List, Optional, Tuple
 
 import numpy as np
 from brainglobe_utils.cells.cells import Cell
-from brainglobe_utils.general.logging import suppress_specific_logs
 
 from cellfinder.core import logger
 from cellfinder.core.download.download import model_type
 from cellfinder.core.train.train_yml import depth_type
-
-tf_suppress_log_messages = [
-    "multiprocessing can interact badly with TensorFlow"
-]
 
 
 def main(
@@ -58,13 +48,11 @@ def main(
         Called every time a plane has finished being processed during the
         detection stage. Called with the plane number that has finished.
     classify_callback : Callable[int], optional
-        Called every time tensorflow has finished classifying a point.
+        Called every time a point has finished being classified.
         Called with the batch number that has just finished.
     detect_finished_callback : Callable[list], optional
         Called after detection is finished with the list of detected points.
     """
-    suppress_tf_logging(tf_suppress_log_messages)
-
     from cellfinder.core.classify import classify
     from cellfinder.core.detect import detect
     from cellfinder.core.tools import prep
@@ -98,7 +86,7 @@ def main(
     if not skip_classification:
         install_path = None
         model_weights = prep.prep_model_weights(
-            model_weights, install_path, model, n_free_cpus
+            model_weights, install_path, model
         )
         if len(points) > 0:
             logger.info("Running classification")
@@ -120,17 +108,4 @@ def main(
             )
         else:
             logger.info("No candidates, skipping classification")
-
     return points
-
-
-def suppress_tf_logging(tf_suppress_log_messages: List[str]) -> None:
-    """
-    Prevents many lines of logs such as:
-    "2019-10-24 16:54:41.363978: I tensorflow/stream_executor/platform/default
-    /dso_loader.cc:44] Successfully opened dynamic library libcuda.so.1"
-    """
-    os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
-
-    for message in tf_suppress_log_messages:
-        suppress_specific_logs("tensorflow", message)
