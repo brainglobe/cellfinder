@@ -1,5 +1,6 @@
 from pathlib import Path
 
+import keras
 from brainglobe_utils.general.exceptions import CommandLineInputError
 
 
@@ -80,3 +81,12 @@ def memory_in_bytes(memory_amount, unit):
         )
     else:
         return memory_amount * 10 ** supported_units[unit]
+
+
+def force_cpu_usage():
+    """
+    Forces the CPU to be used, and not the GPU by PyTorch
+    """
+    keras.src.backend.common.global_state.set_global_attribute(
+        "torch_device", "cpu"
+    )
