@@ -1,7 +1,6 @@
 import os
 from typing import Tuple
 
-import keras.src.backend.common.global_state
 import numpy as np
 import pytest
 import torch.backends.mps
@@ -11,6 +10,7 @@ from cellfinder.core.download.download import (
     DEFAULT_DOWNLOAD_DIRECTORY,
     download_models,
 )
+from cellfinder.core.tools.system import force_cpu
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -24,9 +24,7 @@ def set_device_arm_macos_ci():
         os.getenv("GITHUB_ACTIONS") == "true"
         and torch.backends.mps.is_available()
     ):
-        keras.src.backend.common.global_state.set_global_attribute(
-            "torch_device", "cpu"
-        )
+        force_cpu()
 
 
 @pytest.fixture(scope="session")
