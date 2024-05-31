@@ -40,7 +40,7 @@ class CubeGeneratorFromFile(Sequence):
         background_array: types.array,
         voxel_sizes: Tuple[int, int, int],
         network_voxel_sizes: Tuple[int, int, int],
-        batch_size: int = 32,
+        batch_size: int = 64,
         cube_width: int = 50,
         cube_height: int = 50,
         cube_depth: int = 20,
@@ -345,7 +345,7 @@ class CubeGeneratorFromDisk(Sequence):
         signal_list: List[Union[str, Path]],
         background_list: List[Union[str, Path]],
         labels: Optional[List[int]] = None,  # only if training or validating
-        batch_size: int = 32,
+        batch_size: int = 64,
         shape: Tuple[int, int, int] = (50, 50, 20),
         channels: int = 2,
         classes: int = 2,

@@ -114,7 +114,7 @@ class ClassificationInputs(InputContainer):
     skip_classification: bool = False
     use_pre_trained_weights: bool = True
     trained_model: Optional[Path] = Path.home()
-    batch_size: int = 32
+    batch_size: int = 64
 
     def as_core_arguments(self) -> dict:
         args = super().as_core_arguments()
