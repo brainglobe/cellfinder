@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
 import keras
@@ -50,6 +51,8 @@ def main(
     # Too many workers doesn't increase speed, and uses huge amounts of RAM
     workers = get_num_processes(min_free_cpu_cores=n_free_cpus)
 
+    start_time = datetime.now()
+
     logger.debug("Initialising cube generator")
     inference_generator = CubeGeneratorFromFile(
         points,
@@ -89,6 +92,11 @@ def main(
     for idx, cell in enumerate(inference_generator.ordered_points):
         cell.type = predictions[idx] + 1
         points_list.append(cell)
+
+    time_elapsed = datetime.now() - start_time
+    print(
+        "Classfication complete - all points done in : {}".format(time_elapsed)
+    )
 
     return points_list
 

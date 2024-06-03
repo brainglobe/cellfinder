@@ -54,7 +54,7 @@ class CurationWidget(QWidget):
         self.save_empty_cubes = save_empty_cubes
         self.max_ram = max_ram
         self.voxel_sizes = [5, 2, 2]
-        self.batch_size = 32
+        self.batch_size = 64
         self.viewer = viewer
 
         self.signal_layer = None

@@ -18,7 +18,7 @@ def main(
     trained_model: Optional[os.PathLike] = None,
     model_weights: Optional[os.PathLike] = None,
     model: model_type = "resnet50_tv",
-    batch_size: int = 32,
+    batch_size: int = 64,
     n_free_cpus: int = 2,
     network_voxel_sizes: Tuple[int, int, int] = (5, 1, 1),
     soma_diameter: int = 16,

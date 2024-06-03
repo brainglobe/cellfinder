@@ -253,8 +253,9 @@ def detect_widget() -> FunctionGui:
         max_cluster_size: int,
         classification_options,
         skip_classification: bool,
-        trained_model: Optional[Path],
         use_pre_trained_weights: bool,
+        trained_model: Optional[Path],
+        batch_size: int,
         misc_options,
         start_plane: int,
         end_plane: int,
@@ -298,6 +299,8 @@ def detect_widget() -> FunctionGui:
             should be attempted
         use_pre_trained_weights : bool
             Select to use pre-trained model weights
+        batch_size : int
+            How many points to classify at one time
         skip_classification : bool
             If selected, the classification step is skipped and all cells from
             the detection stage are added
@@ -372,7 +375,10 @@ def detect_widget() -> FunctionGui:
         if use_pre_trained_weights:
             trained_model = None
         classification_inputs = ClassificationInputs(
-            skip_classification, use_pre_trained_weights, trained_model
+            skip_classification,
+            use_pre_trained_weights,
+            trained_model,
+            batch_size,
         )
 
         if analyse_local:
