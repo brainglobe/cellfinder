@@ -122,16 +122,8 @@ python =
 
 [testenv]
 commands = python -m pytest -v --color=yes --cov=cellfinder --cov-report=xml
-deps =
-    pytest
-    pytest-cov
-    pytest-mock
-    pytest-timeout
-    # Even though napari is a requirement for cellfinder.napari, we have to
-    # ensure it is installed with the default Qt backend here.
-    napari[all]
-    pytest-qt
 extras =
+    dev
     napari
 setenv =
     KERAS_BACKEND = torch
