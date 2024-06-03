@@ -26,6 +26,7 @@ except PackageNotFoundError as e:
 
 # Set the Keras backend to torch
 os.environ["KERAS_BACKEND"] = "torch"
+os.environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
 
 __license__ = "BSD-3-Clause"
 
