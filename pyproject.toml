@@ -14,12 +14,12 @@ classifiers = [
     "Operating System :: OS Independent",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "Topic :: Scientific/Engineering :: Image Recognition",
 ]
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 dependencies = [
     "brainglobe-utils>=0.5.0",
     "brainglobe-napari-io>=0.3.4",
@@ -79,7 +79,7 @@ requires = ["setuptools>=45", "wheel", "setuptools_scm[toml]>=6.2"]
 build-backend = 'setuptools.build_meta'
 
 [tool.black]
-target-version = ['py39', 'py310','py311']
+target-version = ['py310','py311', 'py312']
 skip-string-normalization = false
 line-length = 79
 
@@ -111,14 +111,14 @@ markers = ["slow: marks tests as slow (deselect with '-m \"not slow\"')"]
 legacy_tox_ini = """
 # For more information about tox, see https://tox.readthedocs.io/en/latest/
 [tox]
-envlist = py{39,310,311}
+envlist = py{310,311,312}
 isolated_build = true
 
 [gh-actions]
 python =
-    3.9: py39
     3.10: py310
     3.11: py311
+    3.12: py312
 
 [testenv]
 commands = python -m pytest -v --color=yes --cov=cellfinder --cov-report=xml
