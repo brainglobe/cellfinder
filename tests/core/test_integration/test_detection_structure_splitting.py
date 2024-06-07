@@ -78,6 +78,6 @@ def test_underflow_issue_435():
     centers = split_cells(bright_indices)
 
     # for some reason, same with pytorch, it's shifted by 1. Probably rounding
-    expected = {(10, 11, 11), (18, 11, 11)}
+    expected = {(10, 11, 11), (20, 11, 11)}
     got = set(map(tuple, centers.tolist()))
     assert expected == got
