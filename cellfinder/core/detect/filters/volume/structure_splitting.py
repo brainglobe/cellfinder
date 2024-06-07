@@ -74,6 +74,7 @@ def ball_filter_imgs(
     good_tiles_mask = np.ones((1, 1, volume.shape[2]), dtype=np.bool_)
 
     plane_width, plane_height = volume.shape[:2]
+    current_z = ball_z_size // 2
 
     bf = BallFilter(
         plane_width,
@@ -86,9 +87,7 @@ def ball_filter_imgs(
         threshold_value=threshold_value,
         soma_centre_value=soma_centre_value,
     )
-    cell_detector = CellDetector(
-        plane_width, plane_height, start_z=ball_z_size // 2
-    )
+    cell_detector = CellDetector(plane_width, plane_height, start_z=current_z)
 
     # FIXME: hard coded type
     ball_filtered_volume = np.zeros(volume.shape, dtype=np.uint32)
@@ -98,7 +97,11 @@ def ball_filter_imgs(
         if bf.ready:
             bf.walk()
             middle_plane = bf.get_middle_plane()
-            ball_filtered_volume[:, :, z] = middle_plane[:]
+
+            # first valid middle plane is the current_z, not z
+            ball_filtered_volume[:, :, current_z] = middle_plane[:]
+            current_z += 1
+
             # DEBUG: TEST: transpose
             previous_plane = cell_detector.process(
                 middle_plane.copy(), previous_plane
@@ -134,7 +137,10 @@ def iterative_ball_filter(
         vol, cell_centres = ball_filter_imgs(
             vol, threshold_value, soma_centre_value
         )
-        vol -= 1
+
+        # vol is unsigned, so can't let zeros underflow to max value
+        vol[:, :, :] = np.where(vol != 0, vol - 1, 0)
+
         n_structures = len(cell_centres)
         ns.append(n_structures)
         centres.append(cell_centres)
