@@ -58,12 +58,12 @@ def test_underflow_issue_435():
     p2 = np.array([19, 10, 10])
     radius = 5
 
-    bright_voxels = np.zeros((20, 20, 30), dtype=np.bool_)
+    bright_voxels = np.zeros((30, 20, 20), dtype=np.bool_)
 
-    pos = np.empty((20, 20, 30, 3))
-    pos[:, :, :, 0] = np.arange(20).reshape((-1, 1, 1))
+    pos = np.empty((30, 20, 20, 3))
+    pos[:, :, :, 0] = np.arange(30).reshape((-1, 1, 1))
     pos[:, :, :, 1] = np.arange(20).reshape((1, -1, 1))
-    pos[:, :, :, 2] = np.arange(30).reshape((1, 1, -1))
+    pos[:, :, :, 2] = np.arange(20).reshape((1, 1, -1))
 
     dist1 = pos - p1.reshape((1, 1, 1, 3))
     dist1 = np.sqrt(np.sum(np.square(dist1), axis=3))
