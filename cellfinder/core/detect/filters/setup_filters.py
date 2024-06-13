@@ -345,10 +345,12 @@ class DetectionSettings:
         This is less than `n_processes` because we account for thread
         contention. Specifically it's limited by `MAX_TORCH_COMP_THREADS`.
         """
-        # Reserve batch_size cores for batch parallelization on CPU, 1 per
-        # plane. for GPU it doesn't matter either way because it doesn't use
-        # threads. Also reserve for data feeding thread and cell detection
-        n = max(1, self.n_processes - self.batch_size - 2)
+        # Reserve batch_size cores for batch multiprocess parallelization on
+        # CPU, 1 per plane. for GPU it doesn't matter either way because it
+        # doesn't use threads. Also reserve for data feeding thread and
+        # cell detection. Don't let it go below 4.
+        n = max(4, self.n_processes - self.batch_size - 2)
+        n = min(n, self.n_processes)
         return min(n, MAX_TORCH_COMP_THREADS)
 
     @property
