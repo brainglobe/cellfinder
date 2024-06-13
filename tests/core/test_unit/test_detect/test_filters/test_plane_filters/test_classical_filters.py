@@ -1,8 +1,8 @@
 import numpy as np
 import pytest
 import torch
-
 from brainglobe_utils.IO.image.load import read_with_dask
+
 from cellfinder.core.detect.filters.plane import TileProcessor
 from cellfinder.core.detect.filters.plane.classical_filter import PeakEnhancer
 from cellfinder.core.detect.filters.plane.tile_walker import TileWalker

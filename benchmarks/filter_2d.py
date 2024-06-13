@@ -12,8 +12,8 @@ from benchmark_tools import (
     profile_cuda,
     time_filters,
 )
-
 from brainglobe_utils.IO.image.load import read_with_dask
+
 from cellfinder.core.detect.filters.plane import TileProcessor
 from cellfinder.core.detect.filters.setup_filters import DetectionSettings
 
