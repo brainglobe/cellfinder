@@ -40,6 +40,9 @@ jobs:
     env:
       KERAS_BACKEND: torch
       CELLFINDER_TEST_DEVICE: cpu
+      # pooch cache dir
+      BRAINGLOBE_TEST_DATA_DIR: "~/.pooch_cache"
+
     strategy:
       matrix:
         # Run all supported Python versions on linux
@@ -55,6 +58,13 @@ jobs:
             python-version: "3.12"
 
     steps:
+      - name: Cache pooch data
+        uses: actions/cache@v4
+        with:
+          path: "~/.pooch_cache"
+          # hash on conftest in case url changes
+          key: ${{ runner.os }}-${{ matrix.python-version }}-${{ hashFiles('**/pooch_registry.txt') }}
+      # Cache the tensorflow model so we don't have to remake it every time
       - name: Cache brainglobe directory
         uses: actions/cache@v3
         with:
@@ -80,7 +90,10 @@ jobs:
     timeout-minutes: 60
     runs-on: ubuntu-latest
     env:
-       NUMBA_DISABLE_JIT: "1"
+      NUMBA_DISABLE_JIT: "1"
+      PYTORCH_JIT: "0"
+      # pooch cache dir
+      BRAINGLOBE_TEST_DATA_DIR: "~/.pooch_cache"
 
     steps:
       - name: Cache brainglobe directory
@@ -90,6 +103,13 @@ jobs:
             ~/.brainglobe
             !~/.brainglobe/atlas.tar.gz
           key: brainglobe
+
+      - name: Cache pooch data
+        uses: actions/cache@v4
+        with:
+          path: "~/.pooch_cache"
+          key: ${{ runner.os }}-3.10-${{ hashFiles('**/pooch_registry.txt') }}
+
       # Setup pyqt libraries
       - name: Setup qtpy libraries
         uses: tlambert03/setup-qt-libs@v1

@@ -4,9 +4,13 @@ from math import isclose
 import brainglobe_utils.IO.cells as cell_io
 import numpy as np
 import pytest
+import torch
+from brainglobe_utils.cells.cells import Cell
 from brainglobe_utils.general.system import get_num_processes
 from brainglobe_utils.IO.image.load import read_with_dask
 
+from cellfinder.core.detect.detect import main as detect_main
+from cellfinder.core.detect.filters.volume.ball_filter import InvalidVolume
 from cellfinder.core.main import main
 
 data_dir = os.path.join(
@@ -133,21 +137,20 @@ def test_callbacks(signal_array, background_array, no_free_cpus):
         classify_callback=classify_callback,
         detect_finished_callback=detect_finished_callback,
         n_free_cpus=no_free_cpus,
+        ball_z_size=15,
     )
 
-    np.testing.assert_equal(planes_done, np.arange(len(signal_array)))
+    skipped_planes = int(round(15 / voxel_sizes[0])) - 1
+    skip_start = skipped_planes // 2
+    skip_end = skipped_planes - skip_start
+    n = len(signal_array) - skip_end
+    np.testing.assert_equal(planes_done, np.arange(skip_start, n))
     np.testing.assert_equal(batches_classified, [0])
 
     ncalls = len(points_found)
     assert ncalls == 1, f"Expected 1 call to callback, got {ncalls}"
     npoints = len(points_found[0])
     assert npoints == 120, f"Expected 120 points, found {npoints}"
-
-
-def test_floating_point_error(signal_array, background_array):
-    signal_array = signal_array.astype(float)
-    with pytest.raises(ValueError, match="signal_array must be integer"):
-        main(signal_array, background_array, voxel_sizes)
 
 
 def test_synthetic_data(synthetic_bright_spots, no_free_cpus):
@@ -174,3 +177,143 @@ def test_data_dimension_error(ndim):
 
     with pytest.raises(ValueError, match="Input data must be 3D"):
         main(signal_array, background_array, voxel_sizes)
+
+
+@pytest.mark.parametrize("device", ["cuda", "cpu"])
+@pytest.mark.parametrize(
+    "dtype",
+    [
+        np.uint8,
+        np.uint16,
+        np.uint32,
+        np.int8,
+        np.int16,
+        np.int32,
+        np.float32,
+        np.float64,
+    ],
+)
+def test_signal_data_types(synthetic_single_spot, no_free_cpus, dtype, device):
+
+    if device == "cuda" and not torch.cuda.is_available():
+        pytest.skip("Cuda is not available")
+
+    signal_array, background_array, center = synthetic_single_spot
+    signal_array = signal_array.astype(dtype)
+    # for signed ints, make some data negative
+    if np.issubdtype(dtype, np.signedinteger):
+        # min of signal_array is zero
+        assert np.isclose(0, np.min(signal_array))
+        shift = (np.max(signal_array) - np.min(signal_array)) // 2
+        signal_array = signal_array - shift
+
+    background_array = background_array.astype(dtype)
+    detected = main(
+        signal_array,
+        background_array,
+        n_sds_above_mean_thresh=1.0,
+        voxel_sizes=voxel_sizes,
+        n_free_cpus=no_free_cpus,
+        skip_classification=True,
+        classification_torch_device=device,
+    )
+
+    assert len(detected) == 1
+    assert detected[0] == Cell(center, Cell.UNKNOWN)
+
+
+@pytest.mark.parametrize("use_scipy", [True, False])
+@pytest.mark.parametrize("device", ["cuda", "cpu"])
+def test_detection_scipy_torch(
+    synthetic_single_spot, no_free_cpus, use_scipy, device
+):
+
+    if device == "cuda" and not torch.cuda.is_available():
+        pytest.xfail("Cuda is not available")
+
+    signal_array, background_array, center = synthetic_single_spot
+    signal_array = signal_array.astype(np.float32)
+
+    detected = detect_main(
+        signal_array,
+        n_sds_above_mean_thresh=1.0,
+        voxel_sizes=voxel_sizes,
+        n_free_cpus=no_free_cpus,
+        torch_device=device,
+        use_scipy=use_scipy,
+    )
+
+    assert len(detected) == 1
+    assert detected[0] == Cell(center, Cell.UNKNOWN)
+
+
+@pytest.mark.parametrize("device", ["cuda", "cpu"])
+def test_detection_cluster_splitting(
+    synthetic_spot_clusters, no_free_cpus, device
+):
+    """
+    Test cluster splitting for overlapping cells.
+
+    Test filtering/detection on cpu and cuda. Because splitting is only on cpu
+    so make sure if detection is on cuda, splitting still works.
+    """
+
+    if device == "cuda" and not torch.cuda.is_available():
+        pytest.xfail("Cuda is not available")
+
+    signal_array, background_array, centers_xyz = synthetic_spot_clusters
+    signal_array = signal_array.astype(np.float32)
+
+    detected = detect_main(
+        signal_array,
+        n_sds_above_mean_thresh=1.0,
+        voxel_sizes=voxel_sizes,
+        n_free_cpus=no_free_cpus,
+        torch_device=device,
+    )
+
+    assert len(detected) == len(centers_xyz)
+    for cell, center in zip(detected, centers_xyz):
+        p = [cell.x, cell.y, cell.z]
+        d = np.sqrt(np.sum(np.square(np.subtract(center, p))))
+        assert d <= 3
+        assert cell.type == Cell.UNKNOWN
+
+
+def test_detection_cell_too_large(synthetic_spot_clusters, no_free_cpus):
+    """
+    Test cluster splitting for overlapping cells.
+
+    Test filtering/detection on cpu and cuda. Because splitting is only on cpu
+    so make sure if detection is on cuda, splitting still works.
+    """
+    # max_cell_volume is volume of soma * spread sphere. For values below
+    # radius is 7 pixels. So volume is ~1500 pixels
+    signal_array = np.zeros((15, 100, 100), dtype=np.float32)
+    # set volume larger than max volume to bright
+    signal_array[6 : 6 + 6, 40 : 40 + 26, 40 : 40 + 26] = 1000
+
+    detected = detect_main(
+        signal_array,
+        n_sds_above_mean_thresh=1.0,
+        voxel_sizes=(5, 2, 2),
+        soma_diameter=20,
+        n_free_cpus=no_free_cpus,
+        max_cluster_size=2000 * 5 * 2 * 2,
+    )
+
+    assert len(detected) == 1
+    # not sure why it subtracts one to center, but probably rounding
+    assert detected[0] == Cell([39 + 13, 39 + 13, 5 + 3], Cell.ARTIFACT)
+
+
+@pytest.mark.parametrize("y,x", [(100, 30), (30, 100)])
+def test_detection_plane_too_small(synthetic_spot_clusters, y, x):
+    # plane smaller than ball filter kernel should cause error
+    with pytest.raises(InvalidVolume):
+        detect_main(
+            np.zeros((5, y, x)),
+            n_sds_above_mean_thresh=1.0,
+            voxel_sizes=(1, 1, 1),
+            ball_xy_size=50,
+        )

@@ -13,76 +13,47 @@ bright points, the input data is clipped to [0, (max_val - 2)]
 - (max_val) is used to mark bright points during 3D filtering
 """
 
-import multiprocessing
+import dataclasses
 from datetime import datetime
-from queue import Queue
-from threading import Lock
-from typing import Callable, List, Optional, Sequence, Tuple, TypeVar
+from typing import Callable, List, Optional, Tuple
 
 import numpy as np
+import torch
 from brainglobe_utils.cells.cells import Cell
-from brainglobe_utils.general.system import get_num_processes
-from numba import set_num_threads
 
 from cellfinder.core import logger, types
 from cellfinder.core.detect.filters.plane import TileProcessor
-from cellfinder.core.detect.filters.setup_filters import setup_tile_filtering
+from cellfinder.core.detect.filters.setup_filters import DetectionSettings
 from cellfinder.core.detect.filters.volume.volume_filter import VolumeFilter
+from cellfinder.core.tools.tools import inference_wrapper
 
 
-def calculate_parameters_in_pixels(
-    voxel_sizes: Tuple[float, float, float],
-    soma_diameter_um: float,
-    max_cluster_size_um3: float,
-    ball_xy_size_um: float,
-    ball_z_size_um: float,
-) -> Tuple[int, int, int, int]:
-    """
-    Convert the command-line arguments from real (um) units to pixels
-    """
-
-    mean_in_plane_pixel_size = 0.5 * (
-        float(voxel_sizes[2]) + float(voxel_sizes[1])
-    )
-    voxel_volume = (
-        float(voxel_sizes[2]) * float(voxel_sizes[1]) * float(voxel_sizes[0])
-    )
-    soma_diameter = int(round(soma_diameter_um / mean_in_plane_pixel_size))
-    max_cluster_size = int(round(max_cluster_size_um3 / voxel_volume))
-    ball_xy_size = int(round(ball_xy_size_um / mean_in_plane_pixel_size))
-    ball_z_size = int(round(ball_z_size_um / float(voxel_sizes[0])))
-
-    if ball_z_size == 0:
-        raise ValueError(
-            "Ball z size has been calculated to be 0 voxels."
-            " This may be due to large axial spacing of your data or the "
-            "ball_z_size_um parameter being too small. "
-            "Please check input parameters are correct. "
-            "Note that cellfinder requires high resolution data in all "
-            "dimensions, so that cells can be detected in multiple "
-            "image planes."
-        )
-    return soma_diameter, max_cluster_size, ball_xy_size, ball_z_size
-
-
+@inference_wrapper
 def main(
     signal_array: types.array,
-    start_plane: int,
-    end_plane: int,
-    voxel_sizes: Tuple[float, float, float],
-    soma_diameter: float,
-    max_cluster_size: float,
-    ball_xy_size: float,
-    ball_z_size: float,
-    ball_overlap_fraction: float,
-    soma_spread_factor: float,
-    n_free_cpus: int,
-    log_sigma_size: float,
-    n_sds_above_mean_thresh: float,
+    start_plane: int = 0,
+    end_plane: int = -1,
+    voxel_sizes: Tuple[float, float, float] = (5, 2, 2),
+    soma_diameter: float = 16,
+    max_cluster_size: float = 100_000,
+    ball_xy_size: float = 6,
+    ball_z_size: float = 15,
+    ball_overlap_fraction: float = 0.6,
+    soma_spread_factor: float = 1.4,
+    n_free_cpus: int = 2,
+    log_sigma_size: float = 0.2,
+    n_sds_above_mean_thresh: float = 10,
     outlier_keep: bool = False,
     artifact_keep: bool = False,
     save_planes: bool = False,
     plane_directory: Optional[str] = None,
+    batch_size: Optional[int] = None,
+    torch_device: str = "cpu",
+    use_scipy: bool = True,
+    split_ball_xy_size: int = 3,
+    split_ball_z_size: int = 3,
+    split_ball_overlap_fraction: float = 0.8,
+    split_soma_diameter: int = 7,
     *,
     callback: Optional[Callable[[int], None]] = None,
 ) -> List[Cell]:
@@ -101,7 +72,7 @@ def main(
         Index of the ending plane for detection.
 
     voxel_sizes : Tuple[float, float, float]
-        Tuple of voxel sizes in each dimension (x, y, z).
+        Tuple of voxel sizes in each dimension (z, y, x).
 
     soma_diameter : float
         Diameter of the soma in physical units.
@@ -142,6 +113,18 @@ def main(
     plane_directory : str, optional
         Directory path to save the planes. Defaults to None.
 
+    batch_size : int, optional
+        The number of planes to process in each batch. Defaults to 1.
+        For CPU, there's no benefit for a larger batch size. Only a memory
+        usage increase. For CUDA, the larger the batch size the better the
+        performance. Until it fills up the GPU memory - after which it
+        becomes slower.
+
+    torch_device : str, optional
+        The device on which to run the computation. By default, it's "cpu".
+        To run on a gpu, specify the PyTorch device name, such as "cuda" to
+        run on the first GPU.
+
     callback : Callable[int], optional
         A callback function that is called every time a plane has finished
         being processed. Called with the plane number that has finished.
@@ -151,151 +134,103 @@ def main(
     List[Cell]
         List of detected cells.
     """
-    if not np.issubdtype(signal_array.dtype, np.integer):
-        raise ValueError(
-            "signal_array must be integer datatype, but has datatype "
+    start_time = datetime.now()
+    if batch_size is None:
+        if torch_device == "cpu":
+            batch_size = 4
+        else:
+            batch_size = 1
+
+    if not np.issubdtype(signal_array.dtype, np.number):
+        raise TypeError(
+            "signal_array must be a numpy datatype, but has datatype "
             f"{signal_array.dtype}"
         )
-    n_processes = get_num_processes(min_free_cpu_cores=n_free_cpus)
-    n_ball_procs = max(n_processes - 1, 1)
-
-    # we parallelize 2d filtering, which typically lags behind the 3d
-    # processing so for n_ball_procs 2d filtering threads, ball_z_size will
-    # typically be in use while the others stall waiting for 3d processing
-    # so we can use those for other things, such as numba threading
-    set_num_threads(max(n_ball_procs - int(ball_z_size), 1))
-
-    start_time = datetime.now()
-
-    (
-        soma_diameter,
-        max_cluster_size,
-        ball_xy_size,
-        ball_z_size,
-    ) = calculate_parameters_in_pixels(
-        voxel_sizes,
-        soma_diameter,
-        max_cluster_size,
-        ball_xy_size,
-        ball_z_size,
-    )
-
-    if end_plane == -1:
-        end_plane = len(signal_array)
-    signal_array = signal_array[start_plane:end_plane]
-    signal_array = signal_array.astype(np.uint32)
-
-    callback = callback or (lambda *args, **kwargs: None)
 
     if signal_array.ndim != 3:
         raise ValueError("Input data must be 3D")
 
-    setup_params = (
-        signal_array[0, :, :],
-        soma_diameter,
-        ball_xy_size,
-        ball_z_size,
-        ball_overlap_fraction,
-        start_plane,
-    )
+    if end_plane < 0:
+        end_plane = len(signal_array)
+    end_plane = min(len(signal_array), end_plane)
 
-    # Create 3D analysis filter
-    mp_3d_filter = VolumeFilter(
-        soma_diameter=soma_diameter,
-        setup_params=setup_params,
-        soma_size_spread_factor=soma_spread_factor,
-        n_planes=len(signal_array),
-        n_locks_release=n_ball_procs,
-        save_planes=save_planes,
-        plane_directory=plane_directory,
+    torch_device = torch_device.lower()
+    batch_size = max(batch_size, 1)
+    # brainmapper can pass them in as str
+    voxel_sizes = list(map(float, voxel_sizes))
+
+    settings = DetectionSettings(
+        plane_shape=signal_array.shape[1:],
+        plane_original_np_dtype=signal_array.dtype,
+        voxel_sizes=voxel_sizes,
+        soma_spread_factor=soma_spread_factor,
+        soma_diameter_um=soma_diameter,
+        max_cluster_size_um3=max_cluster_size,
+        ball_xy_size_um=ball_xy_size,
+        ball_z_size_um=ball_z_size,
         start_plane=start_plane,
-        max_cluster_size=max_cluster_size,
+        end_plane=end_plane,
+        n_free_cpus=n_free_cpus,
+        ball_overlap_fraction=ball_overlap_fraction,
+        log_sigma_size=log_sigma_size,
+        n_sds_above_mean_thresh=n_sds_above_mean_thresh,
         outlier_keep=outlier_keep,
         artifact_keep=artifact_keep,
+        save_planes=save_planes,
+        plane_directory=plane_directory,
+        batch_size=batch_size,
+        torch_device=torch_device,
     )
 
-    clipping_val, threshold_value = setup_tile_filtering(signal_array[0, :, :])
+    # replicate the settings specific to splitting, before we access anything
+    # of the original settings, causing cached properties
+    kwargs = dataclasses.asdict(settings)
+    kwargs["ball_z_size_um"] = split_ball_z_size * settings.z_pixel_size
+    kwargs["ball_xy_size_um"] = (
+        split_ball_xy_size * settings.in_plane_pixel_size
+    )
+    kwargs["ball_overlap_fraction"] = split_ball_overlap_fraction
+    kwargs["soma_diameter_um"] = (
+        split_soma_diameter * settings.in_plane_pixel_size
+    )
+    # always run on cpu because copying to gpu overhead is likely slower than
+    # any benefit for detection on smallish volumes
+    kwargs["torch_device"] = "cpu"
+    # for splitting, we only do 3d filtering. Its input is a zero volume
+    # with cell voxels marked with threshold_value. So just use float32
+    # for input because the filters will also use float(32). So there will
+    # not be need to convert the input a different dtype before passing to
+    # the filters.
+    kwargs["plane_original_np_dtype"] = np.float32
+    splitting_settings = DetectionSettings(**kwargs)
+
+    # Create 3D analysis filter
+    mp_3d_filter = VolumeFilter(settings=settings)
+
     # Create 2D analysis filter
     mp_tile_processor = TileProcessor(
-        clipping_val,
-        threshold_value,
-        soma_diameter,
-        log_sigma_size,
-        n_sds_above_mean_thresh,
+        plane_shape=settings.plane_shape,
+        clipping_value=settings.clipping_value,
+        threshold_value=settings.threshold_value,
+        n_sds_above_mean_thresh=n_sds_above_mean_thresh,
+        log_sigma_size=log_sigma_size,
+        soma_diameter=settings.soma_diameter,
+        torch_device=torch_device,
+        dtype=settings.filtering_dtype.__name__,
+        use_scipy=use_scipy,
     )
 
-    # Force spawn context
-    mp_ctx = multiprocessing.get_context("spawn")
-    with mp_ctx.Pool(n_ball_procs) as worker_pool:
-        async_results, locks = _map_with_locks(
-            mp_tile_processor.get_tile_mask,
-            signal_array,  # type: ignore
-            worker_pool,
-        )
+    orig_n_threads = torch.get_num_threads()
+    torch.set_num_threads(settings.n_torch_comp_threads)
 
-        # Release the first set of locks for the 2D filtering
-        for i in range(min(n_ball_procs + ball_z_size, len(locks))):
-            logger.debug(f"🔓 Releasing lock for plane {i}")
-            locks[i].release()
+    # process the data
+    mp_3d_filter.process(mp_tile_processor, signal_array, callback=callback)
+    cells = mp_3d_filter.get_results(splitting_settings)
 
-        # Start 3D filter
-        #
-        # This runs in the main thread, and blocks until the all the 2D and
-        # then 3D filtering has finished. As batches of planes are filtered
-        # by the 3D filter, it releases the locks of subsequent 2D filter
-        # processes.
-        mp_3d_filter.process(async_results, locks, callback=callback)
-
-        # it's now done filtering, get results with pool
-        cells = mp_3d_filter.get_results(worker_pool)
+    torch.set_num_threads(orig_n_threads)
 
     time_elapsed = datetime.now() - start_time
-    logger.debug(
-        f"All Planes done. Found {len(cells)} cells in {format(time_elapsed)}"
-    )
-    print("Detection complete - all planes done in : {}".format(time_elapsed))
+    s = f"Detection complete. Found {len(cells)} cells in {time_elapsed}"
+    logger.debug(s)
+    print(s)
     return cells
-
-
-Tin = TypeVar("Tin")
-Tout = TypeVar("Tout")
-
-
-def _run_func_with_lock(
-    func: Callable[[Tin], Tout], arg: Tin, lock: Lock
-) -> Tout:
-    """
-    Run a function after acquiring a lock.
-    """
-    lock.acquire(blocking=True)
-    return func(arg)
-
-
-def _map_with_locks(
-    func: Callable[[Tin], Tout],
-    iterable: Sequence[Tin],
-    worker_pool: multiprocessing.pool.Pool,
-) -> Tuple[Queue, List[Lock]]:
-    """
-    Map a function to arguments, blocking execution.
-
-    Maps *func* to args in *iterable*, but blocks all execution and
-    return a queue of asyncronous results and locks for each of the
-    results. Execution can be enabled by releasing the returned
-    locks in order.
-    """
-    # Setup a manager to handle the locks
-    m = multiprocessing.Manager()
-    # Setup one lock per argument to be mapped
-    locks = [m.Lock() for _ in range(len(iterable))]
-    [lock.acquire(blocking=False) for lock in locks]
-
-    async_results: Queue = Queue()
-
-    for arg, lock in zip(iterable, locks):
-        async_result = worker_pool.apply_async(
-            _run_func_with_lock, args=(func, arg, lock)
-        )
-        async_results.put(async_result)
-
-    return async_results, locks
