@@ -168,12 +168,12 @@ def test_saving_filtered_planes(tmp_path):
     files = [p.name for p in path.iterdir() if p.is_file()]
     # we're skipping first and last plane that isn't filtered due to kernel
     assert len(files) == 4
-    assert files == [
+    assert set(files) == {
         "plane_0002.tif",
         "plane_0003.tif",
         "plane_0004.tif",
         "plane_0005.tif",
-    ]
+    }
 
 
 def test_saving_filtered_planes_no_dir():
