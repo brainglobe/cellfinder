@@ -58,6 +58,7 @@ jobs:
             python-version: "3.12"
 
     steps:
+      - uses: actions/checkout@v4
       - name: Cache pooch data
         uses: actions/cache@v4
         with:
@@ -96,6 +97,7 @@ jobs:
       BRAINGLOBE_TEST_DATA_DIR: "~/.pooch_cache"
 
     steps:
+      - uses: actions/checkout@v4
       - name: Cache brainglobe directory
         uses: actions/cache@v3
         with:
