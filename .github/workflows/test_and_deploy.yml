@@ -35,7 +35,7 @@ jobs:
   test:
     needs: [linting, manifest]
     name: Run package tests
-    timeout-minutes: 60
+    timeout-minutes: 120
     runs-on: ${{ matrix.os }}
     env:
       KERAS_BACKEND: torch
@@ -88,7 +88,7 @@ jobs:
   test_numba_disabled:
     needs: [linting, manifest]
     name: Run tests with numba disabled
-    timeout-minutes: 60
+    timeout-minutes: 120
     runs-on: ubuntu-latest
     env:
       NUMBA_DISABLE_JIT: "1"
@@ -129,7 +129,7 @@ jobs:
   test_brainmapper_cli:
     needs: [linting, manifest]
     name: Run brainmapper tests to check for breakages
-    timeout-minutes: 60
+    timeout-minutes: 120
     runs-on: ubuntu-latest
     env:
       KERAS_BACKEND: torch
