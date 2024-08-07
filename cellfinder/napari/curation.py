@@ -113,7 +113,7 @@ class CurationWidget(QWidget):
         layer_names = [
             layer.name
             for layer in self.viewer.layers
-            if type(layer) == layer_type
+            if isinstance(layer, layer_type)
         ]
 
         if layer_names:
@@ -329,7 +329,7 @@ class CurationWidget(QWidget):
 
         if len(self.viewer.layers.selection) == 1:
             layer = list(self.viewer.layers.selection)[0]
-            if type(layer) == napari.layers.Points:
+            if isinstance(layer, napari.layers.Points):
                 if len(layer.data) > 0:
                     if point_type == "cell":
                         destination_layer = self.training_data_cell_layer
