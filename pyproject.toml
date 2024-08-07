@@ -27,7 +27,7 @@ dependencies = [
     "fancylog>=0.0.7",
     "natsort",
     "numba",
-    "numpy",
+    "numpy<2",
     "scikit-image",
     "scikit-learn",
     "keras>=3.0.0",
