@@ -14,7 +14,7 @@ def normalize(
 ) -> None:
     """
     Normalizes the 3d tensor so each z-plane is independently scaled to be
-    in the [0, clipping_value] range.
+    in the [0, clipping_value] range (if upscale is `True`) or in the [0,1] (if `upscale` is `False`).
 
     It is done to filtered_planes inplace.
     """

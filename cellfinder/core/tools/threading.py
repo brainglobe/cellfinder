@@ -1,6 +1,6 @@
 """
 Provides classes that can run a function in another thread or process and
-allows passing data to and from them. It also passes on any exceptions that
+allow passing data to and from the threads/processes. It also passes on any exceptions that
 occur in the secondary thread/sub-process in the main thread or when it
 exits.
 
@@ -36,6 +36,7 @@ Typical example::
             # just send the id back
             thread.send_msg_to_mainthread(tensor_id)
 
+	    # we can also handle errors here, which will be re-raised in the main process
             if tensor_id == 7:
                 raise ValueError("I fell asleep")
 
