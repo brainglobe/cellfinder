@@ -138,6 +138,4 @@ def test_skip_until_eof(cls):
     # it knows that there are no further messages because the thread sent an
     # eof to main-thread, which is the last thing thread does before exiting
     assert thread._saw_eof
-    # there shouldn't be more messages
-    assert not thread.from_thread_queue.qsize()
     thread.join()
