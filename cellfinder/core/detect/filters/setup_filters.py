@@ -44,7 +44,7 @@ class DetectionSettings:
 
     During structure splitting, we do just 3d filtering/cell detection. This is
     again the data type used as input to the filtering.
-    
+
     Defaults to `uint16`
     """
 
