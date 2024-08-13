@@ -1,8 +1,8 @@
 """
 Provides classes that can run a function in another thread or process and
-allow passing data to and from the threads/processes. It also passes on any exceptions that
-occur in the secondary thread/sub-process in the main thread or when it
-exits.
+allow passing data to and from the threads/processes. It also passes on any
+exceptions that occur in the secondary thread/sub-process in the main thread
+or when it exits.
 
 If using a sub-process and pytorch Tensors are sent from/to the main
 process, pytorch will memory map the tensor so the same data is shared and
@@ -36,7 +36,8 @@ Typical example::
             # just send the id back
             thread.send_msg_to_mainthread(tensor_id)
 
-	    # we can also handle errors here, which will be re-raised in the main process
+        # we can also handle errors here, which will be re-raised in the main
+        # process
             if tensor_id == 7:
                 raise ValueError("I fell asleep")
 
@@ -205,6 +206,17 @@ class ExceptionWithQueueMixIn:
         self.from_thread_queue.put(("user", value), block=True, timeout=None)
 
     def clear_remaining(self) -> None:
+        """
+        Celled in the main-thread as part of cleanup when we expect the
+        secondary thread to have exited (e.g. we sent it a message telling it
+        to).
+
+        It will drop any waiting messages sent by the secondary thread, but
+        more importantly, it will handle exceptions raised in the secondary
+        thread before it exited, that may not have yet been processed in the
+        main thread (e.g. we stopped listening to messages from the secondary
+        thread before we got an eof from it).
+        """
         while not self._saw_eof:
             self.get_msg_from_thread()
 

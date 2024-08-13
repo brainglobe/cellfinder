@@ -5,11 +5,6 @@ from brainglobe_utils.IO.cells import get_cells_xml
 from brainglobe_utils.IO.image.load import read_with_dask
 from pytest_mock.plugin import MockerFixture
 
-try:
-    from brainglobe_utils.cells.cells import match_cells
-except ImportError:
-    match_cells = None
-
 from cellfinder.core.detect.detect import main
 from cellfinder.core.tools.IO import fetch_pooch_directory
 from cellfinder.core.tools.threading import ExecutionFailure

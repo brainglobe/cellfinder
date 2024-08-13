@@ -148,7 +148,9 @@ def _threshold_planes(
     threshold_value: int,
 ) -> None:
     """
-    Sets each plane (in-place) to threshold_value, where the corresponding enhanced_plane > mean + n_sds_above_mean_thresh*std. Each plane will be set to zero elsewhere.
+    Sets each plane (in-place) to threshold_value, where the corresponding
+    enhanced_plane > mean + n_sds_above_mean_thresh*std. Each plane will be
+    set to zero elsewhere.
     """
     planes_1d = enhanced_planes.view(enhanced_planes.shape[0], -1)
 

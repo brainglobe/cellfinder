@@ -282,7 +282,8 @@ def test_detection_cluster_splitting(
 
 def test_detection_cell_too_large(synthetic_spot_clusters, no_free_cpus):
     """
-    Test we detect one big artifact if the signal has a too large foreground structure.
+    Test we detect one big artifact if the signal has a too large foreground
+    structure.
     """
     # max_cell_volume is volume of soma * spread sphere. For values below
     # radius is 7 pixels. So volume is ~1500 pixels

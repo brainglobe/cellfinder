@@ -8,13 +8,13 @@ from scipy.signal import medfilt2d
 @torch.jit.script
 def normalize(
     filtered_planes: torch.Tensor,
-    clipping_value: float,
     flip: bool,
-    upscale: bool,
+    max_value: float = 1.0,
 ) -> None:
     """
     Normalizes the 3d tensor so each z-plane is independently scaled to be
-    in the [0, clipping_value] range (if upscale is `True`) or in the [0,1] (if `upscale` is `False`).
+    in the [0, max_value] range. If `flip` is `True`, the sign of the tensor
+    values are flipped before any processing.
 
     It is done to filtered_planes inplace.
     """
@@ -32,9 +32,9 @@ def normalize(
     planes_max[planes_max == 0] = 1
     filtered_planes_1d.div_(planes_max)
 
-    if upscale:
+    if max_value != 1.0:
         # To leave room to label in the 3d detection.
-        filtered_planes_1d.mul_(clipping_value)
+        filtered_planes_1d.mul_(max_value)
 
 
 @torch.jit.script
@@ -67,7 +67,7 @@ def filter_for_peaks(
     # ------------------ gaussian filter ------------------
     # normalize the input data to 0-1 range. Otherwise, if the values are
     # large, we'd need a float64 so conv result is accurate
-    normalize(filtered_planes, clipping_value=0.0, flip=False, upscale=False)
+    normalize(filtered_planes, flip=False)
 
     # we need to do reflection padding around the tensor for parity with scipy
     # gaussian filtering. Scipy does reflection in a manner typically called
@@ -133,8 +133,8 @@ def filter_for_peaks(
     # we don't need the channel axis
     filtered_planes = filtered_planes[:, 0, :, :]
 
-    # scale back to full scale
-    normalize(filtered_planes, clipping_value, flip=True, upscale=True)
+    # scale back to full scale, filtered values are negative so flip
+    normalize(filtered_planes, flip=True, max_value=clipping_value)
     return filtered_planes
 
 
@@ -327,8 +327,11 @@ class PeakEnhancer:
                 img = laplace(img)
                 filtered_planes[i, :, :] = torch.from_numpy(img)
 
+            # laplace makes values negative so flip
             normalize(
-                filtered_planes, self.clipping_value, flip=True, upscale=True
+                filtered_planes,
+                flip=True,
+                max_value=self.clipping_value,
             )
             return filtered_planes
 

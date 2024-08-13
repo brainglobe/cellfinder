@@ -189,14 +189,14 @@ class BallFilter:
         if not use_mask:
             return
         # first axis is z
-        tile_height = int(np.ceil(plane_height / self.tile_step_height))
-        tile_width = int(np.ceil(plane_width / self.tile_step_width))
+        n_vertical_tiles = int(np.ceil(plane_height / self.tile_step_height))
+        n_horizontal_tiles = int(np.ceil(plane_width / self.tile_step_width))
         # Stores tile masks. We start with no data
         self.inside_brain_tiles = torch.empty(
             (
                 0,
-                tile_height,
-                tile_width,
+                n_vertical_tiles,
+                n_horizontal_tiles,
             ),
             dtype=torch.bool,
         )
