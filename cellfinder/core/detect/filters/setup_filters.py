@@ -44,6 +44,8 @@ class DetectionSettings:
 
     During structure splitting, we do just 3d filtering/cell detection. This is
     again the data type used as input to the filtering.
+    
+    Defaults to `uint16`
     """
 
     detection_dtype: Type[np.number] = np.uint64
@@ -52,7 +54,7 @@ class DetectionSettings:
     data to be in.
 
     After filtering, where the voxels are intensity values, we pass the data
-    to cell detection where the voxels turns into cell IDs. So the data type
+    to cell detection where the voxels turn into cell IDs. So the data type
     needs to be large enough to support the number of cells in the data.
 
     To get the data from the filtering data type to the detection data type

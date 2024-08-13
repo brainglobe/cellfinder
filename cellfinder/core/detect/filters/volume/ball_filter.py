@@ -178,7 +178,7 @@ class BallFilter:
         self.num_batches_before_ready = int(
             math.ceil(self.ball_z_size / batch_size)
         )
-        # Stores the current planes that are being filtered. Wtart with no data
+        # Stores the current planes that are being filtered. Start with no data
         self.volume = torch.empty(
             (0, plane_height, plane_width),
             dtype=getattr(torch, dtype),
