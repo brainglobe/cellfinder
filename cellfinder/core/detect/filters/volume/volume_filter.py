@@ -98,7 +98,6 @@ class VolumeFilter:
             use_mask=True,
         )
 
-        # todo: first z should account for middle plane not being start plane
         self.z = settings.start_plane + self.ball_filter.first_valid_plane
 
         self.cell_detector = CellDetector(
