@@ -1,6 +1,7 @@
 import os
 from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
+import sys
 
 # Check cellfinder is installed
 try:
@@ -31,3 +32,6 @@ os.environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
 __license__ = "BSD-3-Clause"
 
 DEFAULT_CELLFINDER_DIRECTORY = Path.home() / ".brainglobe" / "cellfinder"
+
+# Force the encoding to utf-8 to avoid UnicodeEncodeError for Torch loading bar
+sys.stdout.reconfigure(encoding='utf-8')
