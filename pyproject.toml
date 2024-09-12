@@ -27,7 +27,6 @@ dependencies = [
     "fancylog>=0.0.7",
     "natsort",
     "numba",
-    "numpy<2.0.0; sys_platform=='win32'",
     "numpy",
     "scikit-image",
     "scikit-learn",
