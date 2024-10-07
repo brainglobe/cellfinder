@@ -10,6 +10,8 @@ flags:
   numba:
     paths:
       - cellfinder/core/detect/filters/plane/tile_walker.py
+      - cellfinder/core/detect/filters/plane/classical_filter.py
+      - cellfinder/core/detect/filters/plane/plane_filter.py
       - cellfinder/core/detect/filters/volume/ball_filter.py
       - cellfinder/core/detect/filters/volume/structure_detection.py
     carryforward: true

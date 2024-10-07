@@ -26,7 +26,7 @@ def main(
     ball_z_size: int = 15,
     ball_overlap_fraction: float = 0.6,
     log_sigma_size: float = 0.2,
-    n_sds_above_mean_thresh: int = 10,
+    n_sds_above_mean_thresh: float = 10,
     soma_spread_factor: float = 1.4,
     max_cluster_size: int = 100000,
     cube_width: int = 50,
@@ -36,11 +36,13 @@ def main(
     skip_detection: bool = False,
     skip_classification: bool = False,
     detected_cells: List[Cell] = None,
+    classification_batch_size: Optional[int] = None,
+    classification_torch_device: str = "cpu",
     *,
     detect_callback: Optional[Callable[[int], None]] = None,
     classify_callback: Optional[Callable[[int], None]] = None,
     detect_finished_callback: Optional[Callable[[list], None]] = None,
-) -> List:
+) -> List[Cell]:
     """
     Parameters
     ----------
@@ -74,6 +76,8 @@ def main(
             n_free_cpus,
             log_sigma_size,
             n_sds_above_mean_thresh,
+            batch_size=classification_batch_size,
+            torch_device=classification_torch_device,
             callback=detect_callback,
         )
 

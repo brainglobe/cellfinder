@@ -38,11 +38,14 @@ jobs:
   test:
     needs: [linting, manifest]
     name: Run package tests
-    timeout-minutes: 60
+    timeout-minutes: 120
     runs-on: ${{ matrix.os }}
     env:
       KERAS_BACKEND: torch
       CELLFINDER_TEST_DEVICE: cpu
+      # pooch cache dir
+      BRAINGLOBE_TEST_DATA_DIR: "~/.pooch_cache"
+
     strategy:
       matrix:
         # Run all supported Python versions on linux
@@ -56,6 +59,14 @@ jobs:
             python-version: "3.12"
 
     steps:
+      - uses: actions/checkout@v4
+      - name: Cache pooch data
+        uses: actions/cache@v4
+        with:
+          path: "~/.pooch_cache"
+          # hash on conftest in case url changes
+          key: ${{ runner.os }}-${{ matrix.python-version }}-${{ hashFiles('**/pooch_registry.txt') }}
+      # Cache the tensorflow model so we don't have to remake it every time
       - name: Cache brainglobe directory
         uses: actions/cache@v3
         with:
@@ -78,12 +89,16 @@ jobs:
   test_numba_disabled:
     needs: [linting, manifest]
     name: Run tests with numba disabled
-    timeout-minutes: 60
+    timeout-minutes: 120
     runs-on: ubuntu-latest
     env:
-       NUMBA_DISABLE_JIT: "1"
+      NUMBA_DISABLE_JIT: "1"
+      PYTORCH_JIT: "0"
+      # pooch cache dir
+      BRAINGLOBE_TEST_DATA_DIR: "~/.pooch_cache"
 
     steps:
+      - uses: actions/checkout@v4
       - name: Cache brainglobe directory
         uses: actions/cache@v3
         with:
@@ -91,6 +106,13 @@ jobs:
             ~/.brainglobe
             !~/.brainglobe/atlas.tar.gz
           key: brainglobe
+
+      - name: Cache pooch data
+        uses: actions/cache@v4
+        with:
+          path: "~/.pooch_cache"
+          key: ${{ runner.os }}-3.10-${{ hashFiles('**/pooch_registry.txt') }}
+
       # Setup pyqt libraries
       - name: Setup qtpy libraries
         uses: tlambert03/setup-qt-libs@v1
@@ -108,7 +130,7 @@ jobs:
   test_brainmapper_cli:
     needs: [linting, manifest]
     name: Run brainmapper tests to check for breakages
-    timeout-minutes: 60
+    timeout-minutes: 120
     runs-on: ubuntu-latest
     env:
       KERAS_BACKEND: torch
