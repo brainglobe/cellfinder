@@ -30,7 +30,7 @@ dependencies = [
     "numpy",
     "scikit-image",
     "scikit-learn",
-    "keras>=3.5.0",
+    "keras==3.5.0",
     "torch>=2.1.0",
     "tifffile",
     "tqdm",
