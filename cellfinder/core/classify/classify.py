@@ -71,7 +71,7 @@ def main(
     if trained_model and trained_model.suffix == ".h5":
         print(
             "Weights provided in place of the model, "
-            "loading weights into default model"
+            "loading weights into default model."
         )
         model_weights = trained_model
         trained_model = None
