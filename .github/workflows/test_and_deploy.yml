@@ -9,6 +9,9 @@ on:
       - "v**"
   # Run on all pull-requests
   pull_request:
+  schedule:
+  # Runs at 6:10am UTC on Monday
+    - cron: '10 6 * * 1'
   # Allow workflow dispatch from GitHub
   workflow_dispatch:
 
