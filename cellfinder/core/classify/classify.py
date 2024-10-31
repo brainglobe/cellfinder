@@ -30,7 +30,7 @@ def main(
     max_workers: int = 3,
     *,
     callback: Optional[Callable[[int], None]] = None,
-) -> List:
+) -> List[Cell]:
     """
     Parameters
     ----------
