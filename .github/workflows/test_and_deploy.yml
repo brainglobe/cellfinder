@@ -86,6 +86,15 @@ jobs:
           secret-codecov-token: ${{ secrets.CODECOV_TOKEN }}
           use-xvfb: true
 
+      - name: Notify slack on scheduled failure
+        if: failure() && github.event_name == 'schedule'
+        uses: ravsamhq/notify-slack-action@v2
+        with:
+          status: ${{ job.status }} # required
+          notify_when: 'failure'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_NOTIFYBOT_WEBHOOK_URL }} # required
+
   test_numba_disabled:
     needs: [linting, manifest]
     name: Run tests with numba disabled
@@ -124,6 +133,15 @@ jobs:
           python-version: "3.12"
           secret-codecov-token: ${{ secrets.CODECOV_TOKEN }}
           codecov-flags: "numba"
+
+      - name: Notify slack on scheduled failure
+        if: failure() && github.event_name == 'schedule'
+        uses: ravsamhq/notify-slack-action@v2
+        with:
+          status: ${{ job.status }} # required
+          notify_when: 'failure'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_NOTIFYBOT_WEBHOOK_URL }} # required
 
   # Run brainglobe-workflows brainmapper-CLI tests to check for
   # breakages
@@ -165,15 +183,6 @@ jobs:
       - name: Run brainmapper tests in brainglobe-workflows
         run: |
           python -m pytest --color=yes -v tests/brainmapper
-
-      - name: Notify slack on scheduled failure
-        if: failure() && github.event_name == 'schedule'
-        uses: ravsamhq/notify-slack-action@v2
-        with:
-          status: ${{ job.status }} # required
-          notify_when: 'failure'
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_NOTIFYBOT_WEBHOOK_URL }} # required
 
 
   build_sdist_wheel:
