@@ -1,5 +1,6 @@
 import os
 from datetime import datetime
+from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
 import keras
@@ -68,7 +69,7 @@ def main(
         workers=workers,
     )
 
-    if trained_model and trained_model.suffix == ".h5":
+    if trained_model and Path(trained_model).suffix == ".h5":
         print(
             "Weights provided in place of the model, "
             "loading weights into default model."
