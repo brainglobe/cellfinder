@@ -78,7 +78,7 @@ jobs:
       - name: Setup qtpy libraries
         uses: tlambert03/setup-qt-libs@v1
       # Setup VTK with headless display
-      - uses: pyvista/setup-headless-display-action@v2
+      - uses: pyvista/setup-headless-display-action@v3
       # Run all tests
       - uses: neuroinformatics-unit/actions/test@v2
         with:
@@ -126,7 +126,7 @@ jobs:
       - name: Setup qtpy libraries
         uses: tlambert03/setup-qt-libs@v1
       # Setup VTK with headless display
-      - uses: pyvista/setup-headless-display-action@v2
+      - uses: pyvista/setup-headless-display-action@v3
       # Run test suite with numba disabled
       - uses: neuroinformatics-unit/actions/test@v2
         with:
