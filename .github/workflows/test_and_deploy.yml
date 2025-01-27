@@ -195,7 +195,7 @@ jobs:
 
   upload_all:
     name: Publish build distributions
-    needs: [build_sdist_wheels]
+    needs: [build_sdist_wheel]
     if: github.event_name == 'push' && github.ref_type == 'tag'
     runs-on: ubuntu-latest
     steps:
