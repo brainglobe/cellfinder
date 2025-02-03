@@ -38,7 +38,7 @@ MIN_PLANES_ANALYSE = 0
 
 
 def get_heavy_widgets(
-    options: Dict[str, Any]
+    options: Dict[str, Any],
 ) -> Tuple[Callable, Callable, Callable]:
     # signal and other input are separated out from the main magicgui
     # parameter selections and are inserted as widget children in their own

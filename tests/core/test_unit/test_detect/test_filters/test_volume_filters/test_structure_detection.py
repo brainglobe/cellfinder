@@ -13,7 +13,7 @@ from cellfinder.core.detect.filters.volume.structure_detection import (
 
 
 def coords_to_points(
-    coords_arrays: Dict[int, np.ndarray]
+    coords_arrays: Dict[int, np.ndarray],
 ) -> Dict[int, List[Point]]:
     # Convert from arrays to dicts
     coords = {}
