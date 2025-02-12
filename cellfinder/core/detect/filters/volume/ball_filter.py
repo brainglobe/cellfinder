@@ -266,22 +266,21 @@ class BallFilter:
         """
         if self.volume.shape[0]:
             if self.volume.shape[0] < self.kernel_z_size:
-                num_remaining_with_padding = 0
+                num_remaining_with_padding = self.volume.shape[0]
             else:
                 num_remaining = self.kernel_z_size - (self.middle_z_idx + 1)
                 num_remaining_with_padding = num_remaining + self.middle_z_idx
+            remaining_start = self.volume.shape[0] - num_remaining_with_padding
 
             self.volume = torch.cat(
-                [self.volume[-num_remaining_with_padding:, :, :], planes],
+                [self.volume[remaining_start:, :, :], planes],
                 dim=0,
             )
 
             if self.inside_brain_tiles is not None:
                 self.inside_brain_tiles = torch.cat(
                     [
-                        self.inside_brain_tiles[
-                            -num_remaining_with_padding:, :, :
-                        ],
+                        self.inside_brain_tiles[remaining_start:, :, :],
                         masks,
                     ],
                     dim=0,
