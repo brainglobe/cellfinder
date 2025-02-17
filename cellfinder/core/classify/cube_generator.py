@@ -2,8 +2,10 @@ from pathlib import Path
 from random import shuffle
 from typing import Dict, List, Optional, Tuple, Union
 
+import dask.array as da
 import keras
 import numpy as np
+import numpy.typing as npt
 from brainglobe_utils.cells.cells import Cell, group_cells_by_z
 from brainglobe_utils.general.numerical import is_even
 from keras.utils import Sequence
@@ -474,6 +476,153 @@ class CubeGeneratorFromDisk(Sequence):
     def __get_oriented_image(self, image_path: Union[str, Path]) -> np.ndarray:
         # if paths are pathlib objs, skimage only reads one plane
         image = np.moveaxis(imread(image_path), 0, 2)
+        if self.augment:
+            image = augment(self.augmentation_parameters, image)
+        return image
+
+
+class CubeGeneratorFromDask(Sequence):
+    """
+    Reads in cubes from a zarr array for keras.Model.fit_generator() or
+    keras.Model.predict_generator()
+
+    If augment=True, each augmentation selected has a 50/50 chance of being
+    applied to each cube
+    """
+
+    def __init__(
+        self,
+        data_array: da.Array,
+        labels: Optional[da.Array],  # only if training or validating
+        batch_size: int = 64,
+        shape: Tuple[int, int, int] = (50, 50, 20),
+        channels: int = 2,
+        classes: int = 2,
+        shuffle: bool = False,
+        augment: bool = False,
+        augment_likelihood: float = 0.1,
+        flip_axis: Tuple[int, int, int] = (0, 1, 2),
+        rotate_max_axes: Tuple[int, int, int] = (45, 45, 45),  # degrees
+        # scale=[0.5, 2],  # min, max
+        translate: Tuple[float, float, float] = (0.2, 0.2, 0.2),
+        train: bool = False,  # also return labels
+        interpolation_order: int = 2,
+        *args,
+        **kwargs,
+    ):
+        # pass any additional arguments not specified in signature to the
+        # constructor of the superclass (e.g.: `use_multiprocessing` or
+        # `workers`)
+        super().__init__(*args, **kwargs)
+
+        self.im_shape = shape
+        self.batch_size = batch_size
+        self.labels: da.Array = labels
+        self.signal_array: da.Array = data_array[..., 0]
+        self.background_array: da.Array = data_array[..., 1]
+        self.channels = channels
+        self.classes = classes
+        self.augment = augment
+        self.augment_likelihood = augment_likelihood
+        self.flip_axis = flip_axis
+        self.rotate_max_axes = rotate_max_axes
+        # self.scale = scale
+        self.translate = translate
+        self.train = train
+        self.interpolation_order = interpolation_order
+        self.indexes = np.arange(self.signal_array.shape[0])
+        if shuffle:
+            self.on_epoch_end()
+
+    # TODO: implement scale and shear
+
+    def on_epoch_end(self) -> None:
+        """
+        Shuffle data for each epoch
+        :return: Shuffled indexes
+        """
+        self.indexes = np.arange(self.signal_array.shape[0])
+        np.random.shuffle(self.indexes)
+
+    def __len__(self) -> int:
+        """
+        Number of batches
+        :return: Number of batches per epoch
+        """
+        return int(np.ceil(self.signal_array.shape[0] / self.batch_size))
+
+    def __getitem__(self, index: int) -> Union[
+        np.ndarray,
+        Tuple[np.ndarray, List[Dict[str, float]]],
+        Tuple[np.ndarray, Dict],
+    ]:
+        """
+        Generates a single batch of cubes
+        :param index:
+        :return:
+        """
+        # Generate indexes of the batch
+        start_index = index * self.batch_size
+        end_index = start_index + self.batch_size
+        indexes = self.indexes[start_index:end_index]
+
+        # Get data corresponding to batch
+        list_signal_tmp = self.signal_array[indexes].compute()
+        list_background_tmp = self.background_array[indexes].compute()
+
+        images = self.__generate_cubes(list_signal_tmp, list_background_tmp)
+
+        if self.train and self.labels is not None:
+            batch_labels = self.labels[indexes].compute()
+            batch_labels = keras.utils.to_categorical(
+                batch_labels, num_classes=self.classes
+            )
+            return images, batch_labels.astype(np.float32)
+        else:
+            return images
+
+    def __generate_cubes(
+        self,
+        list_signal_tmp: npt.NDArray,
+        list_background_tmp: npt.NDArray,
+    ) -> np.ndarray:
+        number_images = list_signal_tmp.shape[0]
+        images = np.empty(
+            ((number_images,) + self.im_shape + (self.channels,)),
+            dtype=np.float32,
+        )
+
+        for idx in range(number_images):
+            background_im = list_background_tmp[idx]
+            signal_im = list_signal_tmp[idx]
+            images = self.__populate_array_with_cubes(
+                images, idx, signal_im, background_im
+            )
+
+        return images
+
+    def __populate_array_with_cubes(
+        self,
+        images: npt.NDArray,
+        idx: int,
+        signal_im: npt.NDArray,
+        background_im: npt.NDArray,
+    ) -> np.ndarray:
+        if self.augment:
+            self.augmentation_parameters = AugmentationParameters(
+                self.flip_axis,
+                self.translate,
+                self.rotate_max_axes,
+                self.interpolation_order,
+                self.augment_likelihood,
+            )
+        images[idx, :, :, :, 0] = self.__get_oriented_image(signal_im)
+        images[idx, :, :, :, 1] = self.__get_oriented_image(background_im)
+
+        return images
+
+    def __get_oriented_image(self, image: npt.NDArray) -> np.ndarray:
+        # if paths are pathlib objs, skimage only reads one plane
         if self.augment:
             image = augment(self.augmentation_parameters, image)
         return image
