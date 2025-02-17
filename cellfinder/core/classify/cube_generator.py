@@ -567,13 +567,13 @@ class CubeGeneratorFromDask(Sequence):
         indexes = self.indexes[start_index:end_index]
 
         # Get data corresponding to batch
-        list_signal_tmp = self.signal_array[indexes].compute()
-        list_background_tmp = self.background_array[indexes].compute()
+        list_signal_tmp = self.signal_array[indexes]
+        list_background_tmp = self.background_array[indexes]
 
         images = self.__generate_cubes(list_signal_tmp, list_background_tmp)
 
         if self.train and self.labels is not None:
-            batch_labels = self.labels[indexes].compute()
+            batch_labels = self.labels[indexes]
             batch_labels = keras.utils.to_categorical(
                 batch_labels, num_classes=self.classes
             )

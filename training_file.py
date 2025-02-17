@@ -14,18 +14,18 @@ from cellfinder.core import logger
 from cellfinder.core.classify.cube_generator import CubeGeneratorFromDask
 from cellfinder.core.classify.tools import get_model
 
-output_dir = Path("/Users/igortatarnikov/NIU_Dev/networks/2-channel")
+output_dir = Path("/home/igor/ADL4IA-2025/2-channel")
 
 start_time = datetime.now()
 
 ensure_directory_exists(output_dir)
 
-data_path = Path("/Volumes/AT_T7_1TB_A/ADL4IA-2025/data.zarr")
+data_path = Path("/home/igor/ADL4IA-2025/data.zarr")
 
 data_group = zarr.open(data_path)
 
-data_train = da.from_array(data_group["raw_data"])
-labels_train = da.from_array(data_group["labels"])
+data_train = da.from_array(data_group["raw_data"]).compute()
+labels_train = da.from_array(data_group["labels"]).compute()
 
 learning_rate = 0.0001
 test_fraction = 0.1
