@@ -507,6 +507,7 @@ class CubeGeneratorFromDask(Sequence):
         translate: Tuple[float, float, float] = (0.2, 0.2, 0.2),
         train: bool = False,  # also return labels
         interpolation_order: int = 2,
+        background=True,
         *args,
         **kwargs,
     ):
@@ -518,9 +519,15 @@ class CubeGeneratorFromDask(Sequence):
         self.im_shape = shape
         self.batch_size = batch_size
         self.labels: da.Array = labels
-        self.signal_array: da.Array = data_array[..., 0]
-        self.background_array: da.Array = data_array[..., 1]
-        self.channels = channels
+        if background:
+            self.signal_array: da.Array = data_array[..., 0]
+            self.background_array: da.Array = data_array[..., 1]
+            self.channels = channels
+        else:
+            self.signal_array: da.Array = data_array
+            self.background_array = None
+            self.channels = 1
+
         self.classes = classes
         self.augment = augment
         self.augment_likelihood = augment_likelihood
@@ -568,7 +575,10 @@ class CubeGeneratorFromDask(Sequence):
 
         # Get data corresponding to batch
         list_signal_tmp = self.signal_array[indexes]
-        list_background_tmp = self.background_array[indexes]
+        if self.background_array is not None:
+            list_background_tmp = self.background_array[indexes]
+        else:
+            list_background_tmp = None
 
         images = self.__generate_cubes(list_signal_tmp, list_background_tmp)
 
@@ -587,13 +597,22 @@ class CubeGeneratorFromDask(Sequence):
         list_background_tmp: npt.NDArray,
     ) -> np.ndarray:
         number_images = list_signal_tmp.shape[0]
-        images = np.empty(
-            ((number_images,) + self.im_shape + (self.channels,)),
-            dtype=np.float32,
-        )
+        if list_background_tmp is not None:
+            images = np.empty(
+                ((number_images,) + self.im_shape + (self.channels,)),
+                dtype=np.float32,
+            )
+        else:
+            images = np.empty(
+                ((number_images,) + self.im_shape), dtype=np.float32
+            )
 
         for idx in range(number_images):
-            background_im = list_background_tmp[idx]
+            background_im = (
+                list_background_tmp[idx]
+                if list_background_tmp is not None
+                else None
+            )
             signal_im = list_signal_tmp[idx]
             images = self.__populate_array_with_cubes(
                 images, idx, signal_im, background_im
@@ -616,8 +635,11 @@ class CubeGeneratorFromDask(Sequence):
                 self.interpolation_order,
                 self.augment_likelihood,
             )
-        images[idx, :, :, :, 0] = self.__get_oriented_image(signal_im)
-        images[idx, :, :, :, 1] = self.__get_oriented_image(background_im)
+        if background_im is not None:
+            images[idx, :, :, :, 0] = self.__get_oriented_image(signal_im)
+            images[idx, :, :, :, 1] = self.__get_oriented_image(background_im)
+        else:
+            images[idx] = self.__get_oriented_image(signal_im)
 
         return images
 
