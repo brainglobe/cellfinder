@@ -57,6 +57,20 @@ def _read_planes_send_cubes(
             queue.put((key, cell), block=True, timeout=None)
 
 
+def _get_cube_indices(
+    cell: Cell, axis: Literal["x", "y", "z"], size: int
+) -> tuple[int, int]:
+    match axis:
+        case "x" | "y":
+            start = int(round(getattr(cell, axis) - size / 2))
+        case "z":
+            start = int(cell.z - size // 2)
+        case _:
+            raise ValueError(f"Unknown axis {axis}")
+
+    return start, start + size
+
+
 class CachedDatasetBase:
     """
     We buffer along axis 0, which is the data_axis_order[0] axis.
@@ -126,14 +140,12 @@ class CachedDatasetBase:
         buffer = self._buffer
         buf_start = self._buf_plane_start
         n_planes = self.cuboid_size[0]
-        pos = [getattr(cell, ax) for ax in self.data_axis_order]
+        cube_indices = []
+        for ax, size in zip(self.data_axis_order, self.cuboid_size):
+            cube_indices.append(_get_cube_indices(cell, ax, size))
 
-        cuboid_start_index = [
-            int(round(c - (size / 2 - 1)))
-            for c, size in zip(pos, self.cuboid_size)
-        ]
-        cuboid_start = cuboid_start_index[0]
-        cuboid_end = cuboid_start + n_planes
+        # buffered axis start/end
+        cuboid_start, cuboid_end = cube_indices[0]
 
         if buf_start is None:
             shape = (
@@ -182,14 +194,8 @@ class CachedDatasetBase:
         # 3 dim plus channels at the end
         slices = [
             slice(None, None),
-            slice(
-                cuboid_start_index[1],
-                cuboid_start_index[1] + self.cuboid_size[1],
-            ),
-            slice(
-                cuboid_start_index[2],
-                cuboid_start_index[2] + self.cuboid_size[2],
-            ),
+            slice(*cube_indices[1]),
+            slice(*cube_indices[2]),
             slice(None, None),
         ]
         return buffer[slices]
@@ -472,32 +478,20 @@ class CubeStackDataset(CubeDatasetBase):
                 ("b", *data_axis_order), ("b", *self.output_axis_order)
             )
 
-        self._filter_edge_points()
+        self.points = [p for p in self.points if self.point_has_full_cube(p)]
 
-    def _filter_edge_points(self) -> None:
-        first_half = [int(round(voxel / 2)) for voxel in self.data_cube_voxels]
-        second_half = [
-            voxel - half
-            for voxel, half in zip(self.data_cube_voxels, first_half)
-        ]
-        dataset_shape = self.dataset_shape
+    def point_has_full_cube(self, point: Cell) -> bool:
+        for ax, data_size, cube_size in zip(
+            self.axis_order, self.dataset_shape, self.data_cube_voxels
+        ):
+            start, end = _get_cube_indices(point, ax, cube_size)
+            if start < 0:
+                return False
+            if end > data_size:
+                # if it's data_size it's fine because end is not inclusive
+                return False
 
-        new_points = []
-        for point in self.points:
-            pos = [getattr(point, ax) for ax in self.axis_order]
-            # convert count to index by subtracting 1. If less than that
-            # index, the point's cube will extend before edge
-            if any(i - half + 1 < 0 for i, half in zip(pos, first_half)):
-                continue
-            if any(
-                i + half + 1 > n
-                for i, half, n in zip(pos, second_half, dataset_shape)
-            ):
-                continue
-
-            new_points.append(point)
-
-        self.points = new_points
+        return True
 
     def get_cell_data(self, cell: Cell) -> torch.Tensor:
         return self.get_cells_data([cell])[0, ...]
