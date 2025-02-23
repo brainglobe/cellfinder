@@ -366,6 +366,12 @@ class ProcessWithException(ExceptionWithQueueMixIn):
 
         self.args = args
 
+    def __getstate__(self):
+        items = self.__dict__.copy()
+        # don't pickly process because it can't be sent to other processes
+        items.pop("process", None)
+        return items
+
     def start(self) -> None:
         """Starts the sub-process that runs the target function."""
         self.process.start()

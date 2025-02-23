@@ -7,11 +7,19 @@ import keras
 import numpy as np
 from brainglobe_utils.cells.cells import Cell
 from brainglobe_utils.general.system import get_num_processes
+from torch.utils.data import DataLoader
 
 from cellfinder.core import logger, types
-from cellfinder.core.classify.cube_generator import CubeGeneratorFromFile
+from cellfinder.core.classify.cube_generator import (
+    CubeBatchSampler,
+    CubeStackDataset,
+)
 from cellfinder.core.classify.tools import get_model
 from cellfinder.core.train.train_yml import depth_type, models
+
+
+def _identity_func(data):
+    return data
 
 
 def main(
@@ -29,6 +37,7 @@ def main(
     model_weights: Optional[os.PathLike],
     network_depth: depth_type,
     max_workers: int = 3,
+    pin_memory: bool = True,
     *,
     callback: Optional[Callable[[int], None]] = None,
 ) -> List[Cell]:
@@ -51,22 +60,34 @@ def main(
 
     # Too many workers doesn't increase speed, and uses huge amounts of RAM
     workers = get_num_processes(min_free_cpu_cores=n_free_cpus)
+    workers = min(workers, max_workers)
 
     start_time = datetime.now()
 
     logger.debug("Initialising cube generator")
-    inference_generator = CubeGeneratorFromFile(
-        points,
-        signal_array,
-        background_array,
-        voxel_sizes,
-        network_voxel_sizes,
+    dataset = CubeStackDataset(
+        signal_array=signal_array,
+        background_array=background_array,
+        points=points,
+        data_voxel_sizes=voxel_sizes,
+        network_voxel_sizes=network_voxel_sizes,
+        network_cube_voxels=(cube_depth, cube_height, cube_width),
+        axis_order=("z", "y", "x"),
+    )
+    sampler = CubeBatchSampler(
+        dataset=dataset,
         batch_size=batch_size,
-        cube_width=cube_width,
-        cube_height=cube_height,
-        cube_depth=cube_depth,
-        use_multiprocessing=False,
-        workers=workers,
+        sort_by_axis="z",
+        auto_shuffle=False,
+    )
+    data_loader = DataLoader(
+        dataset=dataset,
+        sampler=sampler,
+        num_workers=workers,
+        prefetch_factor=4,
+        drop_last=False,
+        pin_memory=pin_memory,
+        collate_fn=_identity_func,
     )
 
     if trained_model and Path(trained_model).suffix == ".h5":
@@ -86,11 +107,17 @@ def main(
 
     logger.info("Running inference")
     # in Keras 3.0 multiprocessing params are specified in the generator
-    predictions = model.predict(
-        inference_generator,
-        verbose=True,
-        callbacks=callbacks,
-    )
+    if workers:
+        dataset.start_dataset_process(workers)
+    try:
+        predictions = model.predict(
+            data_loader,
+            verbose=True,
+            callbacks=callbacks,
+        )
+    finally:
+        dataset.stop_dataset_process()
+
     predictions = predictions.round()
     predictions = predictions.astype("uint16")
 
@@ -98,13 +125,14 @@ def main(
     points_list = []
 
     # only go through the "extractable" points
-    for idx, cell in enumerate(inference_generator.ordered_points):
+    for idx, cell in enumerate(dataset.points):
         cell.type = predictions[idx] + 1
         points_list.append(cell)
 
     time_elapsed = datetime.now() - start_time
     print(
-        "Classfication complete - all points done in : {}".format(time_elapsed)
+        f"Classification complete - {len(points_list)} points "
+        f"done in : {time_elapsed}"
     )
 
     return points_list

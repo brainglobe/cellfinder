@@ -1,495 +1,622 @@
-from pathlib import Path
-from random import shuffle
-from typing import Dict, List, Optional, Tuple, Union
+import math
+from collections import OrderedDict, defaultdict
+from numbers import Integral
+from typing import Any, Literal
 
-import keras
 import numpy as np
-from brainglobe_utils.cells.cells import Cell, group_cells_by_z
-from brainglobe_utils.general.numerical import is_even
-from keras.utils import Sequence
-from scipy.ndimage import zoom
-from skimage.io import imread
+import torch
+import torch.multiprocessing as mp
+import torch.nn.functional as F
+from brainglobe_utils.cells.cells import Cell
+from torch.multiprocessing import Queue
+from torch.utils.data import Dataset, Sampler, get_worker_info
 
 from cellfinder.core import types
-from cellfinder.core.classify.augment import AugmentationParameters, augment
-
-# TODO: rename, as now using dask arrays -
-#  actually should combine to one generator
+from cellfinder.core.tools.threading import (
+    EOFSignal,
+    ExecutionFailure,
+    ProcessWithException,
+)
 
 
 class StackSizeError(Exception):
     pass
 
 
-class CubeGeneratorFromFile(Sequence):
-    """
-    Reads cubes (defined as e.g. xml, csv) from raw data to pass to
-    keras.Model.fit_generator() or keras.Model.predict_generator()
+def get_axis_reordering(
+    in_order: tuple[str, ...], out_order: tuple[str, ...]
+) -> list[int]:
+    indices = []
+    for value in out_order:
+        indices.append(in_order.index(value))
+    return indices
 
-    If augment=True, each augmentation selected has an "augment_likelihood"
-    chance of being applied to each cube
+
+def _read_planes_send_cubes(
+    process: ProcessWithException,
+    dataset: "CachedDatasetBase",
+    queues: list[Queue],
+) -> None:
+    while True:
+        msg = process.get_msg_from_mainthread()
+        if msg == EOFSignal:
+            return
+
+        key, cell, buffer, queue_id = msg
+        queue = queues[queue_id]
+        try:
+            if key == "cell":
+                buffer[:] = dataset.get_cuboid(cell)
+            elif key == "cells":
+                dataset.fill_batch(buffer, cell)
+            else:
+                raise ValueError(f"Bad message {key}")
+        except BaseException as e:
+            queue.put(("exception", e), block=True, timeout=None)
+        else:
+            queue.put((key, cell), block=True, timeout=None)
+
+
+class CachedDatasetBase:
+    """
+    We buffer along axis 0, which is the data_axis_order[0] axis.
+    The size of each cube in voxels of the dataset is given by cuboid_size.
+    Data returned is in data_axis_order, with channel the last axis
     """
 
-    # TODO: shuffle within (and maybe between) batches
-    # TODO: limit workers based on RAM
+    data_shape: tuple[int, int, int]
+
+    num_channels: int = 1
+
+    max_axis_0_planes_buffered: int = 0
+
+    cuboid_size: tuple[int, int, int] = (1, 1, 1)
+    # in units of voxels, not um. in data_axis_order
+
+    data_axis_order: tuple[str, str, str] = ("z", "y", "x")
+
+    full_data_axis_order: tuple[str, str, str, str] = ("z", "y", "x", "c")
+
+    _buffer: torch.Tensor | None = None
+    # channels-last order
+
+    _buf_plane_start: int | None = None
+
+    _planes_buffer: OrderedDict[int, torch.Tensor]
 
     def __init__(
         self,
-        points: List[Cell],
+        max_axis_0_cubes_buffered: int = 0,
+        data_axis_order: tuple[str, str, str] = ("z", "y", "x"),
+        cuboid_size: tuple[int, int, int] = (1, 1, 1),
+    ):
+        self.max_axis_0_planes_buffered = int(
+            round(max_axis_0_cubes_buffered * cuboid_size[0])
+        )
+        self.cuboid_size = cuboid_size
+
+        if len(data_axis_order) != 3 or set(data_axis_order) != {
+            "z",
+            "y",
+            "x",
+        }:
+            raise ValueError(
+                f"Expected the axis order to list x, y, z, but got "
+                f"{data_axis_order}"
+            )
+        self.data_axis_order = data_axis_order
+        self.full_data_axis_order = *data_axis_order, "c"
+
+        self._planes_buffer = OrderedDict()
+
+    @property
+    def full_cuboid_size(self) -> tuple[int, int, int, int]:
+        return *self.cuboid_size, self.num_channels
+
+    def fill_batch(self, batch: torch.Tensor, cells: list[Cell]) -> None:
+        if len(cells) != batch.shape[0]:
+            raise ValueError(
+                "Expected the number of cells to match the batch size"
+            )
+
+        for i, cell in enumerate(cells):
+            batch[i, ...] = self.get_cuboid(cell)
+
+    def get_cuboid(self, cell: Cell) -> torch.Tensor:
+        buffer = self._buffer
+        buf_start = self._buf_plane_start
+        n_planes = self.cuboid_size[0]
+        pos = [getattr(cell, ax) for ax in self.data_axis_order]
+
+        cuboid_start_index = [
+            int(round(c - (size / 2 - 1)))
+            for c, size in zip(pos, self.cuboid_size)
+        ]
+        cuboid_start = cuboid_start_index[0]
+        cuboid_end = cuboid_start + n_planes
+
+        if buf_start is None:
+            shape = (
+                self.cuboid_size[0],
+                *self.data_shape[1:],
+                self.num_channels,
+            )
+            buffer = torch.empty(shape, dtype=torch.float32)
+            self._pop_plane_buffer(buffer, 0, cuboid_start, cuboid_end)
+        elif buf_start + n_planes <= cuboid_start or buf_start > cuboid_end:
+            # buffer ends before cuboid starts or it starts after cuboid's end
+            self._return_plane_buffer(
+                buffer, 0, buf_start, buf_start + n_planes
+            )
+            self._pop_plane_buffer(buffer, 0, cuboid_start, cuboid_end)
+        elif buf_start < cuboid_start:
+            # cuboid starts midway through buffer. Drop start of buffer, shift
+            # buffer left and fill in end
+            dropping = cuboid_start - buf_start
+            self._return_plane_buffer(buffer, 0, buf_start, cuboid_start)
+            buffer = torch.roll(buffer, -dropping, 0)
+            self._pop_plane_buffer(
+                buffer,
+                n_planes - dropping,
+                cuboid_start + n_planes - dropping,
+                cuboid_end,
+            )
+        elif buf_start > cuboid_start:
+            # cuboid starts before buffer start. Drop end of buffer, shift
+            # buffer right, and fill in start
+            dropping = buf_start - cuboid_start
+            self._return_plane_buffer(
+                buffer,
+                n_planes - dropping,
+                cuboid_start + n_planes - dropping,
+                cuboid_end,
+            )
+            buffer = torch.roll(buffer, dropping, 0)
+            self._pop_plane_buffer(buffer, 0, cuboid_start, buf_start)
+        else:
+            assert buf_start == cuboid_start
+
+        self._buffer = buffer
+        self._buf_plane_start = cuboid_start
+
+        # 3 dim plus channels at the end
+        slices = [
+            slice(None, None),
+            slice(
+                cuboid_start_index[1],
+                cuboid_start_index[1] + self.cuboid_size[1],
+            ),
+            slice(
+                cuboid_start_index[2],
+                cuboid_start_index[2] + self.cuboid_size[2],
+            ),
+            slice(None, None),
+        ]
+        return buffer[slices]
+
+    def _return_plane_buffer(
+        self,
+        buffer: torch.Tensor,
+        offset_start: int,
+        plane_start: int,
+        plane_end: int,
+    ) -> None:
+        planes_buffer = self._planes_buffer
+        max_planes = self.max_axis_0_planes_buffered
+        offset_end = offset_start + plane_end - plane_start
+
+        if not max_planes:
+            # no buffer available
+            return
+
+        for i, plane in zip(
+            range(offset_start, offset_end), range(plane_start, plane_end)
+        ):
+            assert len(planes_buffer) <= max_planes
+            if len(planes_buffer) == max_planes:
+                # fifo when last=False
+                planes_buffer.popitem(last=False)
+            planes_buffer[plane] = buffer[i, ...].detach().clone()
+
+    def _pop_plane_buffer(
+        self,
+        buffer: torch.Tensor,
+        offset_start: int,
+        plane_start: int,
+        plane_end: int,
+    ) -> None:
+        planes_buffer = self._planes_buffer
+        offset_end = offset_start + plane_end - plane_start
+
+        for i, plane in zip(
+            range(offset_start, offset_end), range(plane_start, plane_end)
+        ):
+            if plane in planes_buffer:
+                buffer[i, ...] = planes_buffer.pop(plane)
+            else:
+                for channel in range(self.num_channels):
+                    buffer[i, ..., channel] = self.read_plane(plane, channel)
+
+    def read_plane(self, plane: int, channel: int) -> torch.Tensor:
+        raise NotImplementedError
+
+
+class CachedStackDataset(CachedDatasetBase):
+
+    input_arrays: list[types.array]
+
+    def __init__(
+        self,
+        input_arrays: list[types.array],
+        **kwargs,
+    ):
+        super().__init__(**kwargs)
+
+        self.input_arrays = input_arrays
+        self.data_shape = input_arrays[0].shape
+        self.num_channels = len(self.input_arrays)
+
+    def read_plane(self, plane: int, channel: int) -> torch.Tensor:
+        return torch.from_numpy(
+            np.asarray(self.input_arrays[channel][plane, ...])
+        )
+
+
+class CubeDatasetBase(Dataset):
+    """
+    Input voxel order is Width, Height, Depth
+    Returned data order is (Batch) Height, Width, Depth, Channel.
+    """
+
+    def __init__(
+        self,
+        points: list[Cell],
+        data_voxel_sizes: tuple[int, int, int],
+        network_voxel_sizes: tuple[int, int, int],
+        network_cube_voxels: tuple[int, int, int] = (20, 50, 50),
+        axis_order: tuple[str, str, str] = ("z", "y", "x"),
+        output_axis_order: tuple[str, str, str, str] = ("y", "x", "z", "c"),
+        classes: int = 2,
+        sort_by_axis: str | None = "z",
+        transform=None,
+        target_output: Literal["cell", "dict", "label"] | None = None,
+        **kwargs,
+    ):
+        super().__init__(**kwargs)
+        if len(axis_order) != 3 or set(axis_order) != {"z", "y", "x"}:
+            raise ValueError(
+                f"Expected the axis order to list x, y, z, but got "
+                f"{axis_order}"
+            )
+        if len(output_axis_order) != 4 or set(output_axis_order) != {
+            "z",
+            "y",
+            "x",
+            "c",
+        }:
+            raise ValueError(
+                f"Expected the axis order to list x, y, z, c, but got "
+                f"{output_axis_order}"
+            )
+
+        if sort_by_axis is None:
+            self.points = points
+        else:
+            self.points = list(
+                sorted(points, key=lambda p: getattr(p, sort_by_axis))
+            )
+
+        self.data_voxel_sizes = data_voxel_sizes
+        self.network_voxel_sizes = network_voxel_sizes
+        self.network_cube_voxels = network_cube_voxels
+        self.axis_order = axis_order
+        self.output_axis_order = output_axis_order
+
+        self.data_cube_voxels = []
+        for data_um, network_um, cube_voxels in zip(
+            data_voxel_sizes, network_voxel_sizes, network_cube_voxels
+        ):
+            self.data_cube_voxels.append(
+                int(round(cube_voxels * network_um / data_um))
+            )
+
+        self.classes = classes
+        self.transform = transform
+        self.target_output = target_output
+
+    def __len__(self):
+        return len(self.points)
+
+    def __getitem__(self, idx):
+        if isinstance(idx, Integral):
+            return self._get_single_item(idx)
+        return self._get_multiple_items(idx)
+
+    def _get_single_item(
+        self, idx: int
+    ) -> torch.Tensor | tuple[torch.Tensor, Any]:
+        cell = self.points[idx]
+        data = self.get_cell_data(cell)
+
+        data = self.rescale_to_output_size(data)
+        if self.transform:
+            data = self.transform(data)
+
+        match self.target_output:
+            case None:
+                return data
+
+            case "cell":
+                label = cell
+            case "dict":
+                label = cell.to_dict()
+            case _:
+                cls = torch.tensor(cell.type - 1)
+                label = F.one_hot(cls, num_classes=self.classes)
+
+        return data, label
+
+    def _get_multiple_items(
+        self, indices: list[int]
+    ) -> torch.Tensor | tuple[torch.Tensor, Any]:
+        cells = [self.points[i] for i in indices]
+        data = self.get_cells_data(cells)
+
+        data = self.rescale_to_output_size(data)
+        if self.transform:
+            data = self.transform(data)
+
+        match self.target_output:
+            case None:
+                return data
+
+            case "cell":
+                labels = cells
+            case "dict":
+                labels = [cell.to_dict() for cell in cells]
+            case _:
+                cls = torch.tensor([cell.type - 1 for cell in cells])
+                labels = F.one_hot(cls, num_classes=self.classes)
+
+        return data, labels
+
+    def rescale_to_output_size(self, data: torch.Tensor) -> torch.Tensor:
+        if self.data_voxel_sizes == self.network_voxel_sizes:
+            return data
+
+        # batch dimension
+        added_batch = len(data.shape) == 4
+        if added_batch:
+            data = torch.unsqueeze(data, 0)
+
+        torch_order = "b", "c", "z", "y", "x"
+        data_order = "b", *self.output_axis_order
+        voxel_order = self.axis_order
+
+        torch_voxel_map = get_axis_reordering(voxel_order, torch_order[2:])
+        scaled_cube_size = [
+            self.network_cube_voxels[i] for i in torch_voxel_map
+        ]
+
+        data = torch.permute(
+            data, get_axis_reordering(data_order, torch_order)
+        )
+        assert len(data.shape) == 5, "expected (batch, channel, z, y, x) shape"
+        data = F.interpolate(data, size=scaled_cube_size, mode="trilinear")
+
+        data = torch.permute(
+            data, get_axis_reordering(torch_order, data_order)
+        )
+        if added_batch:
+            data = torch.squeeze(data, 0)
+
+        return data
+
+    def get_cell_data(self, cell: Cell) -> torch.Tensor:
+        """
+
+        :param cell:
+        :return: In the output_axis_order order.
+        """
+        raise NotImplementedError
+
+    def get_cells_data(self, cells: list[Cell]) -> torch.Tensor:
+        """
+
+        :param cells:
+        :return: In the output_axis_order order.
+        """
+        raise NotImplementedError
+
+
+class CubeStackDataset(CubeDatasetBase):
+
+    cached_dataset: CachedDatasetBase | None = None
+
+    _dataset_process: ProcessWithException | None = None
+
+    _worker_queues: list[Queue] = None
+
+    def __init__(
+        self,
         signal_array: types.array,
         background_array: types.array,
-        voxel_sizes: Tuple[int, int, int],
-        network_voxel_sizes: Tuple[int, int, int],
-        batch_size: int = 64,
-        cube_width: int = 50,
-        cube_height: int = 50,
-        cube_depth: int = 20,
-        channels: int = 2,  # No other option currently
-        classes: int = 2,
-        extract: bool = False,
-        train: bool = False,
-        augment: bool = False,
-        augment_likelihood: float = 0.1,
-        flip_axis: Tuple[int, int, int] = (0, 1, 2),
-        rotate_max_axes: Tuple[float, float, float] = (1, 1, 1),  # degrees
-        # scale=[0.5, 2],  # min, max
-        translate: Tuple[float, float, float] = (0.05, 0.05, 0.05),
-        shuffle: bool = False,
-        interpolation_order: int = 2,
-        *args,
+        max_axis_0_cubes_buffered: int = 0,
         **kwargs,
     ):
-        # pass any additional arguments not specified in signature to the
-        # constructor of the superclass (e.g.: `use_multiprocessing` or
-        # `workers`)
-        super().__init__(*args, **kwargs)
-
-        self.points = points
-        self.signal_array = signal_array
-        self.background_array = background_array
-        self.batch_size = batch_size
-        self.axis_2_pixel_um = float(voxel_sizes[2])
-        self.axis_1_pixel_um = float(voxel_sizes[1])
-        self.axis_0_pixel_um = float(voxel_sizes[0])
-        self.network_axis_2_pixel_um = float(network_voxel_sizes[2])
-        self.network_axis_1_pixel_um = float(network_voxel_sizes[1])
-        self.network_axis_0_pixel_um = float(network_voxel_sizes[0])
-        self.cube_width = cube_width
-        self.cube_height = cube_height
-        self.cube_depth = cube_depth
-        self.channels = channels
-        self.classes = classes
-
-        # saving training data to file
-        self.extract = extract
-
-        self.train = train
-        self.augment = augment
-        self.augment_likelihood = augment_likelihood
-        self.flip_axis = flip_axis
-        self.rotate_max_axes = rotate_max_axes
-        # self.scale = scale
-        self.translate = translate
-        self.shuffle = shuffle
-        self.interpolation_order = interpolation_order
-
-        self.scale_cubes = False
-
-        self.rescaling_factor_axis_2: float = 1
-        self.rescaling_factor_axis_1: float = 1
-        self.rescaled_cube_width: float = self.cube_width
-        self.rescaled_cube_height: float = self.cube_height
-
-        self.__check_image_sizes()
-        self.__get_image_size()
-        self.__check_z_scaling()
-        self.__check_in_plane_scaling()
-        self.__remove_outlier_points()
-        self.__get_batches()
-        if shuffle:
-            self.on_epoch_end()
-
-    def __check_image_sizes(self) -> None:
-        if len(self.signal_array) != len(self.background_array):
+        super().__init__(**kwargs)
+        if signal_array.shape != background_array.shape:
             raise ValueError(
-                f"Number of signal images ({len(self.signal_array)}) does not "
-                f"match the number of background images "
-                f"({len(self.background_array)}"
+                f"Shape of signal images ({signal_array.shape}) does not "
+                f"match the shape of the background images "
+                f"({background_array.shape}"
+            )
+        if len(signal_array.shape) != 3:
+            raise ValueError("Expected a 3d in data array")
+
+        self.dataset_shape = signal_array.shape
+        self.data_arrays = [signal_array, background_array]
+        self._worker_queues = []
+
+        self.cached_dataset = CachedStackDataset(
+            input_arrays=self.data_arrays,
+            data_axis_order=self.axis_order,
+            max_axis_0_cubes_buffered=max_axis_0_cubes_buffered,
+            cuboid_size=self.data_cube_voxels,
+        )
+
+        data_axis_order = self.cached_dataset.full_data_axis_order
+        self._data_axis_reordering = None
+        if data_axis_order != self.output_axis_order:
+            self._data_axis_reordering = get_axis_reordering(
+                ("b", *data_axis_order), ("b", *self.output_axis_order)
             )
 
-    def __get_image_size(self) -> None:
-        self.image_z_size = len(self.signal_array)
-        self.image_height, self.image_width = self.signal_array[0].shape
+        self._filter_edge_points()
 
-    def __check_in_plane_scaling(self) -> None:
-        if self.axis_2_pixel_um != self.network_axis_2_pixel_um:
-            self.rescaling_factor_axis_2 = (
-                self.network_axis_2_pixel_um / self.axis_2_pixel_um
-            )
-            self.rescaled_cube_width = (
-                self.cube_width * self.rescaling_factor_axis_2
-            )
-            self.scale_cubes = True
-        if self.axis_1_pixel_um != self.network_axis_1_pixel_um:
-            self.rescaling_factor_axis_1 = (
-                self.network_axis_1_pixel_um / self.axis_1_pixel_um
-            )
-            self.rescaled_cube_height = (
-                self.cube_height * self.rescaling_factor_axis_1
-            )
-            self.scale_cubes = True
-
-    def __check_z_scaling(self) -> None:
-        if self.axis_0_pixel_um != self.network_axis_0_pixel_um:
-            plane_scaling_factor = (
-                self.network_axis_0_pixel_um / self.axis_0_pixel_um
-            )
-            self.num_planes_needed_for_cube = round(
-                self.cube_depth * plane_scaling_factor
-            )
-        else:
-            self.num_planes_needed_for_cube = self.cube_depth
-
-        if self.num_planes_needed_for_cube > self.image_z_size:
-            raise StackSizeError(
-                f"The number of planes provided ({self.image_z_size}) "
-                "is not sufficient for any cubes to be extracted "
-                f"(need at least {self.num_planes_needed_for_cube}). "
-                "Please check the input data"
-            )
-
-    def __remove_outlier_points(self) -> None:
-        """
-        Remove points that won't get extracted (i.e too close to the edge)
-        """
-        self.points = [
-            point for point in self.points if self.extractable(point)
+    def _filter_edge_points(self) -> None:
+        first_half = [int(round(voxel / 2)) for voxel in self.data_cube_voxels]
+        second_half = [
+            voxel - half
+            for voxel, half in zip(self.data_cube_voxels, first_half)
         ]
+        dataset_shape = self.dataset_shape
 
-    def extractable(self, point: Cell) -> bool:
-        x0, x1, y0, y1, z0, z1 = self.__get_boundaries()
-        return (
-            x0 <= point.x <= x1 and y0 <= point.y <= y1 and z0 <= point.z <= z1
-        )
+        new_points = []
+        for point in self.points:
+            pos = [getattr(point, ax) for ax in self.axis_order]
+            # convert count to index by subtracting 1. If less than that
+            # index, the point's cube will extend before edge
+            if any(i - half + 1 < 0 for i, half in zip(pos, first_half)):
+                continue
+            if any(
+                i + half + 1 > n
+                for i, half, n in zip(pos, second_half, dataset_shape)
+            ):
+                continue
 
-    def __get_boundaries(self) -> Tuple[int, int, int, int, int, int]:
-        x0 = int(round((self.cube_width / 2) * self.rescaling_factor_axis_2))
-        x1 = int(round(self.image_width - x0))
+            new_points.append(point)
 
-        y0 = int(round((self.cube_height / 2) * self.rescaling_factor_axis_1))
-        y1 = int(round(self.image_height - y0))
+        self.points = new_points
 
-        z0 = int(round(self.num_planes_needed_for_cube / 2))
-        z1 = self.image_z_size - z0
-        return x0, x1, y0, y1, z0, z1
+    def get_cell_data(self, cell: Cell) -> torch.Tensor:
+        return self.get_cells_data([cell])[0, ...]
 
-    def __get_batches(self) -> None:
-        self.points_groups = group_cells_by_z(self.points)
-        # TODO: add optional shuffling of each group here
-        self.batches = []
-        for centre_plane in self.points_groups.keys():
-            points_per_plane = self.points_groups[centre_plane]
-            for i in range(0, len(points_per_plane), self.batch_size):
-                self.batches.append(points_per_plane[i : i + self.batch_size])
+    def get_cells_data(self, cells: list[Cell]) -> torch.Tensor:
+        data = torch.empty((len(cells), *self.cached_dataset.full_cuboid_size))
 
-        self.ordered_points = []
-        for batch in self.batches:
-            for cell in batch:
-                self.ordered_points.append(cell)
-
-    def __len__(self) -> int:
-        """
-        Number of batches
-        :return: Number of batches per epoch
-        """
-        return len(self.batches)
-
-    def __getitem__(self, index: int) -> Union[
-        np.ndarray,
-        Tuple[np.ndarray, List[Dict[str, float]]],
-        Tuple[np.ndarray, Dict],
-    ]:
-        """
-        Generates a single batch of cubes
-        :param index:
-        :return:
-        """
-        if not self.batches:
-            raise IndexError("Empty batch. Were any cells detected?")
-
-        cell_batch = self.batches[index]
-        signal_stack, background_stack = self.__get_stacks(index)
-        images = self.__generate_cubes(
-            cell_batch, signal_stack, background_stack
-        )
-
-        if self.train:
-            batch_labels = [cell.type - 1 for cell in cell_batch]
-            batch_labels = keras.utils.to_categorical(
-                batch_labels, num_classes=self.classes
-            )
-            return images, batch_labels.astype(np.float32)
-        elif self.extract:
-            batch_info = self.__get_batch_dict(cell_batch)
-            return images, batch_info
+        process = self._dataset_process
+        if process is None:
+            self.cached_dataset.fill_batch(data, cells)
         else:
-            return images
+            queues = self._worker_queues
+            # for host, it's the last queue
+            queue_id = len(queues) - 1
+            if get_worker_info() is not None:
+                queue_id = get_worker_info().id
+            queue = queues[queue_id]
 
-    def __get_stacks(self, index: int) -> Tuple[np.ndarray, np.ndarray]:
-        centre_plane = self.batches[index][0].z
+            process.send_msg_to_thread(("cells", cells, data, queue_id))
+            msg, value = queue.get(block=True)
+            # if there's no error, we just sent back the cell
+            if msg == "exception":
+                raise ExecutionFailure(
+                    "Reporting failure from data process"
+                ) from value
+            assert msg == "cells"
 
-        min_plane, max_plane = get_cube_depth_min_max(
-            centre_plane, self.num_planes_needed_for_cube
+        if self._data_axis_reordering is not None:
+            data = torch.permute(data, self._data_axis_reordering)
+        return data
+
+    def start_dataset_process(self, num_workers: int):
+        # include queue for host process
+        ctx = mp.get_context("spawn")
+        queues = [ctx.Queue(maxsize=0) for _ in range(num_workers + 1)]
+        self._worker_queues = queues
+
+        self._dataset_process = ProcessWithException(
+            target=_read_planes_send_cubes,
+            args=(self.cached_dataset, queues),
+            pass_self=True,
         )
+        self._dataset_process.start()
 
-        signal_stack = np.array(self.signal_array[min_plane:max_plane])
-        background_stack = np.array(self.background_array[min_plane:max_plane])
+    def stop_dataset_process(self):
+        process = self._dataset_process
+        if process is None:
+            return
 
-        return signal_stack, background_stack
+        self._dataset_process = None
+        self._worker_queues = []
 
-    def __generate_cubes(
-        self,
-        cell_batch: List[Cell],
-        signal_stack: np.ndarray,
-        background_stack: np.ndarray,
-    ) -> np.ndarray:
-        number_images = len(cell_batch)
-        images = np.empty(
-            (
-                (number_images,)
-                + (self.cube_height, self.cube_width, self.cube_depth)
-                + (self.channels,)
-            ),
-            dtype=np.float32,
-        )
-
-        for idx, cell in enumerate(cell_batch):
-            images = self.__populate_array_with_cubes(
-                images, idx, cell, signal_stack, background_stack
-            )
-
-        return images
-
-    def __populate_array_with_cubes(
-        self,
-        images: np.ndarray,
-        idx: int,
-        cell: Cell,
-        signal_stack: np.ndarray,
-        background_stack: np.ndarray,
-    ) -> np.ndarray:
-        if self.augment:
-            self.augmentation_parameters = AugmentationParameters(
-                self.flip_axis,
-                self.translate,
-                self.rotate_max_axes,
-                self.interpolation_order,
-                self.augment_likelihood,
-            )
-        images[idx, :, :, :, 0] = self.__get_oriented_image(cell, signal_stack)
-        images[idx, :, :, :, 1] = self.__get_oriented_image(
-            cell, background_stack
-        )
-        return images
-
-    def __get_oriented_image(
-        self, cell: Cell, image_stack: np.ndarray
-    ) -> np.ndarray:
-        x0 = int(round(cell.x - (self.rescaled_cube_width / 2)))
-        x1 = int(x0 + self.rescaled_cube_width)
-        y0 = int(round(cell.y - (self.rescaled_cube_height / 2)))
-        y1 = int(y0 + self.rescaled_cube_height)
-        image = image_stack[:, y0:y1, x0:x1]
-        image = np.moveaxis(image, 0, 2)
-
-        if self.augment:
-            # scale to isotropic, but don't scale back
-            image = augment(
-                self.augmentation_parameters, image, scale_back=False
-            )
-
-        pixel_scalings = [
-            self.cube_height / image.shape[0],
-            self.cube_width / image.shape[1],
-            self.cube_depth / image.shape[2],  # type: ignore[misc]
-            # Not sure why mypy thinks .shape[2] is out of bounds above?
-        ]
-
-        # TODO: ensure this is always the correct size
-        image = zoom(image, pixel_scalings, order=self.interpolation_order)
-        return image
-
-    @staticmethod
-    def __get_batch_dict(cell_batch: List[Cell]) -> List[Dict[str, float]]:
-        return [cell.to_dict() for cell in cell_batch]
-
-    def on_epoch_end(self) -> None:
-        """
-        Shuffle data for each epoch
-        :return: Shuffled indexes
-        """
-        shuffle(self.batches)
+        process.notify_to_end_thread()
+        process.clear_remaining()
+        process.join()
 
 
-class CubeGeneratorFromDisk(Sequence):
-    """
-    Reads in cubes from a list of paths for keras.Model.fit_generator() or
-    keras.Model.predict_generator()
-
-    If augment=True, each augmentation selected has a 50/50 chance of being
-    applied to each cube
-    """
+class CubeBatchSampler(Sampler):
 
     def __init__(
         self,
-        signal_list: List[Union[str, Path]],
-        background_list: List[Union[str, Path]],
-        labels: Optional[List[int]] = None,  # only if training or validating
-        batch_size: int = 64,
-        shape: Tuple[int, int, int] = (50, 50, 20),
-        channels: int = 2,
-        classes: int = 2,
-        shuffle: bool = False,
-        augment: bool = False,
-        augment_likelihood: float = 0.1,
-        flip_axis: Tuple[int, int, int] = (0, 1, 2),
-        rotate_max_axes: Tuple[int, int, int] = (45, 45, 45),  # degrees
-        # scale=[0.5, 2],  # min, max
-        translate: Tuple[float, float, float] = (0.2, 0.2, 0.2),
-        train: bool = False,  # also return labels
-        interpolation_order: int = 2,
-        *args,
+        dataset: CubeDatasetBase,
+        batch_size: int,
+        auto_shuffle: bool = False,
+        sort_by_axis: str | None = "z",
+        segregate_by_axis: bool = True,
         **kwargs,
     ):
-        # pass any additional arguments not specified in signature to the
-        # constructor of the superclass (e.g.: `use_multiprocessing` or
-        # `workers`)
-        super().__init__(*args, **kwargs)
+        super().__init__(**kwargs)
+        if segregate_by_axis and sort_by_axis is None:
+            raise ValueError(
+                "Asked to segregate by axis, but an axis for sorting was "
+                "not provided"
+            )
 
-        self.im_shape = shape
         self.batch_size = batch_size
-        self.labels = labels
-        self.signal_list = signal_list
-        self.background_list = background_list
-        self.channels = channels
-        self.classes = classes
-        self.augment = augment
-        self.augment_likelihood = augment_likelihood
-        self.flip_axis = flip_axis
-        self.rotate_max_axes = rotate_max_axes
-        # self.scale = scale
-        self.translate = translate
-        self.train = train
-        self.interpolation_order = interpolation_order
-        self.indexes = np.arange(len(self.signal_list))
+        self.auto_shuffle = auto_shuffle
+        self.segregate_by_axis = segregate_by_axis
+
+        if sort_by_axis is None:
+            plane_indices = [np.arange(len(dataset.points), dtype=np.int64)]
+        else:
+            points_raw = defaultdict(list)
+            for i, point in enumerate(dataset.points):
+                points_raw[getattr(point, sort_by_axis)].append(i)
+            points_sorted = sorted(points_raw.items(), key=lambda x: x[0])
+
+            plane_indices = [
+                np.array(indices, dtype=np.int64)
+                for plane, indices in points_sorted
+            ]
+
+        self.plane_indices = plane_indices
+
+        self.n_batches = len(self.get_batches(False))
+
+    def get_batches(self, shuffle):
+        indices = self.plane_indices
+        batch_size = self.batch_size
+
         if shuffle:
-            self.on_epoch_end()
+            rng = np.random.default_rng()
+            # permuted creates copy that is shuffled
+            indices = [rng.permuted(items) for items in indices]
 
-    # TODO: implement scale and shear
+        batches = []
+        if self.segregate_by_axis:
+            for arr in indices:
+                for i in range(math.ceil(len(arr) / batch_size)):
+                    batches.append(arr[i * batch_size : (i + 1) * batch_size])
+        else:
+            arr = np.concatenate(indices)
+            for i in range(math.ceil(len(arr) / batch_size)):
+                batches.append(arr[i * batch_size : (i + 1) * batch_size])
 
-    def on_epoch_end(self) -> None:
-        """
-        Shuffle data for each epoch
-        :return: Shuffled indexes
-        """
-        self.indexes = np.arange(len(self.signal_list))
-        np.random.shuffle(self.indexes)
+        return batches
 
     def __len__(self) -> int:
-        """
-        Number of batches
-        :return: Number of batches per epoch
-        """
-        return int(np.ceil(len(self.signal_list) / self.batch_size))
+        return self.n_batches
 
-    def __getitem__(self, index: int) -> Union[
-        np.ndarray,
-        Tuple[np.ndarray, List[Dict[str, float]]],
-        Tuple[np.ndarray, Dict],
-    ]:
-        """
-        Generates a single batch of cubes
-        :param index:
-        :return:
-        """
-        # Generate indexes of the batch
-        start_index = index * self.batch_size
-        end_index = start_index + self.batch_size
-        indexes = self.indexes[start_index:end_index]
-
-        # Get data corresponding to batch
-        list_signal_tmp = [self.signal_list[k] for k in indexes]
-        list_background_tmp = [self.background_list[k] for k in indexes]
-
-        images = self.__generate_cubes(list_signal_tmp, list_background_tmp)
-
-        if self.train and self.labels is not None:
-            batch_labels = [self.labels[k] for k in indexes]
-            batch_labels = keras.utils.to_categorical(
-                batch_labels, num_classes=self.classes
-            )
-            return images, batch_labels.astype(np.float32)
-        else:
-            return images
-
-    def __generate_cubes(
-        self,
-        list_signal_tmp: List[Union[str, Path]],
-        list_background_tmp: List[Union[str, Path]],
-    ) -> np.ndarray:
-        number_images = len(list_signal_tmp)
-        images = np.empty(
-            ((number_images,) + self.im_shape + (self.channels,)),
-            dtype=np.float32,
-        )
-
-        for idx, signal_im in enumerate(list_signal_tmp):
-            background_im = list_background_tmp[idx]
-            images = self.__populate_array_with_cubes(
-                images, idx, signal_im, background_im
-            )
-
-        return images
-
-    def __populate_array_with_cubes(
-        self,
-        images: np.ndarray,
-        idx: int,
-        signal_im: Union[str, Path],
-        background_im: Union[str, Path],
-    ) -> np.ndarray:
-        if self.augment:
-            self.augmentation_parameters = AugmentationParameters(
-                self.flip_axis,
-                self.translate,
-                self.rotate_max_axes,
-                self.interpolation_order,
-                self.augment_likelihood,
-            )
-        images[idx, :, :, :, 0] = self.__get_oriented_image(signal_im)
-        images[idx, :, :, :, 1] = self.__get_oriented_image(background_im)
-
-        return images
-
-    def __get_oriented_image(self, image_path: Union[str, Path]) -> np.ndarray:
-        # if paths are pathlib objs, skimage only reads one plane
-        image = np.moveaxis(imread(image_path), 0, 2)
-        if self.augment:
-            image = augment(self.augmentation_parameters, image)
-        return image
-
-
-def get_cube_depth_min_max(
-    centre_plane: int, num_planes_needed_for_cube: int
-) -> Tuple[int, int]:
-    half_cube_depth = num_planes_needed_for_cube // 2
-    min_plane = centre_plane - half_cube_depth
-
-    if is_even(num_planes_needed_for_cube):
-        # WARNING: not centered because even
-        max_plane = centre_plane + half_cube_depth
-    else:
-        # centered
-        max_plane = centre_plane + half_cube_depth + 1
-
-    return min_plane, max_plane
+    def __iter__(self):
+        yield from self.get_batches(self.auto_shuffle)
