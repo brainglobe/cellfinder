@@ -17,6 +17,7 @@ from cellfinder.core.tools.threading import (
     ExecutionFailure,
     ProcessWithException,
 )
+from cellfinder.core.tools.tools import get_data_converter
 
 
 class StackSizeError(Exception):
@@ -46,9 +47,9 @@ def _read_planes_send_cubes(
         queue = queues[queue_id]
         try:
             if key == "cell":
-                buffer[:] = dataset.get_cuboid(cell)
+                buffer[:] = dataset.get_cell_cuboid_data(cell)
             elif key == "cells":
-                dataset.fill_batch(buffer, cell)
+                dataset.get_cell_batch_cuboid_data(buffer, cell)
             else:
                 raise ValueError(f"Bad message {key}")
         except BaseException as e:
@@ -91,21 +92,16 @@ class CachedDatasetBase:
 
     full_data_axis_order: tuple[str, str, str, str] = ("z", "y", "x", "c")
 
-    _buffer: torch.Tensor | None = None
-    # channels-last order
-
-    _buf_plane_start: int | None = None
-
     _planes_buffer: OrderedDict[int, torch.Tensor]
 
     def __init__(
         self,
-        max_axis_0_cubes_buffered: int = 0,
+        max_axis_0_cubes_buffered: float = 0,
         data_axis_order: tuple[str, str, str] = ("z", "y", "x"),
         cuboid_size: tuple[int, int, int] = (1, 1, 1),
     ):
         self.max_axis_0_planes_buffered = int(
-            round(max_axis_0_cubes_buffered * cuboid_size[0])
+            round((max_axis_0_cubes_buffered + 1) * cuboid_size[0])
         )
         self.cuboid_size = cuboid_size
 
@@ -127,121 +123,56 @@ class CachedDatasetBase:
     def full_cuboid_size(self) -> tuple[int, int, int, int]:
         return *self.cuboid_size, self.num_channels
 
-    def fill_batch(self, batch: torch.Tensor, cells: list[Cell]) -> None:
+    def get_cell_cuboid_data(self, cell: Cell) -> torch.Tensor:
+        shape = *self.data_shape, self.num_channels
+        data = torch.empty(shape, dtype=torch.float32)
+
+        for j, plane in enumerate(self._get_cuboid_planes(cell)):
+            data[j, ...] = plane
+
+        return data
+
+    def get_cell_batch_cuboid_data(
+        self, batch: torch.Tensor, cells: list[Cell]
+    ) -> None:
         if len(cells) != batch.shape[0]:
             raise ValueError(
                 "Expected the number of cells to match the batch size"
             )
 
         for i, cell in enumerate(cells):
-            batch[i, ...] = self.get_cuboid(cell)
+            for j, plane in enumerate(self._get_cuboid_planes(cell)):
+                batch[i, j, ...] = plane
 
-    def get_cuboid(self, cell: Cell) -> torch.Tensor:
-        buffer = self._buffer
-        buf_start = self._buf_plane_start
-        n_planes = self.cuboid_size[0]
+    def _get_cuboid_planes(self, cell: Cell) -> list[torch.Tensor]:
+        max_planes = self.max_axis_0_planes_buffered
+        planes_buffer = self._planes_buffer
+
         cube_indices = []
         for ax, size in zip(self.data_axis_order, self.cuboid_size):
             cube_indices.append(_get_cube_indices(cell, ax, size))
+        ax1 = slice(*cube_indices[1])
+        ax2 = slice(*cube_indices[2])
 
-        # buffered axis start/end
-        cuboid_start, cuboid_end = cube_indices[0]
-
-        if buf_start is None:
-            shape = (
-                self.cuboid_size[0],
-                *self.data_shape[1:],
-                self.num_channels,
-            )
-            buffer = torch.empty(shape, dtype=torch.float32)
-            self._pop_plane_buffer(buffer, 0, cuboid_start, cuboid_end)
-        elif buf_start + n_planes <= cuboid_start or buf_start > cuboid_end:
-            # buffer ends before cuboid starts or it starts after cuboid's end
-            self._return_plane_buffer(
-                buffer, 0, buf_start, buf_start + n_planes
-            )
-            self._pop_plane_buffer(buffer, 0, cuboid_start, cuboid_end)
-        elif buf_start < cuboid_start:
-            # cuboid starts midway through buffer. Drop start of buffer, shift
-            # buffer left and fill in end
-            dropping = cuboid_start - buf_start
-            self._return_plane_buffer(buffer, 0, buf_start, cuboid_start)
-            buffer = torch.roll(buffer, -dropping, 0)
-            self._pop_plane_buffer(
-                buffer,
-                n_planes - dropping,
-                cuboid_start + n_planes - dropping,
-                cuboid_end,
-            )
-        elif buf_start > cuboid_start:
-            # cuboid starts before buffer start. Drop end of buffer, shift
-            # buffer right, and fill in start
-            dropping = buf_start - cuboid_start
-            self._return_plane_buffer(
-                buffer,
-                n_planes - dropping,
-                cuboid_start + n_planes - dropping,
-                cuboid_end,
-            )
-            buffer = torch.roll(buffer, dropping, 0)
-            self._pop_plane_buffer(buffer, 0, cuboid_start, buf_start)
-        else:
-            assert buf_start == cuboid_start
-
-        self._buffer = buffer
-        self._buf_plane_start = cuboid_start
-
-        # 3 dim plus channels at the end
-        slices = [
-            slice(None, None),
-            slice(*cube_indices[1]),
-            slice(*cube_indices[2]),
-            slice(None, None),
-        ]
-        return buffer[slices]
-
-    def _return_plane_buffer(
-        self,
-        buffer: torch.Tensor,
-        offset_start: int,
-        plane_start: int,
-        plane_end: int,
-    ) -> None:
-        planes_buffer = self._planes_buffer
-        max_planes = self.max_axis_0_planes_buffered
-        offset_end = offset_start + plane_end - plane_start
-
-        if not max_planes:
-            # no buffer available
-            return
-
-        for i, plane in zip(
-            range(offset_start, offset_end), range(plane_start, plane_end)
-        ):
-            assert len(planes_buffer) <= max_planes
-            if len(planes_buffer) == max_planes:
-                # fifo when last=False
-                planes_buffer.popitem(last=False)
-            planes_buffer[plane] = buffer[i, ...].detach().clone()
-
-    def _pop_plane_buffer(
-        self,
-        buffer: torch.Tensor,
-        offset_start: int,
-        plane_start: int,
-        plane_end: int,
-    ) -> None:
-        planes_buffer = self._planes_buffer
-        offset_end = offset_start + plane_end - plane_start
-
-        for i, plane in zip(
-            range(offset_start, offset_end), range(plane_start, plane_end)
-        ):
-            if plane in planes_buffer:
-                buffer[i, ...] = planes_buffer.pop(plane)
-            else:
+        planes = []
+        # buffered axis
+        for i in range(*cube_indices[0]):
+            if i not in planes_buffer:
+                plane_shape = *self.data_shape[1:], self.num_channels
+                plane = torch.empty(plane_shape, dtype=torch.float32)
                 for channel in range(self.num_channels):
-                    buffer[i, ..., channel] = self.read_plane(plane, channel)
+                    plane[:, :, channel] = self.read_plane(i, channel)
+
+                if len(planes_buffer) == max_planes:
+                    # fifo when last=False
+                    planes_buffer.popitem(last=False)
+                assert len(planes_buffer) < max_planes
+
+                planes_buffer[i] = plane
+
+            planes.append(planes_buffer[i][ax1, ax2, :])
+
+        return planes
 
     def read_plane(self, plane: int, channel: int) -> torch.Tensor:
         raise NotImplementedError
@@ -261,10 +192,17 @@ class CachedStackDataset(CachedDatasetBase):
         self.input_arrays = input_arrays
         self.data_shape = input_arrays[0].shape
         self.num_channels = len(self.input_arrays)
+        self._converters = []
 
     def read_plane(self, plane: int, channel: int) -> torch.Tensor:
+        if not self._converters:
+            self._converters = [
+                get_data_converter(arr.dtype, np.float32)
+                for arr in self.input_arrays
+            ]
+        converter = self._converters[channel]
         return torch.from_numpy(
-            np.asarray(self.input_arrays[channel][plane, ...])
+            converter(self.input_arrays[channel][plane, ...])
         )
 
 
@@ -447,7 +385,7 @@ class CubeStackDataset(CubeDatasetBase):
         self,
         signal_array: types.array,
         background_array: types.array,
-        max_axis_0_cubes_buffered: int = 0,
+        max_axis_0_cubes_buffered: float = 0,
         **kwargs,
     ):
         super().__init__(**kwargs)
@@ -497,7 +435,10 @@ class CubeStackDataset(CubeDatasetBase):
         return self.get_cells_data([cell])[0, ...]
 
     def get_cells_data(self, cells: list[Cell]) -> torch.Tensor:
-        data = torch.empty((len(cells), *self.cached_dataset.full_cuboid_size))
+        data = torch.empty(
+            (len(cells), *self.cached_dataset.full_cuboid_size),
+            dtype=torch.float32,
+        )
 
         process = self._dataset_process
         if process is None:

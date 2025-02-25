@@ -84,7 +84,6 @@ def main(
         dataset=dataset,
         sampler=sampler,
         num_workers=workers,
-        prefetch_factor=4,
         drop_last=False,
         pin_memory=pin_memory,
         collate_fn=_identity_func,
