@@ -19,13 +19,16 @@ from cellfinder.core.tools.threading import (
 )
 from cellfinder.core.tools.tools import get_data_converter
 
+AXIS = Literal["x", "y", "z"]
+DIM = Literal["x", "y", "z", "C"]
+
 
 class StackSizeError(Exception):
     pass
 
 
 def get_axis_reordering(
-    in_order: tuple[str, ...], out_order: tuple[str, ...]
+    in_order: tuple[Any, ...], out_order: tuple[Any, ...]
 ) -> list[int]:
     indices = []
     for value in out_order:
@@ -33,7 +36,7 @@ def get_axis_reordering(
     return indices
 
 
-def _read_planes_send_cubes(
+def _read_planes_send_cuboids(
     thread: ThreadWithException,
     dataset: "CachedDatasetBase",
     queues: list[Queue],
@@ -58,24 +61,36 @@ def _read_planes_send_cubes(
             queue.put((key, cell), block=True, timeout=None)
 
 
-def _get_cube_indices(
-    cell: Cell, axis: Literal["x", "y", "z"], size: int
+def get_data_cuboid_voxels(
+    network_cuboid_voxels: int,
+    network_voxel_size_um: float,
+    data_voxel_size_um: float,
+) -> int:
+    return int(
+        round(
+            network_cuboid_voxels * network_voxel_size_um / data_voxel_size_um
+        )
+    )
+
+
+def get_data_cuboid_range(
+    pos: float, num_voxels: int, axis: AXIS
 ) -> tuple[int, int]:
     match axis:
         case "x" | "y":
-            start = int(round(getattr(cell, axis) - size / 2))
+            start = int(round(pos - num_voxels / 2))
         case "z":
-            start = int(cell.z - size // 2)
+            start = int(pos - num_voxels // 2)
         case _:
             raise ValueError(f"Unknown axis {axis}")
 
-    return start, start + size
+    return start, start + num_voxels
 
 
 class CachedDatasetBase:
     """
     We buffer along axis 0, which is the data_axis_order[0] axis.
-    The size of each cube in voxels of the dataset is given by cuboid_size.
+    The size of each cuboid in voxels of the dataset is given by cuboid_size.
     Data returned is in data_axis_order, with channel the last axis
     """
 
@@ -88,20 +103,20 @@ class CachedDatasetBase:
     cuboid_size: tuple[int, int, int] = (1, 1, 1)
     # in units of voxels, not um. in data_axis_order
 
-    data_axis_order: tuple[str, str, str] = ("z", "y", "x")
+    data_axis_order: tuple[AXIS, AXIS, AXIS] = ("z", "y", "x")
 
-    full_data_axis_order: tuple[str, str, str, str] = ("z", "y", "x", "c")
+    full_data_axis_order: tuple[DIM, DIM, DIM, DIM] = ("z", "y", "x", "c")
 
     _planes_buffer: OrderedDict[int, torch.Tensor]
 
     def __init__(
         self,
-        max_axis_0_cubes_buffered: float = 0,
-        data_axis_order: tuple[str, str, str] = ("z", "y", "x"),
+        max_axis_0_cuboids_buffered: float = 0,
+        data_axis_order: tuple[AXIS, AXIS, AXIS] = ("z", "y", "x"),
         cuboid_size: tuple[int, int, int] = (1, 1, 1),
     ):
         self.max_axis_0_planes_buffered = int(
-            round((max_axis_0_cubes_buffered + 1) * cuboid_size[0])
+            round((max_axis_0_cuboids_buffered + 1) * cuboid_size[0])
         )
         self.cuboid_size = cuboid_size
 
@@ -148,15 +163,17 @@ class CachedDatasetBase:
         max_planes = self.max_axis_0_planes_buffered
         planes_buffer = self._planes_buffer
 
-        cube_indices = []
+        cuboid_indices = []
         for ax, size in zip(self.data_axis_order, self.cuboid_size):
-            cube_indices.append(_get_cube_indices(cell, ax, size))
-        ax1 = slice(*cube_indices[1])
-        ax2 = slice(*cube_indices[2])
+            cuboid_indices.append(
+                get_data_cuboid_range(getattr(cell, ax), size, ax)
+            )
+        ax1 = slice(*cuboid_indices[1])
+        ax2 = slice(*cuboid_indices[2])
 
         planes = []
         # buffered axis
-        for i in range(*cube_indices[0]):
+        for i in range(*cuboid_indices[0]):
             if i not in planes_buffer:
                 plane_shape = *self.data_shape[1:], self.num_channels
                 plane = torch.empty(plane_shape, dtype=torch.float32)
@@ -217,9 +234,9 @@ class CubeDatasetBase(Dataset):
         points: list[Cell],
         data_voxel_sizes: tuple[int, int, int],
         network_voxel_sizes: tuple[int, int, int],
-        network_cube_voxels: tuple[int, int, int] = (20, 50, 50),
-        axis_order: tuple[str, str, str] = ("z", "y", "x"),
-        output_axis_order: tuple[str, str, str, str] = ("y", "x", "z", "c"),
+        network_cuboid_voxels: tuple[int, int, int] = (20, 50, 50),
+        axis_order: tuple[AXIS, AXIS, AXIS] = ("z", "y", "x"),
+        output_axis_order: tuple[AXIS, AXIS, AXIS] = ("y", "x", "z", "c"),
         classes: int = 2,
         sort_by_axis: str | None = "z",
         transform=None,
@@ -252,16 +269,16 @@ class CubeDatasetBase(Dataset):
 
         self.data_voxel_sizes = data_voxel_sizes
         self.network_voxel_sizes = network_voxel_sizes
-        self.network_cube_voxels = network_cube_voxels
+        self.network_cuboid_voxels = network_cuboid_voxels
         self.axis_order = axis_order
         self.output_axis_order = output_axis_order
 
-        self.data_cube_voxels = []
-        for data_um, network_um, cube_voxels in zip(
-            data_voxel_sizes, network_voxel_sizes, network_cube_voxels
+        self.data_cuboid_voxels = []
+        for data_um, network_um, cuboid_voxels in zip(
+            data_voxel_sizes, network_voxel_sizes, network_cuboid_voxels
         ):
-            self.data_cube_voxels.append(
-                int(round(cube_voxels * network_um / data_um))
+            self.data_cuboid_voxels.append(
+                get_data_cuboid_voxels(cuboid_voxels, network_um, data_um)
             )
 
         self.classes = classes
@@ -338,15 +355,15 @@ class CubeDatasetBase(Dataset):
         voxel_order = self.axis_order
 
         torch_voxel_map = get_axis_reordering(voxel_order, torch_order[2:])
-        scaled_cube_size = [
-            self.network_cube_voxels[i] for i in torch_voxel_map
+        scaled_cuboid_size = [
+            self.network_cuboid_voxels[i] for i in torch_voxel_map
         ]
 
         data = torch.permute(
             data, get_axis_reordering(data_order, torch_order)
         )
         assert len(data.shape) == 5, "expected (batch, channel, z, y, x) shape"
-        data = F.interpolate(data, size=scaled_cube_size, mode="trilinear")
+        data = F.interpolate(data, size=scaled_cuboid_size, mode="trilinear")
 
         data = torch.permute(
             data, get_axis_reordering(torch_order, data_order)
@@ -385,7 +402,7 @@ class CubeStackDataset(CubeDatasetBase):
         self,
         signal_array: types.array,
         background_array: types.array,
-        max_axis_0_cubes_buffered: float = 0,
+        max_axis_0_cuboids_buffered: float = 0,
         **kwargs,
     ):
         super().__init__(**kwargs)
@@ -405,8 +422,8 @@ class CubeStackDataset(CubeDatasetBase):
         self.cached_dataset = CachedStackDataset(
             input_arrays=data_arrays,
             data_axis_order=self.axis_order,
-            max_axis_0_cubes_buffered=max_axis_0_cubes_buffered,
-            cuboid_size=self.data_cube_voxels,
+            max_axis_0_cuboids_buffered=max_axis_0_cuboids_buffered,
+            cuboid_size=self.data_cuboid_voxels,
         )
 
         data_axis_order = self.cached_dataset.full_data_axis_order
@@ -416,7 +433,7 @@ class CubeStackDataset(CubeDatasetBase):
                 ("b", *data_axis_order), ("b", *self.output_axis_order)
             )
 
-        self.points = [p for p in self.points if self.point_has_full_cube(p)]
+        self.points = [p for p in self.points if self.point_has_full_cuboid(p)]
         self.full_cuboid_size = self.cached_dataset.full_cuboid_size
 
     def __getstate__(self):
@@ -424,11 +441,13 @@ class CubeStackDataset(CubeDatasetBase):
         del state["cached_dataset"]
         return state
 
-    def point_has_full_cube(self, point: Cell) -> bool:
-        for ax, data_size, cube_size in zip(
-            self.axis_order, self.dataset_shape, self.data_cube_voxels
+    def point_has_full_cuboid(self, point: Cell) -> bool:
+        for ax, data_size, cuboid_size in zip(
+            self.axis_order, self.dataset_shape, self.data_cuboid_voxels
         ):
-            start, end = _get_cube_indices(point, ax, cube_size)
+            start, end = get_data_cuboid_range(
+                getattr(point, ax), cuboid_size, ax
+            )
             if start < 0:
                 return False
             if end > data_size:
@@ -477,7 +496,7 @@ class CubeStackDataset(CubeDatasetBase):
         self._worker_queues = queues
 
         self._dataset_thread = ThreadWithException(
-            target=_read_planes_send_cubes,
+            target=_read_planes_send_cuboids,
             args=(self.cached_dataset, queues),
             pass_self=True,
         )

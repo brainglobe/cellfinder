@@ -71,7 +71,7 @@ def main(
         points=points,
         data_voxel_sizes=voxel_sizes,
         network_voxel_sizes=network_voxel_sizes,
-        network_cube_voxels=(cube_depth, cube_height, cube_width),
+        network_cuboid_voxels=(cube_depth, cube_height, cube_width),
         axis_order=("z", "y", "x"),
     )
     sampler = CubeBatchSampler(
