@@ -8,11 +8,11 @@ from brainglobe_napari_io.cellfinder.utils import convert_layer_to_cells
 from brainglobe_utils.cells.cells import Cell
 from brainglobe_utils.general.system import delete_directory_contents
 from brainglobe_utils.IO.yaml import save_yaml
-from brainglobe_utils.qtpy.dialog import display_warning
-from brainglobe_utils.qtpy.interaction import add_button, add_combobox
 from magicgui.widgets import ProgressBar
 from napari.qt.threading import thread_worker
 from napari.utils.notifications import show_info
+from qt_niu.dialog import display_warning
+from qt_niu.interaction import add_button, add_combobox
 from qtpy import QtCore
 from qtpy.QtWidgets import (
     QComboBox,
