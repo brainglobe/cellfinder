@@ -52,6 +52,7 @@ dev = [
     "pytest",
     "tox",
     "pooch >= 1",
+    "qt-niu"
 ]
 napari = [
     "brainglobe-napari-io",
