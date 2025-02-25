@@ -107,7 +107,7 @@ def main(
     logger.info("Running inference")
     # in Keras 3.0 multiprocessing params are specified in the generator
     if workers:
-        dataset.start_dataset_process(workers)
+        dataset.start_dataset_thread(workers)
     try:
         predictions = model.predict(
             data_loader,
@@ -115,7 +115,7 @@ def main(
             callbacks=callbacks,
         )
     finally:
-        dataset.stop_dataset_process()
+        dataset.stop_dataset_thread()
 
     predictions = predictions.round()
     predictions = predictions.astype("uint16")

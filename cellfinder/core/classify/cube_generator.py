@@ -15,7 +15,7 @@ from cellfinder.core import types
 from cellfinder.core.tools.threading import (
     EOFSignal,
     ExecutionFailure,
-    ProcessWithException,
+    ThreadWithException,
 )
 from cellfinder.core.tools.tools import get_data_converter
 
@@ -34,12 +34,12 @@ def get_axis_reordering(
 
 
 def _read_planes_send_cubes(
-    process: ProcessWithException,
+    thread: ThreadWithException,
     dataset: "CachedDatasetBase",
     queues: list[Queue],
 ) -> None:
     while True:
-        msg = process.get_msg_from_mainthread()
+        msg = thread.get_msg_from_mainthread()
         if msg == EOFSignal:
             return
 
@@ -192,14 +192,12 @@ class CachedStackDataset(CachedDatasetBase):
         self.input_arrays = input_arrays
         self.data_shape = input_arrays[0].shape
         self.num_channels = len(self.input_arrays)
-        self._converters = []
+        self._converters = [
+            get_data_converter(arr.dtype, np.float32)
+            for arr in self.input_arrays
+        ]
 
     def read_plane(self, plane: int, channel: int) -> torch.Tensor:
-        if not self._converters:
-            self._converters = [
-                get_data_converter(arr.dtype, np.float32)
-                for arr in self.input_arrays
-            ]
         converter = self._converters[channel]
         return torch.from_numpy(
             converter(self.input_arrays[channel][plane, ...])
@@ -211,6 +209,8 @@ class CubeDatasetBase(Dataset):
     Input voxel order is Width, Height, Depth
     Returned data order is (Batch) Height, Width, Depth, Channel.
     """
+
+    full_cuboid_size: tuple[int, int, int, int] = 1, 1, 1, 1
 
     def __init__(
         self,
@@ -377,7 +377,7 @@ class CubeStackDataset(CubeDatasetBase):
 
     cached_dataset: CachedDatasetBase | None = None
 
-    _dataset_process: ProcessWithException | None = None
+    _dataset_thread: ThreadWithException | None = None
 
     _worker_queues: list[Queue] = None
 
@@ -399,11 +399,11 @@ class CubeStackDataset(CubeDatasetBase):
             raise ValueError("Expected a 3d in data array")
 
         self.dataset_shape = signal_array.shape
-        self.data_arrays = [signal_array, background_array]
         self._worker_queues = []
 
+        data_arrays = [signal_array, background_array]
         self.cached_dataset = CachedStackDataset(
-            input_arrays=self.data_arrays,
+            input_arrays=data_arrays,
             data_axis_order=self.axis_order,
             max_axis_0_cubes_buffered=max_axis_0_cubes_buffered,
             cuboid_size=self.data_cube_voxels,
@@ -417,6 +417,12 @@ class CubeStackDataset(CubeDatasetBase):
             )
 
         self.points = [p for p in self.points if self.point_has_full_cube(p)]
+        self.full_cuboid_size = self.cached_dataset.full_cuboid_size
+
+    def __getstate__(self):
+        state = self.__dict__.copy()
+        del state["cached_dataset"]
+        return state
 
     def point_has_full_cube(self, point: Cell) -> bool:
         for ax, data_size, cube_size in zip(
@@ -436,13 +442,13 @@ class CubeStackDataset(CubeDatasetBase):
 
     def get_cells_data(self, cells: list[Cell]) -> torch.Tensor:
         data = torch.empty(
-            (len(cells), *self.cached_dataset.full_cuboid_size),
+            (len(cells), *self.full_cuboid_size),
             dtype=torch.float32,
         )
 
-        process = self._dataset_process
-        if process is None:
-            self.cached_dataset.fill_batch(data, cells)
+        thread = self._dataset_thread
+        if thread is None:
+            self.cached_dataset.get_cell_batch_cuboid_data(data, cells)
         else:
             queues = self._worker_queues
             # for host, it's the last queue
@@ -451,12 +457,12 @@ class CubeStackDataset(CubeDatasetBase):
                 queue_id = get_worker_info().id
             queue = queues[queue_id]
 
-            process.send_msg_to_thread(("cells", cells, data, queue_id))
+            thread.send_msg_to_thread(("cells", cells, data, queue_id))
             msg, value = queue.get(block=True)
             # if there's no error, we just sent back the cell
             if msg == "exception":
                 raise ExecutionFailure(
-                    "Reporting failure from data process"
+                    "Reporting failure from data thread"
                 ) from value
             assert msg == "cells"
 
@@ -464,30 +470,30 @@ class CubeStackDataset(CubeDatasetBase):
             data = torch.permute(data, self._data_axis_reordering)
         return data
 
-    def start_dataset_process(self, num_workers: int):
-        # include queue for host process
+    def start_dataset_thread(self, num_workers: int):
+        # include queue for host thread
         ctx = mp.get_context("spawn")
         queues = [ctx.Queue(maxsize=0) for _ in range(num_workers + 1)]
         self._worker_queues = queues
 
-        self._dataset_process = ProcessWithException(
+        self._dataset_thread = ThreadWithException(
             target=_read_planes_send_cubes,
             args=(self.cached_dataset, queues),
             pass_self=True,
         )
-        self._dataset_process.start()
+        self._dataset_thread.start()
 
-    def stop_dataset_process(self):
-        process = self._dataset_process
-        if process is None:
+    def stop_dataset_thread(self):
+        thread = self._dataset_thread
+        if thread is None:
             return
 
-        self._dataset_process = None
+        self._dataset_thread = None
         self._worker_queues = []
 
-        process.notify_to_end_thread()
-        process.clear_remaining()
-        process.join()
+        thread.notify_to_end_thread()
+        thread.clear_remaining()
+        thread.join()
 
 
 class CubeBatchSampler(Sampler):
