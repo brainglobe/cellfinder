@@ -34,6 +34,7 @@ dependencies = [
     "torch>=2.1.0,!=2.4",
     "tifffile",
     "tqdm",
+    "qt-niu"
 ]
 dynamic = ["version"]
 
@@ -52,7 +53,6 @@ dev = [
     "pytest",
     "tox",
     "pooch >= 1",
-    "qt-niu"
 ]
 napari = [
     "brainglobe-napari-io",
