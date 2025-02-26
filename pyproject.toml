@@ -35,7 +35,6 @@ dependencies = [
     "tifffile",
     "tqdm",
     "qt-niu"
-
 ]
 dynamic = ["version"]
 
