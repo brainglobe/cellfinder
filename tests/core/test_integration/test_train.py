@@ -10,7 +10,7 @@ data_dir = os.path.join(
 )
 cell_cubes = os.path.join(data_dir, "cells")
 non_cell_cubes = os.path.join(data_dir, "non_cells")
-training_yml_file = os.path.join(data_dir, "training.yml")
+training_yaml_file = os.path.join(data_dir, "training.yaml")
 
 
 EPOCHS = "2"
@@ -26,7 +26,7 @@ def test_train(tmpdir):
     train_args = [
         "cellfinder_train",
         "-y",
-        training_yml_file,
+        training_yaml_file,
         "-o",
         tmpdir,
         "--epochs",
