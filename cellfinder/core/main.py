@@ -6,7 +6,7 @@ from brainglobe_utils.cells.cells import Cell
 
 from cellfinder.core import logger
 from cellfinder.core.download.download import model_type
-from cellfinder.core.train.train_yml import depth_type
+from cellfinder.core.train.train_yaml import depth_type
 
 
 def main(
