@@ -85,7 +85,7 @@ def test_cell_marking(curation_widget, tmp_path):
     widget.output_directory = tmp_path
     widget.save_training_data(prompt_for_directory=False, block=True)
 
-    assert (tmp_path / "training.yaml").exists()
+    assert (tmp_path / "training.yml").exists()
     # Check that two .tif files are saved for both cells and non_cells
     assert len(list((tmp_path / "non_cells").glob("*.tif"))) == 2
     assert len(list((tmp_path / "cells").glob("*.tif"))) == 2

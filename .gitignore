@@ -77,7 +77,7 @@ doc/build/
 
 # pydocmd
 _build/
-mkdocs.yaml
+mkdocs.yml
 
 # MkDocs documentation
 /site/

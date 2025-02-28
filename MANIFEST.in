@@ -1,11 +1,11 @@
-include .napari/config.yaml
+include .napari/config.yml
 include CITATION.cff
 include LICENSE
 include README.md
 include requirements.txt
 
 exclude .pre-commit-config.yaml
-exclude .codecov.yaml
+exclude .codecov.yml
 exclude CORE_CHANGELOG.md
 exclude tox.ini
 
