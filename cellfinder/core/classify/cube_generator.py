@@ -14,6 +14,7 @@ from torch.multiprocessing import Queue
 from torch.utils.data import Dataset, Sampler, get_worker_info
 
 from cellfinder.core import types
+from cellfinder.core.classify.augment import AugmentationParameters, augment
 from cellfinder.core.tools.threading import (
     EOFSignal,
     ExecutionFailure,
@@ -346,6 +347,8 @@ class CuboidDatasetBase(Dataset):
 
     num_channels: int = 1
 
+    augmentation_parameters: AugmentationParameters | None = None
+
     def __init__(
         self,
         points: list[Cell],
@@ -356,8 +359,12 @@ class CuboidDatasetBase(Dataset):
         output_axis_order: tuple[AXIS, AXIS, AXIS] = ("y", "x", "z", "c"),
         classes: int = 2,
         sort_by_axis: str | None = "z",
-        transform=None,
         target_output: Literal["cell", "dict", "label"] | None = None,
+        augment: bool = False,
+        augment_likelihood: float = 0.1,
+        flip_axis: tuple[int, int, int] = (0, 1, 2),
+        rotate_max_axes: tuple[int, int, int] = (45, 45, 45),
+        translate: tuple[float, float, float] = (0.2, 0.2, 0.2),
         **kwargs,
     ):
         super().__init__(**kwargs)
@@ -399,8 +406,16 @@ class CuboidDatasetBase(Dataset):
             )
 
         self.classes = classes
-        self.transform = transform
         self.target_output = target_output
+
+        if augment:
+            self.augmentation_parameters = AugmentationParameters(
+                flip_axis,
+                translate,
+                rotate_max_axes,
+                2,
+                augment_likelihood,
+            )
 
     @property
     def cuboid_with_channels_size(self) -> tuple[int, int, int, int]:
@@ -421,8 +436,23 @@ class CuboidDatasetBase(Dataset):
         data = self.get_point_data(idx)
 
         data = self.rescale_to_output_size(data)
-        if self.transform:
-            data = self.transform(data)
+
+        augmentation_parameters = self.augmentation_parameters
+        if augmentation_parameters is not None:
+            augmentation_parameters.update_parameters()
+            chan_index = self.output_axis_order.index("c")
+            chan_indexer = [slice(None)] * 4
+
+            data_np = data.numpy()
+            for c in range(self.num_channels):
+                chan_indexer[chan_index] = c
+                # todo: ensure assumption that augment is same order as
+                #  output_axis_order
+                data_np[tuple(chan_indexer)] = augment(
+                    self.augmentation_parameters, data_np[tuple(chan_indexer)]
+                )
+
+            data[:] = torch.from_numpy(data_np)
 
         match self.target_output:
             case None:
@@ -447,8 +477,28 @@ class CuboidDatasetBase(Dataset):
         data = self.get_points_data(indices)
 
         data = self.rescale_to_output_size(data)
-        if self.transform:
-            data = self.transform(data)
+
+        augmentation_parameters = self.augmentation_parameters
+        if augmentation_parameters is not None:
+            # batch is always first index
+            chan_index = self.output_axis_order.index("c") + 1
+            chan_indexer = [slice(None)] * 5
+            data_np = data.numpy()
+
+            for b in range(len(indices)):
+                chan_indexer[0] = b
+                augmentation_parameters.update_parameters()
+
+                for c in range(self.num_channels):
+                    chan_indexer[chan_index] = c
+                    # todo: ensure assumption that augment is same order as
+                    #  output_axis_order
+                    data_np[tuple(chan_indexer)] = augment(
+                        self.augmentation_parameters,
+                        data_np[tuple(chan_indexer)],
+                    )
+
+            data[:] = torch.from_numpy(data_np)
 
         match self.target_output:
             case None:
@@ -557,6 +607,12 @@ class CuboidThreadedDatasetBase(CuboidDatasetBase):
 
         thread = self._dataset_thread
         if thread is None:
+            if self.src_dataset is None:
+                raise ValueError(
+                    "Dataset is not provided. Or if this is running in a "
+                    "worker process, did you forget to call "
+                    "start_dataset_thread in the main process?"
+                )
             self.src_dataset.get_point_batch_cuboid_data(data, points_key)
         else:
             queues = self._worker_queues

@@ -348,6 +348,7 @@ def get_dataloader(
         network_cuboid_voxels=(CUBE_DEPTH, CUBE_HEIGHT, CUBE_WIDTH),
         axis_order=("z", "y", "x"),
         target_output="label",
+        augment=augment,
     )
     sampler = CuboidBatchSampler(
         dataset=dataset,

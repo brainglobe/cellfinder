@@ -156,12 +156,13 @@ class AugmentationParameters:
         self.random_translate_multipliers: List[float] = []
         self.rotation_angles: List[float] = []
 
-        if flip_axis:
-            self.get_flip_parameters(flip_axis)
-        if translate:
-            self.get_translation_parameters(translate)
-        if rotate_max_axes:
-            self.get_rotation_parameters(rotate_max_axes)
+    def update_parameters(self):
+        if self.flip_axis:
+            self.get_flip_parameters(self.flip_axis)
+        if self.translate:
+            self.get_translation_parameters(self.translate)
+        if self.rotate_max_axes:
+            self.get_rotation_parameters(self.rotate_max_axes)
 
     def get_flip_parameters(self, flip_axis: Tuple[int, int, int]) -> None:
         self.axes_to_flip = []
