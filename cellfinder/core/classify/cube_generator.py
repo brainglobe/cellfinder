@@ -1,13 +1,15 @@
 import math
 from collections import OrderedDict, defaultdict
+from collections.abc import Sequence
 from numbers import Integral
-from typing import Any, Literal
+from typing import Any, Hashable, Literal
 
 import numpy as np
 import torch
 import torch.multiprocessing as mp
 import torch.nn.functional as F
 from brainglobe_utils.cells.cells import Cell
+from tifffile import imread
 from torch.multiprocessing import Queue
 from torch.utils.data import Dataset, Sampler, get_worker_info
 
@@ -36,9 +38,9 @@ def get_axis_reordering(
     return indices
 
 
-def _read_planes_send_cuboids(
+def _read_data_send_cuboids(
     thread: ThreadWithException,
-    dataset: "CachedDatasetBase",
+    dataset: "ImageDataBase",
     queues: list[Queue],
 ) -> None:
     while True:
@@ -46,19 +48,19 @@ def _read_planes_send_cuboids(
         if msg == EOFSignal:
             return
 
-        key, cell, buffer, queue_id = msg
+        key, point, buffer, queue_id = msg
         queue = queues[queue_id]
         try:
-            if key == "cell":
-                buffer[:] = dataset.get_cell_cuboid_data(cell)
-            elif key == "cells":
-                dataset.get_cell_batch_cuboid_data(buffer, cell)
+            if key == "point":
+                buffer[:] = dataset.get_point_cuboid_data(point)
+            elif key == "points":
+                dataset.get_point_batch_cuboid_data(buffer, point)
             else:
                 raise ValueError(f"Bad message {key}")
         except BaseException as e:
             queue.put(("exception", e), block=True, timeout=None)
         else:
-            queue.put((key, cell), block=True, timeout=None)
+            queue.put((key, point), block=True, timeout=None)
 
 
 def get_data_cuboid_voxels(
@@ -87,37 +89,32 @@ def get_data_cuboid_range(
     return start, start + num_voxels
 
 
-class CachedDatasetBase:
+class ImageDataBase:
     """
     We buffer along axis 0, which is the data_axis_order[0] axis.
     The size of each cuboid in voxels of the dataset is given by cuboid_size.
     Data returned is in data_axis_order, with channel the last axis
     """
 
-    data_shape: tuple[int, int, int]
-
     num_channels: int = 1
-
-    max_axis_0_planes_buffered: int = 0
 
     cuboid_size: tuple[int, int, int] = (1, 1, 1)
     # in units of voxels, not um. in data_axis_order
 
     data_axis_order: tuple[AXIS, AXIS, AXIS] = ("z", "y", "x")
 
-    full_data_axis_order: tuple[DIM, DIM, DIM, DIM] = ("z", "y", "x", "c")
-
-    _planes_buffer: OrderedDict[int, torch.Tensor]
+    data_with_channels_axis_order: tuple[DIM, DIM, DIM, DIM] = (
+        "z",
+        "y",
+        "x",
+        "c",
+    )
 
     def __init__(
         self,
-        max_axis_0_cuboids_buffered: float = 0,
         data_axis_order: tuple[AXIS, AXIS, AXIS] = ("z", "y", "x"),
         cuboid_size: tuple[int, int, int] = (1, 1, 1),
     ):
-        self.max_axis_0_planes_buffered = int(
-            round((max_axis_0_cuboids_buffered + 1) * cuboid_size[0])
-        )
         self.cuboid_size = cuboid_size
 
         if len(data_axis_order) != 3 or set(data_axis_order) != {
@@ -130,43 +127,76 @@ class CachedDatasetBase:
                 f"{data_axis_order}"
             )
         self.data_axis_order = data_axis_order
-        self.full_data_axis_order = *data_axis_order, "c"
+        self.data_with_channels_axis_order = *data_axis_order, "c"
+
+    @property
+    def cuboid_with_channels_size(self) -> tuple[int, int, int, int]:
+        return *self.cuboid_size, self.num_channels
+
+    def get_point_cuboid_data(self, point_key: int) -> torch.Tensor:
+        raise NotImplementedError
+
+    def get_point_batch_cuboid_data(
+        self, batch: torch.Tensor, points_key: list[int]
+    ) -> None:
+        raise NotImplementedError
+
+
+class CachedStackImageDataBase(ImageDataBase):
+
+    points: list[Cell] = []
+
+    stack_shape: tuple[int, int, int]
+
+    max_axis_0_planes_buffered: int = 0
+
+    _planes_buffer: OrderedDict[int, torch.Tensor]
+
+    def __init__(
+        self,
+        points: list[Cell],
+        max_axis_0_cuboids_buffered: float = 0,
+        **kwargs,
+    ):
+        super().__init__(**kwargs)
+        self.points = points
+        self.max_axis_0_planes_buffered = int(
+            round((max_axis_0_cuboids_buffered + 1) * self.cuboid_size[0])
+        )
 
         self._planes_buffer = OrderedDict()
 
-    @property
-    def full_cuboid_size(self) -> tuple[int, int, int, int]:
-        return *self.cuboid_size, self.num_channels
+    def get_point_cuboid_data(self, point_key: int) -> torch.Tensor:
+        data = torch.empty(self.cuboid_with_channels_size, dtype=torch.float32)
 
-    def get_cell_cuboid_data(self, cell: Cell) -> torch.Tensor:
-        shape = *self.data_shape, self.num_channels
-        data = torch.empty(shape, dtype=torch.float32)
-
-        for j, plane in enumerate(self._get_cuboid_planes(cell)):
+        point = self.points[point_key]
+        for j, plane in enumerate(self._get_cuboid_planes(point)):
             data[j, ...] = plane
 
         return data
 
-    def get_cell_batch_cuboid_data(
-        self, batch: torch.Tensor, cells: list[Cell]
+    def get_point_batch_cuboid_data(
+        self, batch: torch.Tensor, points_key: list[int]
     ) -> None:
-        if len(cells) != batch.shape[0]:
+        if len(points_key) != batch.shape[0]:
             raise ValueError(
-                "Expected the number of cells to match the batch size"
+                "Expected the number of points to match the batch size"
             )
 
-        for i, cell in enumerate(cells):
-            for j, plane in enumerate(self._get_cuboid_planes(cell)):
+        points = self.points
+        for i, point_key in enumerate(points_key):
+            point = points[point_key]
+            for j, plane in enumerate(self._get_cuboid_planes(point)):
                 batch[i, j, ...] = plane
 
-    def _get_cuboid_planes(self, cell: Cell) -> list[torch.Tensor]:
+    def _get_cuboid_planes(self, point: Cell) -> list[torch.Tensor]:
         max_planes = self.max_axis_0_planes_buffered
         planes_buffer = self._planes_buffer
 
         cuboid_indices = []
         for ax, size in zip(self.data_axis_order, self.cuboid_size):
             cuboid_indices.append(
-                get_data_cuboid_range(getattr(cell, ax), size, ax)
+                get_data_cuboid_range(getattr(point, ax), size, ax)
             )
         ax1 = slice(*cuboid_indices[1])
         ax2 = slice(*cuboid_indices[2])
@@ -175,7 +205,7 @@ class CachedDatasetBase:
         # buffered axis
         for i in range(*cuboid_indices[0]):
             if i not in planes_buffer:
-                plane_shape = *self.data_shape[1:], self.num_channels
+                plane_shape = *self.stack_shape[1:], self.num_channels
                 plane = torch.empty(plane_shape, dtype=torch.float32)
                 for channel in range(self.num_channels):
                     plane[:, :, channel] = self.read_plane(i, channel)
@@ -195,7 +225,7 @@ class CachedDatasetBase:
         raise NotImplementedError
 
 
-class CachedStackDataset(CachedDatasetBase):
+class CachedArrayStackImageData(CachedStackImageDataBase):
 
     input_arrays: list[types.array]
 
@@ -207,7 +237,7 @@ class CachedStackDataset(CachedDatasetBase):
         super().__init__(**kwargs)
 
         self.input_arrays = input_arrays
-        self.data_shape = input_arrays[0].shape
+        self.stack_shape = input_arrays[0].shape
         self.num_channels = len(self.input_arrays)
         self._converters = [
             get_data_converter(arr.dtype, np.float32)
@@ -221,13 +251,100 @@ class CachedStackDataset(CachedDatasetBase):
         )
 
 
-class CubeDatasetBase(Dataset):
+class CachedCuboidImageDataBase(ImageDataBase):
+
+    max_cuboids_buffered: int = 0
+
+    _cuboids_buffer: OrderedDict[Hashable, torch.Tensor]
+
+    def __init__(
+        self,
+        max_cuboids_buffered: int = 0,
+        **kwargs,
+    ):
+        super().__init__(**kwargs)
+        self.max_cuboids_buffered = max_cuboids_buffered
+        self._cuboids_buffer = OrderedDict()
+
+    def get_point_cuboid_data(self, point_key: int) -> torch.Tensor:
+        max_cuboids = self.max_cuboids_buffered
+        cuboids_buffer = self._cuboids_buffer
+
+        if point_key not in cuboids_buffer:
+            cuboid = torch.empty(
+                self.cuboid_with_channels_size, dtype=torch.float32
+            )
+            for channel in range(self.num_channels):
+                cuboid[:, :, :, channel] = self.read_cuboid(point_key, channel)
+
+            if not max_cuboids:
+                return cuboid
+
+            if len(cuboids_buffer) == max_cuboids:
+                # fifo when last=False
+                cuboids_buffer.popitem(last=False)
+            assert len(cuboids_buffer) < max_cuboids
+
+            cuboids_buffer[point_key] = cuboid
+
+        return cuboids_buffer[point_key]
+
+    def get_point_batch_cuboid_data(
+        self, batch: torch.Tensor, points_key: list[int]
+    ) -> None:
+        if len(points_key) != batch.shape[0]:
+            raise ValueError(
+                "Expected the number of points to match the batch size"
+            )
+
+        for i, point_key in enumerate(points_key):
+            batch[i, ...] = self.get_point_cuboid_data(point_key)
+
+    def read_cuboid(self, point_key: int, channel: int) -> torch.Tensor:
+        raise NotImplementedError
+
+
+class CachedTiffCuboidImageData(CachedCuboidImageDataBase):
+
+    points: list[Cell] = []
+
+    filenames: Sequence[Sequence[str]] = []
+
+    def __init__(
+        self,
+        points: list[Cell],
+        filenames: Sequence[Sequence[str]],
+        **kwargs,
+    ):
+        super().__init__(**kwargs)
+        if not filenames:
+            raise ValueError("No data was provided")
+        if len(filenames) != len(points):
+            raise ValueError(
+                "Points and filenames must have same number of elements"
+            )
+
+        self.points = points
+        self.filenames = filenames
+        self.num_channels = len(filenames[0])
+        self._converters = [
+            get_data_converter(imread(channel_filenames).dtype, np.float32)
+            for channel_filenames in filenames[0]
+        ]
+
+    def read_cuboid(self, point_key: int, channel: int) -> torch.Tensor:
+        converter = self._converters[channel]
+        data = imread(self.filenames[point_key][channel])
+        return torch.from_numpy(converter(data))
+
+
+class CuboidDatasetBase(Dataset):
     """
     Input voxel order is Width, Height, Depth
     Returned data order is (Batch) Height, Width, Depth, Channel.
     """
 
-    full_cuboid_size: tuple[int, int, int, int] = 1, 1, 1, 1
+    num_channels: int = 1
 
     def __init__(
         self,
@@ -285,6 +402,10 @@ class CubeDatasetBase(Dataset):
         self.transform = transform
         self.target_output = target_output
 
+    @property
+    def cuboid_with_channels_size(self) -> tuple[int, int, int, int]:
+        return *self.data_cuboid_voxels, self.num_channels
+
     def __len__(self):
         return len(self.points)
 
@@ -296,8 +417,8 @@ class CubeDatasetBase(Dataset):
     def _get_single_item(
         self, idx: int
     ) -> torch.Tensor | tuple[torch.Tensor, Any]:
-        cell = self.points[idx]
-        data = self.get_cell_data(cell)
+        point = self.points[idx]
+        data = self.get_point_data(idx)
 
         data = self.rescale_to_output_size(data)
         if self.transform:
@@ -308,20 +429,22 @@ class CubeDatasetBase(Dataset):
                 return data
 
             case "cell":
-                label = cell
+                label = point
             case "dict":
-                label = cell.to_dict()
-            case _:
-                cls = torch.tensor(cell.type - 1)
+                label = point.to_dict()
+            case "label":
+                cls = torch.tensor(point.type - 1)
                 label = F.one_hot(cls, num_classes=self.classes)
+            case _:
+                raise ValueError(f"Unknown target value {self.target_output}")
 
         return data, label
 
     def _get_multiple_items(
         self, indices: list[int]
     ) -> torch.Tensor | tuple[torch.Tensor, Any]:
-        cells = [self.points[i] for i in indices]
-        data = self.get_cells_data(cells)
+        points = [self.points[i] for i in indices]
+        data = self.get_points_data(indices)
 
         data = self.rescale_to_output_size(data)
         if self.transform:
@@ -332,12 +455,14 @@ class CubeDatasetBase(Dataset):
                 return data
 
             case "cell":
-                labels = cells
+                labels = points
             case "dict":
-                labels = [cell.to_dict() for cell in cells]
-            case _:
-                cls = torch.tensor([cell.type - 1 for cell in cells])
+                labels = [point.to_dict() for point in points]
+            case "label":
+                cls = torch.tensor([point.type - 1 for point in points])
                 labels = F.one_hot(cls, num_classes=self.classes)
+            case _:
+                raise ValueError(f"Unknown target value {self.target_output}")
 
         return data, labels
 
@@ -373,101 +498,66 @@ class CubeDatasetBase(Dataset):
 
         return data
 
-    def get_cell_data(self, cell: Cell) -> torch.Tensor:
+    def get_point_data(self, point_key: int) -> torch.Tensor:
         """
 
-        :param cell:
+        :param point_key:
         :return: In the output_axis_order order.
         """
         raise NotImplementedError
 
-    def get_cells_data(self, cells: list[Cell]) -> torch.Tensor:
+    def get_points_data(self, points_key: list[int]) -> torch.Tensor:
         """
 
-        :param cells:
+        :param points_key:
         :return: In the output_axis_order order.
         """
         raise NotImplementedError
 
 
-class CubeStackDataset(CubeDatasetBase):
+class CuboidThreadedDatasetBase(CuboidDatasetBase):
 
-    cached_dataset: CachedDatasetBase | None = None
+    src_dataset: ImageDataBase | None = None
 
     _dataset_thread: ThreadWithException | None = None
 
     _worker_queues: list[Queue] = None
 
+    _data_axis_reordering: list[int] | None = None
+
     def __init__(
         self,
-        signal_array: types.array,
-        background_array: types.array,
-        max_axis_0_cuboids_buffered: float = 0,
         **kwargs,
     ):
         super().__init__(**kwargs)
-        if signal_array.shape != background_array.shape:
-            raise ValueError(
-                f"Shape of signal images ({signal_array.shape}) does not "
-                f"match the shape of the background images "
-                f"({background_array.shape}"
-            )
-        if len(signal_array.shape) != 3:
-            raise ValueError("Expected a 3d in data array")
-
-        self.dataset_shape = signal_array.shape
         self._worker_queues = []
-
-        data_arrays = [signal_array, background_array]
-        self.cached_dataset = CachedStackDataset(
-            input_arrays=data_arrays,
-            data_axis_order=self.axis_order,
-            max_axis_0_cuboids_buffered=max_axis_0_cuboids_buffered,
-            cuboid_size=self.data_cuboid_voxels,
-        )
-
-        data_axis_order = self.cached_dataset.full_data_axis_order
-        self._data_axis_reordering = None
-        if data_axis_order != self.output_axis_order:
-            self._data_axis_reordering = get_axis_reordering(
-                ("b", *data_axis_order), ("b", *self.output_axis_order)
-            )
-
-        self.points = [p for p in self.points if self.point_has_full_cuboid(p)]
-        self.full_cuboid_size = self.cached_dataset.full_cuboid_size
 
     def __getstate__(self):
         state = self.__dict__.copy()
-        del state["cached_dataset"]
+        del state["src_dataset"]
         return state
 
-    def point_has_full_cuboid(self, point: Cell) -> bool:
-        for ax, data_size, cuboid_size in zip(
-            self.axis_order, self.dataset_shape, self.data_cuboid_voxels
-        ):
-            start, end = get_data_cuboid_range(
-                getattr(point, ax), cuboid_size, ax
-            )
-            if start < 0:
-                return False
-            if end > data_size:
-                # if it's data_size it's fine because end is not inclusive
-                return False
+    def _set_data_axis_reordering(self) -> None | list[int]:
+        data_axis_order = self.src_dataset.data_with_channels_axis_order
+        if data_axis_order == self.output_axis_order:
+            self._data_axis_reordering = None
 
-        return True
+        self._data_axis_reordering = get_axis_reordering(
+            ("b", *data_axis_order), ("b", *self.output_axis_order)
+        )
 
-    def get_cell_data(self, cell: Cell) -> torch.Tensor:
-        return self.get_cells_data([cell])[0, ...]
+    def get_point_data(self, point_key: int) -> torch.Tensor:
+        return self.get_points_data([point_key])[0, ...]
 
-    def get_cells_data(self, cells: list[Cell]) -> torch.Tensor:
+    def get_points_data(self, points_key: list[int]) -> torch.Tensor:
         data = torch.empty(
-            (len(cells), *self.full_cuboid_size),
+            (len(points_key), *self.cuboid_with_channels_size),
             dtype=torch.float32,
         )
 
         thread = self._dataset_thread
         if thread is None:
-            self.cached_dataset.get_cell_batch_cuboid_data(data, cells)
+            self.src_dataset.get_point_batch_cuboid_data(data, points_key)
         else:
             queues = self._worker_queues
             # for host, it's the last queue
@@ -476,14 +566,14 @@ class CubeStackDataset(CubeDatasetBase):
                 queue_id = get_worker_info().id
             queue = queues[queue_id]
 
-            thread.send_msg_to_thread(("cells", cells, data, queue_id))
+            thread.send_msg_to_thread(("points", points_key, data, queue_id))
             msg, value = queue.get(block=True)
-            # if there's no error, we just sent back the cell
+            # if there's no error, we just sent back the point
             if msg == "exception":
                 raise ExecutionFailure(
                     "Reporting failure from data thread"
                 ) from value
-            assert msg == "cells"
+            assert msg == "points"
 
         if self._data_axis_reordering is not None:
             data = torch.permute(data, self._data_axis_reordering)
@@ -496,8 +586,8 @@ class CubeStackDataset(CubeDatasetBase):
         self._worker_queues = queues
 
         self._dataset_thread = ThreadWithException(
-            target=_read_planes_send_cuboids,
-            args=(self.cached_dataset, queues),
+            target=_read_data_send_cuboids,
+            args=(self.src_dataset, queues),
             pass_self=True,
         )
         self._dataset_thread.start()
@@ -515,15 +605,93 @@ class CubeStackDataset(CubeDatasetBase):
         thread.join()
 
 
-class CubeBatchSampler(Sampler):
+class CuboidStackDataset(CuboidThreadedDatasetBase):
 
     def __init__(
         self,
-        dataset: CubeDatasetBase,
+        signal_array: types.array,
+        background_array: types.array,
+        max_axis_0_cuboids_buffered: float = 0,
+        **kwargs,
+    ):
+        super().__init__(**kwargs)
+        self.num_channels = 2
+
+        if signal_array.shape != background_array.shape:
+            raise ValueError(
+                f"Shape of signal images ({signal_array.shape}) does not "
+                f"match the shape of the background images "
+                f"({background_array.shape}"
+            )
+        if len(signal_array.shape) != 3:
+            raise ValueError("Expected a 3d in data array")
+
+        self.stack_shape = signal_array.shape
+
+        self.points = [p for p in self.points if self.point_has_full_cuboid(p)]
+
+        data_arrays = [signal_array, background_array]
+        self.src_dataset = CachedArrayStackImageData(
+            points=self.points,
+            input_arrays=data_arrays,
+            data_axis_order=self.axis_order,
+            max_axis_0_cuboids_buffered=max_axis_0_cuboids_buffered,
+            cuboid_size=self.data_cuboid_voxels,
+        )
+        self._set_data_axis_reordering()
+
+    def point_has_full_cuboid(self, point: Cell) -> bool:
+        for ax, axis_size, cuboid_size in zip(
+            self.axis_order, self.stack_shape, self.data_cuboid_voxels
+        ):
+            start, end = get_data_cuboid_range(
+                getattr(point, ax), cuboid_size, ax
+            )
+            if start < 0:
+                return False
+            if end > axis_size:
+                # if it's axis_size it's fine because end is not inclusive
+                return False
+
+        return True
+
+
+class CuboidTiffDataset(CuboidThreadedDatasetBase):
+
+    def __init__(
+        self,
+        points_filenames: Sequence[Sequence[str]],
+        max_cuboids_buffered: int = 0,
+        **kwargs,
+    ):
+        super().__init__(**kwargs)
+        if not len(points_filenames):
+            raise ValueError("No data provided")
+        if len(points_filenames) != len(self.points):
+            raise ValueError(
+                "Points and filenames must have same number of elements"
+            )
+
+        self.num_channels = len(points_filenames[0])
+        self.src_dataset = CachedTiffCuboidImageData(
+            points=self.points,
+            filenames=points_filenames,
+            data_axis_order=self.axis_order,
+            max_cuboids_buffered=max_cuboids_buffered,
+            cuboid_size=self.data_cuboid_voxels,
+        )
+        self._set_data_axis_reordering()
+
+
+class CuboidBatchSampler(Sampler):
+
+    def __init__(
+        self,
+        dataset: CuboidDatasetBase,
         batch_size: int,
         auto_shuffle: bool = False,
-        sort_by_axis: str | None = "z",
-        segregate_by_axis: bool = True,
+        sort_by_axis: str | None = None,
+        segregate_by_axis: bool = False,
         **kwargs,
     ):
         super().__init__(**kwargs)

@@ -11,15 +11,15 @@ from torch.utils.data import DataLoader
 
 from cellfinder.core import logger, types
 from cellfinder.core.classify.cube_generator import (
-    CubeBatchSampler,
-    CubeStackDataset,
+    CuboidBatchSampler,
+    CuboidStackDataset,
 )
 from cellfinder.core.classify.tools import get_model
 from cellfinder.core.train.train_yml import depth_type, models
 
 
-def _identity_func(data):
-    return data
+def _collate_identity(data):
+    return data[0]
 
 
 def main(
@@ -65,7 +65,7 @@ def main(
     start_time = datetime.now()
 
     logger.debug("Initialising cube generator")
-    dataset = CubeStackDataset(
+    dataset = CuboidStackDataset(
         signal_array=signal_array,
         background_array=background_array,
         points=points,
@@ -74,7 +74,7 @@ def main(
         network_cuboid_voxels=(cube_depth, cube_height, cube_width),
         axis_order=("z", "y", "x"),
     )
-    sampler = CubeBatchSampler(
+    sampler = CuboidBatchSampler(
         dataset=dataset,
         batch_size=batch_size,
         sort_by_axis="z",
@@ -86,7 +86,7 @@ def main(
         num_workers=workers,
         drop_last=False,
         pin_memory=pin_memory,
-        collate_fn=_identity_func,
+        collate_fn=_collate_identity,
     )
 
     if trained_model and Path(trained_model).suffix == ".h5":

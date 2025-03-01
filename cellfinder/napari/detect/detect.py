@@ -32,7 +32,7 @@ from .thread_worker import Worker
 
 NETWORK_VOXEL_SIZES = [5, 1, 1]
 CUBE_WIDTH = 50
-CUBE_HEIGHT = 20
+CUBE_HEIGHT = 50
 CUBE_DEPTH = 20
 
 # If using ROI, how many extra planes to analyse
