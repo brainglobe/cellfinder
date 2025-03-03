@@ -435,7 +435,7 @@ def run(
             f"Using {len(filenames_train)} images for training and "
             f"{len(filenames_test)} images for validation"
         )
-        validation_data_loader, _ = get_dataloader(
+        validation_data_loader, validation_dataset = get_dataloader(
             cells_test,
             filenames_test,
             batch_size,
@@ -451,9 +451,10 @@ def run(
     else:
         logger.info("No validation data selected.")
         validation_data_loader = None
+        validation_dataset = None
         base_checkpoint_file_name = "-epoch.{epoch:02d}"
 
-    training_data_loader, _ = get_dataloader(
+    training_data_loader, training_dataset = get_dataloader(
         cells_train,
         filenames_train,
         batch_size,
@@ -498,12 +499,23 @@ def run(
         callbacks.append(csv_logger)
 
     logger.info("Beginning training.")
-    model.fit(
-        training_data_loader,
-        validation_data=validation_data_loader,
-        epochs=epochs,
-        callbacks=callbacks,
-    )
+    if n_processes:
+        training_dataset.start_dataset_thread(n_processes)
+        if validation_dataset is not None:
+            validation_dataset.start_dataset_thread(n_processes)
+    try:
+        model.fit(
+            training_data_loader,
+            validation_data=validation_data_loader,
+            epochs=epochs,
+            callbacks=callbacks,
+        )
+    finally:
+        try:
+            training_dataset.stop_dataset_thread()
+        finally:
+            if validation_dataset is not None:
+                validation_dataset.stop_dataset_thread()
 
     if save_weights:
         logger.info("Saving model weights")
