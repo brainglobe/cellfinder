@@ -345,9 +345,13 @@ class CuboidDatasetBase(Dataset):
     Returned data order is (Batch) Height, Width, Depth, Channel.
     """
 
+    src_dataset: ImageDataBase | None = None
+
     num_channels: int = 1
 
     augmentation_parameters: AugmentationParameters | None = None
+
+    _output_data_dim_reordering: list[int] | None = None
 
     def __init__(
         self,
@@ -357,8 +361,8 @@ class CuboidDatasetBase(Dataset):
         network_cuboid_voxels: tuple[int, int, int] = (20, 50, 50),
         axis_order: tuple[AXIS, AXIS, AXIS] = ("z", "y", "x"),
         output_axis_order: tuple[AXIS, AXIS, AXIS] = ("y", "x", "z", "c"),
+        src_dataset: ImageDataBase | None = None,
         classes: int = 2,
-        sort_by_axis: str | None = "z",
         target_output: Literal["cell", "dict", "label"] | None = None,
         augment: bool = False,
         augment_likelihood: float = 0.1,
@@ -384,13 +388,8 @@ class CuboidDatasetBase(Dataset):
                 f"{output_axis_order}"
             )
 
-        if sort_by_axis is None:
-            self.points = points
-        else:
-            self.points = list(
-                sorted(points, key=lambda p: getattr(p, sort_by_axis))
-            )
-
+        self.points = points
+        self.src_dataset = src_dataset
         self.data_voxel_sizes = data_voxel_sizes
         self.network_voxel_sizes = network_voxel_sizes
         self.network_cuboid_voxels = network_cuboid_voxels
@@ -417,6 +416,9 @@ class CuboidDatasetBase(Dataset):
                 augment_likelihood,
             )
 
+        if src_dataset is not None:
+            self._set_output_data_dim_reordering(src_dataset)
+
     @property
     def cuboid_with_channels_size(self) -> tuple[int, int, int, int]:
         return *self.data_cuboid_voxels, self.num_channels
@@ -429,13 +431,28 @@ class CuboidDatasetBase(Dataset):
             return self._get_single_item(idx)
         return self._get_multiple_items(idx)
 
+    def _set_output_data_dim_reordering(
+        self, src_dataset: ImageDataBase
+    ) -> None:
+        if src_dataset.data_axis_order != self.output_axis_order:
+            self._output_data_dim_reordering = get_axis_reordering(
+                ("b", *src_dataset.data_with_channels_axis_order),
+                ("b", *self.output_axis_order),
+            )
+
     def _get_single_item(
         self, idx: int
     ) -> torch.Tensor | tuple[torch.Tensor, Any]:
         point = self.points[idx]
         data = self.get_point_data(idx)
 
+        # batch dim
+        data = data[None, ...]
+        if self._output_data_dim_reordering is not None:
+            data = torch.permute(data, self._output_data_dim_reordering)
+
         data = self.rescale_to_output_size(data)
+        data = data[0, ...]
 
         augmentation_parameters = self.augmentation_parameters
         if augmentation_parameters is not None:
@@ -474,8 +491,10 @@ class CuboidDatasetBase(Dataset):
         self, indices: list[int]
     ) -> torch.Tensor | tuple[torch.Tensor, Any]:
         points = [self.points[i] for i in indices]
-        data = self.get_points_data(indices)
 
+        data = self.get_points_data(indices)
+        if self._output_data_dim_reordering is not None:
+            data = torch.permute(data, self._output_data_dim_reordering)
         data = self.rescale_to_output_size(data)
 
         augmentation_parameters = self.augmentation_parameters
@@ -521,9 +540,8 @@ class CuboidDatasetBase(Dataset):
             return data
 
         # batch dimension
-        added_batch = len(data.shape) == 4
-        if added_batch:
-            data = torch.unsqueeze(data, 0)
+        if len(data.shape) != 5:
+            raise ValueError("Needs 5 dimensions: batch, channel and space")
 
         torch_order = "b", "c", "z", "y", "x"
         data_order = "b", *self.output_axis_order
@@ -537,14 +555,10 @@ class CuboidDatasetBase(Dataset):
         data = torch.permute(
             data, get_axis_reordering(data_order, torch_order)
         )
-        assert len(data.shape) == 5, "expected (batch, channel, z, y, x) shape"
         data = F.interpolate(data, size=scaled_cuboid_size, mode="trilinear")
-
         data = torch.permute(
             data, get_axis_reordering(torch_order, data_order)
         )
-        if added_batch:
-            data = torch.squeeze(data, 0)
 
         return data
 
@@ -554,7 +568,7 @@ class CuboidDatasetBase(Dataset):
         :param point_key:
         :return: In the output_axis_order order.
         """
-        raise NotImplementedError
+        return self.get_points_data([point_key])[0, ...]
 
     def get_points_data(self, points_key: list[int]) -> torch.Tensor:
         """
@@ -562,18 +576,20 @@ class CuboidDatasetBase(Dataset):
         :param points_key:
         :return: In the output_axis_order order.
         """
-        raise NotImplementedError
+        data = torch.empty(
+            (len(points_key), *self.cuboid_with_channels_size),
+            dtype=torch.float32,
+        )
+        self.src_dataset.get_point_batch_cuboid_data(data, points_key)
+
+        return data
 
 
 class CuboidThreadedDatasetBase(CuboidDatasetBase):
 
-    src_dataset: ImageDataBase | None = None
-
     _dataset_thread: ThreadWithException | None = None
 
     _worker_queues: list[Queue] = None
-
-    _data_axis_reordering: list[int] | None = None
 
     def __init__(
         self,
@@ -584,55 +600,36 @@ class CuboidThreadedDatasetBase(CuboidDatasetBase):
 
     def __getstate__(self):
         state = self.__dict__.copy()
-        del state["src_dataset"]
+        if self._dataset_thread is not None:
+            del state["src_dataset"]
         return state
 
-    def _set_data_axis_reordering(self) -> None | list[int]:
-        data_axis_order = self.src_dataset.data_with_channels_axis_order
-        if data_axis_order == self.output_axis_order:
-            self._data_axis_reordering = None
-
-        self._data_axis_reordering = get_axis_reordering(
-            ("b", *data_axis_order), ("b", *self.output_axis_order)
-        )
-
-    def get_point_data(self, point_key: int) -> torch.Tensor:
-        return self.get_points_data([point_key])[0, ...]
-
     def get_points_data(self, points_key: list[int]) -> torch.Tensor:
+        thread = self._dataset_thread
+        if thread is None:
+            return super().get_points_data(points_key)
+
         data = torch.empty(
             (len(points_key), *self.cuboid_with_channels_size),
             dtype=torch.float32,
         )
 
-        thread = self._dataset_thread
-        if thread is None:
-            if self.src_dataset is None:
-                raise ValueError(
-                    "Dataset is not provided. Or if this is running in a "
-                    "worker process, did you forget to call "
-                    "start_dataset_thread in the main process?"
-                )
-            self.src_dataset.get_point_batch_cuboid_data(data, points_key)
-        else:
-            queues = self._worker_queues
-            # for host, it's the last queue
-            queue_id = len(queues) - 1
-            if get_worker_info() is not None:
-                queue_id = get_worker_info().id
-            queue = queues[queue_id]
+        queues = self._worker_queues
+        # for host, it's the last queue
+        queue_id = len(queues) - 1
+        if get_worker_info() is not None:
+            queue_id = get_worker_info().id
+        queue = queues[queue_id]
 
-            thread.send_msg_to_thread(("points", points_key, data, queue_id))
-            msg, value = queue.get(block=True)
-            # if there's no error, we just sent back the point
-            if msg == "exception":
-                raise ExecutionFailure(
-                    "Reporting failure from data thread"
-                ) from value
-            assert msg == "points"
+        thread.send_msg_to_thread(("points", points_key, data, queue_id))
+        msg, value = queue.get(block=True)
+        # if there's no error, we just sent back the point
+        if msg == "exception":
+            raise ExecutionFailure(
+                "Reporting failure from data thread"
+            ) from value
+        assert msg == "points"
 
-        if self._data_axis_reordering is not None:
-            data = torch.permute(data, self._data_axis_reordering)
         return data
 
     def start_dataset_thread(self, num_workers: int):
@@ -694,7 +691,7 @@ class CuboidStackDataset(CuboidThreadedDatasetBase):
             max_axis_0_cuboids_buffered=max_axis_0_cuboids_buffered,
             cuboid_size=self.data_cuboid_voxels,
         )
-        self._set_data_axis_reordering()
+        self._set_output_data_dim_reordering(self.src_dataset)
 
     def point_has_full_cuboid(self, point: Cell) -> bool:
         for ax, axis_size, cuboid_size in zip(
@@ -736,7 +733,7 @@ class CuboidTiffDataset(CuboidThreadedDatasetBase):
             max_cuboids_buffered=max_cuboids_buffered,
             cuboid_size=self.data_cuboid_voxels,
         )
-        self._set_data_axis_reordering()
+        self._set_output_data_dim_reordering(self.src_dataset)
 
 
 class CuboidBatchSampler(Sampler):
