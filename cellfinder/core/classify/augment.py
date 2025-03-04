@@ -1,200 +1,106 @@
-from typing import List, Tuple
+import torch
+import torch.nn.functional as F
+from monai.transforms import RandAffine
 
-import numpy as np
-from scipy.ndimage import rotate, zoom
-
-from cellfinder.core.tools.tools import (
-    all_elements_equal,
-    random_bool,
-    random_probability,
-    random_sign,
-)
-
-all_axes = np.array((0, 1, 2))
+from cellfinder.core.tools.tools import random_bool
 
 
-def augment(
-    augmentation_parameters: "AugmentationParameters",
-    image: np.ndarray,
-    scale_back: bool = True,
-) -> np.ndarray:
-    pixel_sizes = image.shape
-    min_pixel_size = min(pixel_sizes)
-    relative_pixel_sizes = []
-    for pixel_size in pixel_sizes:
-        relative_pixel_sizes.append(pixel_size / min_pixel_size)
+class DataAugmentation:
+    """
+    Data must be 4 dim, with order of Channels, Y, X, Z,
+    where spatial is the 3 dims.
+    """
 
-    image, normalised_pixel_sizes = rescale_to_isotropic(
-        image,
-        relative_pixel_sizes,
-        augmentation_parameters.interpolation_order,
-    )
-    # TODO: is this a sensible order?
-    if augmentation_parameters.flip_axis is not None:
-        image = flip_image(image, augmentation_parameters.axes_to_flip)
-
-    if augmentation_parameters.translate is not None:
-        image = translate_image(
-            image,
-            augmentation_parameters.translate_axes,
-            augmentation_parameters.random_translate_multipliers,
-        )
-
-    # if augmentation_parameters.scale is not None:
-    #     image = scale_image(image, augmentation_parameters.scale)
-
-    if augmentation_parameters.rotate_max_axes is not None:
-        image = rotate_image(image, augmentation_parameters.rotation_angles)
-
-    if scale_back:
-        image = rescale_to_original_size(
-            image,
-            relative_pixel_sizes,
-            normalised_pixel_sizes,
-            augmentation_parameters.interpolation_order,
-        )
-    return image
-
-
-def rescale_to_isotropic(
-    image: np.ndarray,
-    relative_pixel_sizes: List[float],
-    interpolation_order: int,
-) -> Tuple[np.ndarray, List[float]]:
-    if not all_elements_equal(relative_pixel_sizes):
-        min_pixel_size = min(relative_pixel_sizes)
-        normalised_pixel_sizes = []
-        for pixel_size in relative_pixel_sizes:
-            normalised_pixel_sizes.append(
-                round(pixel_size / min_pixel_size, 2)
-            )
-
-        image = zoom(image, normalised_pixel_sizes, order=interpolation_order)
-    else:
-        normalised_pixel_sizes = relative_pixel_sizes
-    return image, normalised_pixel_sizes
-
-
-def rescale_to_original_size(
-    image: np.ndarray,
-    relative_pixel_sizes: List[float],
-    normalised_pixel_sizes: List[float],
-    interpolation_order: int,
-) -> np.ndarray:
-    if not all_elements_equal(relative_pixel_sizes):
-        inverse_pixel_sizes = []
-        for pixel_size in normalised_pixel_sizes:
-            inverse_pixel_sizes.append(round(1 / pixel_size, 2))
-
-        image = zoom(image, inverse_pixel_sizes, order=interpolation_order)
-    return image
-
-
-def flip_image(image: np.ndarray, axes_to_flip: List[int]) -> np.ndarray:
-    for axis in axes_to_flip:
-        image = np.flip(image, axis)
-    return image
-
-
-def translate_image(
-    image: np.ndarray,
-    translate_axes: List[int],
-    random_translate_multipliers: List[float],
-) -> np.ndarray:
-    pixel_shifts = []
-    for idx, axis in enumerate(translate_axes):
-        pixel_shifts.append(
-            int(round(random_translate_multipliers[idx] * image.shape[axis]))
-        )
-
-    image = np.roll(image, pixel_shifts, axis=translate_axes)
-    return image
-
-
-def rotate_image(
-    image: np.ndarray, rotation_angles: List[float]
-) -> np.ndarray:
-    for axis, angle in enumerate(rotation_angles):
-        if angle != 0:
-            rotate_axes = all_axes[all_axes != axis]
-            image = rotate(
-                image, angle, axes=rotate_axes, reshape=False, mode="constant"
-            )
-    return image
-
-
-# def scale_image(image, scale, ndigits=2):
-#     scale_factor = round(
-#         uniform(scale[0], scale[1]), ndigits=ndigits
-#     )
-#     return image
-
-# def shear_image(image):
-#     return image
-
-
-class AugmentationParameters:
     # precomputed, so both channels are treated identically
     def __init__(
         self,
-        flip_axis: Tuple[int, int, int],
-        translate: Tuple[float, float, float],
-        rotate_max_axes: Tuple[float, float, float],
-        interpolation_order: int,
+        volume_size: tuple[int, int, int],
+        flippable_axis: list[int],
+        translate: tuple[float, float, float],
+        scale: tuple[
+            tuple[float, float], tuple[float, float], tuple[float, float]
+        ],
+        rotate_max_axes: tuple[float, float, float],
         augment_likelihood: float,
     ):
-        # this is a clumsy way of passing parameters to the augment function
-        self.flip_axis = flip_axis
-        self.translate = translate
-        self.rotate_max_axes = rotate_max_axes
-        self.interpolation_order = interpolation_order
+        self.needs_isotropy = max(volume_size) != min(volume_size)
+        self.volume_size = volume_size
+        self.isotropic_volume_size = (max(self.volume_size),) * 3
 
+        translate_range = [int(p * s) for p, s in zip(translate, volume_size)]
+        # RandAffine adds one after sampling given random interval
+        scale = [(s0 - 1, s1 - 1) for s0, s1 in scale]
+        # do prob = 1 because we decide when to apply it
+        self.affine = RandAffine(
+            prob=1,
+            rotate_range=rotate_max_axes,
+            shear_range=None,
+            translate_range=translate_range,
+            scale_range=scale,
+            spatial_size=volume_size,
+            cache_grid=True,
+            lazy=False,
+        )
+
+        self.flippable_axis = flippable_axis
         self.augment_likelihood = augment_likelihood
 
-        self.axes_to_flip: List[int] = []
-        self.translate_axes: List[int] = []
-        self.random_translate_multipliers: List[float] = []
-        self.rotation_angles: List[float] = []
+        self.axes_to_flip: list[int] = []
+        self.do_affine = False
 
-    def update_parameters(self):
-        if self.flip_axis:
-            self.get_flip_parameters(self.flip_axis)
-        if self.translate:
-            self.get_translation_parameters(self.translate)
-        if self.rotate_max_axes:
-            self.get_rotation_parameters(self.rotate_max_axes)
+    def update_parameters(self) -> bool:
+        self.do_affine = random_bool(likelihood=self.augment_likelihood)
+        self.update_flip_parameters()
 
-    def get_flip_parameters(self, flip_axis: Tuple[int, int, int]) -> None:
-        self.axes_to_flip = []
-        for axis in all_axes:
-            if axis in flip_axis:
-                if random_bool(likelihood=self.augment_likelihood):
-                    self.axes_to_flip.append(axis)
+        return bool(self.do_affine or self.flippable_axis)
 
-    def get_translation_parameters(
-        self, translate: Tuple[float, float, float]
-    ) -> None:
-        self.translate_axes = []
-        self.random_translate_multipliers = []
-        for axis, translate_mag in enumerate(translate):
-            if translate_mag > 0:
-                if random_bool(likelihood=self.augment_likelihood):
-                    self.translate_axes.append(axis)
-                    self.random_translate_multipliers.append(
-                        random_sign() * random_probability() * translate_mag
-                    )
+    def update_flip_parameters(self) -> None:
+        flippable_axis = self.flippable_axis
+        if not flippable_axis:
+            return
 
-    def get_rotation_parameters(
-        self, rotate_max_axes: Tuple[float, float, float]
-    ) -> None:
-        self.rotation_angles = []
-        for max_rotation in rotate_max_axes:
+        axes_to_flip = self.axes_to_flip = []
+        for axis in flippable_axis:
             if random_bool(likelihood=self.augment_likelihood):
-                angle = int(
-                    round(
-                        -max_rotation + 2 * random_probability() * max_rotation
-                    )
-                )
-            else:
-                angle = 0
-            self.rotation_angles.append(angle)
+                # add 1 because of initial channel dim
+                axes_to_flip.append(axis + 1)
+
+    def rescale_to_isotropic(self, data: torch.Tensor) -> torch.Tensor:
+        if not self.needs_isotropy:
+            return data
+
+        shape = data.shape[:1] + self.isotropic_volume_size
+        data = F.interpolate(data, size=shape, mode="trilinear")
+        return data
+
+    def rescale_to_original(self, data: torch.Tensor) -> torch.Tensor:
+        if not self.needs_isotropy:
+            return data
+
+        shape = data.shape[:1] + self.volume_size
+        data = F.interpolate(data, size=shape, mode="trilinear")
+        return data
+
+    def apply_affine(self, data: torch.Tensor) -> torch.Tensor:
+        if not self.do_affine:
+            return data
+
+        return self.affine(
+            data, spatial_size=self.volume_size, padding_mode="reflection"
+        )
+
+    def flip_axis(self, data: torch.Tensor) -> torch.Tensor:
+        if not self.axes_to_flip:
+            return data
+
+        return torch.flip(data, self.axes_to_flip)
+
+    def __call__(self, data: torch.Tensor) -> torch.Tensor:
+        data = self.rescale_to_isotropic(data)
+
+        data = self.flip_axis(data)
+        data = self.apply_affine(data)
+
+        data = self.rescale_to_original(data)
+
+        return data

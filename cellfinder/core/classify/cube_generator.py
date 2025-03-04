@@ -14,7 +14,7 @@ from torch.multiprocessing import Queue
 from torch.utils.data import Dataset, Sampler, get_worker_info
 
 from cellfinder.core import types
-from cellfinder.core.classify.augment import AugmentationParameters, augment
+from cellfinder.core.classify.augment import DataAugmentation
 from cellfinder.core.tools.threading import (
     EOFSignal,
     ExecutionFailure,
@@ -347,7 +347,7 @@ class CuboidDatasetBase(Dataset):
 
     num_channels: int = 1
 
-    augmentation_parameters: AugmentationParameters | None = None
+    augmentation: DataAugmentation | None = None
 
     _output_data_dim_reordering: list[int] | None = None
 
@@ -364,9 +364,13 @@ class CuboidDatasetBase(Dataset):
         target_output: Literal["cell", "label"] | None = None,
         augment: bool = False,
         augment_likelihood: float = 0.1,
-        flip_axis: tuple[int, int, int] = (0, 1, 2),
-        rotate_max_axes: tuple[int, int, int] = (45, 45, 45),
-        translate: tuple[float, float, float] = (0.2, 0.2, 0.2),
+        flippable_axis: list[int] = (0, 1, 2),
+        rotate_max_axes: tuple[int, int, int] = (math.pi / 4,) * 3,
+        translate: tuple[float, float, float] = (0.2,) * 3,
+        scale: tuple[
+            tuple[float, float], tuple[float, float], tuple[float, float]
+        ] = ((0.5, 2),)
+        * 3,
         **kwargs,
     ):
         super().__init__(**kwargs)
@@ -416,11 +420,12 @@ class CuboidDatasetBase(Dataset):
         self.target_output = target_output
 
         if augment:
-            self.augmentation_parameters = AugmentationParameters(
-                flip_axis,
+            self.augmentation = DataAugmentation(
+                network_voxel_sizes,
+                flippable_axis,
                 translate,
+                scale,
                 rotate_max_axes,
-                2,
                 augment_likelihood,
             )
 
@@ -462,22 +467,9 @@ class CuboidDatasetBase(Dataset):
         data = self.rescale_to_output_size(data)
         data = data[0, ...]
 
-        augmentation_parameters = self.augmentation_parameters
-        if augmentation_parameters is not None:
-            augmentation_parameters.update_parameters()
-            chan_index = self.output_axis_order.index("c")
-            chan_indexer = [slice(None)] * 4
-
-            data_np = data.numpy()
-            for c in range(self.num_channels):
-                chan_indexer[chan_index] = c
-                # todo: ensure assumption that augment is same order as
-                #  output_axis_order
-                data_np[tuple(chan_indexer)] = augment(
-                    self.augmentation_parameters, data_np[tuple(chan_indexer)]
-                )
-
-            data[:] = torch.from_numpy(data_np)
+        augmentation = self.augmentation
+        if augmentation is not None and augmentation.update_parameters():
+            data[:] = augmentation(data)
 
         match self.target_output:
             case None:
@@ -510,27 +502,12 @@ class CuboidDatasetBase(Dataset):
             data = torch.permute(data, self._output_data_dim_reordering)
         data = self.rescale_to_output_size(data)
 
-        augmentation_parameters = self.augmentation_parameters
-        if augmentation_parameters is not None:
+        augmentation = self.augmentation
+        if augmentation is not None:
             # batch is always first index
-            chan_index = self.output_axis_order.index("c") + 1
-            chan_indexer = [slice(None)] * 5
-            data_np = data.numpy()
-
             for b in range(len(indices)):
-                chan_indexer[0] = b
-                augmentation_parameters.update_parameters()
-
-                for c in range(self.num_channels):
-                    chan_indexer[chan_index] = c
-                    # todo: ensure assumption that augment is same order as
-                    #  output_axis_order
-                    data_np[tuple(chan_indexer)] = augment(
-                        self.augmentation_parameters,
-                        data_np[tuple(chan_indexer)],
-                    )
-
-            data[:] = torch.from_numpy(data_np)
+                if augmentation.update_parameters():
+                    data[b, ...] = augmentation(data[b, ...])
 
         match self.target_output:
             case None:
