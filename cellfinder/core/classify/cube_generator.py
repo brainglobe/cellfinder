@@ -366,10 +366,10 @@ class CuboidDatasetBase(Dataset):
         augment_likelihood: float = 0.1,
         flippable_axis: list[int] = (0, 1, 2),
         rotate_max_axes: tuple[int, int, int] = (math.pi / 4,) * 3,
-        translate: tuple[float, float, float] = (0.2,) * 3,
+        translate: tuple[float, float, float] = (0.05,) * 3,
         scale: tuple[
             tuple[float, float], tuple[float, float], tuple[float, float]
-        ] = ((0.5, 2),)
+        ] = ((0.6, 1.4),)
         * 3,
         **kwargs,
     ):
@@ -419,6 +419,8 @@ class CuboidDatasetBase(Dataset):
         self.classes = classes
         self.target_output = target_output
 
+        self._augment_dim_reordering = []
+        self._augment_dim_reordering_back = []
         if augment:
             self.augmentation = DataAugmentation(
                 network_voxel_sizes,
@@ -428,6 +430,15 @@ class CuboidDatasetBase(Dataset):
                 rotate_max_axes,
                 augment_likelihood,
             )
+            if self.output_axis_order != self.augmentation.AXIS_ORDER:
+                self._augment_dim_reordering = get_axis_reordering(
+                    self.output_axis_order,
+                    self.augmentation.AXIS_ORDER,
+                )
+                self._augment_dim_reordering_back = get_axis_reordering(
+                    self.augmentation.AXIS_ORDER,
+                    self.output_axis_order,
+                )
 
         if src_dataset is not None:
             self._set_output_data_dim_reordering(src_dataset)
@@ -469,7 +480,10 @@ class CuboidDatasetBase(Dataset):
 
         augmentation = self.augmentation
         if augmentation is not None and augmentation.update_parameters():
-            data[:] = augmentation(data)
+            reordered = torch.permute(data, self._augment_dim_reordering)
+            data[:] = torch.permute(
+                augmentation(reordered), self._augment_dim_reordering_back
+            )
 
         match self.target_output:
             case None:
@@ -507,7 +521,13 @@ class CuboidDatasetBase(Dataset):
             # batch is always first index
             for b in range(len(indices)):
                 if augmentation.update_parameters():
-                    data[b, ...] = augmentation(data[b, ...])
+                    reordered = torch.permute(
+                        data[b, ...], self._augment_dim_reordering
+                    )
+                    data[b, ...] = torch.permute(
+                        augmentation(reordered),
+                        self._augment_dim_reordering_back,
+                    )
 
         match self.target_output:
             case None:

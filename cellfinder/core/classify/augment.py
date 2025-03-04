@@ -11,6 +11,8 @@ class DataAugmentation:
     where spatial is the 3 dims.
     """
 
+    AXIS_ORDER = "c", "y", "x", "z"
+
     # precomputed, so both channels are treated identically
     def __init__(
         self,
@@ -37,7 +39,6 @@ class DataAugmentation:
             shear_range=None,
             translate_range=translate_range,
             scale_range=scale,
-            spatial_size=volume_size,
             cache_grid=True,
             lazy=False,
         )
@@ -52,7 +53,7 @@ class DataAugmentation:
         self.do_affine = random_bool(likelihood=self.augment_likelihood)
         self.update_flip_parameters()
 
-        return bool(self.do_affine or self.flippable_axis)
+        return bool(self.do_affine or self.axes_to_flip)
 
     def update_flip_parameters(self) -> None:
         flippable_axis = self.flippable_axis
@@ -85,9 +86,7 @@ class DataAugmentation:
         if not self.do_affine:
             return data
 
-        return self.affine(
-            data, spatial_size=self.volume_size, padding_mode="reflection"
-        )
+        return self.affine(data, padding_mode="border")
 
     def flip_axis(self, data: torch.Tensor) -> torch.Tensor:
         if not self.axes_to_flip:
