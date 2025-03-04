@@ -48,10 +48,7 @@ def get_model(
             )
             if model_weights is None:
                 raise OSError("`model_weights` must be provided")
-            try:
-                model.load_weights(model_weights)
-            except OSError:
-                print("The provided weights do not match the expected model architecture. Ensure that you are using the correct model definition when loading weights.")
+            model.load_weights(model_weights)
         return model
 
 
