@@ -24,6 +24,7 @@ from cellfinder.core.tools.tools import get_data_converter
 
 AXIS = Literal["x", "y", "z"]
 DIM = Literal["x", "y", "z", "C"]
+RandRange = Sequence[float] | Sequence[tuple[float, float]] | None
 
 
 class StackSizeError(Exception):
@@ -363,14 +364,11 @@ class CuboidDatasetBase(Dataset):
         classes: int = 2,
         target_output: Literal["cell", "label"] | None = None,
         augment: bool = False,
-        augment_likelihood: float = 0.1,
-        flippable_axis: list[int] = (0, 1, 2),
-        rotate_max_axes: tuple[int, int, int] = (math.pi / 4,) * 3,
-        translate: tuple[float, float, float] = (0.05,) * 3,
-        scale: tuple[
-            tuple[float, float], tuple[float, float], tuple[float, float]
-        ] = ((0.6, 1.4),)
-        * 3,
+        augment_likelihood: float = 0.9,
+        flippable_axis: Sequence[int] = (0, 1, 2),
+        rotate_range: RandRange = (math.pi / 4,) * 3,
+        translate_range: RandRange = (0.05,) * 3,
+        scale_range: RandRange = ((0.6, 1.4),) * 3,
         **kwargs,
     ):
         super().__init__(**kwargs)
@@ -424,11 +422,11 @@ class CuboidDatasetBase(Dataset):
         if augment:
             self.augmentation = DataAugmentation(
                 network_voxel_sizes,
-                flippable_axis,
-                translate,
-                scale,
-                rotate_max_axes,
                 augment_likelihood,
+                flippable_axis,
+                translate_range,
+                scale_range,
+                rotate_range,
             )
             if self.output_axis_order != self.augmentation.AXIS_ORDER:
                 self._augment_dim_reordering = get_axis_reordering(
