@@ -292,40 +292,37 @@ class CubeGeneratorFromFile(Sequence):
         )
         return images
 
-    def __get_oriented_image(
-        self, cell: Cell, image_stack: np.ndarray
-    ) -> np.ndarray:
-        # Define cropping region (Modify as needed)
-        z_min, z_max = 10, 100  # Crop along z-axis
-        y_min, y_max = 100, 400  # Crop along y-axis
-        x_min, x_max = 200, 500  # Crop along x-axis
+    def __get_oriented_image(self, cell: Cell, image_stack: np.ndarray) -> np.ndarray:
+        z_min, z_max = 0, image_stack.shape[0]
+        y_min, y_max = 0, image_stack.shape[1]
+        x_min, x_max = 0, image_stack.shape[2]
 
-        # Ensure that x0, x1, y0, y1 stay within bounds of defined region
         x0 = max(x_min, int(round(cell.x - (self.rescaled_cube_width / 2))))
-        x1 = min(x_max, int(x0 + self.rescaled_cube_width))
-        y0 = max(y_min, int(round(cell.y - (self.rescaled_cube_height / 2))))
-        y1 = min(y_max, int(y0 + self.rescaled_cube_height))
+        x1 = min(x_max, x0 + self.rescaled_cube_width)
 
-        # Crop image_stack within (z_min:z_max, y0:y1, x0:x1)
+        y0 = max(y_min, int(round(cell.y - (self.rescaled_cube_height / 2))))
+        y1 = min(y_max, y0 + self.rescaled_cube_height)
+
         image = image_stack[z_min:z_max, y0:y1, x0:x1]
 
-        # Move the axis for further processing
+        if image.size == 0:
+            raise ValueError("Cropped image has zero size, check bounding box and cell coordinates.")
+
         image = np.moveaxis(image, 0, 2)
 
-        if self.augment:
-            image = augment(
-                self.augmentation_parameters, image, scale_back=False
-            )
+        if self.augment and self.augmentation_parameters:
+            image = augment(self.augmentation_parameters, image, scale_back=False)
 
         pixel_scalings = [
-            self.cube_height / image.shape[0],
-            self.cube_width / image.shape[1],
-            self.cube_depth / image.shape[2],  # type: ignore[misc]
+            self.cube_height / image.shape[0],  
+            self.cube_width / image.shape[1],   
+            self.cube_depth / image.shape[2], 
         ]
 
-        # Resize image using the defined pixel scaling
         image = zoom(image, pixel_scalings, order=self.interpolation_order)
+
         return image
+
 
     @staticmethod
     def __get_batch_dict(cell_batch: List[Cell]) -> List[Dict[str, float]]:
