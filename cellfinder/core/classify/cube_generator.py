@@ -295,15 +295,24 @@ class CubeGeneratorFromFile(Sequence):
     def __get_oriented_image(
         self, cell: Cell, image_stack: np.ndarray
     ) -> np.ndarray:
-        x0 = int(round(cell.x - (self.rescaled_cube_width / 2)))
-        x1 = int(x0 + self.rescaled_cube_width)
-        y0 = int(round(cell.y - (self.rescaled_cube_height / 2)))
-        y1 = int(y0 + self.rescaled_cube_height)
-        image = image_stack[:, y0:y1, x0:x1]
+        # Define cropping region (Modify as needed)
+        z_min, z_max = 10, 100  # Crop along z-axis
+        y_min, y_max = 100, 400  # Crop along y-axis
+        x_min, x_max = 200, 500  # Crop along x-axis
+
+        # Ensure that x0, x1, y0, y1 stay within bounds of defined region
+        x0 = max(x_min, int(round(cell.x - (self.rescaled_cube_width / 2))))
+        x1 = min(x_max, int(x0 + self.rescaled_cube_width))
+        y0 = max(y_min, int(round(cell.y - (self.rescaled_cube_height / 2))))
+        y1 = min(y_max, int(y0 + self.rescaled_cube_height))
+
+        # Crop image_stack within (z_min:z_max, y0:y1, x0:x1)
+        image = image_stack[z_min:z_max, y0:y1, x0:x1]
+
+        # Move the axis for further processing
         image = np.moveaxis(image, 0, 2)
 
         if self.augment:
-            # scale to isotropic, but don't scale back
             image = augment(
                 self.augmentation_parameters, image, scale_back=False
             )
@@ -312,10 +321,9 @@ class CubeGeneratorFromFile(Sequence):
             self.cube_height / image.shape[0],
             self.cube_width / image.shape[1],
             self.cube_depth / image.shape[2],  # type: ignore[misc]
-            # Not sure why mypy thinks .shape[2] is out of bounds above?
         ]
 
-        # TODO: ensure this is always the correct size
+        # Resize image using the defined pixel scaling
         image = zoom(image, pixel_scalings, order=self.interpolation_order)
         return image
 
