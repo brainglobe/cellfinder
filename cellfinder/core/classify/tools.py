@@ -51,6 +51,7 @@ def get_model(
             model.load_weights(model_weights)
         return model
 
+
 def make_lists(
     tiff_files: Sequence,
     train: bool = True,
