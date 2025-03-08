@@ -292,7 +292,9 @@ class CubeGeneratorFromFile(Sequence):
         )
         return images
 
-    def __get_oriented_image(self, cell: Cell, image_stack: np.ndarray) -> np.ndarray:
+    def __get_oriented_image(
+        self, cell: Cell, image_stack: np.ndarray
+    ) -> np.ndarray:
         z_min, z_max = 0, image_stack.shape[0]
         y_min, y_max = 0, image_stack.shape[1]
         x_min, x_max = 0, image_stack.shape[2]
@@ -306,23 +308,26 @@ class CubeGeneratorFromFile(Sequence):
         image = image_stack[z_min:z_max, y0:y1, x0:x1]
 
         if image.size == 0:
-            raise ValueError("Cropped image has zero size, check bounding box and cell coordinates.")
+            raise ValueError(
+                "Cropped image has zero size, check bounding box and cell coordinates."
+            )
 
         image = np.moveaxis(image, 0, 2)
 
         if self.augment and self.augmentation_parameters:
-            image = augment(self.augmentation_parameters, image, scale_back=False)
+            image = augment(
+                self.augmentation_parameters, image, scale_back=False
+            )
 
         pixel_scalings = [
-            self.cube_height / image.shape[0],  
-            self.cube_width / image.shape[1],   
-            self.cube_depth / image.shape[2], 
+            self.cube_height / image.shape[0],
+            self.cube_width / image.shape[1],
+            self.cube_depth / image.shape[2],
         ]
 
         image = zoom(image, pixel_scalings, order=self.interpolation_order)
 
         return image
-
 
     @staticmethod
     def __get_batch_dict(cell_batch: List[Cell]) -> List[Dict[str, float]]:
