@@ -62,6 +62,7 @@ class DataAugmentation:
             translate_range=translate_range,
             scale_range=scale_range,
             cache_grid=True,
+            spatial_size=self.isotropic_volume_size,
             lazy=False,
         )
 
