@@ -439,15 +439,23 @@ def run(
         csv_logger = CSVLogger(csv_filepath)
         callbacks.append(csv_logger)
 
+    from napari.utils import progress
+
     logger.info("Beginning training.")
     # Keras 3.0: `use_multiprocessing` input is set in the
     # `training_generator` (False by default)
-    model.fit(
-        training_generator,
-        validation_data=validation_generator,
-        epochs=epochs,
-        callbacks=callbacks,
-    )
+    # Initialize a progress bar for epochs
+    with progress(total=epochs, desc="Training Progress") as pbar:
+        for epoch in range(epochs):
+            model.fit(
+                training_generator,
+                validation_data=validation_generator,
+                epochs=1,  # Train one epoch at a time
+                callbacks=callbacks,
+            )
+            pbar.update(1)  # Update progress bar after each epoch
+
+    logger.info("Training complete.")
 
     if save_weights:
         logger.info("Saving model weights")
