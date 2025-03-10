@@ -1,5 +1,6 @@
 import numpy as np
 import pytest
+from unittest.mock import patch
 
 import cellfinder.core.tools.tools as tools
 
@@ -246,3 +247,20 @@ def test_swap_elements_list():
 def test_is_any_list_overlap():
     assert tools.is_any_list_overlap(a, b)
     assert not tools.is_any_list_overlap(a, [2, "b", (1, 2, 3)])
+    
+@pytest.mark.parametrize("model_weights, inference, expected_exception, expected_message", [
+    (None, True, OSError, "`model_weights` must be provided for inference"), 
+])
+def test_missing_weights(model_weights, inference, expected_exception, expected_message):
+    """Check if get_model raises OSError when model_weights is None during inference."""
+    with pytest.raises(expected_exception, match=expected_message):
+        tools.get_model(network_depth="shallow", inference=inference, model_weights=model_weights)
+
+@patch("tools.build_model") 
+def test_incorrect_weights(mock_build_model):
+    """Check if get_model raises ValueError for incorrect model weights."""
+    mock_model = mock_build_model.return_value 
+    mock_model.load_weights.side_effect = ValueError("Provided weights don't match the model architecture.")
+
+    with pytest.raises(ValueError, match="Provided weights don't match the model architecture."):
+        tools.get_model(network_depth="shallow", inference=True, model_weights="incorrect_weights.h5")
