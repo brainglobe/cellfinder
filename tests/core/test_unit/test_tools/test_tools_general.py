@@ -264,7 +264,6 @@ def test_is_any_list_overlap():
 def test_missing_weights(
     model_weights, inference, expected_exception, expected_message
 ):
-    """Check if get_model raises OSError when model_weights is None during inference."""
     with pytest.raises(expected_exception, match=expected_message):
         tools.get_model(
             network_depth="shallow",
@@ -275,7 +274,6 @@ def test_missing_weights(
 
 @patch("tools.build_model")
 def test_incorrect_weights(mock_build_model):
-    """Check if get_model raises ValueError for incorrect model weights."""
     mock_model = mock_build_model.return_value
     mock_model.load_weights.side_effect = ValueError(
         "Provided weights don't match the model architecture."
