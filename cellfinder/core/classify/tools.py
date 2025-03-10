@@ -48,16 +48,18 @@ def get_model(
             )
             if model_weights is None:
                 raise OSError(
-                    "`model_weights` must be provided for inference or continued training."
+                    "`model_weights` must be provided for inference "
+                    "or continued training."
+                    )
+
+            raise ValueError(
+                    f"Error loading weights: {model_weights}.\n"
+                    "Provided weights don't match the model architecture.\n"
+                    "Ensure you are using the correct model file that "
+                    "corresponds to these weights."
                 )
 
-            try:
-                model.load_weights(model_weights)
-            except ValueError as e:
-                raise ValueError(
-                    f"Error loading weights: {model_weights}. The provided weights do not match the model architecture.\n"
-                    "Ensure you are using the correct model file that corresponds to these weights."
-                ) from e
+
     return model
 
 
