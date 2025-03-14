@@ -13,13 +13,31 @@ RandRange = Sequence[float] | Sequence[tuple[float, float]] | None
 
 class DataAugmentation:
     """
-    Data must be 4 dim, with order of Channels, Y, X, Z,
-    where spatial is the 3 dims.
+    Randomly augments the input data when called.
+
+    Typical example::
+
+        augmenter = DataAugmentation(...)
+        augmented_data = augmenter(data)
+
+    Parameters
+    ----------
+    volume_size : dict
+        Dict whose keys are x, y, and z and whose values are the size of the
+        input data at the given dimension.
     """
 
     DIM_ORDER = "c", "y", "x", "z"
+    """
+    The dimension order we internally expect the data to be. The user passes
+    in data in `data_axis_order` order that we convert to this order before
+    handling.
+    """
 
     AXIS_ORDER = "y", "x", "z"
+    """
+    Similar to `DIM_ORDER`, except it's the order of the 3 axes of the cuboid.
+    """
 
     # precomputed, so both channels are treated identically
     def __init__(

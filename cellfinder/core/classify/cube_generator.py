@@ -84,9 +84,15 @@ def get_data_cuboid_range(
 
 class ImageDataBase:
     """
-    We buffer along axis 0, which is the data_axis_order[0] axis.
-    The size of each cuboid in voxels of the dataset is given by cuboid_size.
-    Data returned is in data_axis_order, with channel the last axis
+    A base class for getting cuboids out of image data.
+
+    At the base level we have a list of positions (center location of
+    potential cells) and we return a cuboid corresponding to a position
+    when given its index in the list. The returned cuboid is of size
+    `cuboid_with_channels_size` with the corresponding axis order given by
+    `data_with_channels_axis_order`. These correspond to the provided
+    `cuboid_size` and `data_axis_order`, with the addition of the channels
+    dimension.
     """
 
     points_arr: np.ndarray = None
@@ -140,6 +146,16 @@ class ImageDataBase:
 
 
 class CachedStackImageDataBase(ImageDataBase):
+    """
+    Takes a 3d image stack (potentially a folder of tiffs or a 3d numpy array)
+    and extracts requested cuboids from the stack as torch Tensors. It also
+    buffers some planes (at the first axis of the data stack) in memory so they
+    don't have to be repeatedly read.
+
+    This is especially efficient when we request cuboids sequentially ordered
+    by the first axis. E.g. if the first axis is z, then requesting cuboids
+    ordered by increasing z will be very fast.
+    """
 
     stack_shape: tuple[int, int, int]
 
@@ -217,6 +233,10 @@ class CachedStackImageDataBase(ImageDataBase):
 
 
 class CachedArrayStackImageData(CachedStackImageDataBase):
+    """
+    Implements `CachedStackImageDataBase` for a stack represented by an array
+    data type. E.g. an Dask array.
+    """
 
     input_arrays: list[types.array]
 
@@ -243,6 +263,12 @@ class CachedArrayStackImageData(CachedStackImageDataBase):
 
 
 class CachedCuboidImageDataBase(ImageDataBase):
+    """
+    Takes a collection of cuboids (e.g. a folder of tiff files, each a cuboid
+    or a list of 3d numpy arrays) and returns a requested cuboid as a torch
+    Tensor. It also buffers `max_cuboids_buffered` recent cuboids so they
+    don't have to be repeatedly read.
+    """
 
     max_cuboids_buffered: int = 0
 
@@ -296,6 +322,10 @@ class CachedCuboidImageDataBase(ImageDataBase):
 
 
 class CachedTiffCuboidImageData(CachedCuboidImageDataBase):
+    """
+    Implements `CachedCuboidImageDataBase` for a list of tiff filenames. Each
+    tiff contains a single channel 3d cuboid.
+    """
 
     filenames_arr: np.ndarray = None
 
@@ -329,13 +359,14 @@ class CachedTiffCuboidImageData(CachedCuboidImageDataBase):
 
 class CuboidDatasetBase(Dataset):
     """
-    Input voxel order is Width, Height, Depth
-    Returned data order is (Batch) Height, Width, Depth, Channel.
+    Implements a pytorch `Dataset` that takes a list of points (potential
+    cells) and a `ImageDataBase` instance and returns torch Tensors
+    with the cuboids centered these each of these points.
     """
 
     points_arr: np.ndarray = None
 
-    src_dataset: ImageDataBase | None = None
+    src_image_data: ImageDataBase | None = None
 
     num_channels: int = 1
 
@@ -351,7 +382,7 @@ class CuboidDatasetBase(Dataset):
         network_cuboid_voxels: tuple[int, int, int] = (20, 50, 50),
         axis_order: tuple[AXIS, AXIS, AXIS] = ("z", "y", "x"),
         output_axis_order: tuple[DIM, DIM, DIM, DIM] = ("y", "x", "z", "c"),
-        src_dataset: ImageDataBase | None = None,
+        src_image_data: ImageDataBase | None = None,
         classes: int = 2,
         target_output: Literal["cell", "label"] | None = None,
         augment: bool = False,
@@ -390,7 +421,7 @@ class CuboidDatasetBase(Dataset):
             data[i]["z"] = cell.z
             data[i]["type"] = cell.type
 
-        self.src_dataset = src_dataset
+        self.src_image_data = src_image_data
         self.data_voxel_sizes = data_voxel_sizes
         self.network_voxel_sizes = network_voxel_sizes
         self.network_cuboid_voxels = network_cuboid_voxels
@@ -422,8 +453,8 @@ class CuboidDatasetBase(Dataset):
                 rotate_range,
             )
 
-        if src_dataset is not None:
-            self._set_output_data_dim_reordering(src_dataset)
+        if src_image_data is not None:
+            self._set_output_data_dim_reordering(src_image_data)
 
     @property
     def cuboid_with_channels_size(self) -> tuple[int, int, int, int]:
@@ -438,11 +469,11 @@ class CuboidDatasetBase(Dataset):
         return self._get_multiple_items(idx)
 
     def _set_output_data_dim_reordering(
-        self, src_dataset: ImageDataBase
+        self, src_image_data: ImageDataBase
     ) -> None:
-        if src_dataset.data_axis_order != self.output_axis_order:
+        if src_image_data.data_axis_order != self.output_axis_order:
             self._output_data_dim_reordering = get_axis_reordering(
-                ("b", *src_dataset.data_with_channels_axis_order),
+                ("b", *src_image_data.data_with_channels_axis_order),
                 ("b", *self.output_axis_order),
             )
 
@@ -571,12 +602,28 @@ class CuboidDatasetBase(Dataset):
             (len(points_key), *self.cuboid_with_channels_size),
             dtype=torch.float32,
         )
-        self.src_dataset.get_point_batch_cuboid_data(data, points_key)
+        self.src_image_data.get_point_batch_cuboid_data(data, points_key)
 
         return data
 
 
 class CuboidThreadedDatasetBase(CuboidDatasetBase):
+    """
+    `CuboidDatasetBase` gets the data directly from its `src_image_data`
+    (`ImageDataBase`) instance. If this is run with multiple workers, each
+    in its own sub-process, each worker gets its own copy of `src_image_data`.
+
+    This class adds the ability for the dataset to get the data from the
+    `src_image_data` via a sub-thread in the main process. Each worker uses
+    a queue to request data from this thread, which reads it from disk quickly
+    and sends it back to the worker to process. This ensures that only one
+    thread reads the data so there's no hard drive contention among the
+    workers.
+
+    Additionally, each worker allocates the batch buffer, which is shared
+    in memory with the main thread. The main thread can then directly write
+    to it without having to send data back and forth.
+    """
 
     _dataset_thread: ThreadWithException | None = None
 
@@ -592,7 +639,7 @@ class CuboidThreadedDatasetBase(CuboidDatasetBase):
     def __getstate__(self):
         state = self.__dict__.copy()
         if self._dataset_thread is not None:
-            del state["src_dataset"]
+            del state["src_image_data"]
         return state
 
     def get_points_data(self, points_key: list[int]) -> torch.Tensor:
@@ -631,7 +678,7 @@ class CuboidThreadedDatasetBase(CuboidDatasetBase):
 
         self._dataset_thread = ThreadWithException(
             target=_read_data_send_cuboids,
-            args=(self.src_dataset, queues),
+            args=(self.src_image_data, queues),
             pass_self=True,
         )
         self._dataset_thread.start()
@@ -650,6 +697,10 @@ class CuboidThreadedDatasetBase(CuboidDatasetBase):
 
 
 class CuboidStackDataset(CuboidThreadedDatasetBase):
+    """
+    Implements `CuboidThreadedDatasetBase` using a `CachedArrayStackImageData`
+    to read the cuboids from array type data (e.g. Dask arrays).
+    """
 
     def __init__(
         self,
@@ -679,14 +730,14 @@ class CuboidStackDataset(CuboidThreadedDatasetBase):
         self.points_arr = self.points_arr[mask]
 
         data_arrays = [signal_array, background_array]
-        self.src_dataset = CachedArrayStackImageData(
+        self.src_image_data = CachedArrayStackImageData(
             points_arr=self.points_arr,
             input_arrays=data_arrays,
             data_axis_order=self.axis_order,
             max_axis_0_cuboids_buffered=max_axis_0_cuboids_buffered,
             cuboid_size=self.data_cuboid_voxels,
         )
-        self._set_output_data_dim_reordering(self.src_dataset)
+        self._set_output_data_dim_reordering(self.src_image_data)
 
     def point_has_full_cuboid(self, point: np.ndarray) -> bool:
         for ax, axis_size, cuboid_size in zip(
@@ -703,6 +754,10 @@ class CuboidStackDataset(CuboidThreadedDatasetBase):
 
 
 class CuboidTiffDataset(CuboidThreadedDatasetBase):
+    """
+    Implements `CuboidThreadedDatasetBase` using a `CachedTiffCuboidImageData`
+    to read the cuboids from individual tiff files.
+    """
 
     def __init__(
         self,
@@ -720,17 +775,24 @@ class CuboidTiffDataset(CuboidThreadedDatasetBase):
 
         self.num_channels = len(points_filenames[0])
         filenames_arr = np.array(points_filenames).astype(np.str_)
-        self.src_dataset = CachedTiffCuboidImageData(
+        self.src_image_data = CachedTiffCuboidImageData(
             points_arr=self.points_arr,
             filenames_arr=filenames_arr,
             data_axis_order=self.axis_order,
             max_cuboids_buffered=max_cuboids_buffered,
             cuboid_size=self.data_cuboid_voxels,
         )
-        self._set_output_data_dim_reordering(self.src_dataset)
+        self._set_output_data_dim_reordering(self.src_image_data)
 
 
 class CuboidBatchSampler(Sampler):
+    """
+    Custom Sampler for our `CuboidDatasetBase`. It can randomize the order in
+    which it samples the points, while respecting that each batch contains
+    samples from the same plane (so each batch can be efficiently read). Or
+    it can sort the sampler by a specific axis in the data to load the data
+    efficiently.
+    """
 
     def __init__(
         self,
