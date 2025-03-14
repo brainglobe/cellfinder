@@ -2,7 +2,7 @@ from inspect import signature
 
 import pytest
 
-from cellfinder.core.train.train_yml import run
+from cellfinder.core.train.train_yaml import run
 from cellfinder.napari.train.train_containers import (
     MiscTrainingInputs,
     OptionalNetworkInputs,

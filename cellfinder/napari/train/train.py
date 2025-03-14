@@ -7,7 +7,7 @@ from napari.qt.threading import thread_worker
 from napari.utils.notifications import show_info
 from qtpy.QtWidgets import QScrollArea
 
-from cellfinder.core.train.train_yml import run as train_yml
+from cellfinder.core.train.train_yaml import run as train_yaml
 from cellfinder.napari.utils import cellfinder_header, html_label_widget
 
 from .train_containers import (
@@ -26,7 +26,7 @@ def run_training(
     misc_training_inputs: MiscTrainingInputs,
 ):
     print("Running training")
-    train_yml(
+    train_yaml(
         **training_data_inputs.as_core_arguments(),
         **optional_network_inputs.as_core_arguments(),
         **optional_training_inputs.as_core_arguments(),

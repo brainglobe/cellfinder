@@ -14,12 +14,12 @@ classifiers = [
     "Operating System :: OS Independent",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Scientific/Engineering :: Image Recognition",
 ]
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 dependencies = [
     "brainglobe-utils>=0.5.0",
     "brainglobe-napari-io>=0.3.4",
@@ -35,6 +35,7 @@ dependencies = [
     "monai",
     "tifffile",
     "tqdm",
+    "qt-niu"
 ]
 dynamic = ["version"]
 
@@ -66,7 +67,7 @@ napari = [
 
 [project.scripts]
 cellfinder_download = "cellfinder.core.download.cli:main"
-cellfinder_train = "cellfinder.core.train.train_yml:cli"
+cellfinder_train = "cellfinder.core.train.train_yaml:cli"
 cellfinder = "cellfinder.cli_migration_warning:cli_catch"
 
 [project.urls]
@@ -81,7 +82,7 @@ requires = ["setuptools>=45", "wheel", "setuptools_scm[toml]>=6.2"]
 build-backend = 'setuptools.build_meta'
 
 [tool.black]
-target-version = ['py310','py311', 'py312']
+target-version = ['py311','py312', 'py313']
 skip-string-normalization = false
 line-length = 79
 
@@ -113,14 +114,14 @@ markers = ["slow: marks tests as slow (deselect with '-m \"not slow\"')"]
 legacy_tox_ini = """
 # For more information about tox, see https://tox.readthedocs.io/en/latest/
 [tox]
-envlist = py{310,311,312}
+envlist = py{311,312,313}
 isolated_build = true
 
 [gh-actions]
 python =
-    3.10: py310
     3.11: py311
     3.12: py312
+    3.13: py313
 
 [testenv]
 commands = python -m pytest -v --color=yes --cov=cellfinder --cov-report=xml

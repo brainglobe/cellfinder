@@ -15,7 +15,7 @@ from cellfinder.core.classify.cube_generator import (
     CuboidStackDataset,
 )
 from cellfinder.core.classify.tools import get_model
-from cellfinder.core.train.train_yml import depth_type, models
+from cellfinder.core.train.train_yaml import depth_type, models
 
 
 def _collate_identity(data):
