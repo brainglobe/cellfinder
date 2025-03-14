@@ -36,7 +36,7 @@ def main(
     trained_model: Optional[os.PathLike],
     model_weights: Optional[os.PathLike],
     network_depth: depth_type,
-    max_workers: int = 3,
+    max_workers: int = 6,
     pin_memory: bool = True,
     *,
     callback: Optional[Callable[[int], None]] = None,
@@ -64,6 +64,7 @@ def main(
 
     start_time = datetime.now()
 
+    voxel_sizes = list(map(float, voxel_sizes))
     logger.debug("Initialising cube generator")
     dataset = CuboidStackDataset(
         signal_array=signal_array,
@@ -73,6 +74,7 @@ def main(
         network_voxel_sizes=network_voxel_sizes,
         network_cuboid_voxels=(cube_depth, cube_height, cube_width),
         axis_order=("z", "y", "x"),
+        max_axis_0_cuboids_buffered=1,
     )
     sampler = CuboidBatchSampler(
         dataset=dataset,
@@ -124,8 +126,10 @@ def main(
     points_list = []
 
     # only go through the "extractable" points
-    for idx, cell in enumerate(dataset.points):
-        cell.type = predictions[idx] + 1
+    for idx, arr in enumerate(dataset.points_arr):
+        cell = Cell(
+            (arr["x"], arr["y"], arr["z"]), cell_type=predictions[idx] + 1
+        )
         points_list.append(cell)
 
     time_elapsed = datetime.now() - start_time

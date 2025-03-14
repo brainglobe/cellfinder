@@ -8,7 +8,7 @@ from cellfinder.core.classify.augment import DataAugmentation
 
 @pytest.fixture
 def cube_with_side_dot() -> torch.Tensor:
-    # DataAugmentation.AXIS_ORDER of (c, y, x, z)
+    # DataAugmentation.DIM_ORDER of (c, y, x, z)
     data = torch.zeros((2, 11, 11, 7))
     # put dot at pixel in plane z = 5, on the x/y diagonal - both x and y are 8
     data[0, 8, 8, 5] = 1
@@ -19,7 +19,7 @@ def cube_with_side_dot() -> torch.Tensor:
 
 @pytest.fixture
 def cube_with_center_dot() -> torch.Tensor:
-    # DataAugmentation.AXIS_ORDER of (c, y, x, z)
+    # DataAugmentation.DIM_ORDER of (c, y, x, z)
     data = torch.zeros((2, 11, 11, 7))
     data[:, 5, 5, 3] = 1
     return data

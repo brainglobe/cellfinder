@@ -1,6 +1,6 @@
 from functools import partial, wraps
 from random import getrandbits, uniform
-from typing import Callable, Optional, Type
+from typing import Any, Callable, Optional, Type
 
 import numpy as np
 import torch
@@ -315,3 +315,12 @@ def all_elements_equal(x) -> bool:
     :return: True if all elements are equal, False otherwise.
     """
     return len(set(x)) <= 1
+
+
+def get_axis_reordering(
+    in_order: tuple[Any, ...], out_order: tuple[Any, ...]
+) -> list[int]:
+    indices = []
+    for value in out_order:
+        indices.append(in_order.index(value))
+    return indices

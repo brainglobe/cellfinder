@@ -20,24 +20,15 @@ from cellfinder.core.tools.threading import (
     ExecutionFailure,
     ThreadWithException,
 )
-from cellfinder.core.tools.tools import get_data_converter
+from cellfinder.core.tools.tools import get_axis_reordering, get_data_converter
 
 AXIS = Literal["x", "y", "z"]
-DIM = Literal["x", "y", "z", "C"]
+DIM = Literal["x", "y", "z", "c"]
 RandRange = Sequence[float] | Sequence[tuple[float, float]] | None
 
 
 class StackSizeError(Exception):
     pass
-
-
-def get_axis_reordering(
-    in_order: tuple[Any, ...], out_order: tuple[Any, ...]
-) -> list[int]:
-    indices = []
-    for value in out_order:
-        indices.append(in_order.index(value))
-    return indices
 
 
 def _read_data_send_cuboids(
@@ -355,11 +346,11 @@ class CuboidDatasetBase(Dataset):
     def __init__(
         self,
         points: list[Cell],
-        data_voxel_sizes: tuple[int, int, int],
-        network_voxel_sizes: tuple[int, int, int],
+        data_voxel_sizes: tuple[float, float, float],
+        network_voxel_sizes: tuple[float, float, float],
         network_cuboid_voxels: tuple[int, int, int] = (20, 50, 50),
         axis_order: tuple[AXIS, AXIS, AXIS] = ("z", "y", "x"),
-        output_axis_order: tuple[AXIS, AXIS, AXIS] = ("y", "x", "z", "c"),
+        output_axis_order: tuple[DIM, DIM, DIM, DIM] = ("y", "x", "z", "c"),
         src_dataset: ImageDataBase | None = None,
         classes: int = 2,
         target_output: Literal["cell", "label"] | None = None,
@@ -417,26 +408,19 @@ class CuboidDatasetBase(Dataset):
         self.classes = classes
         self.target_output = target_output
 
-        self._augment_dim_reordering = []
-        self._augment_dim_reordering_back = []
         if augment:
+            vol_size = {
+                ax: n for ax, n in zip(axis_order, network_cuboid_voxels)
+            }
             self.augmentation = DataAugmentation(
-                network_voxel_sizes,
+                vol_size,
+                output_axis_order,
                 augment_likelihood,
                 flippable_axis,
                 translate_range,
                 scale_range,
                 rotate_range,
             )
-            if self.output_axis_order != self.augmentation.AXIS_ORDER:
-                self._augment_dim_reordering = get_axis_reordering(
-                    self.output_axis_order,
-                    self.augmentation.AXIS_ORDER,
-                )
-                self._augment_dim_reordering_back = get_axis_reordering(
-                    self.augmentation.AXIS_ORDER,
-                    self.output_axis_order,
-                )
 
         if src_dataset is not None:
             self._set_output_data_dim_reordering(src_dataset)
@@ -478,10 +462,7 @@ class CuboidDatasetBase(Dataset):
 
         augmentation = self.augmentation
         if augmentation is not None and augmentation.update_parameters():
-            reordered = torch.permute(data, self._augment_dim_reordering)
-            data[:] = torch.permute(
-                augmentation(reordered), self._augment_dim_reordering_back
-            )
+            data[:] = augmentation(data)
 
         match self.target_output:
             case None:
@@ -519,13 +500,7 @@ class CuboidDatasetBase(Dataset):
             # batch is always first index
             for b in range(len(indices)):
                 if augmentation.update_parameters():
-                    reordered = torch.permute(
-                        data[b, ...], self._augment_dim_reordering
-                    )
-                    data[b, ...] = torch.permute(
-                        augmentation(reordered),
-                        self._augment_dim_reordering_back,
-                    )
+                    data[b, ...] = augmentation(data[b, ...])
 
         match self.target_output:
             case None:
