@@ -1,14 +1,11 @@
-from typing import Callable, Dict, List, Literal, Optional, Tuple, Union
+from dataclasses import dataclass
+from typing import Dict, List, Literal, Optional, Tuple
 
-from keras import (
-    KerasTensor as Tensor,
-)
-from keras import Model
-from keras import layers
-from keras import optimizers
+from keras import Model, layers, optimizers
 from keras import ops as K
 
 
+@dataclass
 class VITConfig:
     num_layers: int
     hidden_dim: int
@@ -73,6 +70,7 @@ class PositionalEmbeddings(layers.Layer):
 
     :param int embedding_dim: The dimension of the embeddings
     """
+
     def __init__(
         self,
         embedding_dim: int,
@@ -96,8 +94,7 @@ class PositionalEmbeddings(layers.Layer):
         inputs,
     ):
         return K.broadcast_to(
-            self.position_embedding(self.positions),
-            K.shape(inputs)
+            self.position_embedding(self.positions), K.shape(inputs)
         )
 
 
@@ -125,8 +122,8 @@ def attention_block(
     return layers.MultiHeadAttention(
         num_heads=num_heads,
         key_dim=hidden_dim // num_heads,
-        name=f"{name}--mha"
-    )(normalized_inputs, normalized_inputs) 
+        name=f"{name}--mha",
+    )(normalized_inputs, normalized_inputs)
 
 
 def mlp_block(
@@ -164,7 +161,7 @@ def mlp_block(
 
 def transformer_block(
     residual_stream,
-    layer_norm_eps: float = 1e-6, 
+    layer_norm_eps: float = 1e-6,
     num_heads: int = 8,
     hidden_dim: int = 128,
     expanding_factor: int = 4,
@@ -188,13 +185,10 @@ def transformer_block(
         layer_norm_eps=layer_norm_eps,
         num_heads=num_heads,
         hidden_dim=hidden_dim,
-        name=f"{name}--attention_block"
+        name=f"{name}--attention_block",
     )
 
-    residual_stream = layers.Add()([
-        residual_stream,
-        attention_outputs
-    ])
+    residual_stream = layers.Add()([residual_stream, attention_outputs])
 
     mlp_outputs = mlp_block(
         residual_stream,
@@ -205,10 +199,7 @@ def transformer_block(
     )
 
     # Skip connection
-    residual_stream = layers.Add()([
-        residual_stream,
-        mlp_outputs
-    ])
+    residual_stream = layers.Add()([residual_stream, mlp_outputs])
 
     return residual_stream
 
@@ -221,7 +212,6 @@ def build_model(
     loss: str = "categorical_crossentropy",
     metrics: List[str] = ["accuracy"],
     num_classes: int = 2,
-    embedding_dim: int = 128,
     classification_activation: str = "softmax",
 ) -> Model:
     """
@@ -231,7 +221,8 @@ def build_model(
     parameters for the Vision Transformer.
     """
     config = vit_configs[network_depth]
-    
+    embedding_dim = config.hidden_dim
+
     # Get the input layer
     inputs = layers.Input(shape=input_shape)
     # Create patches.
@@ -242,19 +233,19 @@ def build_model(
         strides=config.patch_size,
         padding="VALID",
     )(inputs)
-    patches = layers.Reshape(
-        target_shape=(-1, embedding_dim)
-    )(patches)
+    patches = layers.Reshape(target_shape=(-1, embedding_dim))(patches)
 
     # Add positional embeddings
-    positional_embeddings = PositionalEmbeddings(
-        embedding_dim=embedding_dim
-    )(patches)
+    positional_embeddings = PositionalEmbeddings(embedding_dim=embedding_dim)(
+        patches
+    )
 
-    residual_stream = layers.Add()([
-        patches,
-        positional_embeddings,
-    ])
+    residual_stream = layers.Add()(
+        [
+            patches,
+            positional_embeddings,
+        ]
+    )
 
     # Create multiple layers of the Transformer block.
     for layer_idx in range(config.num_layers):
@@ -264,12 +255,11 @@ def build_model(
             hidden_dim=config.hidden_dim,
             expanding_factor=config.expanding_factor,
             layer_norm_eps=config.layer_norm_eps,
-            name=f"transformer_block_{layer_idx}",
+            name=f"layer_{layer_idx}",
         )
 
     normalized_stream = layers.LayerNormalization(
-        epsilon=config.layer_norm_eps,
-        name="pre_logits_norm"
+        epsilon=config.layer_norm_eps, name="pre_logits_norm"
     )(residual_stream)
     flat_feature_vector = layers.GlobalAvgPool1D()(normalized_stream)
 
@@ -282,7 +272,7 @@ def build_model(
         inputs=inputs,
         outputs=outputs,
     )
-    
+
     if optimizer is None:
         optimizer = optimizers.Adam(learning_rate=learning_rate)
 

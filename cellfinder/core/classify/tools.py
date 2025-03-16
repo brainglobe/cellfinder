@@ -7,8 +7,7 @@ import numpy as np
 from keras import Model
 
 from cellfinder.core import logger
-from cellfinder.core.classify import resnet
-from cellfinder.core.classify import vit
+from cellfinder.core.classify import resnet, vit
 
 
 def build_model(
@@ -20,7 +19,7 @@ def build_model(
     Automatically detects the type and configuration of the model to build
     :param network_depth: The type of model to build
     :param learning_rate: The learning rate to use
-    
+
     :return: A keras model
     """
     if network_depth in vit.vit_configs:
