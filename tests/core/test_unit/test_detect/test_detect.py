@@ -106,7 +106,6 @@ def test_main_planes_crop_size(mocked_main):
     assert settings.end_height == 21
     assert settings.end_width == 40
     assert settings.n_planes == 5
-    assert signal_array.shape == (5, 13, 38)
 
 
 def test_main_planes_size(mocked_main):

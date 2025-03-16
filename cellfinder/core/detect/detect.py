@@ -183,13 +183,8 @@ def main(
     # brainmapper can pass them in as str
     voxel_sizes = list(map(float, voxel_sizes))
 
-    # cropping according to entered constrains for all planes
-    cropped_signal_array = signal_array[
-        :, start_height:end_height, start_width:end_width
-    ]
-
     settings = DetectionSettings(
-        plane_shape=cropped_signal_array.shape[1:],
+        plane_shape=(end_height - start_height, end_width - start_width),
         plane_original_np_dtype=signal_array.dtype,
         voxel_sizes=voxel_sizes,
         soma_spread_factor=soma_spread_factor,
@@ -257,9 +252,7 @@ def main(
     torch.set_num_threads(settings.n_torch_comp_threads)
 
     # process the data
-    mp_3d_filter.process(
-        mp_tile_processor, cropped_signal_array, callback=callback
-    )
+    mp_3d_filter.process(mp_tile_processor, signal_array, callback=callback)
     cells = mp_3d_filter.get_results(splitting_settings)
 
     torch.set_num_threads(orig_n_threads)
