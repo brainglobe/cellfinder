@@ -88,6 +88,27 @@ def test_main_bad_or_default_args(mocked_main):
     assert splitting_settings.torch_device == "cpu"
 
 
+def test_main_planes_crop_size(mocked_main):
+    process, get_results = mocked_main
+    main(
+        signal_array=np.empty((5, 50, 41)),
+        start_width=2,
+        end_width=40,
+        start_height=8,
+        end_height=21,
+    )
+
+    process.assert_called()
+    vol_filter, mp_tile_processor, signal_array = process.call_args.args
+    settings = vol_filter.settings
+
+    assert settings.plane_shape == (13, 38)
+    assert settings.end_height == 21
+    assert settings.end_width == 40
+    assert settings.n_planes == 5
+    assert signal_array.shape == (5, 13, 38)
+
+
 def test_main_planes_size(mocked_main):
     process, get_results = mocked_main
     main(signal_array=np.empty((5, 8, 19)), end_plane=4, start_plane=1)

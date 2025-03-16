@@ -69,6 +69,24 @@ class DetectionSettings:
     (axis 1, axis 2) in the z-stack where z is the first axis.
     """
 
+    start_width: int = 0
+    """The index of first x to process, in the input data (inclusive)."""
+
+    end_width: int = 1
+    """
+    The index of the last x at which to stop processing the input data
+    (not inclusive).
+    """
+
+    start_height: int = 0
+    """The index of first y to process, in the input data (inclusive)."""
+
+    end_height: int = 1
+    """
+    The index of the last y at which to stop processing the input data
+    (not inclusive).
+    """
+
     start_plane: int = 0
     """The index of first plane to process, in the input data (inclusive)."""
 
