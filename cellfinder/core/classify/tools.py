@@ -7,13 +7,42 @@ import numpy as np
 from keras import Model
 
 from cellfinder.core import logger
-from cellfinder.core.classify.resnet import build_model, layer_type
+from cellfinder.core.classify import resnet
+from cellfinder.core.classify import vit
+
+
+def build_model(
+    network_depth: str,
+    learning_rate: float,
+    **kwargs,
+) -> Model:
+    """
+    Automatically detects the type and configuration of the model to build
+    :param network_depth: The type of model to build
+    :param learning_rate: The learning rate to use
+    
+    :return: A keras model
+    """
+    if network_depth in vit.vit_configs:
+        return vit.build_model(
+            network_depth=network_depth,
+            learning_rate=learning_rate,
+            **kwargs,
+        )
+    elif network_depth in resnet.resnet_configs:
+        return resnet.build_model(
+            network_depth=network_depth,
+            learning_rate=learning_rate,
+            **kwargs,
+        )
+    else:
+        raise ValueError(f"Unknown network depth: {network_depth}")
 
 
 def get_model(
     existing_model: Optional[os.PathLike] = None,
     model_weights: Optional[os.PathLike] = None,
-    network_depth: Optional[layer_type] = None,
+    network_depth: Optional[str] = None,
     learning_rate: float = 0.0001,
     inference: bool = False,
     continue_training: bool = False,

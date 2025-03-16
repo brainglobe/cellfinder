@@ -44,6 +44,11 @@ models: Dict[depth_type, layer_type] = {
     "50": "50-layer",
     "101": "101-layer",
     "152": "152-layer",
+    "vit-4": "vit-4-layer",
+    "vit-8": "vit-8-layer",
+    "vit-12": "vit-12-layer",
+    "vit-24": "vit-24-layer",
+    "vit-32": "vit-32-layer",
 }
 
 
