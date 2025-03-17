@@ -28,7 +28,7 @@ def build_model(
             learning_rate=learning_rate,
             **kwargs,
         )
-    elif network_depth in resnet.resnet_configs:
+    elif network_depth in resnet.resnet_unit_blocks:
         return resnet.build_model(
             network_depth=network_depth,
             learning_rate=learning_rate,
