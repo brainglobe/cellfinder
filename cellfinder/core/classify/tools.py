@@ -17,6 +17,7 @@ def get_model(
     learning_rate: float = 0.0001,
     inference: bool = False,
     continue_training: bool = False,
+    freeze: bool = False,
 ) -> Model:
     """Returns the correct model based on the arguments passed
     :param existing_model: An existing, trained model. This is returned if it
@@ -35,7 +36,7 @@ def get_model(
     """
     if existing_model is not None or network_depth is None:
         logger.debug(f"Loading model: {existing_model}")
-        return keras.models.load_model(existing_model)
+        model = keras.models.load_model(existing_model)
     else:
         logger.debug(f"Creating a new instance of model: {network_depth}")
         model = build_model(
@@ -49,6 +50,16 @@ def get_model(
             if model_weights is None:
                 raise OSError("`model_weights` must be provided")
             model.load_weights(model_weights)
+        if freeze:
+            logger.debug("Freezing convolutional layers while keeping Dense layers trainable")
+            for layer in model.layers:
+                if isinstance(layer,keras.layers.Conv3D):
+                    layer.trainable = False 
+                elif isinstance(layer, keras.layers.Dense):
+                    layer.trainable = True
+            logger.degug("Recompiling model after freezing convolutional layers")
+            optimizer = keras.optimizers.Adam(learning_rate=learning_rate)
+            model.compile(optimizer=optimizer, loss="categorical_crossentropy", metrics=["accuracy"])
         return model
 
 

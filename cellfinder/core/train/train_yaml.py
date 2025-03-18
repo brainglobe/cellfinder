@@ -187,7 +187,13 @@ def training_parse():
         type=check_positive_float,
         default=0.0001,
         help="Learning rate for training the model",
-    )
+    ),
+    training_parser.add_argument(
+        "--freeze",
+        dest="freeze",
+        action="store_true",
+        help="Freeze layers of the model for retraining",
+    ),
     training_parser.add_argument(
         "--no-augment",
         dest="no_augment",
@@ -217,8 +223,7 @@ def training_parse():
         dest="save_progress",
         action="store_true",
         help="Save training progress to a .csv file",
-    )
-
+    ),
     training_parser = misc_parse(training_parser)
     training_parser = download_parser(training_parser)
     args = training_parser.parse_args()
@@ -293,6 +298,7 @@ def cli():
         no_save_checkpoints=args.no_save_checkpoints,
         save_progress=args.save_progress,
         epochs=args.epochs,
+        freeze=args.freeze 
     )
 
 
@@ -315,6 +321,7 @@ def run(
     no_save_checkpoints=False,
     save_progress=False,
     epochs=100,
+    freeze=False,
 ):
     from keras.callbacks import (
         CSVLogger,
@@ -350,8 +357,8 @@ def run(
         network_depth=models[network_depth],
         learning_rate=learning_rate,
         continue_training=continue_training,
+        freeze=freeze
     )
-
     signal_train, background_train, labels_train = make_lists(tiff_files)
 
     n_processes = get_num_processes(min_free_cpu_cores=n_free_cpus)

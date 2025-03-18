@@ -72,7 +72,6 @@ def build_model(
             )(x)
 
         features *= 2
-
     x = GlobalAveragePooling3D(name="final_average_pool")(x)
     x = Dense(
         number_classes,
