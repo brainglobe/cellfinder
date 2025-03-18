@@ -298,7 +298,7 @@ def cli():
         no_save_checkpoints=args.no_save_checkpoints,
         save_progress=args.save_progress,
         epochs=args.epochs,
-        freeze=args.freeze 
+        freeze=args.freeze,
     )
 
 
@@ -357,7 +357,7 @@ def run(
         network_depth=models[network_depth],
         learning_rate=learning_rate,
         continue_training=continue_training,
-        freeze=freeze
+        freeze=freeze,
     )
     signal_train, background_train, labels_train = make_lists(tiff_files)
 

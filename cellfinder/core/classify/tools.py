@@ -51,15 +51,23 @@ def get_model(
                 raise OSError("`model_weights` must be provided")
             model.load_weights(model_weights)
         if freeze:
-            logger.debug("Freezing convolutional layers while keeping Dense layers trainable")
+            logger.debug(
+                "Freezing convolutional layers while keeping Dense layers trainable"
+            )
             for layer in model.layers:
-                if isinstance(layer,keras.layers.Conv3D):
-                    layer.trainable = False 
+                if isinstance(layer, keras.layers.Conv3D):
+                    layer.trainable = False
                 elif isinstance(layer, keras.layers.Dense):
                     layer.trainable = True
-            logger.degug("Recompiling model after freezing convolutional layers")
+            logger.degug(
+                "Recompiling model after freezing convolutional layers"
+            )
             optimizer = keras.optimizers.Adam(learning_rate=learning_rate)
-            model.compile(optimizer=optimizer, loss="categorical_crossentropy", metrics=["accuracy"])
+            model.compile(
+                optimizer=optimizer,
+                loss="categorical_crossentropy",
+                metrics=["accuracy"],
+            )
         return model
 
 
