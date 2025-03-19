@@ -1,6 +1,9 @@
 from unittest.mock import patch
+
 import pytest
+
 from cellfinder.core.classify import tools  # << Change this import
+
 
 @pytest.mark.parametrize(
     "model_weights, inference, expected_exception, expected_message",
@@ -24,7 +27,7 @@ def test_missing_weights(
         )
 
 
-@patch("cellfinder.core.classify.tools.build_model")   # << Change here too
+@patch("cellfinder.core.classify.tools.build_model")  # << Change here too
 def test_incorrect_weights(mock_build_model):
     mock_model = mock_build_model.return_value
     mock_model.load_weights.side_effect = ValueError(
