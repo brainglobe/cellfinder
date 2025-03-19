@@ -406,7 +406,7 @@ class CurationWidget(QWidget):
             self.update_status_label("Ready")
 
     def __prep_directories_for_save(self):
-        self.yaml_filename = self.output_directory / "training.yml"
+        self.yaml_filename = self.output_directory / "training.yaml"
         self.cell_cube_dir = self.output_directory / "cells"
         self.no_cell_cube_dir = self.output_directory / "non_cells"
 
