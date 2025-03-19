@@ -9,7 +9,7 @@ from cellfinder.core.classify import tools  # << Change this import
             None,
             True,
             OSError,
-            "`model_weights` must be provided for inference",
+            "`model_weights` must be provided for inference or continued training.",
         ),
     ],
 )
@@ -18,7 +18,7 @@ def test_missing_weights(
 ):
     with pytest.raises(expected_exception, match=expected_message):
         tools.get_model(
-            network_depth="shallow",
+            network_depth="101-layer",
             inference=inference,
             model_weights=model_weights,
         )
@@ -36,7 +36,7 @@ def test_incorrect_weights(mock_build_model):
         match="Provided weights don't match the model architecture.",
     ):
         tools.get_model(
-            network_depth="shallow",
+            network_depth="101-layer",
             inference=True,
             model_weights="incorrect_weights.h5",
         )
