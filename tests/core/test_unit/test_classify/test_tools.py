@@ -12,8 +12,8 @@ from cellfinder.core.classify import tools  # << Change this import
             None,
             True,
             OSError,
-              "`model_weights` must be provided for inference "
-             "or continued training.",
+            "`model_weights` must be provided for inference "
+            "or continued training.",
         ),
     ],
 )
