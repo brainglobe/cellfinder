@@ -94,21 +94,21 @@ class CurationWidget(QWidget):
             self._update_combobox_options(
                 self.training_data_non_cell_choice, self.point_layer_names
             )
-        
+
         @self.viewer.layers.events.removed.connect
         def _remove_selection_layers(event: QtCore.QEvent):
             """
-            Set internal background, signal, training data cell, 
-            and training data non-cell layers to None when they 
+            Set internal background, signal, training data cell,
+            and training data non-cell layers to None when they
             are removed from the napari viewer GUI.
             """
-            if event.value == self.signal_layer: 
+            if event.value == self.signal_layer:
                 self.signal_layer = None
             if event.value == self.background_layer:
                 self.background_layer = None
-            if event.value == self.training_data_cell_layer: 
+            if event.value == self.training_data_cell_layer:
                 self.training_data_cell_layer = None
-            if event.value == self.training_data_non_cell_layer: 
+            if event.value == self.training_data_non_cell_layer:
                 self.training_data_non_cell_layer = None
 
     @staticmethod
