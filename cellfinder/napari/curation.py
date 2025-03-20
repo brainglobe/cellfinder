@@ -110,6 +110,7 @@ class CurationWidget(QWidget):
                 self.training_data_cell_layer = None
             if event.value == self.training_data_non_cell_layer: 
                 self.training_data_non_cell_layer = None
+
     @staticmethod
     def _update_combobox_options(combobox: QComboBox, options_list: List[str]):
         original_text = combobox.currentText()
