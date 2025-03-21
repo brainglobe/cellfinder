@@ -52,7 +52,7 @@ def get_model(
             model.load_weights(model_weights)
         if freeze:
             logger.debug(
-                "Freezing convolutional layers while keeping Dense layers trainable"
+                "Freezing upper layers,keeping Dense layers trainable"
             )
             for layer in model.layers:
                 if isinstance(layer, keras.layers.Conv3D):
