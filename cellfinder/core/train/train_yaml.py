@@ -315,8 +315,10 @@ def run(
     no_save_checkpoints=False,
     save_progress=False,
     epochs=100,
+    epoch_callback=None,
 ):
     from keras.callbacks import (
+        Callback,
         CSVLogger,
         ModelCheckpoint,
         TensorBoard,
@@ -438,6 +440,14 @@ def run(
         csv_filepath = str(output_dir / "training.csv")
         csv_logger = CSVLogger(csv_filepath)
         callbacks.append(csv_logger)
+
+    if epoch_callback is not None:
+
+        class EpochProgressCallback(Callback):
+            def on_epoch_begin(self, epoch, logs=None):
+                epoch_callback(epoch + 1, epochs)
+
+        callbacks.append(EpochProgressCallback())
 
     logger.info("Beginning training.")
     # Keras 3.0: `use_multiprocessing` input is set in the
