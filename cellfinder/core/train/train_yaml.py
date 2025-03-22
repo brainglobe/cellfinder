@@ -316,7 +316,19 @@ def run(
     no_save_checkpoints=False,
     save_progress=False,
     epochs=100,
+    epoch_callback=None,
 ):
+    from keras.callbacks import (
+        Callback,
+        CSVLogger,
+        ModelCheckpoint,
+        TensorBoard,
+    )
+
+    from cellfinder.core.classify.cube_generator import CubeGeneratorFromDisk
+    from cellfinder.core.classify.tools import get_model, make_lists
+    from cellfinder.core.tools.prep import prep_model_weights
+
     start_time = datetime.now()
 
     ensure_directory_exists(output_dir)
@@ -429,6 +441,14 @@ def run(
         csv_filepath = str(output_dir / "training.csv")
         csv_logger = CSVLogger(csv_filepath)
         callbacks.append(csv_logger)
+
+    if epoch_callback is not None:
+
+        class EpochProgressCallback(Callback):
+            def on_epoch_begin(self, epoch, logs=None):
+                epoch_callback(epoch + 1, epochs)
+
+        callbacks.append(EpochProgressCallback())
 
     logger.info("Beginning training.")
     # Keras 3.0: `use_multiprocessing` input is set in the
