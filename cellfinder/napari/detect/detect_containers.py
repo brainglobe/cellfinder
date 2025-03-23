@@ -140,6 +140,10 @@ class ClassificationInputs(InputContainer):
 class MiscInputs(InputContainer):
     """Container for miscellaneous inputs."""
 
+    start_width: int = 0
+    end_width: int = 0
+    start_height: int = 0
+    end_height: int = 0
     start_plane: int = 0
     end_plane: int = 0
     n_free_cpus: int = 2
@@ -156,6 +160,10 @@ class MiscInputs(InputContainer):
     def widget_representation(cls) -> dict:
         return dict(
             misc_options=html_label_widget("Miscellaneous:"),
+            start_width=cls._custom_widget("start_width", min=0, max=100000),
+            end_width=cls._custom_widget("end_width", min=0, max=100000),
+            start_height=cls._custom_widget("start_height", min=0, max=100000),
+            end_height=cls._custom_widget("end_height", min=0, max=100000),
             start_plane=cls._custom_widget("start_plane", min=0, max=100000),
             end_plane=cls._custom_widget("end_plane", min=0, max=100000),
             n_free_cpus=cls._custom_widget(

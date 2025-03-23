@@ -13,6 +13,10 @@ def main(
     signal_array: np.ndarray,
     background_array: np.ndarray,
     voxel_sizes: Tuple[int, int, int],
+    start_width: int = 0,
+    end_width: int = -1,
+    start_height: int = 0,
+    end_height: int = -1,
     start_plane: int = 0,
     end_plane: int = -1,
     trained_model: Optional[os.PathLike] = None,
@@ -64,6 +68,10 @@ def main(
 
         points = detect.main(
             signal_array,
+            start_width,
+            end_width,
+            start_height,
+            end_height,
             start_plane,
             end_plane,
             voxel_sizes,

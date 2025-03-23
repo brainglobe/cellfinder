@@ -11,7 +11,11 @@ from magicgui.widgets import FunctionGui, ProgressBar
 from napari.utils.notifications import show_info
 from qtpy.QtWidgets import QScrollArea
 
-from cellfinder.core.classify.cube_generator import get_cube_depth_min_max
+from cellfinder.core.classify.cube_generator import (
+    get_cube_depth_min_max,
+    get_cube_height_min_max,
+    get_cube_width_min_max,
+)
 from cellfinder.napari.utils import (
     add_classified_layers,
     add_single_layer,
@@ -34,6 +38,8 @@ CUBE_HEIGHT = 20
 CUBE_DEPTH = 20
 
 # If using ROI, how many extra planes to analyse
+MIN_WIDTH_ANALYSE = 0
+MIN_HEIGHT_ANALYSE = 0
 MIN_PLANES_ANALYSE = 0
 
 
@@ -179,6 +185,8 @@ def get_results_callback(
 
 def find_local_planes(
     viewer: napari.Viewer,
+    voxel_size_x: float,
+    voxel_size_y: float,
     voxel_size_z: float,
     signal_image: napari.layers.Image,
 ) -> Tuple[int, int]:
@@ -186,19 +194,40 @@ def find_local_planes(
     When detecting only locally, it returns the start and end planes to use.
     """
     current_plane = viewer.dims.current_step[0]
+    current_height = viewer.dims.current_step[1]
+    current_width = viewer.dims.current_step[2]
 
     # so a reasonable number of cells in the plane are detected
+    width_needed = int(
+        ceil(CUBE_WIDTH * NETWORK_VOXEL_SIZES[2]) / voxel_size_x
+    )
+    height_needed = int(
+        ceil(CUBE_HEIGHT * NETWORK_VOXEL_SIZES[1]) / voxel_size_y
+    )
     planes_needed = MIN_PLANES_ANALYSE + int(
         ceil((CUBE_DEPTH * NETWORK_VOXEL_SIZES[0]) / voxel_size_z)
     )
 
+    start_width, end_width = get_cube_width_min_max(
+        current_width, width_needed
+    )
+    start_height, end_height = get_cube_height_min_max(
+        current_height, height_needed
+    )
     start_plane, end_plane = get_cube_depth_min_max(
         current_plane, planes_needed
     )
     start_plane = max(0, start_plane)
     end_plane = min(len(signal_image.data), end_plane)
 
-    return start_plane, end_plane
+    return (
+        start_width,
+        end_width,
+        start_height,
+        end_height,
+        start_plane,
+        end_plane,
+    )
 
 
 def reraise(e: Exception) -> None:
@@ -257,6 +286,10 @@ def detect_widget() -> FunctionGui:
         trained_model: Optional[Path],
         batch_size: int,
         misc_options,
+        start_width: int,
+        end_width: int,
+        start_height: int,
+        end_height: int,
         start_plane: int,
         end_plane: int,
         n_free_cpus: int,
@@ -307,6 +340,14 @@ def detect_widget() -> FunctionGui:
         trained_model : Optional[Path]
             Trained model file path (home directory (default) -> pretrained
             weights)
+        start_width : int
+            First X to process (to process a subset of the data)
+        end_width : int
+            Last X to process (to process a subset of the data)
+        start_height : int
+            First Y to process (to process a subset of the data)
+        end_height : int
+            Last Y to process (to process a subset of the data)
         start_plane : int
             First plane to process (to process a subset of the data)
         end_plane : int
@@ -382,14 +423,40 @@ def detect_widget() -> FunctionGui:
         )
 
         if analyse_local:
-            start_plane, end_plane = find_local_planes(
-                options["viewer"], voxel_size_z, signal_image
+            (
+                start_width,
+                end_width,
+                start_height,
+                end_height,
+                start_plane,
+                end_plane,
+            ) = find_local_planes(
+                options["viewer"],
+                voxel_size_x,
+                voxel_size_y,
+                voxel_size_z,
+                signal_image,
             )
-        elif not end_plane:
-            end_plane = len(signal_image.data)
+        else:
+            if not end_width:
+                end_width = len(signal_image.data[0][0])
+
+            if not end_height:
+                end_height = len(signal_image.data[0])
+
+            if not end_plane:
+                end_plane = len(signal_image.data)
 
         misc_inputs = MiscInputs(
-            start_plane, end_plane, n_free_cpus, analyse_local, debug
+            start_width,
+            end_width,
+            start_height,
+            end_height,
+            start_plane,
+            end_plane,
+            n_free_cpus,
+            analyse_local,
+            debug,
         )
 
         worker = Worker(
