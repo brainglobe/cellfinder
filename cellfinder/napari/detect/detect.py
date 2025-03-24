@@ -198,11 +198,11 @@ def find_local_planes(
     current_width = viewer.dims.current_step[2]
 
     # so a reasonable number of cells in the plane are detected
-    width_needed = int(
-        ceil(CUBE_WIDTH * NETWORK_VOXEL_SIZES[2]) / voxel_size_x
+    width_needed = MIN_WIDTH_ANALYSE + int(
+        ceil((CUBE_WIDTH * NETWORK_VOXEL_SIZES[2]) / voxel_size_x)
     )
-    height_needed = int(
-        ceil(CUBE_HEIGHT * NETWORK_VOXEL_SIZES[1]) / voxel_size_y
+    height_needed = MIN_HEIGHT_ANALYSE + int(
+        ceil((CUBE_HEIGHT * NETWORK_VOXEL_SIZES[1]) / voxel_size_y)
     )
     planes_needed = MIN_PLANES_ANALYSE + int(
         ceil((CUBE_DEPTH * NETWORK_VOXEL_SIZES[0]) / voxel_size_z)

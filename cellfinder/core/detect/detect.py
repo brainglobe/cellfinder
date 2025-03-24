@@ -166,11 +166,11 @@ def main(
     if signal_array.ndim != 3:
         raise ValueError("Input data must be 3D")
 
-    if end_width <= 0:
+    if end_width < 0:
         end_width = len(signal_array[0][0])
     end_width = min(len(signal_array[0][0]), end_width)
 
-    if end_height <= 0:
+    if end_height < 0:
         end_height = len(signal_array[0])
     end_height = min(len(signal_array[0]), end_height)
 
