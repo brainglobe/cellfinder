@@ -28,7 +28,7 @@ def test_missing_weights(
         )
 
 
-@patch("cellfinder.core.classify.tools.build_model")  # << Change here too
+@patch("cellfinder.core.classify.tools.build_model") 
 def test_incorrect_weights(mock_build_model):
     mock_model = mock_build_model.return_value
     mock_model.load_weights.side_effect = ValueError(
