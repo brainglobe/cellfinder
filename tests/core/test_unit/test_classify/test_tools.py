@@ -2,7 +2,7 @@ from unittest.mock import patch
 
 import pytest
 
-from cellfinder.core.classify import tools  # << Change this import
+from cellfinder.core.classify import tools
 
 
 @pytest.mark.parametrize(
