@@ -32,7 +32,7 @@ def test_missing_weights(
 def test_incorrect_weights(mock_build_model):
     mock_model = mock_build_model.return_value
     mock_model.load_weights.side_effect = ValueError(
-        "Provided weights don't match the model architecture."
+        "Input 0 of layer "resunit2_block0_bn_a" is incompatible with the layer: expected axis 3 of input shape to have value 6, but received input with shape (64, 12, 13, 7, 64)"
     )
 
     with pytest.raises(
