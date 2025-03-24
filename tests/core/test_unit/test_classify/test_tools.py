@@ -18,6 +18,8 @@ def test_model_weights_none_raises_oserror():
             model_weights=None,
             inference=True,
         )
+
+
 def test_missing_weights(
     model_weights, inference, expected_exception, expected_message
 ):
