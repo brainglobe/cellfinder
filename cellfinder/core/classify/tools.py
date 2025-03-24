@@ -53,7 +53,7 @@ def get_model(
                 )
             try:
                 model.load_weights(model_weights)
-            except Exception as e:
+            except (OSError, ValueError) as e:
                 raise ValueError(
                     f"Error loading weights: {model_weights}.\n"
                     "Provided weights don't match the model architecture.\n"
