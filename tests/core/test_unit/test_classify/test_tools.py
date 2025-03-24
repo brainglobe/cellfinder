@@ -3,7 +3,7 @@ from unittest.mock import patch
 import pytest
 
 from cellfinder.core.classify import tools
-from cellfinder.core.classify.tools import create_model
+from cellfinder.core.classify.tools import build_model
 
 
 def test_model_weights_none_raises_oserror():
@@ -12,7 +12,7 @@ def test_model_weights_none_raises_oserror():
         match="`model_weights` must be provided for inference or"
         "continued training.",
     ):
-        create_model(
+        build_model(
             input_shape=(64, 64, 64, 1),
             learning_rate=0.001,
             model_weights=None,
@@ -20,15 +20,17 @@ def test_model_weights_none_raises_oserror():
         )
 
 
-def test_missing_weights(
-    model_weights, inference, expected_exception, expected_message
-):
-    with pytest.raises(expected_exception, match=expected_message):
+def test_missing_weights():
+    with pytest.raises(
+        OSError,
+        match="`model_weights` must be provided for inference or continued training.",
+    ):
         tools.get_model(
             network_depth="101-layer",
-            inference=inference,
-            model_weights=model_weights,
+            inference=True,
+            model_weights=None,
         )
+
 
 
 @patch("cellfinder.core.classify.tools.build_model")
