@@ -57,8 +57,6 @@ def get_model(
                 raise ValueError(
                     f"Error loading weights: {model_weights}.\n"
                     "Provided weights don't match the model architecture.\n"
-                    "Ensure you are using the correct model file that "
-                    "corresponds to these weights."
                 ) from e
 
     return model
