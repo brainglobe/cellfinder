@@ -83,8 +83,8 @@ def main(
         network_depth=models[network_depth],
         inference=True,
     )
-
-    logger.info("Running inference")
+    
+    logger.info("Running inference  with batch size = {batch_size}")
     # in Keras 3.0 multiprocessing params are specified in the generator
     predictions = model.predict(
         inference_generator,
@@ -104,7 +104,7 @@ def main(
 
     time_elapsed = datetime.now() - start_time
     print(
-        "Classfication complete - all points done in : {}".format(time_elapsed)
+        "Classification complete - all points done in : {}".format(time_elapsed)
     )
 
     return points_list
