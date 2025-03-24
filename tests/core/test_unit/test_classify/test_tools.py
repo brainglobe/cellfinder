@@ -9,7 +9,8 @@ from cellfinder.core.classify.tools import create_model
 def test_model_weights_none_raises_oserror():
     with pytest.raises(
         OSError,
-        match="`model_weights` must be provided for inference or continued training.",
+        match="`model_weights` must be provided for inference or"
+        "continued training.",
     ):
         create_model(
             input_shape=(64, 64, 64, 1),
@@ -32,8 +33,10 @@ def test_missing_weights(
 def test_incorrect_weights(mock_build_model):
     mock_model = mock_build_model.return_value
     mock_model.load_weights.side_effect = ValueError(
-        "Input 0 of layer 'resunit2_block0_bn_a' is incompatible with the layer: "
-        "expected axis 3 of input shape to have value 6, but received input with shape "
+        "Input 0 of layer 'resunit2_block0_bn_a' is incompatible"
+        "with the layer: "
+        "expected axis 3 of input shape to have value 6, but received"
+        "input with shape "
         "(64, 12, 13, 7, 64)"
     )
 
