@@ -75,7 +75,6 @@ class OptionalTrainingInputs(InputContainer):
     continue_training: bool = False
     augment: bool = True
     tensorboard: bool = False
-    save_weights: bool = False
     save_checkpoints: bool = True
     save_progress: bool = True
     epochs: int = 100
@@ -98,7 +97,6 @@ class OptionalTrainingInputs(InputContainer):
             continue_training=cls._custom_widget("continue_training"),
             augment=cls._custom_widget("augment"),
             tensorboard=cls._custom_widget("tensorboard"),
-            save_weights=cls._custom_widget("save_weights"),
             save_checkpoints=cls._custom_widget("save_checkpoints"),
             save_progress=cls._custom_widget("save_progress"),
             epochs=cls._custom_widget("epochs"),
