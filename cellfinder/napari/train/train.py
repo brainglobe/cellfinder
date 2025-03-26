@@ -104,7 +104,6 @@ def training_widget() -> FunctionGui:
         continue_training: bool,
         augment: bool,
         tensorboard: bool,
-        save_weights: bool,
         save_checkpoints: bool,
         save_progress: bool,
         epochs: int,
@@ -140,9 +139,6 @@ def training_widget() -> FunctionGui:
             Augment the training data to improve generalisation
         tensorboard : bool
             Log to output_directory/tensorboard
-        save_weights : bool
-            Only store the model weights, and not the full model
-            Useful to save storage space
         save_checkpoints : bool
             Store the model at intermediate points during training
         save_progress : bool
@@ -177,7 +173,6 @@ def training_widget() -> FunctionGui:
             continue_training,
             augment,
             tensorboard,
-            save_weights,
             save_checkpoints,
             save_progress,
             epochs,
