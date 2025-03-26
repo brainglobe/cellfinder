@@ -3,21 +3,6 @@ from unittest.mock import patch
 import pytest
 
 from cellfinder.core.classify import tools
-from cellfinder.core.classify.tools import build_model
-
-
-def test_model_weights_none_raises_oserror():
-    with pytest.raises(
-        OSError,
-        match="`model_weights` must be provided for inference or"
-        "continued training.",
-    ):
-        build_model(
-            input_shape=(64, 64, 64, 1),
-            learning_rate=0.001,
-            model_weights=None,
-            inference=True,
-        )
 
 
 def test_missing_weights():
