@@ -24,7 +24,7 @@ def test_missing_weights():
     with pytest.raises(
         OSError,
         match="`model_weights` must be provided for inference "
-                 "or continued training.",
+        "or continued training.",
     ):
         tools.get_model(
             network_depth="101-layer",
