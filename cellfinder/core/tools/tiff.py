@@ -29,7 +29,7 @@ class TiffList(object):
         self.label = label
         self.channels = channels
 
-    def make_tifffile_list(self):
+    def make_tifffile_list(self) -> list["TiffFile"]:
         """
 
         :return: Returns the relevant tiff files as a list of TiffFile objects.
@@ -76,20 +76,24 @@ class TiffFile(object):
     def files_exist(self):
         return all([isfile(tif) for tif in self.img_files])
 
-    def as_cell(self, force_typed=True):
+    def as_cell(self, force_typed=True) -> Cell | UntypedCell:
         if force_typed:
-            return (
-                Cell(self.path, -1)
-                if self.label is None
-                else Cell(self.path, self.label)
-            )
-        else:
-            return (
-                UntypedCell(self.path)
-                if self.label is None
-                else Cell(self.path, self.label)
-            )
+            match self.label:
+                case None:
+                    cell_type = Cell.ARTIFACT
+                case "cell":
+                    cell_type = Cell.CELL
+                case "no_cell":
+                    cell_type = Cell.NO_CELL
+                case _:
+                    raise ValueError(f"Unknown cell type {self.label}")
+
+            return Cell(self.path, cell_type)
+
+        if self.label is None:
+            return UntypedCell(self.path)
+        return Cell(self.path, self.label)
 
     @property
-    def img_files(self):
+    def img_files(self) -> list[str]:
         return [self.path[:-5] + str(ch) + ".tif" for ch in self.channels]

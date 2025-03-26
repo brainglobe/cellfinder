@@ -322,10 +322,20 @@ class ThreadWithException(ExceptionWithQueueMixIn):
 
     def __init__(self, target, args=(), **kwargs):
         super().__init__(target=target, **kwargs)
-        self.to_thread_queue = Queue(maxsize=0)
-        self.from_thread_queue = Queue(maxsize=0)
+        # use multiprocess queues so subprocesses can communicate with thread
+        ctx = mp.get_context("spawn")
+        self.to_thread_queue = ctx.Queue(maxsize=0)
+        self.from_thread_queue = ctx.Queue(maxsize=0)
         self.args = args
         self.thread = Thread(target=self.user_func_runner)
+
+    def __getstate__(self):
+        items = self.__dict__.copy()
+        # don't pickle thread or args passed to it because thread and
+        # potentially args can't be sent to other processes
+        del items["thread"]
+        del items["args"]
+        return items
 
     def start(self) -> None:
         """Starts the thread that runs the target function."""
@@ -365,6 +375,14 @@ class ProcessWithException(ExceptionWithQueueMixIn):
         self.process = ctx.Process(target=self.user_func_runner)
 
         self.args = args
+
+    def __getstate__(self):
+        items = self.__dict__.copy()
+        # don't pickle process or args passed to it because process and
+        # potentially args can't be sent to other processes
+        del items["process"]
+        del items["args"]
+        return items
 
     def start(self) -> None:
         """Starts the sub-process that runs the target function."""
