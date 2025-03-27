@@ -477,6 +477,100 @@ class CubeGeneratorFromDisk(Sequence):
         if self.augment:
             image = augment(self.augmentation_parameters, image)
         return image
+    
+
+class CubeGeneratorParameters:
+    """Configuration parameters for cube generation."""
+
+def __init__(
+    self,
+    points: List[Cell],
+    signal_array: types.array,
+    background_array: types.array,
+    voxel_sizes: Tuple[int, int, int],
+    network_voxel_sizes: Tuple[int, int, int],
+    cube_generator_params: Optional[CubeGeneratorParameters] = None,
+    batch_size: int = 64,
+    cube_width: int = 50,
+    cube_height: int = 50,
+    cube_depth: int = 20,
+    channels: int = 2,
+    classes: int = 2,
+    extract: bool = False,
+    train: bool = False,
+    augment: bool = False,
+    augment_likelihood: float = 0.1,
+    flip_axis: Tuple[int, int, int] = (0, 1, 2),
+    rotate_max_axes: Tuple[float, float, float] = (1, 1, 1),
+    translate: Tuple[float, float, float] = (0.05, 0.05, 0.05),
+    shuffle: bool = False,
+    interpolation_order: int = 2,
+    *args,
+    **kwargs,
+):
+    # pass any additional arguments not specified in signature to the
+    # constructor of the superclass (e.g.: `use_multiprocessing` or
+    # `workers`)
+    super().__init__(*args, **kwargs)
+    self.points = points
+    self.signal_array = signal_array
+    self.background_array = background_array
+    
+    # Use parameters from CubeGeneratorParameters if provided, otherwise use individual args
+    if cube_generator_params is not None:
+        self.batch_size = cube_generator_params.batch_size
+        self.cube_width = cube_generator_params.cube_width
+        self.cube_height = cube_generator_params.cube_height
+        self.cube_depth = cube_generator_params.cube_depth
+        self.channels = cube_generator_params.channels
+        self.classes = cube_generator_params.classes
+        self.extract = cube_generator_params.extract
+        self.train = cube_generator_params.train
+        self.augment = cube_generator_params.augment
+        self.augment_likelihood = cube_generator_params.augment_likelihood
+        self.flip_axis = cube_generator_params.flip_axis
+        self.rotate_max_axes = cube_generator_params.rotate_max_axes
+        self.translate = cube_generator_params.translate
+        self.shuffle = cube_generator_params.shuffle
+        self.interpolation_order = cube_generator_params.interpolation_order
+    else:
+        self.batch_size = batch_size
+        self.cube_width = cube_width
+        self.cube_height = cube_height
+        self.cube_depth = cube_depth
+        self.channels = channels
+        self.classes = classes
+        self.extract = extract
+        self.train = train
+        self.augment = augment
+        self.augment_likelihood = augment_likelihood
+        self.flip_axis = flip_axis
+        self.rotate_max_axes = rotate_max_axes
+        self.translate = translate
+        self.shuffle = shuffle
+        self.interpolation_order = interpolation_order
+    
+    self.axis_2_pixel_um = float(voxel_sizes[2])
+    self.axis_1_pixel_um = float(voxel_sizes[1])
+    self.axis_0_pixel_um = float(voxel_sizes[0])
+    self.network_axis_2_pixel_um = float(network_voxel_sizes[2])
+    self.network_axis_1_pixel_um = float(network_voxel_sizes[1])
+    self.network_axis_0_pixel_um = float(network_voxel_sizes[0])
+    
+    self.scale_cubes = False
+    self.rescaling_factor_axis_2: float = 1
+    self.rescaling_factor_axis_1: float = 1
+    self.rescaled_cube_width: float = self.cube_width
+    self.rescaled_cube_height: float = self.cube_height
+    
+    self.__check_image_sizes()
+    self.__get_image_size()
+    self.__check_z_scaling()
+    self.__check_in_plane_scaling()
+    self.__remove_outlier_points()
+    self.__get_batches()
+    if shuffle:
+        self.on_epoch_end()
 
 
 def get_cube_depth_min_max(
