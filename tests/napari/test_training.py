@@ -1,9 +1,10 @@
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import pytest
+from magicgui.widgets import ProgressBar
 
-from cellfinder.napari.train.train import training_widget
+from cellfinder.napari.train.train import TrainingWorker, training_widget
 from cellfinder.napari.train.train_containers import (
     MiscTrainingInputs,
     OptionalNetworkInputs,
@@ -97,3 +98,92 @@ def test_run_with_virtual_yaml_files(get_training_widget):
         )
 
         mock_worker_instance.start.assert_called_once()
+
+
+@pytest.fixture
+def training_worker_inputs():
+    """Fixture to provide standard inputs for TrainingWorker tests."""
+    return {
+        "training_inputs": TrainingDataInputs(),
+        "network_inputs": OptionalNetworkInputs(),
+        "training_options": OptionalTrainingInputs(),
+        "misc_inputs": MiscTrainingInputs(),
+    }
+
+
+def test_training_worker(training_worker_inputs):
+    """Test TrainingWorker initialization and progress bar callback."""
+
+    worker = TrainingWorker(
+        training_worker_inputs["training_inputs"],
+        training_worker_inputs["network_inputs"],
+        training_worker_inputs["training_options"],
+        training_worker_inputs["misc_inputs"],
+    )
+
+    assert (
+        worker.training_data_inputs
+        == training_worker_inputs["training_inputs"]
+    )
+    assert (
+        worker.optional_network_inputs
+        == training_worker_inputs["network_inputs"]
+    )
+    assert (
+        worker.optional_training_inputs
+        == training_worker_inputs["training_options"]
+    )
+    assert worker.misc_training_inputs == training_worker_inputs["misc_inputs"]
+
+    progress_bar = ProgressBar()
+    worker.connect_progress_bar_callback(progress_bar)
+
+    worker.signals.update_progress.emit("Test", 10, 5)
+    assert progress_bar.label == "Test"
+    assert progress_bar.max == 10
+    assert progress_bar.value == 5
+
+
+@patch("cellfinder.napari.train.train.train_yaml")
+def test_training_worker_execution(mock_train_yaml, training_worker_inputs):
+    """Test the training worker execution and callbacks."""
+
+    inputs = training_worker_inputs
+    inputs["training_inputs"].as_core_arguments = MagicMock(
+        return_value={"yaml_file": ["test.yaml"]}
+    )
+    inputs["network_inputs"].as_core_arguments = MagicMock(
+        return_value={"model": "test_model"}
+    )
+    inputs["training_options"].as_core_arguments = MagicMock(
+        return_value={"epochs": 5}
+    )
+    inputs["misc_inputs"].as_core_arguments = MagicMock(
+        return_value={"n_free_cpus": 1}
+    )
+
+    worker = TrainingWorker(
+        inputs["training_inputs"],
+        inputs["network_inputs"],
+        inputs["training_options"],
+        inputs["misc_inputs"],
+    )
+    worker.signals.update_progress = MagicMock()
+
+    worker.work()
+
+    worker.signals.update_progress.emit.assert_any_call(
+        "Starting training...", 1, 0
+    )
+    worker.signals.update_progress.emit.assert_any_call(
+        "Training complete", 1, 1
+    )
+
+    mock_train_yaml.assert_called_once()
+    assert "epoch_callback" in mock_train_yaml.call_args.kwargs
+
+    callback = mock_train_yaml.call_args.kwargs["epoch_callback"]
+    callback(3, 5)
+    worker.signals.update_progress.emit.assert_any_call(
+        "Training epoch 3/5", 5, 3
+    )
