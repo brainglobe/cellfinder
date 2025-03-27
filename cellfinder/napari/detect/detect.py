@@ -3,6 +3,7 @@ from math import ceil
 from pathlib import Path
 from typing import Any, Callable, Dict, Optional, Tuple
 
+import torch
 import napari
 import napari.layers
 from brainglobe_utils.cells.cells import Cell
@@ -234,6 +235,7 @@ def detect_widget() -> FunctionGui:
         persist=True,
         reset_button=dict(widget_type="PushButton", text="Reset defaults"),
         scrollable=True,
+        detection_torch_device=dict(widget_type="ComboBox",choices=["cuda", "cpu"],label="Detection Device",value="cuda" if torch.cuda.is_available() else "cpu",tooltip="Device for detection (image processing filters)."),
     )
     def widget(
         detection_label,
@@ -263,6 +265,7 @@ def detect_widget() -> FunctionGui:
         analyse_local: bool,
         debug: bool,
         reset_button,
+        detection_torch_device: str,
     ) -> None:
         """
         Run detection and classification.
@@ -319,6 +322,9 @@ def detect_widget() -> FunctionGui:
             Increase logging
         reset_button :
             Reset parameters to default
+        detection_torch_device : str
+            Processing device to use for detection filters (e.g., morphological filters).
+            Select "cuda" for GPU or "cpu" for CPU. GPU is recommended if available.
         """
         # we must manually call so that the parameters of these functions are
         # initialized and updated. Because, if the images are open in napari

@@ -42,6 +42,7 @@ def main(
     detect_callback: Optional[Callable[[int], None]] = None,
     classify_callback: Optional[Callable[[int], None]] = None,
     detect_finished_callback: Optional[Callable[[list], None]] = None,
+    detection_torch_device: Optional[str] = None,
 ) -> List[Cell]:
     """
     Parameters
@@ -77,7 +78,7 @@ def main(
             log_sigma_size,
             n_sds_above_mean_thresh,
             batch_size=classification_batch_size,
-            torch_device=classification_torch_device,
+            torch_device=detection_torch_device,
             callback=detect_callback,
         )
 

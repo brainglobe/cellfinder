@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import List, Optional
 
+import torch
 import numpy
 from brainglobe_utils.cells.cells import Cell
 
@@ -145,9 +146,13 @@ class MiscInputs(InputContainer):
     n_free_cpus: int = 2
     analyse_local: bool = False
     debug: bool = False
+    detection_torch_device: Optional[str] = None
 
     def as_core_arguments(self) -> dict:
         misc_input_dict = super().as_core_arguments()
+        if self.detection_torch_device is None:
+            self.detection_torch_device = "cuda" if torch.cuda.is_available() else "cpu"
+        misc_input_dict["detection_torch_device"] = self.detection_torch_device
         del misc_input_dict["debug"]
         del misc_input_dict["analyse_local"]
         return misc_input_dict

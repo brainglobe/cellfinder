@@ -48,7 +48,7 @@ def main(
     save_planes: bool = False,
     plane_directory: Optional[str] = None,
     batch_size: Optional[int] = None,
-    torch_device: str = "cpu",
+    torch_device: Optional[str] = None,
     use_scipy: bool = True,
     split_ball_xy_size: int = 3,
     split_ball_z_size: int = 3,
@@ -121,9 +121,9 @@ def main(
         becomes slower.
 
     torch_device : str, optional
-        The device on which to run the computation. By default, it's "cpu".
-        To run on a gpu, specify the PyTorch device name, such as "cuda" to
-        run on the first GPU.
+        The device on which to run the computation. If not specified (None),
+        "cuda" will be used if a GPU is available, otherwise "cpu".
+        You can also manually specify "cuda" or "cpu".
 
     callback : Callable[int], optional
         A callback function that is called every time a plane has finished
@@ -135,6 +135,8 @@ def main(
         List of detected cells.
     """
     start_time = datetime.now()
+    if torch_device is None:
+        torch_device = "cuda" if torch.cuda.is_available() else "cpu"
     if batch_size is None:
         if torch_device == "cpu":
             batch_size = 4
