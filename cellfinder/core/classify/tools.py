@@ -47,9 +47,19 @@ def get_model(
                 f"Setting model weights according to: {model_weights}",
             )
             if model_weights is None:
-                raise OSError("`model_weights` must be provided")
-            model.load_weights(model_weights)
-        return model
+                raise OSError(
+                    "`model_weights` must be provided for inference "
+                    "or continued training."
+                )
+            try:
+                model.load_weights(model_weights)
+            except (OSError, ValueError) as e:
+                raise ValueError(
+                    f"Error loading weights: {model_weights}.\n"
+                    "Provided weights don't match the model architecture.\n"
+                ) from e
+
+    return model
 
 
 def make_lists(
