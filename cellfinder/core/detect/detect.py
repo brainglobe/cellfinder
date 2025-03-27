@@ -155,6 +155,12 @@ def main(
     end_plane = min(len(signal_array), end_plane)
 
     torch_device = torch_device.lower()
+    # Use SciPy filtering on CPU (better performance); use PyTorch on GPU
+    if torch_device != "cuda":
+        use_scipy = True
+    else:
+        use_scipy = False
+
     batch_size = max(batch_size, 1)
     # brainmapper can pass them in as str
     voxel_sizes = list(map(float, voxel_sizes))
