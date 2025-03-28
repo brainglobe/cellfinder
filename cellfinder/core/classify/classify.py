@@ -11,7 +11,16 @@ from brainglobe_utils.general.system import get_num_processes
 from cellfinder.core import logger, types
 from cellfinder.core.classify.cube_generator import CubeGeneratorFromFile
 from cellfinder.core.classify.tools import get_model
-from cellfinder.core.train.train_yaml import depth_type, models
+from cellfinder.core.classify.resnet import layer_type
+
+models = {
+
+    "18": "18-layer",
+    "34": "34-layer", 
+    "50": "50-layer",
+    "101": "101-layer",
+    "152": "152-layer",
+}
 
 class ClassificationParameters:
     """Configuration parameters for classification."""
@@ -22,7 +31,7 @@ class ClassificationParameters:
         cube_height: int = 50,
         cube_width: int = 50,
         cube_depth: int = 20,
-        network_depth: depth_type = "50-layer",
+        network_depth: layer_type = "50-layer",
         max_workers: int = 3,
     ):
         """
