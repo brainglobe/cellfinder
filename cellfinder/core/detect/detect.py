@@ -31,10 +31,6 @@ from cellfinder.core.tools.tools import inference_wrapper
 @inference_wrapper
 def main(
     signal_array: types.array,
-    start_width: int = 0,
-    end_width: int = -1,
-    start_height: int = 0,
-    end_height: int = -1,
     start_plane: int = 0,
     end_plane: int = -1,
     voxel_sizes: Tuple[float, float, float] = (5, 2, 2),
@@ -58,6 +54,10 @@ def main(
     split_ball_z_size: int = 3,
     split_ball_overlap_fraction: float = 0.8,
     split_soma_diameter: int = 7,
+    start_width: int = 0,
+    end_width: int = -1,
+    start_height: int = 0,
+    end_height: int = -1,
     *,
     callback: Optional[Callable[[int], None]] = None,
 ) -> List[Cell]:
@@ -68,18 +68,6 @@ def main(
     ----------
     signal_array : numpy.ndarray
         3D array representing the signal data.
-
-    start_width : int
-        Index of the starting x for detection.
-
-    end_width : int
-        Index of the ending x for detection.
-
-    start_height : int
-        Index of the starting y for detection.
-
-    end_height : int
-        Index of the ending y for detection.
 
     start_plane : int
         Index of the starting plane for detection.
@@ -140,6 +128,18 @@ def main(
         The device on which to run the computation. By default, it's "cpu".
         To run on a gpu, specify the PyTorch device name, such as "cuda" to
         run on the first GPU.
+
+    start_width : int
+        Index of the starting x for detection.
+
+    end_width : int
+        Index of the ending x for detection.
+
+    start_height : int
+        Index of the starting y for detection.
+
+    end_height : int
+        Index of the ending y for detection.
 
     callback : Callable[int], optional
         A callback function that is called every time a plane has finished

@@ -68,10 +68,6 @@ def main(
 
         points = detect.main(
             signal_array,
-            start_width,
-            end_width,
-            start_height,
-            end_height,
             start_plane,
             end_plane,
             voxel_sizes,
@@ -84,6 +80,10 @@ def main(
             n_free_cpus,
             log_sigma_size,
             n_sds_above_mean_thresh,
+            start_width,
+            end_width,
+            start_height,
+            end_height,
             batch_size=classification_batch_size,
             torch_device=classification_torch_device,
             callback=detect_callback,
