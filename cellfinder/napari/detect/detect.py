@@ -3,7 +3,6 @@ from math import ceil
 from pathlib import Path
 from typing import Any, Callable, Dict, Optional, Tuple
 
-
 import napari
 import napari.layers
 from brainglobe_utils.cells.cells import Cell

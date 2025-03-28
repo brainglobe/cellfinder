@@ -56,8 +56,8 @@ def main(
     detect_finished_callback : Callable[list], optional
         Called after detection is finished with the list of detected points.
         Number of points processed simultaneously by the neural network.
-    batch_size: int = 64, optional   
-        Larger batch sizes use more memory, but can significantly improve 
+    batch_size: int = 64, optional
+        Larger batch sizes use more memory, but can significantly improve
         processing speed when using a GPU.
         Default: 64
     """

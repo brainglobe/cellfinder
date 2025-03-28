@@ -41,7 +41,6 @@ class Worker(WorkerBase):
         self.detection_inputs = detection_inputs
         self.classification_inputs = classification_inputs
         self.misc_inputs = misc_inputs
-        
 
     def connect_progress_bar_callback(self, progress_bar: ProgressBar):
         """
