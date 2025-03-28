@@ -55,6 +55,11 @@ def main(
         Called with the batch number that has just finished.
     detect_finished_callback : Callable[list], optional
         Called after detection is finished with the list of detected points.
+        Number of points processed simultaneously by the neural network.
+    batch_size: int = 64, optional   
+        Larger batch sizes use more memory, but can significantly improve 
+        processing speed when using a GPU.
+        Default: 64
     """
     from cellfinder.core.classify import classify
     from cellfinder.core.detect import detect

@@ -3,7 +3,7 @@ from math import ceil
 from pathlib import Path
 from typing import Any, Callable, Dict, Optional, Tuple
 
-import torch
+
 import napari
 import napari.layers
 from brainglobe_utils.cells.cells import Cell
@@ -235,7 +235,6 @@ def detect_widget() -> FunctionGui:
         persist=True,
         reset_button=dict(widget_type="PushButton", text="Reset defaults"),
         scrollable=True,
-        detection_torch_device=dict(widget_type="ComboBox",choices=["cuda", "cpu"],label="Detection Device",value="cuda" if torch.cuda.is_available() else "cpu",tooltip="Device for detection (image processing filters)."),
     )
     def widget(
         detection_label,

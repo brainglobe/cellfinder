@@ -85,7 +85,6 @@ class Worker(WorkerBase):
             **self.detection_inputs.as_core_arguments(),
             **self.classification_inputs.as_core_arguments(),
             **self.misc_inputs.as_core_arguments(),
-            # torch_device is now included inside MiscInputs and passed via as_core_arguments()
             detect_callback=detect_callback,
             classify_callback=classify_callback,
             detect_finished_callback=detect_finished_callback,
