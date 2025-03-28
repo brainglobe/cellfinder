@@ -31,6 +31,8 @@ However, we recommend that users install `cellfinder` either through installing 
 ```bash
 # If you want to install all BrainGlobe tools, including cellfinder, in a consistent manner with one command:
 pip install brainglobe>=1.0.0
++ pip install "brainglobe>=1.0.0"  # Quotes ensure proper version parsing
+
 # If you want to install the brainmapper CLI tool as well:
 pip install brainglobe-workflows>=1.0.0
 ```
@@ -40,6 +42,7 @@ If you only want the `cellfinder` package by itself, you can `pip install` it al
 ```bash
 pip install cellfinder>=1.0.0
 ```
++ pip install "cellfinder>=1.0.0"
 
 Be sure to specify a version greater than version `v1.0.0` - prior to this version the `cellfinder` package had a very different structure that is incompatible with BrainGlobe version 1 and the other tools in the BrainGlobe suite.
 See [our blog posts](https://brainglobe.info/blog/) for more information on the release of BrainGlobe version 1.
