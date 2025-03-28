@@ -18,6 +18,13 @@ There are three different ways to interact and use it, each with different user 
 For more details, head over to [the documentation website](https://brainglobe.info/documentation/cellfinder/index.html).
 
 At a glance:
+## Quick Start
+```bash
+# Install with GUI support
+pip install "cellfinder[napari]>=1.0.0"
+
+# Run on sample data
+cellfinder -h
 
 - There is a command-line interface called [brainmapper](https://brainglobe.info/documentation/brainglobe-workflows/brainmapper/index.html) that integrates [with `brainreg`](https://github.com/brainglobe/brainreg) for automated cell detection and classification. You can install it through [`brainglobe-workflows`](https://brainglobe.info/documentation/brainglobe-workflows/index.html).
 - There is a [napari plugin](https://brainglobe.info/documentation/cellfinder/user-guide/napari-plugin/index.html) for interacting graphically with the cellfinder tool.
