@@ -184,6 +184,7 @@ def test_training_worker_execution(mock_train_yaml, training_worker_inputs):
 
     callback = mock_train_yaml.call_args.kwargs["epoch_callback"]
     callback(3, 5)
+    # epoch 3 means 2 completed epochs
     worker.signals.update_progress.emit.assert_any_call(
-        "Training epoch 3/5", 5, 3
+        "Training epoch 3/5", 5, 2
     )

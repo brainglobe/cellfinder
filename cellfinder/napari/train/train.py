@@ -49,6 +49,7 @@ class TrainingWorker(WorkerBase):
         """Connects the progress bar to the worker."""
 
         def update_progress_bar(label: str, max: int, value: int):
+            progress_bar.visible = True
             progress_bar.label = label
             progress_bar.max = max
             progress_bar.value = value
@@ -61,8 +62,11 @@ class TrainingWorker(WorkerBase):
 
         # callbacks for training progress
         def epoch_callback(epoch: int, total_epochs: int):
+            completed_epochs = epoch - 1
             self.signals.update_progress.emit(
-                f"Training epoch {epoch}/{total_epochs}", total_epochs, epoch
+                f"Training epoch {epoch}/{total_epochs}",
+                total_epochs,
+                completed_epochs,
             )
 
         # Run the training with the callback
@@ -78,7 +82,7 @@ class TrainingWorker(WorkerBase):
 
 
 def training_widget() -> FunctionGui:
-    progress_bar = ProgressBar()
+    progress_bar = ProgressBar(visible=False)
 
     @magicgui(
         training_label=html_label_widget("Network training", tag="h3"),
@@ -186,6 +190,11 @@ def training_widget() -> FunctionGui:
         if yaml_files[0] == Path.home():  # type: ignore
             show_info("Please select a YAML file for training")
         else:
+            progress_bar.visible = True
+            progress_bar.label = "Initializing training..."
+            progress_bar.max = 1
+            progress_bar.value = 0
+
             worker = TrainingWorker(
                 training_data_inputs,
                 optional_network_inputs,
@@ -216,6 +225,6 @@ def training_widget() -> FunctionGui:
     scroll = QScrollArea()
     scroll.setWidget(widget._widget._qwidget)
     widget._widget._qwidget = scroll
-    widget.insert(widget.index("number_of_free_cpus") + 1, progress_bar)
+    widget.insert(len(widget) - 1, progress_bar)
 
     return widget
