@@ -1,6 +1,6 @@
 from pathlib import Path
 from typing import Optional
-import logging
+from cellfinder.core import logger
 
 from magicgui import magicgui
 from magicgui.widgets import FunctionGui, PushButton
@@ -17,9 +17,6 @@ from .train_containers import (
     OptionalTrainingInputs,
     TrainingDataInputs,
 )
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
 @thread_worker
 def run_training(
