@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 from typing import Literal
+from cellfinder.core import logger
 
 import pooch
 from brainglobe_utils.general.config import get_config_obj
@@ -74,7 +75,7 @@ def amend_user_configuration(new_model_path=None) -> None:
     new_model_path : Path, optional
         The path to the new model configuration.
     """
-    print("(Over-)writing custom user configuration")
+    logger.info("(Over-)writing custom user configuration")
 
     original_config = default_configuration_path()
     new_config = user_specific_configuration_path()
