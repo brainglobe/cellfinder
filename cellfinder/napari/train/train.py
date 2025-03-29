@@ -26,13 +26,13 @@ def run_training(
     misc_training_inputs: MiscTrainingInputs,
 ):
    logger.info("Running training...")
-    train_yaml(
+   train_yaml(
         **training_data_inputs.as_core_arguments(),
         **optional_network_inputs.as_core_arguments(),
         **optional_training_inputs.as_core_arguments(),
         **misc_training_inputs.as_core_arguments(),
     )
-    logger.info("Training finished!")
+   logger.info("Training finished!")
 
 
 def training_widget() -> FunctionGui:
