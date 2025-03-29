@@ -1,12 +1,12 @@
 import os
 from pathlib import Path
 from typing import Literal
-from cellfinder.core import logger
 
 import pooch
 from brainglobe_utils.general.config import get_config_obj
 
 from cellfinder import DEFAULT_CELLFINDER_DIRECTORY
+from cellfinder.core import logger
 from cellfinder.core.tools.source_files import (
     default_configuration_path,
     user_specific_configuration_path,
