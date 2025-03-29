@@ -1,6 +1,5 @@
 from pathlib import Path
 from typing import Optional
-from cellfinder.core import logger
 
 from magicgui import magicgui
 from magicgui.widgets import FunctionGui, PushButton
@@ -8,6 +7,7 @@ from napari.qt.threading import thread_worker
 from napari.utils.notifications import show_info
 from qtpy.QtWidgets import QScrollArea
 
+from cellfinder.core import logger
 from cellfinder.core.train.train_yaml import run as train_yaml
 from cellfinder.napari.utils import cellfinder_header, html_label_widget
 
@@ -18,6 +18,7 @@ from .train_containers import (
     TrainingDataInputs,
 )
 
+
 @thread_worker
 def run_training(
     training_data_inputs: TrainingDataInputs,
@@ -25,14 +26,14 @@ def run_training(
     optional_training_inputs: OptionalTrainingInputs,
     misc_training_inputs: MiscTrainingInputs,
 ):
-   logger.info("Running training...")
-   train_yaml(
+    logger.info("Running training...")
+    train_yaml(
         **training_data_inputs.as_core_arguments(),
         **optional_network_inputs.as_core_arguments(),
         **optional_training_inputs.as_core_arguments(),
         **misc_training_inputs.as_core_arguments(),
     )
-   logger.info("Training finished!")
+    logger.info("Training finished!")
 
 
 def training_widget() -> FunctionGui:
