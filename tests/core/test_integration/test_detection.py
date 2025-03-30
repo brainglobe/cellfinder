@@ -104,11 +104,10 @@ def test_detection_full(signal_array, background_array, free_cpus, request):
         num_cells_validation, num_cells_test, abs_tol=DETECTION_TOLERANCE
     )
 
-
-    assert num_of_matched_cells >= len(cells_validation)*0.8, ( 
-    # 80% of the cells should be matched by location 
-    f"Number of matched cells is {num_of_matched_cells}\n"
-    f"out of {len(cells_validation)}"
+    assert num_of_matched_cells >= len(cells_validation) * 0.8, (
+        # 80% of the cells should be matched by location
+        f"Number of matched cells is {num_of_matched_cells}\n"
+        f"out of {len(cells_validation)}"
     )
 
 
