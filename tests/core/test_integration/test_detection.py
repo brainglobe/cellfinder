@@ -45,6 +45,21 @@ def signal_array():
 def background_array():
     return read_with_dask(background_data_path)
 
+def location_detection(cell_test, cell_validation, tolerance = DETECTION_TOLERANCE):
+    """
+    This function is used to chech whether the cell's location has at least one match in the validation dataset, and counts the number of matched cells. 
+    """
+    matched = 0
+    for cell in cell_test:
+        for cell_v in cell_validation:
+            if (
+                abs(cell.x - cell_v.x) <= tolerance
+                and abs(cell.y - cell_v.y) <= tolerance
+                and abs(cell.z - cell_v.z) <= tolerance
+            ):
+                matched += 1
+                break
+    return matched
 
 # FIXME: This isn't a very good example
 @pytest.mark.slow
@@ -55,6 +70,7 @@ def background_array():
         pytest.param("run_on_one_cpu_only", id="One CPU"),
     ],
 )
+    
 def test_detection_full(signal_array, background_array, free_cpus, request):
     n_free_cpus = request.getfixturevalue(free_cpus)
     cells_test = main(
@@ -72,6 +88,8 @@ def test_detection_full(signal_array, background_array, free_cpus, request):
 
     num_non_cells_test = sum([cell.type == 1 for cell in cells_test])
     num_cells_test = sum([cell.type == 2 for cell in cells_test])
+    num_of_matched_cells = location_detection(cells_test, cells_validation)
+    print(f"Number of matched cells: {num_of_matched_cells}")
 
     assert isclose(
         num_non_cells_validation,
@@ -81,6 +99,10 @@ def test_detection_full(signal_array, background_array, free_cpus, request):
     assert isclose(
         num_cells_validation, num_cells_test, abs_tol=DETECTION_TOLERANCE
     )
+    assert num_of_matched_cells >= len(cells_validation)*0.8, ( # 80% of the cells should be matched by location 
+    f"Number of matched cells is {num_of_matched_cells} out of {len(cells_validation)}"
+    )
+
 
 
 def test_detection_small_planes(
