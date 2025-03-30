@@ -94,7 +94,6 @@ def test_detection_full(signal_array, background_array, free_cpus, request):
     num_non_cells_test = sum([cell.type == 1 for cell in cells_test])
     num_cells_test = sum([cell.type == 2 for cell in cells_test])
     num_of_matched_cells = location_detection(cells_test, cells_validation)
-    print(f"Number of matched cells: {num_of_matched_cells}")
 
     assert isclose(
         num_non_cells_validation,
@@ -107,7 +106,8 @@ def test_detection_full(signal_array, background_array, free_cpus, request):
 
     assert num_of_matched_cells >= len(cells_validation)*0.8, ( 
     # 80% of the cells should be matched by location 
-    f"Number of matched cells is {num_of_matched_cells} out of {len(cells_validation)}"
+    f"Number of matched cells is {num_of_matched_cells}\n"
+    f"out of {len(cells_validation)}"
     )
 
 
