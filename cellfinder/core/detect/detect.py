@@ -49,7 +49,6 @@ def main(
     plane_directory: Optional[str] = None,
     batch_size: Optional[int] = None,
     torch_device: Optional[str] = None,
-    use_scipy: bool = True,
     split_ball_xy_size: int = 3,
     split_ball_z_size: int = 3,
     split_ball_overlap_fraction: float = 0.8,
