@@ -321,8 +321,10 @@ def detect_widget() -> FunctionGui:
         reset_button :
             Reset parameters to default
         detection_torch_device : str
-            Processing device to use for detection filters (e.g., morphological filters).
-            Select "cuda" for GPU or "cpu" for CPU. GPU is recommended if available.
+            Processing device to use for detection filters
+            Select "cuda" for GPU or "cpu" for CPU.
+            GPU is recommended if available.
+
         """
         # we must manually call so that the parameters of these functions are
         # initialized and updated. Because, if the images are open in napari
