@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import List, Optional
 
 import numpy
+import torch
 from brainglobe_utils.cells.cells import Cell
 
 from cellfinder.napari.input_container import InputContainer
@@ -70,9 +71,18 @@ class DetectionInputs(InputContainer):
     n_sds_above_mean_thresh: int = 10
     soma_spread_factor: float = 1.4
     max_cluster_size: int = 100000
+    detection_torch_device: Optional[str] = None
 
     def as_core_arguments(self) -> dict:
-        return super().as_core_arguments()
+        detection_input_dict = super().as_core_arguments()
+        if self.detection_torch_device is None:
+            self.detection_torch_device = (
+                "cuda" if torch.cuda.is_available() else "cpu"
+            )
+        detection_input_dict["detection_torch_device"] = (
+            self.detection_torch_device
+        )
+        return detection_input_dict
 
     @classmethod
     def widget_representation(cls) -> dict:
