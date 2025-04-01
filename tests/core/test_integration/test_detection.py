@@ -46,8 +46,8 @@ def background_array():
     return read_with_dask(background_data_path)
 
 
-def location_detection(
-    cell_test, cell_validation, tolerance=DETECTION_TOLERANCE
+def count_matched_cells(
+    cell_test, cell_validation, tolerance=voxel_sizes
 ):
     """
     This function is used to chech whether the cell's location
@@ -58,9 +58,9 @@ def location_detection(
     for cell in cell_test:
         for cell_v in cell_validation:
             if (
-                abs(cell.x - cell_v.x) <= tolerance
-                and abs(cell.y - cell_v.y) <= tolerance
-                and abs(cell.z - cell_v.z) <= tolerance
+                abs(cell.x - cell_v.x) <= tolerance[2]
+                and abs(cell.y - cell_v.y) <= tolerance[1]
+                and abs(cell.z - cell_v.z) <= tolerance[0]
             ):
                 matched += 1
                 break
@@ -93,7 +93,7 @@ def test_detection_full(signal_array, background_array, free_cpus, request):
 
     num_non_cells_test = sum([cell.type == 1 for cell in cells_test])
     num_cells_test = sum([cell.type == 2 for cell in cells_test])
-    num_of_matched_cells = location_detection(cells_test, cells_validation)
+    num_of_matched_cells = count_matched_cells(cells_test, cells_validation)
 
     assert isclose(
         num_non_cells_validation,
