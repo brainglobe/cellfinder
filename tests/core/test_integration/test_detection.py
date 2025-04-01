@@ -13,7 +13,6 @@ from cellfinder.core.detect.detect import main as detect_main
 from cellfinder.core.detect.filters.volume.ball_filter import InvalidVolume
 from cellfinder.core.main import main
 
-
 data_dir = os.path.join(
     os.getcwd(), "tests", "data", "integration", "detection"
 )
@@ -23,7 +22,6 @@ cells_validation_xml = os.path.join(data_dir, "cell_classification.xml")
 
 voxel_sizes = [5, 2, 2]
 DETECTION_TOLERANCE = 2
-
 
 
 class UnixFS:
@@ -48,7 +46,7 @@ def background_array():
     return read_with_dask(background_data_path)
 
 
-def count_matched_cells(cell_test, cell_validation, tolerance = 0):
+def count_matched_cells(cell_test, cell_validation, tolerance=0):
     """
     This function is used to check whether the cell's location
     has matches in the validation dataset,
@@ -76,7 +74,6 @@ def count_matched_cells(cell_test, cell_validation, tolerance = 0):
         pytest.param("run_on_one_cpu_only", id="One CPU"),
     ],
 )
-
 def test_detection_full(signal_array, background_array, free_cpus, request):
     n_free_cpus = request.getfixturevalue(free_cpus)
     cells_test = main(
@@ -105,18 +102,18 @@ def test_detection_full(signal_array, background_array, free_cpus, request):
         num_cells_validation, num_cells_test, abs_tol=DETECTION_TOLERANCE
     )
     assert num_of_matched_cells >= len(cells_validation) * 0.92, (
-        f"Number of matched cells by location is" 
+        f"Number of matched cells by location is"
         f"{num_of_matched_cells}"
         f"which is less than 92% of the validation cells"
     )
 
     """"
-    This code snippet was used for one time to determine the 
+    This code snippet was used for one time to determine the
     optimal threshold and tolerance values for the detection
     algorithm. It is commented out because it is not necessary
-    for the current test. 
+    for the current test.
     The code showed that the optimal threshold is 0.92 and the
-    optimal tolerance is 0. 
+    optimal tolerance is 0.
     ==========================================================
     thresholds = np.arange(0.8, 1, 0.01).tolist()
     spatial_tolerance = [0, 1, 2, 3, 4, 5]
@@ -135,6 +132,7 @@ def test_detection_full(signal_array, background_array, free_cpus, request):
         matched_cells_ratio = matched_cells / len(cells_validation)
         print(f"Matched cells ratio: {matched_cells_ratio}")
     """
+
 
 def test_detection_small_planes(
     signal_array,
