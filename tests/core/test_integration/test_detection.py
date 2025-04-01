@@ -107,32 +107,6 @@ def test_detection_full(signal_array, background_array, free_cpus, request):
         f"which is less than 92% of the validation cells"
     )
 
-    """"
-    This code snippet was used for one time to determine the
-    optimal threshold and tolerance values for the detection
-    algorithm. It is commented out because it is not necessary
-    for the current test.
-    The code showed that the optimal threshold is 0.92 and the
-    optimal tolerance is 0.
-    ==========================================================
-    thresholds = np.arange(0.8, 1, 0.01).tolist()
-    spatial_tolerance = [0, 1, 2, 3, 4, 5]
-    for threshold in thresholds:
-        print(f"Checking threshold {threshold}")
-        assert num_of_matched_cells >= (len(cells_validation) * threshold),
-         (
-            f"terminated in a threshold of {threshold} "
-            f"with {num_of_matched_cells} matched cells"
-        )
-    for tolerance in spatial_tolerance:
-        print(f"Checking tolerance {tolerance}")
-        matched_cells = count_matched_cells(
-            cells_test, cells_validation, tolerance
-        )
-        matched_cells_ratio = matched_cells / len(cells_validation)
-        print(f"Matched cells ratio: {matched_cells_ratio}")
-    """
-
 
 def test_detection_small_planes(
     signal_array,
