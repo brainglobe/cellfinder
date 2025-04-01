@@ -2,19 +2,17 @@ import os
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Tuple
-
 import keras
 import numpy as np
 from brainglobe_utils.cells.cells import Cell
 from brainglobe_utils.general.system import get_num_processes
-
 from cellfinder.core import logger, types
 from cellfinder.core.classify.cube_generator import CubeGeneratorFromFile
 from cellfinder.core.classify.tools import get_model
 from cellfinder.core.classify.resnet import layer_type
 
+# Define models mapping directly here to avoid circular imports
 models = {
-
     "18": "18-layer",
     "34": "34-layer", 
     "50": "50-layer",
@@ -24,7 +22,6 @@ models = {
 
 class ClassificationParameters:
     """Configuration parameters for classification."""
-
     def __init__(
         self,
         batch_size: int = 64,
@@ -45,7 +42,7 @@ class ClassificationParameters:
             Width of the cube in pixels
         cube_depth : int
             Depth of the cube in pixels
-        network_depth : depth_type
+        network_depth : layer_type
             Depth of the neural network (e.g. "50-layer")
         max_workers : int
             Maximum number of worker processes
@@ -57,10 +54,8 @@ class ClassificationParameters:
         self.network_depth = network_depth
         self.max_workers = max_workers
 
-
 class DataParameters:
     """Configuration parameters for input data."""
-
     def __init__(
         self,
         voxel_sizes: Tuple[int, int, int],
@@ -81,7 +76,7 @@ class DataParameters:
         self.network_voxel_sizes = network_voxel_sizes
         self.n_free_cpus = n_free_cpus
 
-def main(
+def classify_with_params(
     points: List[Cell],
     signal_array: types.array,
     background_array: types.array,
@@ -161,7 +156,7 @@ def main(
     model = get_model(
         existing_model=trained_model,
         model_weights=model_weights,
-        network_depth=models[classification_parameters.network_depth],
+        network_depth=models.get(classification_parameters.network_depth.split("-")[0], "50-layer"),
         inference=True,
     )
 
@@ -190,6 +185,62 @@ def main(
 
     return points_list
 
+# Original function signature for backward compatibility
+def main(
+    points: List[Cell],
+    signal_array: types.array,
+    background_array: types.array,
+    n_free_cpus: int,
+    voxel_sizes: Tuple[int, int, int],
+    network_voxel_sizes: Tuple[int, int, int],
+    batch_size: int,
+    cube_height: int,
+    cube_width: int,
+    cube_depth: int,
+    trained_model: Optional[os.PathLike],
+    model_weights: Optional[os.PathLike],
+    network_depth: str,
+    max_workers: int = 3,
+    *,
+    callback: Optional[Callable[[int], None]] = None,
+) -> List[Cell]:
+    """
+    Parameters
+    ----------
+    callback : Callable[int], optional
+        A callback function that is called during classification. Called with
+        the batch number once that batch has been classified.
+    """
+    # Create configuration objects from individual parameters
+    data_params = DataParameters(
+        voxel_sizes=voxel_sizes,
+        network_voxel_sizes=network_voxel_sizes,
+        n_free_cpus=n_free_cpus
+    )
+    
+    # Convert the string network_depth to the layer_type format
+    layer_network_depth = models.get(network_depth, "50-layer")
+    
+    classification_params = ClassificationParameters(
+        batch_size=batch_size,
+        cube_height=cube_height, 
+        cube_width=cube_width,
+        cube_depth=cube_depth,
+        network_depth=layer_network_depth,
+        max_workers=max_workers
+    )
+    
+    # Call the new implementation with the configuration objects
+    return classify_with_params(
+        points,
+        signal_array, 
+        background_array,
+        data_params,
+        classification_params,
+        trained_model,
+        model_weights,
+        callback=callback
+    )
 
 class BatchEndCallback(keras.callbacks.Callback):
     def __init__(self, callback: Callable[[int], None]):
