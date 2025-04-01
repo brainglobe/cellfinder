@@ -77,9 +77,10 @@ class Worker(WorkerBase):
             if not self.classification_inputs.skip_classification:
                 self.update_progress_bar.emit(
                     "Classifying cells",
-                    # Default cellfinder-core batch size is 64. This seems to give
-                    # a slight underestimate of the number of batches though, so
-                    # allow for batch number to go over this
+                    # Default cellfinder-core batch size is 64.
+                    # This seems to give a slight
+                    # underestimate of the number of batches though,
+                    # so allow for batch number to go over this
                     max(self.npoints_detected // 64 + 1, batch + 1),
                     batch + 1,
                 )
