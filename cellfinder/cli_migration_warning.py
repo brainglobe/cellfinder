@@ -36,7 +36,7 @@ def cli_catch() -> None:
         ),
     )
 
-    print(
+    logger.warning(
         "Hey, it looks like you're trying to run the old command-line tool.",
         "This workflow has been renamed and moved -",
         " you can now find it in the brainglobe-workflows package:\n",
