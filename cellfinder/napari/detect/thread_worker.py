@@ -59,25 +59,29 @@ class Worker(WorkerBase):
         self.update_progress_bar.emit("Setting up detection...", 1, 0)
 
         def detect_callback(plane: int) -> None:
-            self.update_progress_bar.emit(
-                "Detecting cells",
-                self.data_inputs.nplanes,
-                plane + 1,
-            )
+            if not self.detection_inputs.skip_detection:
+                self.update_progress_bar.emit(
+                    "Detecting cells",
+                    self.data_inputs.nplanes,
+                    plane + 1,
+                )
 
         def detect_finished_callback(points: list) -> None:
             self.npoints_detected = len(points)
-            self.update_progress_bar.emit("Setting up classification...", 1, 0)
+            if not self.classification_inputs.skip_classification:
+                self.update_progress_bar.emit("Setting up classification...", 1, 0)
+        
 
         def classify_callback(batch: int) -> None:
-            self.update_progress_bar.emit(
-                "Classifying cells",
-                # Default cellfinder-core batch size is 64. This seems to give
-                # a slight underestimate of the number of batches though, so
-                # allow for batch number to go over this
-                max(self.npoints_detected // 64 + 1, batch + 1),
-                batch + 1,
-            )
+            if not self.classification_inputs.skip_classification:
+                self.update_progress_bar.emit(
+                    "Classifying cells",
+                    # Default cellfinder-core batch size is 64. This seems to give
+                    # a slight underestimate of the number of batches though, so
+                    # allow for batch number to go over this
+                    max(self.npoints_detected // 64 + 1, batch + 1),
+                    batch + 1,
+                )
 
         result = cellfinder_run(
             **self.data_inputs.as_core_arguments(),
@@ -88,5 +92,8 @@ class Worker(WorkerBase):
             classify_callback=classify_callback,
             detect_finished_callback=detect_finished_callback,
         )
-        self.update_progress_bar.emit("Finished classification", 1, 1)
+        if not self.classification_inputs.skip_classification:
+            self.update_progress_bar.emit("Finished classification", 1, 1)
+        else:
+            self.update_progress_bar.emit("Finished detection", 1, 1)
         return result
