@@ -63,7 +63,7 @@ Typical example::
                     # thread exited for whatever reason (not exception)
                     break
 
-                print(f"Thread processed tensor {i}")
+                logger.debug(f"Thread processed tensor {i}")
         finally:
             # whatever happens, make sure thread is told to finish so it
             # doesn't get stuck
@@ -248,8 +248,8 @@ class ExceptionWithQueueMixIn:
             ...         # do something with the msg
             ...         pass
             ... except ExecutionFailure as e:
-            ...     print(f"got exception {type(e.__cause__)}")
-            ...     print(f"with message {e.__cause__.args[0]}")
+            ...     logger.error(f"got exception {type(e.__cause__)}")
+            ...     looger.error(f"with message {e.__cause__.args[0]}")
         """
         msg, value = self.from_thread_queue.get(block=True, timeout=timeout)
         if msg == "eof":

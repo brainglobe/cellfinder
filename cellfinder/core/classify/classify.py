@@ -103,7 +103,7 @@ def main(
         points_list.append(cell)
 
     time_elapsed = datetime.now() - start_time
-    logger.warning(
+    logger.info(
         "Classfication complete - all points done in : {}".format(time_elapsed)
     )
 
