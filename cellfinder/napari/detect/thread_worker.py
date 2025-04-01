@@ -69,8 +69,9 @@ class Worker(WorkerBase):
         def detect_finished_callback(points: list) -> None:
             self.npoints_detected = len(points)
             if not self.classification_inputs.skip_classification:
-                self.update_progress_bar.emit("Setting up classification...", 1, 0)
-        
+                self.update_progress_bar.emit(
+                    "Setting up classification...", 1, 0
+                )
 
         def classify_callback(batch: int) -> None:
             if not self.classification_inputs.skip_classification:
