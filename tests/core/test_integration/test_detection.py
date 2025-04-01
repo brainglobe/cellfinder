@@ -46,9 +46,7 @@ def background_array():
     return read_with_dask(background_data_path)
 
 
-def count_matched_cells(
-    cell_test, cell_validation, tolerance=voxel_sizes
-):
+def count_matched_cells(cell_test, cell_validation, tolerance=voxel_sizes):
     """
     This function is used to chech whether the cell's location
     has at least one match in the validation dataset,
