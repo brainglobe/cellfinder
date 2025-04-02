@@ -1,5 +1,5 @@
 from cellfinder.core.classify.classify import (
-    main,  
+    main,
     classify_with_params as classify,  
     ClassificationParameters,
     DataParameters,
