@@ -12,7 +12,6 @@ from cellfinder.core.classify.tools import get_model
 from cellfinder.core.classify.resnet import layer_type
 from cellfinder.core.download.download import model_type
 
-# Define models mapping directly here to avoid circular imports
 models = {
     "18": "18-layer",
     "34": "34-layer", 
@@ -211,7 +210,7 @@ def main(
     model_weights: Optional[os.PathLike],
     network_depth: str,
     max_workers: int = 3,
-    model_name: model_type = "resnet50_tv",  # Added model_name parameter
+    model_name: model_type = "resnet50_tv",  
     *,
     callback: Optional[Callable[[int], None]] = None,
 ) -> List[Cell]:
@@ -252,7 +251,7 @@ def main(
         classification_params,
         trained_model,
         model_weights,
-        model_name=model_name,  # Pass the model_name parameter
+        model_name=model_name,  
         callback=callback
     )
 

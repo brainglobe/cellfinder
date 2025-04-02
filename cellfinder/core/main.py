@@ -100,7 +100,6 @@ def main(
             )
             
             # Map the network_depth string to the correct format
-            # Convert "50" to "50-layer" format expected by the API
             layer_network_depth = f"{network_depth}-layer"
             
             classification_params = ClassificationParameters(
