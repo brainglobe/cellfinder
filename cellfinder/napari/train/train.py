@@ -143,7 +143,7 @@ def training_widget() -> FunctionGui:
         if yaml_files[0] == Path.home():  # type: ignore
             show_info("Please select a YAML file for training")
         else:
-            logger.info("Starting training process...")
+            show_info("Starting training process...")
             worker = run_training(
                 training_data_inputs,
                 optional_network_inputs,

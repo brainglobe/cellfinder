@@ -249,7 +249,7 @@ class ExceptionWithQueueMixIn:
             ...         pass
             ... except ExecutionFailure as e:
             ...     logger.error(f"got exception {type(e.__cause__)}")
-            ...     looger.error(f"with message {e.__cause__.args[0]}")
+            ...     logger.error(f"with message {e.__cause__.args[0]}")
         """
         msg, value = self.from_thread_queue.get(block=True, timeout=timeout)
         if msg == "eof":
