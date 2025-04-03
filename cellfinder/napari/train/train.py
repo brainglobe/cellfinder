@@ -19,7 +19,7 @@ from .train_containers import (
 )
 
 
-class MyWorkerSignals(WorkerBaseSignals):
+class TrainingWorkerSignals(WorkerBaseSignals):
     """
     Signals used by the Worker class (label, max, value).
     """
