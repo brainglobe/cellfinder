@@ -1,5 +1,7 @@
 import argparse
 
+from cellfinder.core import logger
+
 BRAINGLOBE_WORKFLOWS = "https://github.com/brainglobe/brainglobe-workflows"
 NEW_NAME = "brainmapper"
 BLOG_POST = "https://brainglobe.info/blog/version1/core_and_napari_merge.html"
@@ -36,7 +38,7 @@ def cli_catch() -> None:
         ),
     )
 
-    print(
+    logger.warning(
         "Hey, it looks like you're trying to run the old command-line tool.",
         "This workflow has been renamed and moved -",
         " you can now find it in the brainglobe-workflows package:\n",

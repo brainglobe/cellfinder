@@ -70,7 +70,7 @@ def main(
     )
 
     if trained_model and Path(trained_model).suffix == ".h5":
-        print(
+        logger.warning(
             "Weights provided in place of the model, "
             "loading weights into default model."
         )
@@ -103,7 +103,7 @@ def main(
         points_list.append(cell)
 
     time_elapsed = datetime.now() - start_time
-    print(
+    logger.info(
         "Classfication complete - all points done in : {}".format(time_elapsed)
     )
 
