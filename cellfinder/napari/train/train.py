@@ -39,7 +39,7 @@ class TrainingWorker(WorkerBase):
         optional_training_inputs: OptionalTrainingInputs,
         misc_training_inputs: MiscTrainingInputs,
     ):
-        super().__init__(SignalsClass=MyWorkerSignals)
+        super().__init__(SignalsClass=TrainingWorkerSignals)
         self.training_data_inputs = training_data_inputs
         self.optional_network_inputs = optional_network_inputs
         self.optional_training_inputs = optional_training_inputs
