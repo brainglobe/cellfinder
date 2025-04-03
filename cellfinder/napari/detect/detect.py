@@ -1,7 +1,9 @@
+import logging
 from functools import partial
 from math import ceil
 from pathlib import Path
 from typing import Any, Callable, Dict, Optional, Tuple
+
 import napari
 import napari.layers
 from brainglobe_utils.cells.cells import Cell
@@ -9,7 +11,6 @@ from magicgui import magicgui
 from magicgui.widgets import FunctionGui, ProgressBar
 from napari.utils.notifications import show_info
 from qtpy.QtWidgets import QScrollArea
-import logging
 
 from cellfinder.core.classify.cube_generator import get_cube_depth_min_max
 from cellfinder.napari.utils import (
@@ -36,29 +37,58 @@ CUBE_HEIGHT = 20
 CUBE_DEPTH = 20
 MIN_PLANES_ANALYSE = 0
 
-def get_heavy_widgets(options: Dict[str, Any]) -> Tuple[Callable, Callable, Callable]:
-    @magicgui(call_button=False, persist=False, scrollable=False, labels=False, auto_call=True)
-    def signal_image_opt(viewer: napari.Viewer, signal_image: napari.layers.Image):
+
+def get_heavy_widgets(
+    options: Dict[str, Any],
+) -> Tuple[Callable, Callable, Callable]:
+    @magicgui(
+        call_button=False,
+        persist=False,
+        scrollable=False,
+        labels=False,
+        auto_call=True,
+    )
+    def signal_image_opt(
+        viewer: napari.Viewer, signal_image: napari.layers.Image
+    ):
         options["signal_image"] = signal_image
         options["viewer"] = viewer
 
-    @magicgui(call_button=False, persist=False, scrollable=False, labels=False, auto_call=True)
+    @magicgui(
+        call_button=False,
+        persist=False,
+        scrollable=False,
+        labels=False,
+        auto_call=True,
+    )
     def background_image_opt(background_image: napari.layers.Image):
         options["background_image"] = background_image
 
-    @magicgui(call_button=False, persist=False, scrollable=False, labels=False, auto_call=True)
+    @magicgui(
+        call_button=False,
+        persist=False,
+        scrollable=False,
+        labels=False,
+        auto_call=True,
+    )
     def cell_layer_opt(cell_layer: napari.layers.Points):
         options["cell_layer"] = cell_layer
 
     return signal_image_opt, background_image_opt, cell_layer_opt
 
-def add_heavy_widgets(root: FunctionGui, widgets: Tuple[FunctionGui, ...], 
-                     new_names: Tuple[str, ...], insertions: Tuple[str, ...]) -> None:
+
+def add_heavy_widgets(
+    root: FunctionGui,
+    widgets: Tuple[FunctionGui, ...],
+    new_names: Tuple[str, ...],
+    insertions: Tuple[str, ...],
+) -> None:
     for widget, new_name, insertion in zip(widgets, new_names, insertions):
         widget.margins = (0, 0, 0, 0)
         widget.gui_only = True
         root.insert(root.index(insertion) + 1, widget)
         getattr(root, widget.name).label = new_name
+
 
 def restore_options_defaults(widget: FunctionGui) -> None:
     defaults = {
@@ -71,14 +101,20 @@ def restore_options_defaults(widget: FunctionGui) -> None:
         if value is not None:
             getattr(widget, name).value = value
 
-def get_results_callback(skip_classification: bool, viewer: napari.Viewer) -> Callable:
+
+def get_results_callback(
+    skip_classification: bool, viewer: napari.Viewer
+) -> Callable:
     def handle_empty_results():
-        show_info("No cells detected. Try adjusting:\n"
-                 "- Detection thresholds\n"
-                 "- Soma diameter\n"
-                 "- Image preprocessing")
-    
+        show_info(
+            "No cells detected. Try adjusting:\n"
+            "- Detection thresholds\n"
+            "- Soma diameter\n"
+            "- Image preprocessing"
+        )
+
     if skip_classification:
+
         def done_func(points):
             if not points:
                 handle_empty_results()
@@ -89,7 +125,9 @@ def get_results_callback(skip_classification: bool, viewer: napari.Viewer) -> Ca
                 name="Cell candidates",
                 cell_type=Cell.UNKNOWN,
             )
+
     else:
+
         def done_func(points):
             if not points:
                 handle_empty_results()
@@ -100,19 +138,28 @@ def get_results_callback(skip_classification: bool, viewer: napari.Viewer) -> Ca
                 unknown_name="Rejected",
                 cell_name="Detected",
             )
+
     return done_func
 
-def find_local_planes(viewer: napari.Viewer, voxel_size_z: float, 
-                     signal_image: napari.layers.Image) -> Tuple[int, int]:
+
+def find_local_planes(
+    viewer: napari.Viewer,
+    voxel_size_z: float,
+    signal_image: napari.layers.Image,
+) -> Tuple[int, int]:
     current_plane = viewer.dims.current_step[0]
     planes_needed = MIN_PLANES_ANALYSE + int(
         ceil((CUBE_DEPTH * NETWORK_VOXEL_SIZES[0]) / voxel_size_z)
     )
-    start_plane, end_plane = get_cube_depth_min_max(current_plane, planes_needed)
+    start_plane, end_plane = get_cube_depth_min_max(
+        current_plane, planes_needed
+    )
     return max(0, start_plane), min(len(signal_image.data), end_plane)
+
 
 def reraise(e: Exception) -> None:
     raise e
+
 
 def detect_widget() -> FunctionGui:
     progress_bar = ProgressBar()
@@ -123,7 +170,9 @@ def detect_widget() -> FunctionGui:
         "cell_layer": None,
     }
 
-    signal_image_opt, background_image_opt, cell_layer_opt = get_heavy_widgets(options)
+    signal_image_opt, background_image_opt, cell_layer_opt = get_heavy_widgets(
+        options
+    )
 
     @magicgui(
         detection_label=html_label_widget("Cell detection", tag="h3"),
@@ -174,16 +223,23 @@ def detect_widget() -> FunctionGui:
         background_image_opt()
         cell_layer_opt()
 
-        if options["signal_image"] is None or options["background_image"] is None:
+        if (
+            options["signal_image"] is None
+            or options["background_image"] is None
+        ):
             show_info("Both signal and background images must be specified.")
             return
 
         detected_cells = []
         if skip_detection:
             if options["cell_layer"] is None:
-                show_info("Skip detection selected but no cell layer selected.")
+                show_info(
+                    "Skip detection selected but no cell layer selected."
+                )
                 return
-            detected_cells = napari_array_to_cells(options["cell_layer"], Cell.UNKNOWN)
+            detected_cells = napari_array_to_cells(
+                options["cell_layer"], Cell.UNKNOWN
+            )
 
         data_inputs = DataInputs(
             options["signal_image"].data,
@@ -239,7 +295,9 @@ def detect_widget() -> FunctionGui:
                 show_info("No cells detected. Try adjusting parameters.")
             else:
                 logger.info(f"Found {len(points)} cells")
-                get_results_callback(skip_classification, options["viewer"])(points)
+                get_results_callback(skip_classification, options["viewer"])(
+                    points
+                )
 
         worker.returned.connect(handle_result)
         worker.errored.connect(reraise)
@@ -247,7 +305,9 @@ def detect_widget() -> FunctionGui:
         worker.start()
 
     widget.native.layout().insertWidget(0, cellfinder_header())
-    widget.reset_button.changed.connect(partial(restore_options_defaults, widget))
+    widget.reset_button.changed.connect(
+        partial(restore_options_defaults, widget)
+    )
     widget.insert(widget.index("debug") + 1, progress_bar)
 
     add_heavy_widgets(
