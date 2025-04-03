@@ -1,22 +1,27 @@
-from typing import List, Tuple, Optional
+from typing import List, Tuple
 import numpy as np
 import napari
 import napari.layers
+import logging
 from brainglobe_utils.cells.cells import Cell
 from brainglobe_utils.qtpy.logo import header_widget
-import logging
 
 logger = logging.getLogger(__name__)
 
 def html_label_widget(label: str, *, tag: str = "b") -> dict:
-    """Create a HTML label for use with magicgui."""
-    return {
-        "widget_type": "Label",
-        "label": f"<{tag}>{label}</{tag}>",
-    }
+    """
+    Create a HTML label for use with magicgui.
+    """
+    return dict(
+        widget_type="Label",
+        label=f"<{tag}>{label}</{tag}>",
+    )
 
 def cellfinder_header():
-    """Create the header containing the brainglobe logo and documentation links."""
+    """
+    Create the header containing the brainglobe logo and documentation links
+    for all cellfinder widgets.
+    """
     return header_widget(
         "cellfinder",
         "Efficient cell detection in large images.",
@@ -25,8 +30,11 @@ def cellfinder_header():
         help_text="For help, hover the cursor over each parameter.",
     )
 
-# Axis order mapping
-napari_points_axis_order = (2, 1, 0)
+# the xyz axis order in napari relative to ours. I.e. our zeroth axis is the
+# napari last axis. Ours is XYZ.
+napari_points_axis_order = 2, 1, 0
+# the xyz axis order in brainglobe relative to napari. I.e. napari's zeroth
+# axis is our last axis - it's just flipped
 brainglobe_points_axis_order = napari_points_axis_order
 
 def add_classified_layers(
@@ -36,12 +44,13 @@ def add_classified_layers(
     cell_name: str = "Detected",
 ) -> None:
     """
-    Adds cell candidates as two separate point layers.
-    Only adds layers if cells of that type exist.
+    Adds cell candidates as two separate point layers - unknowns and cells, to
+    the napari viewer. Does not add any other cell types, only Cell.UNKNOWN
+    and Cell.CELL from the list of cells.
     """
     unknown_cells = cells_to_array(points, Cell.UNKNOWN, napari_order=True)
     detected_cells = cells_to_array(points, Cell.CELL, napari_order=True)
-
+    
     if len(unknown_cells) > 0:
         viewer.add_points(
             unknown_cells,
@@ -52,9 +61,10 @@ def add_classified_layers(
             symbol="ring",
             face_color="lightskyblue",
             visible=False,
-            metadata={"point_type": Cell.UNKNOWN},
+            metadata=dict(point_type=Cell.UNKNOWN),
         )
-
+        logger.debug(f"Added {len(unknown_cells)} unknown cells to layer '{unknown_name}'")
+    
     if len(detected_cells) > 0:
         viewer.add_points(
             detected_cells,
@@ -64,8 +74,9 @@ def add_classified_layers(
             opacity=0.6,
             symbol="ring",
             face_color="lightgoldenrodyellow",
-            metadata={"point_type": Cell.CELL},
+            metadata=dict(point_type=Cell.CELL),
         )
+        logger.debug(f"Added {len(detected_cells)} detected cells to layer '{cell_name}'")
 
 def add_single_layer(
     points: List[Cell],
@@ -73,7 +84,10 @@ def add_single_layer(
     name: str,
     cell_type: int,
 ) -> None:
-    """Adds all cells of specified type to a new point layer."""
+    """
+    Adds all cells of cell_type Cell.TYPE to a new point layer in the napari
+    viewer, with given name.
+    """
     points_array = cells_to_array(points, cell_type, napari_order=True)
     if len(points_array) > 0:
         viewer.add_points(
@@ -85,8 +99,9 @@ def add_single_layer(
             symbol="ring",
             face_color="lightskyblue",
             visible=True,
-            metadata={"point_type": cell_type},
+            metadata=dict(point_type=cell_type),
         )
+        logger.debug(f"Added {len(points_array)} cells to layer '{name}'")
 
 def cells_to_array(
     cells: List[Cell], 
@@ -94,17 +109,22 @@ def cells_to_array(
     napari_order: bool = True
 ) -> np.ndarray:
     """
-    Converts cells of given type to a 2D position array.
-    Returns empty array if no cells found.
-    """
-    if not cells:
-        logger.debug("Empty cell list received")
-        return np.zeros((0, 3), dtype=np.float32)
+    Converts all the cells of the given type as a 2D pos array.
+    Returns empty array of shape (0, 3) if no cells of specified type exist.
     
+    Args:
+        cells: List of Cell objects to convert
+        cell_type: Type of cells to include in output
+        napari_order: Whether to return points in napari axis order
+        
+    Returns:
+        numpy.ndarray: Array of cell coordinates with shape (n_cells, 3)
+    """
     filtered_cells = [c for c in cells if c.type == cell_type]
     if not filtered_cells:
+        logger.debug(f"No cells found of type {cell_type}")
         return np.zeros((0, 3), dtype=np.float32)
-    
+        
     points = np.array([(c.x, c.y, c.z) for c in filtered_cells])
     return points[:, napari_points_axis_order] if napari_order else points
 
@@ -113,8 +133,20 @@ def napari_array_to_cells(
     cell_type: int,
     brainglobe_order: Tuple[int, int, int] = brainglobe_points_axis_order,
 ) -> List[Cell]:
-    """Converts napari Points layer to list of Cell objects."""
+    """
+    Takes a napari Points layer and returns a list of cell objects, one for
+    each point in the layer.
+    
+    Args:
+        points: Napari Points layer to convert
+        cell_type: Type to assign to all converted cells
+        brainglobe_order: Axis order mapping from napari to brainglobe
+        
+    Returns:
+        List[Cell]: Converted cell objects
+    """
     if points is None or len(points.data) == 0:
+        logger.debug("Empty points layer provided for conversion")
         return []
         
     data = np.asarray(points.data)[:, brainglobe_order].tolist()
