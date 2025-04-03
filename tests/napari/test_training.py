@@ -188,3 +188,55 @@ def test_training_worker_execution(mock_train_yaml, training_worker_inputs):
     worker.signals.update_progress.emit.assert_any_call(
         "Training epoch 3/5", 5, 2
     )
+
+
+@pytest.mark.xfail(reason="See discussion in #443", raises=AssertionError)
+@patch("cellfinder.napari.train.train.train_yaml")
+def test_widget_progress_bar(mock_train_yaml, get_training_widget):
+    """Test that the progress bar in the actual widget updates correctly."""
+    get_training_widget.yaml_files.value = [Path.home() / "test.yaml"]
+
+    with patch(
+        "cellfinder.napari.train.train.TrainingWorker"
+    ) as mock_worker_class:
+        real_worker = TrainingWorker(
+            TrainingDataInputs(),
+            OptionalNetworkInputs(),
+            OptionalTrainingInputs(),
+            MiscTrainingInputs(),
+        )
+        mock_worker_instance = mock_worker_class.return_value
+        mock_worker_instance.connect_progress_bar_callback.side_effect = (
+            real_worker.connect_progress_bar_callback
+        )
+        mock_worker_instance.signals = real_worker.signals
+
+        get_training_widget.call_button.clicked()
+
+        mock_worker_class.assert_called_once()
+        mock_worker_instance.start.assert_called_once()
+
+        widget_progress_bar = (
+            mock_worker_instance.connect_progress_bar_callback.call_args[0][0]
+        )
+        assert isinstance(widget_progress_bar, ProgressBar)
+
+        assert not widget_progress_bar.visible
+
+        real_worker.signals.update_progress.emit("Starting training...", 1, 0)
+        assert widget_progress_bar.visible
+        assert widget_progress_bar.label == "Starting training..."
+        assert widget_progress_bar.max == 1
+        assert widget_progress_bar.value == 0
+
+        real_worker.signals.update_progress.emit("Training epoch 2/5", 5, 1)
+        assert widget_progress_bar.visible
+        assert widget_progress_bar.label == "Training epoch 2/5"
+        assert widget_progress_bar.max == 5
+        assert widget_progress_bar.value == 1
+
+        real_worker.signals.update_progress.emit("Training complete", 1, 1)
+        assert widget_progress_bar.visible
+        assert widget_progress_bar.label == "Training complete"
+        assert widget_progress_bar.max == 1
+        assert widget_progress_bar.value == 1
