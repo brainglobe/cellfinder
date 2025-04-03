@@ -100,7 +100,6 @@ When run, this prints::
 from queue import Queue
 from threading import Thread
 from typing import Any, Callable, Optional
-from cellfinder.core import logger
 
 import torch.multiprocessing as mp
 
