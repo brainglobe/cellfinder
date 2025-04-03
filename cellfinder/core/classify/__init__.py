@@ -1,6 +1,6 @@
 from cellfinder.core.classify.classify import (
     main,
-    classify_with_params as classify,  
+    classify_with_params as classify,
     ClassificationParameters,
     DataParameters,
 )

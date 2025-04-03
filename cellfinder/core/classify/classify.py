@@ -2,26 +2,30 @@ import os
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Tuple
+
 import keras
 import numpy as np
 from brainglobe_utils.cells.cells import Cell
 from brainglobe_utils.general.system import get_num_processes
+
 from cellfinder.core import logger, types
 from cellfinder.core.classify.cube_generator import CubeGeneratorFromFile
-from cellfinder.core.classify.tools import get_model
 from cellfinder.core.classify.resnet import layer_type
+from cellfinder.core.classify.tools import get_model
 from cellfinder.core.download.download import model_type
 
 models = {
     "18": "18-layer",
-    "34": "34-layer", 
+    "34": "34-layer",
     "50": "50-layer",
     "101": "101-layer",
     "152": "152-layer",
 }
 
+
 class ClassificationParameters:
     """Configuration parameters for classification."""
+
     def __init__(
         self,
         batch_size: int = 64,
@@ -54,8 +58,10 @@ class ClassificationParameters:
         self.network_depth = network_depth
         self.max_workers = max_workers
 
+
 class DataParameters:
     """Configuration parameters for input data."""
+
     def __init__(
         self,
         voxel_sizes: Tuple[int, int, int],
@@ -76,6 +82,7 @@ class DataParameters:
         self.network_voxel_sizes = network_voxel_sizes
         self.n_free_cpus = n_free_cpus
 
+
 def classify_with_params(
     points: List[Cell],
     signal_array: types.array,
@@ -89,7 +96,7 @@ def classify_with_params(
     callback: Optional[Callable[[int], None]] = None,
 ) -> List[Cell]:
     """Classify cell candidates into cells and non-cells.
-    
+
     Parameters
     ----------
     points : List[Cell]
@@ -111,7 +118,7 @@ def classify_with_params(
     callback : Callable[int], optional
         A callback function that is called during classification. Called with
         the batch number once that batch has been classified.
-        
+
     Returns
     -------
     List[Cell]
@@ -121,18 +128,18 @@ def classify_with_params(
         raise IOError("Signal data must be 3D")
     if background_array.ndim != 3:
         raise IOError("Background data must be 3D")
-        
+
     if callback is not None:
         callbacks = [BatchEndCallback(callback)]
     else:
         callbacks = None
-        
+
     # Too many workers doesn't increase speed, and uses huge amounts of RAM
     workers = get_num_processes(min_free_cpu_cores=data_parameters.n_free_cpus)
-    
+
     start_time = datetime.now()
     logger.debug("Initialising cube generator")
-    
+
     # Create the cube generator using the configuration parameters
     inference_generator = CubeGeneratorFromFile(
         points,
@@ -147,7 +154,7 @@ def classify_with_params(
         use_multiprocessing=False,
         workers=workers,
     )
-    
+
     if trained_model and Path(trained_model).suffix == ".h5":
         print(
             "Weights provided in place of the model, "
@@ -155,20 +162,25 @@ def classify_with_params(
         )
         model_weights = trained_model
         trained_model = None
-    
+
     # Auto-prepare model weights if not provided
     if trained_model is None and model_weights is None:
         from cellfinder.core.tools import prep
-        logger.info(f"No model or weights provided, using default model: {model_name}")
+
+        logger.info(
+            f"No model or weights provided, using default model: {model_name}"
+        )
         model_weights = prep.prep_model_weights(None, None, model_name)
 
     model = get_model(
         existing_model=trained_model,
         model_weights=model_weights,
-        network_depth=models.get(classification_parameters.network_depth.split("-")[0], "50-layer"),
+        network_depth=models.get(
+            classification_parameters.network_depth.split("-")[0], "50-layer"
+        ),
         inference=True,
     )
-    
+
     logger.info("Running inference")
     # in Keras 3.0 multiprocessing params are specified in the generator
     predictions = model.predict(
@@ -176,23 +188,26 @@ def classify_with_params(
         verbose=True,
         callbacks=callbacks,
     )
-    
+
     predictions = predictions.round()
     predictions = predictions.astype("uint16")
     predictions = np.argmax(predictions, axis=1)
-    
+
     points_list = []
     # only go through the "extractable" points
     for idx, cell in enumerate(inference_generator.ordered_points):
         cell.type = predictions[idx] + 1
         points_list.append(cell)
-        
+
     time_elapsed = datetime.now() - start_time
     print(
-        "Classification complete - all points done in : {}".format(time_elapsed)
+        "Classification complete - all points done in : {}".format(
+            time_elapsed
+        )
     )
-    
+
     return points_list
+
 
 # Original function signature for backward compatibility
 def main(
@@ -210,7 +225,7 @@ def main(
     model_weights: Optional[os.PathLike],
     network_depth: str,
     max_workers: int = 3,
-    model_name: model_type = "resnet50_tv",  
+    model_name: model_type = "resnet50_tv",
     *,
     callback: Optional[Callable[[int], None]] = None,
 ) -> List[Cell]:
@@ -227,38 +242,39 @@ def main(
     data_params = DataParameters(
         voxel_sizes=voxel_sizes,
         network_voxel_sizes=network_voxel_sizes,
-        n_free_cpus=n_free_cpus
+        n_free_cpus=n_free_cpus,
     )
-    
+
     # Convert the string network_depth to the layer_type format
     layer_network_depth = models.get(network_depth, "50-layer")
-    
+
     classification_params = ClassificationParameters(
         batch_size=batch_size,
-        cube_height=cube_height, 
+        cube_height=cube_height,
         cube_width=cube_width,
         cube_depth=cube_depth,
         network_depth=layer_network_depth,
-        max_workers=max_workers
+        max_workers=max_workers,
     )
-    
+
     # Call the new implementation with the configuration objects
     return classify_with_params(
         points,
-        signal_array, 
+        signal_array,
         background_array,
         data_params,
         classification_params,
         trained_model,
         model_weights,
-        model_name=model_name,  
-        callback=callback
+        model_name=model_name,
+        callback=callback,
     )
+
 
 class BatchEndCallback(keras.callbacks.Callback):
     def __init__(self, callback: Callable[[int], None]):
         self._callback = callback
-        
+
     def on_predict_batch_end(
         self, batch: int, logs: Optional[Dict[str, Any]] = None
     ) -> None:

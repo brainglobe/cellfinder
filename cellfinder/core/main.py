@@ -1,10 +1,13 @@
 import os
 from typing import Callable, List, Optional, Tuple
+
 import numpy as np
 from brainglobe_utils.cells.cells import Cell
+
 from cellfinder.core import logger
 from cellfinder.core.download.download import model_type
 from cellfinder.core.train.train_yaml import depth_type
+
 
 def main(
     signal_array: np.ndarray,
@@ -52,7 +55,11 @@ def main(
     detect_finished_callback : Callable[list], optional
         Called after detection is finished with the list of detected points.
     """
-    from cellfinder.core.classify import classify, ClassificationParameters, DataParameters
+    from cellfinder.core.classify import (
+        ClassificationParameters,
+        DataParameters,
+        classify,
+    )
     from cellfinder.core.detect import detect
     from cellfinder.core.tools import prep
 
@@ -91,25 +98,25 @@ def main(
 
         if len(points) > 0:
             logger.info("Running classification")
-            
+
             # Create configuration objects for the new API
             data_params = DataParameters(
                 voxel_sizes=voxel_sizes,
                 network_voxel_sizes=network_voxel_sizes,
-                n_free_cpus=n_free_cpus
+                n_free_cpus=n_free_cpus,
             )
-            
+
             # Map the network_depth string to the correct format
             layer_network_depth = f"{network_depth}-layer"
-            
+
             classification_params = ClassificationParameters(
                 batch_size=batch_size,
                 cube_height=cube_height,
                 cube_width=cube_width,
                 cube_depth=cube_depth,
-                network_depth=layer_network_depth
+                network_depth=layer_network_depth,
             )
-            
+
             # Call the new API
             points = classify(
                 points=points,

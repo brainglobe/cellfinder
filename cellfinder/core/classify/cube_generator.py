@@ -477,10 +477,11 @@ class CubeGeneratorFromDisk(Sequence):
         if self.augment:
             image = augment(self.augmentation_parameters, image)
         return image
-    
+
 
 class CubeGeneratorParameters:
     """Configuration parameters for cube generation."""
+
 
 def __init__(
     self,
@@ -515,7 +516,7 @@ def __init__(
     self.points = points
     self.signal_array = signal_array
     self.background_array = background_array
-    
+
     # Use parameters from CubeGeneratorParameters if provided, otherwise use individual args
     if cube_generator_params is not None:
         self.batch_size = cube_generator_params.batch_size
@@ -549,20 +550,20 @@ def __init__(
         self.translate = translate
         self.shuffle = shuffle
         self.interpolation_order = interpolation_order
-    
+
     self.axis_2_pixel_um = float(voxel_sizes[2])
     self.axis_1_pixel_um = float(voxel_sizes[1])
     self.axis_0_pixel_um = float(voxel_sizes[0])
     self.network_axis_2_pixel_um = float(network_voxel_sizes[2])
     self.network_axis_1_pixel_um = float(network_voxel_sizes[1])
     self.network_axis_0_pixel_um = float(network_voxel_sizes[0])
-    
+
     self.scale_cubes = False
     self.rescaling_factor_axis_2: float = 1
     self.rescaling_factor_axis_1: float = 1
     self.rescaled_cube_width: float = self.cube_width
     self.rescaled_cube_height: float = self.cube_height
-    
+
     self.__check_image_sizes()
     self.__get_image_size()
     self.__check_z_scaling()
