@@ -1,8 +1,8 @@
+import logging
 from functools import partial
 from math import ceil
 from pathlib import Path
 from typing import Any, Callable, Dict, Optional, Tuple
-import logging
 
 import napari
 import napari.layers
@@ -157,6 +157,7 @@ def get_results_callback(
     Returns the callback that is connected to output of the pipeline.
     It returns the detected points that we have to visualize.
     """
+
     def handle_empty_results():
         """Show comprehensive guidance when no cells are detected."""
         show_info(
@@ -164,7 +165,6 @@ def get_results_callback(
             "- Adjusting detection thresholds\n"
             "- Changing soma diameter parameter\n"
             "- Verifying image quality\n\n"
-            
         )
         logger.warning("Cell detection completed with no results")
 
