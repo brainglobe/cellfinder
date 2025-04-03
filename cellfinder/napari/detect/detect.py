@@ -1,3 +1,4 @@
+import logging
 from functools import partial
 from math import ceil
 from pathlib import Path
@@ -27,6 +28,8 @@ from .detect_containers import (
     MiscInputs,
 )
 from .thread_worker import Worker
+
+logger = logging.getLogger(__name__)
 
 NETWORK_VOXEL_SIZES = [5, 1, 1]
 CUBE_WIDTH = 50
@@ -154,9 +157,23 @@ def get_results_callback(
     Returns the callback that is connected to output of the pipeline.
     It returns the detected points that we have to visualize.
     """
+
+    def handle_empty_results():
+        """Show comprehensive guidance when no cells are detected."""
+        show_info(
+            "No cells detected. Please try:\n"
+            "- Adjusting detection thresholds\n"
+            "- Changing soma diameter parameter\n"
+            "- Verifying image quality\n\n"
+        )
+        logger.warning("Cell detection completed with no results")
+
     if skip_classification:
         # after detection w/o classification, everything is unknown
         def done_func(points):
+            if not points:
+                handle_empty_results()
+                return
             add_single_layer(
                 points,
                 viewer=viewer,
@@ -167,6 +184,9 @@ def get_results_callback(
     else:
         # after classification we have either cell or unknown
         def done_func(points):
+            if not points:
+                handle_empty_results()
+                return
             add_classified_layers(
                 points,
                 viewer=viewer,

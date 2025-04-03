@@ -44,8 +44,11 @@ pip install cellfinder>=1.0.0
 Be sure to specify a version greater than version `v1.0.0` - prior to this version the `cellfinder` package had a very different structure that is incompatible with BrainGlobe version 1 and the other tools in the BrainGlobe suite.
 See [our blog posts](https://brainglobe.info/blog/) for more information on the release of BrainGlobe version 1.
 
-## Seeking help or contributing
-We are always happy to help users of our tools, and welcome any contributions. If you would like to get in contact with us for any reason, please see the [contact page of our website](https://brainglobe.info/contact.html).
+## Getting Help
+Need assistance or want to contribute?
+- 💬 [Join our community chat](https://brainglobe.info/community)
+- 🐛 [Report issues on GitHub](https://github.com/brainglobe/cellfinder/issues)
+- 📚 [Browse documentation](https://brainglobe.info/documentation)
 
 ## Citation
 If you find this package useful, and use it in your research, please cite the following paper:
