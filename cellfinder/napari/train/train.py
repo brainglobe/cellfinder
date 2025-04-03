@@ -202,9 +202,7 @@ def training_widget() -> FunctionGui:
                 misc_training_inputs,
             )
             worker.connect_progress_bar_callback(progress_bar)
-            worker.finished.connect(
-                progress_bar.hide
-            )
+            worker.finished.connect(progress_bar.hide)
             worker.errored.connect(
                 lambda e: show_info(f"Error during training: {str(e)}")
             )
