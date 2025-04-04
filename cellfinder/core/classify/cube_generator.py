@@ -483,7 +483,6 @@ class CubeGeneratorParameters:
     """Configuration parameters for cube generation."""
 
 
-
 def __init__(
     self,
     points: List[Cell],
@@ -553,7 +552,6 @@ def __init__(
         self.shuffle = shuffle
         self.interpolation_order = interpolation_order
 
-
     self.axis_2_pixel_um = float(voxel_sizes[2])
     self.axis_1_pixel_um = float(voxel_sizes[1])
     self.axis_0_pixel_um = float(voxel_sizes[0])
@@ -561,13 +559,11 @@ def __init__(
     self.network_axis_1_pixel_um = float(network_voxel_sizes[1])
     self.network_axis_0_pixel_um = float(network_voxel_sizes[0])
 
-
     self.scale_cubes = False
     self.rescaling_factor_axis_2: float = 1
     self.rescaling_factor_axis_1: float = 1
     self.rescaled_cube_width: float = self.cube_width
     self.rescaled_cube_height: float = self.cube_height
-
 
     self.__check_image_sizes()
     self.__get_image_size()
