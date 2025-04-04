@@ -114,7 +114,7 @@ def classify_with_params(
     model_weights : Optional[os.PathLike]
         Path to model weights
     model_name : model_type
-        Name of the model to use if no trained_model or model_weights are provided
+        Name of the model to use if no trained_model or model_weights are given
     callback : Callable[int], optional
         A callback function that is called during classification. Called with
         the batch number once that batch has been classified.
@@ -236,7 +236,7 @@ def main(
         A callback function that is called during classification. Called with
         the batch number once that batch has been classified.
     model_name : model_type
-        Name of the model to use if no trained_model or model_weights are provided
+        Name of the model to use if no trained_model or model_weights are given
     """
     # Create configuration objects from individual parameters
     data_params = DataParameters(
