@@ -22,7 +22,7 @@ class TestClassificationIntegration(unittest.TestCase):
             Cell([30, 40, 3], Cell.CELL),
         ]
 
-    @patch("cellfinder.core.detect.main")
+    @patch("cellfinder.core.detect.detect.main")
     @patch("cellfinder.core.classify.classify")
     @patch("cellfinder.core.tools.prep.prep_model_weights")
     def test_main_workflow_calls_classify_correctly(
@@ -46,9 +46,9 @@ class TestClassificationIntegration(unittest.TestCase):
 
         mock_classify.assert_called_once()
 
-        args, kwargs = mock_classify.call_args
+        _, kwargs = mock_classify.call_args
 
-        self.assertEqual(args[0], self.detected_cells)
+        self.assertEqual(kwargs["points"], self.detected_cells)
 
         self.assertIsInstance(kwargs["data_parameters"], DataParameters)
         self.assertEqual(
@@ -63,7 +63,7 @@ class TestClassificationIntegration(unittest.TestCase):
             kwargs["classification_parameters"].network_depth, "34-layer"
         )
 
-    @patch("cellfinder.core.detect.main")
+    @patch("cellfinder.core.detect.detect.main")
     def test_empty_detection_skips_classification(self, mock_detect):
         """Test that the main workflow skips classification when
         detection returns no cells."""
