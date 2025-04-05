@@ -1,3 +1,4 @@
+import logging
 from functools import partial
 from math import ceil
 from pathlib import Path
@@ -28,6 +29,7 @@ from .detect_containers import (
 )
 from .thread_worker import Worker
 
+logger = logging.getLogger(__name__)
 NETWORK_VOXEL_SIZES = [5, 1, 1]
 CUBE_WIDTH = 50
 CUBE_HEIGHT = 20
@@ -154,27 +156,38 @@ def get_results_callback(
     Returns the callback that is connected to output of the pipeline.
     It returns the detected points that we have to visualize.
     """
-    if skip_classification:
-        # after detection w/o classification, everything is unknown
+    
+    def handle_empty_results():
+        """Show comprehensive guidance when no cells are detected."""
+        show_info(
+            "No cells detected. Please try:\n"
+            "- Adjusting detection thresholds\n"
+            "- Changing soma diameter parameter\n"
+            "- Verifying image quality\n\n"
+        )
+        logger.info("Cell detection completed with no results")
         def done_func(points):
-            add_single_layer(
-                points,
-                viewer=viewer,
-                name="Cell candidates",
-                cell_type=Cell.UNKNOWN,
-            )
-
-    else:
-        # after classification we have either cell or unknown
-        def done_func(points):
-            add_classified_layers(
+            if not points:
+                handle_empty_results()
+                return
+            
+            if skip_classification:
+                add_single_layer(
+                    points,
+                    viewer=viewer,
+                    name="Cell candidates",
+                    cell_type=Cell.UNKNOWN,
+                )
+            else:
+                add_classified_layers(
                 points,
                 viewer=viewer,
                 unknown_name="Rejected",
                 cell_name="Detected",
             )
+    
 
-    return done_func
+        return done_func
 
 
 def find_local_planes(
