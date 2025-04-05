@@ -1,6 +1,7 @@
+from unittest.mock import MagicMock
+
 import numpy as np
 import pytest
-from unittest.mock import MagicMock
 from brainglobe_utils.cells.cells import Cell
 
 from cellfinder.napari.utils import (
@@ -67,11 +68,12 @@ def test_add_classified_layers(make_napari_viewer):
     )
     assert cells_again == points
 
+
 def test_add_single_layer(make_napari_viewer):
     """Test adding a single layer with cells."""
     viewer = make_napari_viewer()
     points = [Cell((1, 2, 3), Cell.CELL)]
-    
+
     # Test adding CELL type
     add_single_layer(points, viewer, "Test Layer", Cell.CELL)
     assert len(viewer.layers) == 1
@@ -79,23 +81,26 @@ def test_add_single_layer(make_napari_viewer):
     assert layer.name == "Test Layer"
     assert np.array_equal(layer.data, np.array([[3, 2, 1]]))  # napari order
 
+
 def test_add_single_layer_empty(make_napari_viewer):
     """Test empty cell list doesn't create a layer."""
     viewer = make_napari_viewer()
     add_single_layer([], viewer, "Empty", Cell.CELL)
     assert len(viewer.layers) == 0  # No layer should be added
 
+
 def test_cells_to_array_axis_orders():
     """Test axis order handling (napari vs. brainglobe)."""
     cells = [Cell((1, 2, 3), Cell.CELL)]
-    
+
     # Tests napari order (should reverse axes)
     napari_result = cells_to_array(cells, Cell.CELL, napari_order=True)
     assert np.array_equal(napari_result, np.array([[3, 2, 1]]))
-    
+
     # Tests brainglobe order (original XYZ)
     bg_result = cells_to_array(cells, Cell.CELL, napari_order=False)
     assert np.array_equal(bg_result, np.array([[1, 2, 3]]))
+
 
 def test_napari_array_to_cells_empty():
     """Test empty Points layer returns empty list."""
@@ -104,11 +109,12 @@ def test_napari_array_to_cells_empty():
     result = napari_array_to_cells(mock_points, Cell.CELL)
     assert result == []
 
+
 def test_napari_array_to_cells_axis_conversion():
     """Test axis order conversion from napari to brainglobe."""
     mock_points = MagicMock()
     mock_points.data = np.array([[3, 2, 1]])  # napari order (ZYX)
-    
+
     # Should convert back to brainglobe order (XYZ)
     cells = napari_array_to_cells(mock_points, Cell.CELL)
     assert cells[0].x == 1 and cells[0].y == 2 and cells[0].z == 3
@@ -119,6 +125,7 @@ def test_html_label_widget():
     label_widget = html_label_widget("A nice label", tag="h1")
     assert label_widget["widget_type"] == "Label"
     assert label_widget["label"] == "<h1>A nice label</h1>"
+
 
 def test_cellfinder_header():
     """Test header widget creation."""

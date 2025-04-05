@@ -156,7 +156,7 @@ def get_results_callback(
     Returns the callback that is connected to output of the pipeline.
     It returns the detected points that we have to visualize.
     """
-    
+
     def handle_empty_results():
         """Show comprehensive guidance when no cells are detected."""
         show_info(
@@ -166,11 +166,12 @@ def get_results_callback(
             "- Verifying image quality\n\n"
         )
         logger.info("Cell detection completed with no results")
+
         def done_func(points):
             if not points:
                 handle_empty_results()
                 return
-            
+
             if skip_classification:
                 add_single_layer(
                     points,
@@ -180,12 +181,11 @@ def get_results_callback(
                 )
             else:
                 add_classified_layers(
-                points,
-                viewer=viewer,
-                unknown_name="Rejected",
-                cell_name="Detected",
-            )
-    
+                    points,
+                    viewer=viewer,
+                    unknown_name="Rejected",
+                    cell_name="Detected",
+                )
 
         return done_func
 

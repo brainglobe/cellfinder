@@ -1,13 +1,14 @@
-from typing import List, Tuple
 import logging
+from typing import List, Tuple
+
 import napari
 import napari.layers
 import numpy as np
 from brainglobe_utils.cells.cells import Cell
 from brainglobe_utils.qtpy.logo import header_widget
 
-
 logger = logging.getLogger(__name__)
+
 
 def html_label_widget(label: str, *, tag: str = "b") -> dict:
     """
@@ -86,6 +87,7 @@ def add_classified_layers(
             f"Added {len(detected_cells)} detected cells to layer '{cell_name}'"
         )
 
+
 def add_single_layer(
     points: List[Cell],
     viewer: napari.Viewer,
@@ -140,14 +142,14 @@ def napari_array_to_cells(
     brainglobe_order: Tuple[int, int, int] = brainglobe_points_axis_order,
 ) -> List[Cell]:
     """
-    Takes a napari Points layer and returns a list of cell objects, one for
-    each point in the layer.
-Args:
-        points: Napari Points layer to convert
-        cell_type: Type to assign to all converted cells
-        brainglobe_order: Axis order mapping from napari to brainglobe
-    Returns:
-        List[Cell]: Converted cell objects
+        Takes a napari Points layer and returns a list of cell objects, one for
+        each point in the layer.
+    Args:
+            points: Napari Points layer to convert
+            cell_type: Type to assign to all converted cells
+            brainglobe_order: Axis order mapping from napari to brainglobe
+        Returns:
+            List[Cell]: Converted cell objects
     """
     if points is None or len(points.data) == 0:
         logger.debug("Empty points layer provided for conversion")

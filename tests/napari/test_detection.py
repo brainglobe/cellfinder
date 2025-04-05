@@ -1,10 +1,10 @@
-from unittest.mock import patch
-from unittest.mock import MagicMock
-from cellfinder.napari.detect.detect import get_results_callback
+from unittest.mock import MagicMock, patch
+
 import napari
 import pytest
 
 from cellfinder.napari.detect import detect_widget
+from cellfinder.napari.detect.detect import get_results_callback
 from cellfinder.napari.detect.detect_containers import (
     ClassificationInputs,
     DataInputs,
@@ -74,6 +74,7 @@ def test_reset_defaults(get_detect_widget):
     """Smoke test that restore defaults doesn't error."""
     get_detect_widget.reset_button.clicked()
 
+
 # NEW TESTS FOR EMPTY POINTS HANDLING
 @pytest.fixture
 def mock_viewer(make_napari_viewer):
@@ -82,15 +83,20 @@ def mock_viewer(make_napari_viewer):
     viewer.layers = MagicMock()  # Ensures no real layers interfere
     return viewer
 
+
 def test_handle_empty_results_notification(mock_viewer):
     """Test that empty results trigger a user notification and log."""
-    with patch("napari.utils.notifications.show_info") as mock_show_info, \
-         patch("logging.Logger.info") as mock_logger:
-        
+    with (
+        patch("napari.utils.notifications.show_info") as mock_show_info,
+        patch("logging.Logger.info") as mock_logger,
+    ):
+
         # Trigger empty points case
-        callback = get_results_callback(skip_classification=False, viewer=mock_viewer)
+        callback = get_results_callback(
+            skip_classification=False, viewer=mock_viewer
+        )
         callback(points=[])
-        
+
         # Verify notification content
         mock_show_info.assert_called_once_with(
             "No cells detected. Please try:\n"
@@ -99,18 +105,29 @@ def test_handle_empty_results_notification(mock_viewer):
             "- Verifying image quality"
         )
         # Verify log
-        mock_logger.assert_called_once_with("Cell detection completed with no results")
+        mock_logger.assert_called_once_with(
+            "Cell detection completed with no results"
+        )
+
 
 def test_done_func_skips_layer_add_on_empty_points(mock_viewer):
     """Test that no layer is added when points are empty."""
-    with patch("cellfinder.napari.detect.detect.add_single_layer") as mock_add_single, \
-         patch("cellfinder.napari.detect.detect.add_classified_layers") as mock_add_classified:
-        
+    with (
+        patch(
+            "cellfinder.napari.detect.detect.add_single_layer"
+        ) as mock_add_single,
+        patch(
+            "cellfinder.napari.detect.detect.add_classified_layers"
+        ) as mock_add_classified,
+    ):
+
         # Tests both skip_classification cases
         for skip in [True, False]:
-            callback = get_results_callback(skip_classification=skip, viewer=mock_viewer)
+            callback = get_results_callback(
+                skip_classification=skip, viewer=mock_viewer
+            )
             callback(points=[])
-            
+
             # Ensures no layer was added
             mock_add_single.assert_not_called()
             mock_add_classified.assert_not_called()
