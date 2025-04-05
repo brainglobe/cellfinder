@@ -170,6 +170,10 @@ class VolumeFilter:
         """
         batch_size = self.settings.batch_size
         device = self.settings.torch_device
+        start_width = self.settings.start_width
+        end_width = self.settings.plane_width
+        start_height = self.settings.start_height
+        end_height = self.settings.plane_height
         start_plane = self.settings.start_plane
         end_plane = start_plane + self.settings.n_planes
         data_converter = self.settings.filter_data_converter_func
@@ -183,7 +187,13 @@ class VolumeFilter:
 
         for z in range(start_plane, end_plane, batch_size):
             # convert the data to the right type
-            np_data = data_converter(data[z : z + batch_size, :, :])
+            np_data = data_converter(
+                data[
+                    z : z + batch_size,
+                    start_height : start_height + end_height,
+                    start_width : start_width + end_width,
+                ]
+            )
             # if we ran out of batches, we are done!
             n = np_data.shape[0]
             assert n
