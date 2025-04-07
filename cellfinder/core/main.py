@@ -37,12 +37,11 @@ def main(
     skip_classification: bool = False,
     detected_cells: List[Cell] = None,
     classification_batch_size: Optional[int] = None,
-    classification_torch_device: str = "cpu",
+    torch_device: Optional[str] = None,
     *,
     detect_callback: Optional[Callable[[int], None]] = None,
     classify_callback: Optional[Callable[[int], None]] = None,
     detect_finished_callback: Optional[Callable[[list], None]] = None,
-    detection_torch_device: Optional[str] = None,
 ) -> List[Cell]:
     """
     Parameters
@@ -55,11 +54,6 @@ def main(
         Called with the batch number that has just finished.
     detect_finished_callback : Callable[list], optional
         Called after detection is finished with the list of detected points.
-        Number of points processed simultaneously by the neural network.
-    batch_size: int = 64, optional
-        Larger batch sizes use more memory, but can significantly improve
-        processing speed when using a GPU.
-        Default: 64
     """
     from cellfinder.core.classify import classify
     from cellfinder.core.detect import detect
@@ -83,7 +77,7 @@ def main(
             log_sigma_size,
             n_sds_above_mean_thresh,
             batch_size=classification_batch_size,
-            torch_device=detection_torch_device,
+            torch_device=torch_device,
             callback=detect_callback,
         )
 

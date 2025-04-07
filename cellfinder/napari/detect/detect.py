@@ -261,9 +261,9 @@ def detect_widget() -> FunctionGui:
         end_plane: int,
         n_free_cpus: int,
         analyse_local: bool,
+        use_gpu: bool,
         debug: bool,
         reset_button,
-        detection_torch_device: str,
     ) -> None:
         """
         Run detection and classification.
@@ -316,15 +316,12 @@ def detect_widget() -> FunctionGui:
             How many CPU cores to leave free
         analyse_local : bool
             Only analyse planes around the current position
+        use_gpu : bool
+            If True, use GPU for processing (if available); otherwise, use CPU.
         debug : bool
             Increase logging
         reset_button :
             Reset parameters to default
-        detection_torch_device : str
-            Processing device to use for detection filters
-            Select "cuda" for GPU or "cpu" for CPU.
-            GPU is recommended if available.
-
         """
         # we must manually call so that the parameters of these functions are
         # initialized and updated. Because, if the images are open in napari
