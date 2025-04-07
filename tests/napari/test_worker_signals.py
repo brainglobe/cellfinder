@@ -1,17 +1,13 @@
 import pytest
 
-
 from cellfinder.napari.detect.detect_containers import (
-    ClassificationInputs,
     ClassificationInputs,
     DataInputs,
     DetectionInputs,
     MiscInputs,
 )
 from cellfinder.napari.detect.thread_worker import Worker
-from cellfinder.napari.detect.thread_worker import Worker
 from cellfinder.napari.sample_data import load_sample
-
 
 
 def prepare_test(skip_classification=False, skip_detection=False):
@@ -43,7 +39,7 @@ def check_emitted_signals(
     assert (
         emitted_strings == expected_signals
     ), f"Expected {expected_signals}, but got {emitted_strings}"
-    
+
     # Assert that none of the non-expected signals were emitted
     for non_signal in non_expected_signals:
         assert (
