@@ -11,6 +11,7 @@ from cellfinder.napari.sample_data import load_sample
 
 
 def prepare_test(skip_classification=False, skip_detection=False):
+    '''prepare worker instance to test'''
     data = load_sample()
     signal = data[0][0]
     background = data[1][0]
@@ -27,12 +28,14 @@ def prepare_test(skip_classification=False, skip_detection=False):
 
 
 def record_signal(emitted_signals, *args):
+    '''record all emited signals after triggering work'''
     emitted_signals.append(args)
 
 
 def check_emitted_signals(
     emitted_signals, expected_signals, non_expected_signals
 ):
+    '''check for correctnes of the collected signals'''
     emitted_strings = [signal[0] for signal in emitted_signals]
 
     # Assert that emitted signals match what you expect
@@ -86,8 +89,6 @@ def test_signal_emission(
     )
     worker.work()
 
-    # Check if the emitted signals match the expected
-    # and ensure non-expected signals are not emitted
     check_emitted_signals(
         emitted_signals, expected_signals, non_expected_signals
     )
