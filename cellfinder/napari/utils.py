@@ -69,7 +69,8 @@ def add_classified_layers(
             metadata=dict(point_type=Cell.UNKNOWN),
         )
         logger.debug(
-            f"Added {len(unknown_cells)} unknown cells to layer '{unknown_name}'"
+            f"Added {len(unknown_cells)} unknown cells to layer"
+            f"'{unknown_name}'"
         )
 
     if len(detected_cells) > 0:
@@ -84,7 +85,8 @@ def add_classified_layers(
             metadata=dict(point_type=Cell.CELL),
         )
         logger.debug(
-            f"Added {len(detected_cells)} detected cells to layer '{cell_name}'"
+            f"Added {len(detected_cells)} detected cells to layer "
+            f"'{cell_name}'"
         )
 
 

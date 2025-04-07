@@ -4,8 +4,12 @@ import numpy as np
 import pytest
 from brainglobe_utils.cells.cells import Cell
 
-from cellfinder.napari.utils import (
+from cellfinder.napari.detect.detect import (
     add_classified_layers,
+    add_single_layer,
+)
+from cellfinder.napari.utils import (
+    cellfinder_header,
     cells_to_array,
     html_label_widget,
     napari_array_to_cells,
