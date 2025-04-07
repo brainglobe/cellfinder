@@ -56,7 +56,8 @@ class Worker(WorkerBase):
         self.update_progress_bar.connect(update_progress_bar)
 
     def work(self) -> list:
-        self.update_progress_bar.emit("Setting up detection...", 1, 0)
+        if not self.detection_inputs.skip_detection:
+            self.update_progress_bar.emit("Setting up detection...", 1, 0)
 
         def detect_callback(plane: int) -> None:
             if not self.detection_inputs.skip_detection:
