@@ -25,22 +25,13 @@ def prepare_test(skip_classification=False, skip_detection=False):
         ClassificationInputs(
             skip_classification=skip_classification, trained_model=None
         ),
-        ClassificationInputs(
-            skip_classification=skip_classification, trained_model=None
-        ),
         MiscInputs(start_plane=0, end_plane=1),
     )
     return worker
 
 
-
 def record_signal(emitted_signals, *args):
     emitted_signals.append(args)
-
-
-def check_emitted_signals(
-    emitted_signals, expected_signals, non_expected_signals
-):
 
 
 def check_emitted_signals(
@@ -52,25 +43,13 @@ def check_emitted_signals(
     assert (
         emitted_strings == expected_signals
     ), f"Expected {expected_signals}, but got {emitted_strings}"
-    assert (
-        emitted_strings == expected_signals
-    ), f"Expected {expected_signals}, but got {emitted_strings}"
-
+    
     # Assert that none of the non-expected signals were emitted
     for non_signal in non_expected_signals:
         assert (
             non_signal not in emitted_strings
         ), f"Unexpected signal emitted: {non_signal}"
-        assert (
-            non_signal not in emitted_strings
-        ), f"Unexpected signal emitted: {non_signal}"
 
-
-expected_signals_classification = [
-    "Setting up classification...",
-    "Finished classification",
-]
-expected_signals_detetction = ["Setting up detection...", "Finished detection"]
 
 expected_signals_classification = [
     "Setting up classification...",
@@ -106,9 +85,6 @@ def test_signal_emission(
     )
 
     emitted_signals = []
-    worker.update_progress_bar.connect(
-        lambda *args: record_signal(emitted_signals, *args)
-    )
     worker.update_progress_bar.connect(
         lambda *args: record_signal(emitted_signals, *args)
     )
