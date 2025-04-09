@@ -48,6 +48,20 @@ class DetectionSettings:
     Defaults to `uint16`
     """
 
+    start_y: int = 0
+    """The starting y coordinate for processing (inclusive)."""
+
+    end_y: int = -1
+    """The ending y coordinate for processing (exclusive).
+    -1 means process until the end."""
+
+    start_x: int = 0
+    """The starting x coordinate for processing (inclusive)."""
+
+    end_x: int = -1
+    """The ending x coordinate for processing (exclusive).
+    -1 means process until the end."""
+
     detection_dtype: Type[np.number] = np.uint64
     """
     The numpy data type that the cell detection code expects our filtered
@@ -190,11 +204,28 @@ class DetectionSettings:
     n_splitting_iter: int = 10
     """
     During the structure splitting phase we iteratively shrink the bright areas
-    and re-filter with the 3d filter. This is the number of iterations to do.
+    and re-filter with the 3d filter.
+    This is the number of iterations to do.
 
     This is a maximum because we also stop if there are no more structures left
     during any iteration.
     """
+
+    @cached_property
+    def roi_shape(self) -> Tuple[int, int]:
+        """the shape of the region of interest
+        in y and x dimensions."""
+        end_y = (
+            self.plane_shape[0]
+            if self.end_y < 0
+            else min(self.end_y, self.plane_shape[0])
+        )
+        end_x = (
+            self.plane_shape[1]
+            if self.end_x < 0
+            else min(self.end_x, self.plane_shape[1])
+        )
+        return (end_y - self.start_y, end_x - self.start_x)
 
     def __getstate__(self):
         d = self.__dict__.copy()
