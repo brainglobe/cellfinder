@@ -43,6 +43,10 @@ def main(
     n_free_cpus: int = 2,
     log_sigma_size: float = 0.2,
     n_sds_above_mean_thresh: float = 10,
+    start_width: int = 0,
+    end_width: int = -1,
+    start_height: int = 0,
+    end_height: int = -1,
     outlier_keep: bool = False,
     artifact_keep: bool = False,
     save_planes: bool = False,
@@ -125,6 +129,18 @@ def main(
         To run on a gpu, specify the PyTorch device name, such as "cuda" to
         run on the first GPU.
 
+    start_width : int
+        Index of the starting x for detection.
+
+    end_width : int
+        Index of the ending x for detection.
+
+    start_height : int
+        Index of the starting y for detection.
+
+    end_height : int
+        Index of the ending y for detection.
+
     callback : Callable[int], optional
         A callback function that is called every time a plane has finished
         being processed. Called with the plane number that has finished.
@@ -150,6 +166,14 @@ def main(
     if signal_array.ndim != 3:
         raise ValueError("Input data must be 3D")
 
+    if end_width < 0:
+        end_width = len(signal_array[0][0])
+    end_width = min(len(signal_array[0][0]), end_width)
+
+    if end_height < 0:
+        end_height = len(signal_array[0])
+    end_height = min(len(signal_array[0]), end_height)
+
     if end_plane < 0:
         end_plane = len(signal_array)
     end_plane = min(len(signal_array), end_plane)
@@ -160,7 +184,7 @@ def main(
     voxel_sizes = list(map(float, voxel_sizes))
 
     settings = DetectionSettings(
-        plane_shape=signal_array.shape[1:],
+        plane_shape=(end_height - start_height, end_width - start_width),
         plane_original_np_dtype=signal_array.dtype,
         voxel_sizes=voxel_sizes,
         soma_spread_factor=soma_spread_factor,
@@ -168,6 +192,10 @@ def main(
         max_cluster_size_um3=max_cluster_size,
         ball_xy_size_um=ball_xy_size,
         ball_z_size_um=ball_z_size,
+        start_width=start_width,
+        end_width=end_width,
+        start_height=start_height,
+        end_height=end_height,
         start_plane=start_plane,
         end_plane=end_plane,
         n_free_cpus=n_free_cpus,
