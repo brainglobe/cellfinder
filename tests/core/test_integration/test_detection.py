@@ -46,6 +46,25 @@ def background_array():
     return read_with_dask(background_data_path)
 
 
+def count_matched_cells(cell_test, cell_validation, tolerance=0):
+    """
+    This function is used to check whether the cell's location
+    has matches in the validation dataset,
+    and counts the number of matched cells.
+    """
+    matched = 0
+    for cell in cell_test:
+        for cell_v in cell_validation:
+            if (
+                abs(cell.x - cell_v.x) <= tolerance
+                and abs(cell.y - cell_v.y) <= tolerance
+                and abs(cell.z - cell_v.z) <= tolerance
+            ):
+                matched += 1
+                break
+    return matched
+
+
 # FIXME: This isn't a very good example
 @pytest.mark.slow
 @pytest.mark.parametrize(
@@ -72,6 +91,7 @@ def test_detection_full(signal_array, background_array, free_cpus, request):
 
     num_non_cells_test = sum([cell.type == 1 for cell in cells_test])
     num_cells_test = sum([cell.type == 2 for cell in cells_test])
+    num_of_matched_cells = count_matched_cells(cells_test, cells_validation)
 
     assert isclose(
         num_non_cells_validation,
@@ -80,6 +100,11 @@ def test_detection_full(signal_array, background_array, free_cpus, request):
     )
     assert isclose(
         num_cells_validation, num_cells_test, abs_tol=DETECTION_TOLERANCE
+    )
+    assert num_of_matched_cells >= len(cells_validation) * 0.92, (
+        f"Number of matched cells by location is"
+        f"{num_of_matched_cells}"
+        f"which is less than 92% of the validation cells"
     )
 
 

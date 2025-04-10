@@ -3,9 +3,6 @@ main
 ===============
 
 Trains a network based on a yaml file specifying cubes of cells/non cells.
-
-N.B imports are within functions to prevent tensorflow being imported before
-it's warnings are silenced
 """
 
 import os
@@ -29,12 +26,16 @@ from brainglobe_utils.general.system import (
 from brainglobe_utils.IO.cells import find_relevant_tiffs
 from brainglobe_utils.IO.yaml import read_yaml_section
 from fancylog import fancylog
+from keras.callbacks import CSVLogger, ModelCheckpoint, TensorBoard
 from sklearn.model_selection import train_test_split
 
 import cellfinder.core as program_for_log
 from cellfinder.core import logger
+from cellfinder.core.classify.cube_generator import CubeGeneratorFromDisk
 from cellfinder.core.classify.resnet import layer_type
+from cellfinder.core.classify.tools import get_model, make_lists
 from cellfinder.core.download.download import DEFAULT_DOWNLOAD_DIRECTORY
+from cellfinder.core.tools.prep import prep_model_weights
 
 depth_type = Literal["18", "34", "50", "101", "152"]
 
@@ -327,6 +328,7 @@ def run(
     from cellfinder.core.classify.cube_generator import CubeGeneratorFromDisk
     from cellfinder.core.classify.tools import get_model, make_lists
     from cellfinder.core.tools.prep import prep_model_weights
+
 
     start_time = datetime.now()
 
