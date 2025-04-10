@@ -129,3 +129,71 @@ def test_bad_ball_z_size():
     with pytest.raises(ValueError):
         # do something with value to quiet linter
         assert settings.ball_z_size
+
+@pytest.mark.parametrize(
+    "plane_shape,start_y,end_y,start_x,end_x,expected_shape",
+    [
+        #basic case - full plane
+        ((100, 200), 0, -1, 0, -1, (100, 200)),
+        #partial region with positive coordinates
+        ((100, 200), 10, 50, 20, 100, (40, 80)),
+        #end coordinates exceeding plane dimensions
+        ((100, 200), 0, 150, 0, 300, (100, 200)),
+        #negative end coordinates (should use full dimension)
+        ((100, 200), 10, -1, 20, -1, (90, 180)),
+        #zero-sized region
+        ((100, 200), 50, 50, 60, 60, (0, 0)),
+        #single pixel region
+        ((100, 200), 50, 51, 60, 61, (1, 1)),
+        #minimum plane size
+        ((1, 1), 0, -1, 0, -1, (1, 1)),
+    ],
+)
+def test_roi_shape(
+    plane_shape, start_y, end_y, start_x, end_x, expected_shape
+):
+    """Test that roi_shape correctly calculates region dimensions."""
+    settings = DetectionSettings(
+        plane_shape=plane_shape,
+        start_y=start_y,
+        end_y=end_y,
+        start_x=start_x,
+        end_x=end_x,
+    )
+    assert settings.roi_shape == expected_shape
+
+
+def test_roi_shape_default_values():
+    """Test roi_shape with default constructor values."""
+    settings = DetectionSettings()
+    assert settings.roi_shape == (1, 1)
+
+
+@pytest.mark.parametrize(
+    "plane_shape,start_y,end_y,start_x,end_x",
+    [
+        #start coordinate larger than end
+        ((100, 200), 50, 40, 0, -1),
+        ((100, 200), 0, -1, 50, 40),
+        #start coordinate negative
+        ((100, 200), -10, 50, 0, -1),
+        ((100, 200), 0, -1, -10, 50),
+        #both coordinates negative
+        ((100, 200), -10, -5, 0, -1),
+        ((100, 200), 0, -1, -10, -5),
+    ],
+)
+def test_roi_shape_invalid_coordinates(
+    plane_shape, start_y, end_y, start_x, end_x
+):
+    """Test that roi_shape handles invalid coordinates appropriately."""
+    settings = DetectionSettings(
+        plane_shape=plane_shape,
+        start_y=start_y,
+        end_y=end_y,
+        start_x=start_x,
+        end_x=end_x,
+    )
+    #for invalid coordinates, expect a non-negative region size
+    shape = settings.roi_shape
+    assert shape[0] >= 0 and shape[1] >= 0
