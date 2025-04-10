@@ -232,5 +232,5 @@ def main(
     time_elapsed = datetime.now() - start_time
     s = f"Detection complete. Found {len(cells)} cells in {time_elapsed}"
     logger.debug(s)
-    print(s)
+    logger.info(s)
     return cells

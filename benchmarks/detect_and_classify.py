@@ -1,6 +1,7 @@
 import dask.array as da
 import numpy as np
 
+from cellfinder.core import logger
 from cellfinder.core.main import main
 
 voxel_sizes = (5, 2, 2)
@@ -16,7 +17,7 @@ background_array = da.random.random(shape)
 background_array = (signal_array * 65535).astype(np.uint16)
 
 array_size_MB = signal_array.nbytes / 1024 / 1024
-print(f"Signal array size = {array_size_MB:.02f} MB")
+logger.debug(f"Signal array size = {array_size_MB:.02f} MB")
 
 if __name__ == "__main__":
     # Run detection & classification
