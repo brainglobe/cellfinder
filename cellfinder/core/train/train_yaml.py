@@ -320,9 +320,6 @@ def run(
 ):
     from keras.callbacks import (
         Callback,
-        CSVLogger,
-        ModelCheckpoint,
-        TensorBoard,
     )
 
     from cellfinder.core.classify.cube_generator import CubeGeneratorFromDisk
