@@ -55,13 +55,16 @@ def main(
     detect_finished_callback : Callable[list], optional
         Called after detection is finished with the list of detected points.
     """
-    from cellfinder.core.classify import classify
+    from cellfinder.core.classify import (
+        ClassificationParameters,
+        DataParameters,
+        classify,
+    )
     from cellfinder.core.detect import detect
     from cellfinder.core.tools import prep
 
     if not skip_detection:
         logger.info("Detecting cell candidates")
-
         points = detect.main(
             signal_array,
             start_plane,
@@ -92,24 +95,40 @@ def main(
         model_weights = prep.prep_model_weights(
             model_weights, install_path, model
         )
+
         if len(points) > 0:
             logger.info("Running classification")
-            points = classify.main(
-                points,
-                signal_array,
-                background_array,
-                n_free_cpus,
-                voxel_sizes,
-                network_voxel_sizes,
-                batch_size,
-                cube_height,
-                cube_width,
-                cube_depth,
-                trained_model,
-                model_weights,
-                network_depth,
+
+            # Create configuration objects for the new API
+            data_params = DataParameters(
+                voxel_sizes=voxel_sizes,
+                network_voxel_sizes=network_voxel_sizes,
+                n_free_cpus=n_free_cpus,
+            )
+
+            # Map the network_depth string to the correct format
+            layer_network_depth = f"{network_depth}-layer"
+
+            classification_params = ClassificationParameters(
+                batch_size=batch_size,
+                cube_height=cube_height,
+                cube_width=cube_width,
+                cube_depth=cube_depth,
+                network_depth=layer_network_depth,
+            )
+
+            # Call the new API
+            points = classify(
+                points=points,
+                signal_array=signal_array,
+                background_array=background_array,
+                data_parameters=data_params,
+                classification_parameters=classification_params,
+                trained_model=trained_model,
+                model_weights=model_weights,
                 callback=classify_callback,
             )
         else:
             logger.info("No candidates, skipping classification")
+
     return points
