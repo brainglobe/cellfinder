@@ -33,6 +33,10 @@ def main(
     signal_array: types.array,
     start_plane: int = 0,
     end_plane: int = -1,
+    start_y: int = 0,
+    end_y: int = -1,
+    start_x: int = 0,
+    end_x: int = -1,
     voxel_sizes: Tuple[float, float, float] = (5, 2, 2),
     soma_diameter: float = 16,
     max_cluster_size: float = 100_000,
@@ -153,6 +157,13 @@ def main(
     if end_plane < 0:
         end_plane = len(signal_array)
     end_plane = min(len(signal_array), end_plane)
+    if end_y < 0:
+        end_y = signal_array.shape[1]
+    end_y = min(signal_array.shape[1], end_y)
+
+    if end_x < 0:
+        end_x = signal_array.shape[2]
+    end_x = min(signal_array.shape[2], end_x)
 
     torch_device = torch_device.lower()
     batch_size = max(batch_size, 1)
@@ -170,6 +181,10 @@ def main(
         ball_z_size_um=ball_z_size,
         start_plane=start_plane,
         end_plane=end_plane,
+        start_y=start_y,
+        end_y=end_y,
+        start_x=start_x,
+        end_x=end_x,
         n_free_cpus=n_free_cpus,
         ball_overlap_fraction=ball_overlap_fraction,
         log_sigma_size=log_sigma_size,
