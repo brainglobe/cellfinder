@@ -37,7 +37,7 @@ def main(
     skip_classification: bool = False,
     detected_cells: List[Cell] = None,
     classification_batch_size: Optional[int] = None,
-    classification_torch_device: str = "cpu",
+    torch_device: Optional[str] = None,
     *,
     detect_callback: Optional[Callable[[int], None]] = None,
     classify_callback: Optional[Callable[[int], None]] = None,
@@ -77,7 +77,7 @@ def main(
             log_sigma_size,
             n_sds_above_mean_thresh,
             batch_size=classification_batch_size,
-            torch_device=classification_torch_device,
+            torch_device=torch_device,
             callback=detect_callback,
         )
 

@@ -261,6 +261,7 @@ def detect_widget() -> FunctionGui:
         end_plane: int,
         n_free_cpus: int,
         analyse_local: bool,
+        use_gpu: bool,
         debug: bool,
         reset_button,
     ) -> None:
@@ -315,6 +316,8 @@ def detect_widget() -> FunctionGui:
             How many CPU cores to leave free
         analyse_local : bool
             Only analyse planes around the current position
+        use_gpu : bool
+            If True, use GPU for processing (if available); otherwise, use CPU.
         debug : bool
             Increase logging
         reset_button :
