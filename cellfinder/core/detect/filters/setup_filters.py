@@ -202,12 +202,13 @@ class DetectionSettings:
     n_splitting_iter: int = 10
     """
     During the structure splitting phase we iteratively shrink the bright areas
-    and re-filter with the 3d filter. 
+    and re-filter with the 3d filter.
     This is the number of iterations to do.
 
     This is a maximum because we also stop if there are no more structures left
     during any iteration.
     """
+
     @cached_property
     def roi_shape(self) -> Tuple[int, int]:
         """the shape of the region of interest
@@ -223,6 +224,7 @@ class DetectionSettings:
             else min(self.end_x, self.plane_shape[1])
         )
         return (end_y - self.start_y, end_x - self.start_x)
+
     def __getstate__(self):
         d = self.__dict__.copy()
         # when sending across processes, we need to be able to pickle. This
