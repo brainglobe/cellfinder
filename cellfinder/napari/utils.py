@@ -131,3 +131,19 @@ def napari_array_to_cells(
         cells.append(Cell(pos=row, cell_type=cell_type))
 
     return cells
+
+def get_plane_size_in_memory(arr: Union[np.ndarray, da.Array]) -> float:
+    """
+    Calculates the memory usage (in MB) of a single plane in a 3D image array.
+    """
+    if arr.ndim < 2:
+        raise ValueError("Input array must be at least 2D (preferably 3D with planes).")
+
+    plane_shape = arr.shape[-2:]
+    data_type_size = np.dtype(arr.dtype).itemsize
+    size_in_bytes = np.prod(plane_shape) * data_type_size
+
+    size_in_bytes *= 1.1
+    size_in_mb = size_in_bytes / (1024 ** 2)
+
+    return size_in_mb
