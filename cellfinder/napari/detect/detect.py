@@ -9,17 +9,16 @@ from brainglobe_utils.cells.cells import Cell
 from magicgui import magicgui
 from magicgui.widgets import FunctionGui, ProgressBar
 from napari.utils.notifications import show_info
-from qtpy.QtWidgets import QScrollArea, QLabel
+from qtpy.QtWidgets import QLabel, QScrollArea
 
 from cellfinder.core.classify.cube_generator import get_cube_depth_min_max
 from cellfinder.napari.utils import (
     add_classified_layers,
     add_single_layer,
     cellfinder_header,
+    get_plane_size_in_memory,
     html_label_widget,
     napari_array_to_cells,
-    get_plane_size_in_memory,
-
 )
 
 from .detect_containers import (
@@ -210,11 +209,18 @@ def reraise(e: Exception) -> None:
 
 @magicgui(
     signal_image={"label": "Input image"},
-    full_dataset={"label": "Estimate full dataset size", "tooltip": "Toggle to estimate full 3D stack size"},
+    full_dataset={
+        "label": "Estimate full dataset size",
+        "tooltip": "Toggle to estimate full 3D stack size",
+    },
     layout="vertical",
     call_button="Estimate Memory",
 )
-def memory_gui(signal_image: napari.layers.Image, memory_label: QLabel, full_dataset: bool = False):
+def memory_gui(
+    signal_image: napari.layers.Image,
+    memory_label: QLabel,
+    full_dataset: bool = False,
+):
     """
     Estimate memory usage for the signal image.
     """
@@ -250,7 +256,7 @@ def detect_widget() -> FunctionGui:
     Create a detection plugin GUI.
     """
     progress_bar = ProgressBar()
-    
+
     # Create memory label widget
     memory_label = QLabel("Memory usage will appear here")
 
@@ -472,7 +478,7 @@ def detect_widget() -> FunctionGui:
     scroll = QScrollArea()
     scroll.setWidget(widget._widget._qwidget)
     widget._widget._qwidget = scroll
-    
+
     # Create a partial function with the memory_label pre-filled
     memory_gui_with_label = partial(memory_gui, memory_label=memory_label)
     widget.native.layout().insertWidget(1, memory_gui_with_label.native)
