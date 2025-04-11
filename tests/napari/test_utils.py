@@ -8,6 +8,8 @@ from cellfinder.napari.utils import (
     html_label_widget,
     napari_array_to_cells,
     napari_points_axis_order,
+    get_plane_size_in_memory,
+
 )
 
 
