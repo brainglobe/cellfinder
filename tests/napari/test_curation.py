@@ -195,3 +195,19 @@ def test_get_output_directory(valid_curation_widget):
         get_directory.return_value = Path.home()
         valid_curation_widget.get_output_directory()
         assert valid_curation_widget.output_directory == Path.home()
+
+
+@pytest.mark.xfail(reason="See discussion in #443", raises=AssertionError)
+def test_check_layer_removal_sync(valid_curation_widget):
+    """
+    Check that removing a layer from the viewer also removes it from the
+    widget.
+    """
+    viewer = valid_curation_widget.viewer
+    viewer.layers.select_all()
+    viewer.layers.remove_selected()
+    assert valid_curation_widget.signal_layer == None
+    assert valid_curation_widget.background_layer == None
+    assert valid_curation_widget.training_data_cell_layer == None
+    assert valid_curation_widget.training_data_non_cell_layer == None
+    
