@@ -206,11 +206,51 @@ def reraise(e: Exception) -> None:
     raise Exception from e
 
 
+@magicgui(
+    signal_image={"label": "Input image"},
+    full_dataset={"label": "Estimate full dataset size", "tooltip": "Toggle to estimate full 3D stack size"},
+    layout="vertical",
+    call_button="Estimate Memory",
+)
+def memory_gui(signal_image: napari.layers.Image, memory_label: QLabel, full_dataset: bool = False):
+    """
+    Estimate memory usage for the signal image.
+    """
+    if signal_image is None:
+        memory_label.setText("No image selected")
+        return
+
+    try:
+        data = signal_image.data
+
+        if data.ndim < 2:
+            memory_label.setText("Input image must be at least 2D")
+            return
+
+        if full_dataset:
+            size_mb = get_plane_size_in_memory(data)
+            memory_label.setText(f"Total memory: {size_mb:.2f} MB")
+        else:
+            if len(data) == 0:
+                memory_label.setText("Empty image data")
+                return
+
+            plane = data[0]
+            size_mb = get_plane_size_in_memory(plane)
+            memory_label.setText(f"Memory per plane: {size_mb:.2f} MB")
+
+    except ValueError as ve:
+        memory_label.setText(f"Value error: {str(ve)}")
+
+
 def detect_widget() -> FunctionGui:
     """
     Create a detection plugin GUI.
     """
     progress_bar = ProgressBar()
+    
+    # Create memory label widget
+    memory_label = QLabel("Memory usage will appear here")
 
     # options that is filled in from the gui
     options = {
@@ -430,5 +470,10 @@ def detect_widget() -> FunctionGui:
     scroll = QScrollArea()
     scroll.setWidget(widget._widget._qwidget)
     widget._widget._qwidget = scroll
+    
+    # Create a partial function with the memory_label pre-filled
+    memory_gui_with_label = partial(memory_gui, memory_label=memory_label)
+    widget.native.layout().insertWidget(1, memory_gui_with_label.native)
+    widget.append(memory_label)
 
     return widget
