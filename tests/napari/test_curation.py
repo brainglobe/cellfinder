@@ -206,8 +206,8 @@ def test_check_layer_removal_sync(valid_curation_widget):
     viewer = valid_curation_widget.viewer
     viewer.layers.select_all()
     viewer.layers.remove_selected()
-    assert valid_curation_widget.signal_layer == None
-    assert valid_curation_widget.background_layer == None
-    assert valid_curation_widget.training_data_cell_layer == None
-    assert valid_curation_widget.training_data_non_cell_layer == None
+    assert valid_curation_widget.signal_layer is None
+    assert valid_curation_widget.background_layer is None
+    assert valid_curation_widget.training_data_cell_layer is None
+    assert valid_curation_widget.training_data_non_cell_layer is None
     
