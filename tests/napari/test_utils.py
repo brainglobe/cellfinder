@@ -1,3 +1,4 @@
+import dask.array as da
 import numpy as np
 import pytest
 from brainglobe_utils.cells.cells import Cell
@@ -5,6 +6,7 @@ from brainglobe_utils.cells.cells import Cell
 from cellfinder.napari.utils import (
     add_classified_layers,
     cells_to_array,
+    get_plane_size_in_memory,
     html_label_widget,
     napari_array_to_cells,
     napari_points_axis_order,
@@ -72,3 +74,17 @@ def test_html_label_widget():
     label_widget = html_label_widget("A nice label", tag="h1")
     assert label_widget["widget_type"] == "Label"
     assert label_widget["label"] == "<h1>A nice label</h1>"
+
+
+def test_get_plane_size_in_memory_numpy():
+    arr = np.zeros((10, 256, 256), dtype=np.uint16)
+    expected_size = ((256 * 256 * 2) * 1.1) / (1024**2)
+    result = get_plane_size_in_memory(arr)
+    assert abs(result - expected_size) < 0.01
+
+
+def test_get_plane_size_in_memory_dask():
+    darr = da.zeros((5, 128, 128), chunks=(1, 128, 128), dtype=np.uint8)
+    expected_size = ((128 * 128 * 1) * 1.1) / (1024**2)
+    result = get_plane_size_in_memory(darr)
+    assert abs(result - expected_size) < 0.01
