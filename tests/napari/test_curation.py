@@ -210,4 +210,3 @@ def test_check_layer_removal_sync(valid_curation_widget):
     assert valid_curation_widget.background_layer == None
     assert valid_curation_widget.training_data_cell_layer == None
     assert valid_curation_widget.training_data_non_cell_layer == None
-    
