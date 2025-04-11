@@ -1,4 +1,7 @@
-from typing import List, Tuple
+from typing import List, Tuple, Union
+import numpy as np
+import dask.array as da  # Needed for type checking and usage
+
 
 import napari
 import napari.layers
@@ -139,7 +142,8 @@ def get_plane_size_in_memory(arr: Union[np.ndarray, da.Array]) -> float:
     """
     if arr.ndim < 2:
         raise ValueError(
-            "Input array must be at least 2D (preferably 3D with planes)."
+            "Input array must be at "
+            "least 2D (preferably 3D with planes)."
         )
 
     plane_shape = arr.shape[-2:]
