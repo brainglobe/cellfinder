@@ -3,6 +3,7 @@ from unittest.mock import patch
 import napari
 import pytest
 from qtpy.QtWidgets import QLabel
+
 from cellfinder.napari.detect import detect_widget
 from cellfinder.napari.detect.detect_containers import (
     ClassificationInputs,
@@ -72,7 +73,7 @@ def test_run_detect_without_inputs():
 def test_reset_defaults(get_detect_widget):
     """Smoke test that restore defaults doesn't error."""
     get_detect_widget.reset_button.clicked()
-    
+
 
 def test_memory_widget_in_detect_widget(get_detect_widget):
     """
@@ -81,6 +82,3 @@ def test_memory_widget_in_detect_widget(get_detect_widget):
     memory_label = get_detect_widget.findChild(QLabel, "memory_label")
     assert memory_label and memory_label.text() == "Memory usage "
     "will appear here"
-   
-
-
