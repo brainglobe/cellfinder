@@ -80,5 +80,6 @@ def test_memory_widget_in_detect_widget(get_detect_widget):
     Test that the memory widget is added to the detect widget.
     """
     memory_label = get_detect_widget.findChild(QLabel, "memory_label")
-    assert memory_label and memory_label.text() == "Memory usage "
-    "will appear here"
+    assert memory_label and memory_label.text() == (
+    "Memory usage will appear here"
+)
