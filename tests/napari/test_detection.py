@@ -81,5 +81,5 @@ def test_memory_widget_in_detect_widget(get_detect_widget):
     """
     memory_label = get_detect_widget.findChild(QLabel, "memory_label")
     assert memory_label and memory_label.text() == (
-    "Memory usage will appear here"
-)
+        "Memory usage will appear here"
+    )
