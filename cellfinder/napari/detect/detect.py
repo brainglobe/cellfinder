@@ -479,9 +479,12 @@ def detect_widget() -> FunctionGui:
     scroll.setWidget(widget._widget._qwidget)
     widget._widget._qwidget = scroll
 
-    # Create a partial function with the memory_label pre-filled
     memory_gui_with_label = partial(memory_gui, memory_label=memory_label)
-    widget.native.layout().insertWidget(1, memory_gui_with_label.native)
-    widget.append(memory_label)
+    layout = widget.native.layout()
+    if layout is None:
+        layout = QVBoxLayout(widget.native)
+        widget.native.setLayout(layout)
+
+    layout.insertWidget(1, memory_gui_with_label.native)
 
     return widget
