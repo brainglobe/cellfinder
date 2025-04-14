@@ -1,6 +1,6 @@
+import dask.array as da
 import numpy as np
 import pytest
-import dask.array as da
 from brainglobe_utils.cells.cells import Cell
 
 from cellfinder.napari.utils import (
