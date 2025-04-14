@@ -485,6 +485,6 @@ def detect_widget() -> FunctionGui:
         layout = QVBoxLayout(widget.native)
         widget.native.setLayout(layout)
 
-    layout.insertWidget(1, memory_gui_with_label.native)
+    layout.insertWidget(1, memory_gui_with_label().native)
 
     return widget
