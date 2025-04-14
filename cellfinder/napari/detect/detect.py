@@ -9,7 +9,7 @@ from brainglobe_utils.cells.cells import Cell
 from magicgui import magicgui
 from magicgui.widgets import FunctionGui, ProgressBar
 from napari.utils.notifications import show_info
-from qtpy.QtWidgets import QLabel, QScrollArea
+from qtpy.QtWidgets import QLabel, QScrollArea, QVBoxLayout
 
 from cellfinder.core.classify.cube_generator import get_cube_depth_min_max
 from cellfinder.napari.utils import (
