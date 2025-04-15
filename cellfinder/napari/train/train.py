@@ -25,14 +25,14 @@ def run_training(
     optional_training_inputs: OptionalTrainingInputs,
     misc_training_inputs: MiscTrainingInputs,
 ):
-    print("Running training")
+    show_info("Running training...")
     train_yaml(
         **training_data_inputs.as_core_arguments(),
         **optional_network_inputs.as_core_arguments(),
         **optional_training_inputs.as_core_arguments(),
         **misc_training_inputs.as_core_arguments(),
     )
-    print("Finished!")
+    show_info("Training finished!")
 
 
 def training_widget() -> FunctionGui:
@@ -142,6 +142,7 @@ def training_widget() -> FunctionGui:
         if yaml_files[0] == Path.home():  # type: ignore
             show_info("Please select a YAML file for training")
         else:
+            show_info("Starting training process...")
             worker = run_training(
                 training_data_inputs,
                 optional_network_inputs,
