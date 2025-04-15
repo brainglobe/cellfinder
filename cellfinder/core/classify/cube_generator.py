@@ -479,6 +479,38 @@ class CubeGeneratorFromDisk(Sequence):
         return image
 
 
+def get_cube_width_min_max(
+    image_width: int, width_needed_for_cube: int
+) -> Tuple[int, int]:
+    half_cube_width = width_needed_for_cube // 2
+    min_x = half_cube_width
+
+    if is_even(width_needed_for_cube):
+        # WARNING: not centered because even
+        max_x = image_width - half_cube_width
+    else:
+        # centered
+        max_x = image_width - half_cube_width + 1
+
+    return min_x, max_x
+
+
+def get_cube_height_min_max(
+    image_height: int, height_needed_for_cube: int
+) -> Tuple[int, int]:
+    half_cube_height = height_needed_for_cube // 2
+    min_y = half_cube_height
+
+    if is_even(height_needed_for_cube):
+        # WARNING: not centered because even
+        max_y = image_height - half_cube_height
+    else:
+        # centered
+        max_y = image_height - half_cube_height + 1
+
+    return min_y, max_y
+
+
 def get_cube_depth_min_max(
     centre_plane: int, num_planes_needed_for_cube: int
 ) -> Tuple[int, int]:
