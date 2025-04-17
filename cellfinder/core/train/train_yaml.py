@@ -322,10 +322,6 @@ def run(
         Callback,
     )
 
-    from cellfinder.core.classify.cube_generator import CubeGeneratorFromDisk
-    from cellfinder.core.classify.tools import get_model, make_lists
-    from cellfinder.core.tools.prep import prep_model_weights
-
     start_time = datetime.now()
 
     ensure_directory_exists(output_dir)
