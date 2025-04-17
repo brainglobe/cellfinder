@@ -2,9 +2,10 @@ from pathlib import Path
 from typing import Optional
 
 from magicgui import magicgui
-from magicgui.widgets import FunctionGui, PushButton
-from napari.qt.threading import thread_worker
+from magicgui.widgets import FunctionGui, ProgressBar, PushButton
+from napari.qt.threading import WorkerBase, WorkerBaseSignals
 from napari.utils.notifications import show_info
+from qtpy.QtCore import Signal
 from qtpy.QtWidgets import QScrollArea
 
 from cellfinder.core.train.train_yaml import run as train_yaml
@@ -18,24 +19,71 @@ from .train_containers import (
 )
 
 
-@thread_worker
-def run_training(
-    training_data_inputs: TrainingDataInputs,
-    optional_network_inputs: OptionalNetworkInputs,
-    optional_training_inputs: OptionalTrainingInputs,
-    misc_training_inputs: MiscTrainingInputs,
-):
-    show_info("Running training...")
-    train_yaml(
-        **training_data_inputs.as_core_arguments(),
-        **optional_network_inputs.as_core_arguments(),
-        **optional_training_inputs.as_core_arguments(),
-        **misc_training_inputs.as_core_arguments(),
-    )
-    show_info("Training finished!")
+class TrainingWorkerSignals(WorkerBaseSignals):
+    """
+    Signals used by the Worker class (label, max, value).
+    """
+
+    update_progress = Signal(str, int, int)
+
+
+class TrainingWorker(WorkerBase):
+    """
+    Worker that runs training in a separate thread and updates progress bar.
+    """
+
+    def __init__(
+        self,
+        training_data_inputs: TrainingDataInputs,
+        optional_network_inputs: OptionalNetworkInputs,
+        optional_training_inputs: OptionalTrainingInputs,
+        misc_training_inputs: MiscTrainingInputs,
+    ):
+        super().__init__(SignalsClass=TrainingWorkerSignals)
+        self.training_data_inputs = training_data_inputs
+        self.optional_network_inputs = optional_network_inputs
+        self.optional_training_inputs = optional_training_inputs
+        self.misc_training_inputs = misc_training_inputs
+
+    def connect_progress_bar_callback(self, progress_bar: ProgressBar):
+        """Connects the progress bar to the worker."""
+
+        def update_progress_bar(label: str, max: int, value: int):
+            progress_bar.visible = True
+            progress_bar.label = label
+            progress_bar.max = max
+            progress_bar.value = value
+
+        self.signals.update_progress.connect(update_progress_bar)
+
+    def work(self) -> None:
+        """Execute the training with progress updates."""
+        self.signals.update_progress.emit("Starting training...", 1, 0)
+
+        # callbacks for training progress
+        def epoch_callback(epoch: int, total_epochs: int):
+            completed_epochs = epoch - 1
+            self.signals.update_progress.emit(
+                f"Training epoch {epoch}/{total_epochs}",
+                total_epochs,
+                completed_epochs,
+            )
+
+        # Run the training with the callback
+        train_yaml(
+            **self.training_data_inputs.as_core_arguments(),
+            **self.optional_network_inputs.as_core_arguments(),
+            **self.optional_training_inputs.as_core_arguments(),
+            **self.misc_training_inputs.as_core_arguments(),
+            epoch_callback=epoch_callback,
+        )
+
+        self.signals.update_progress.emit("Training complete", 1, 1)
 
 
 def training_widget() -> FunctionGui:
+    progress_bar = ProgressBar(visible=False)
+
     @magicgui(
         training_label=html_label_widget("Network training", tag="h3"),
         **TrainingDataInputs.widget_representation(),
@@ -142,12 +190,21 @@ def training_widget() -> FunctionGui:
         if yaml_files[0] == Path.home():  # type: ignore
             show_info("Please select a YAML file for training")
         else:
-            show_info("Starting training process...")
-            worker = run_training(
+            progress_bar.visible = True
+            progress_bar.label = "Initializing training..."
+            progress_bar.max = 1
+            progress_bar.value = 0
+
+            worker = TrainingWorker(
                 training_data_inputs,
                 optional_network_inputs,
                 optional_training_inputs,
                 misc_training_inputs,
+            )
+            worker.connect_progress_bar_callback(progress_bar)
+            worker.finished.connect(progress_bar.hide)
+            worker.errored.connect(
+                lambda e: show_info(f"Error during training: {str(e)}")
             )
             worker.start()
 
@@ -169,5 +226,6 @@ def training_widget() -> FunctionGui:
     scroll = QScrollArea()
     scroll.setWidget(widget._widget._qwidget)
     widget._widget._qwidget = scroll
+    widget.insert(len(widget) - 1, progress_bar)
 
     return widget

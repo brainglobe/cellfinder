@@ -1,9 +1,10 @@
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import pytest
+from magicgui.widgets import ProgressBar
 
-from cellfinder.napari.train.train import training_widget
+from cellfinder.napari.train.train import TrainingWorker, training_widget
 from cellfinder.napari.train.train_containers import (
     MiscTrainingInputs,
     OptionalNetworkInputs,
@@ -64,7 +65,10 @@ def test_run_with_virtual_yaml_files(get_training_widget):
     """
     Checks that training is run with expected set of parameters.
     """
-    with patch("cellfinder.napari.train.train.run_training") as run_training:
+    with patch(
+        "cellfinder.napari.train.train.TrainingWorker"
+    ) as mock_training_worker:
+        mock_worker_instance = mock_training_worker.return_value
         # make default input valid - need yaml files (they don't technically
         # have to exist)
         virtual_yaml_files = (
@@ -86,9 +90,153 @@ def test_run_with_virtual_yaml_files(get_training_widget):
         expected_network_args.trained_model = None
         expected_network_args.model_weights = None
 
-        run_training.assert_called_once_with(
+        mock_training_worker.assert_called_once_with(
             expected_training_args,
             expected_network_args,
             expected_optional_training_args,
             expected_misc_args,
         )
+
+        mock_worker_instance.start.assert_called_once()
+
+
+@pytest.fixture
+def training_worker_inputs():
+    """Fixture to provide standard inputs for TrainingWorker tests."""
+    return {
+        "training_inputs": TrainingDataInputs(),
+        "network_inputs": OptionalNetworkInputs(),
+        "training_options": OptionalTrainingInputs(),
+        "misc_inputs": MiscTrainingInputs(),
+    }
+
+
+def test_training_worker(training_worker_inputs):
+    """Test TrainingWorker initialization and progress bar callback."""
+
+    worker = TrainingWorker(
+        training_worker_inputs["training_inputs"],
+        training_worker_inputs["network_inputs"],
+        training_worker_inputs["training_options"],
+        training_worker_inputs["misc_inputs"],
+    )
+
+    assert (
+        worker.training_data_inputs
+        == training_worker_inputs["training_inputs"]
+    )
+    assert (
+        worker.optional_network_inputs
+        == training_worker_inputs["network_inputs"]
+    )
+    assert (
+        worker.optional_training_inputs
+        == training_worker_inputs["training_options"]
+    )
+    assert worker.misc_training_inputs == training_worker_inputs["misc_inputs"]
+
+    progress_bar = ProgressBar()
+    worker.connect_progress_bar_callback(progress_bar)
+
+    worker.signals.update_progress.emit("Test", 10, 5)
+    assert progress_bar.label == "Test"
+    assert progress_bar.max == 10
+    assert progress_bar.value == 5
+
+
+@patch("cellfinder.napari.train.train.train_yaml")
+def test_training_worker_execution(mock_train_yaml, training_worker_inputs):
+    """Test the training worker execution and callbacks."""
+
+    inputs = training_worker_inputs
+    inputs["training_inputs"].as_core_arguments = MagicMock(
+        return_value={"yaml_file": ["test.yaml"]}
+    )
+    inputs["network_inputs"].as_core_arguments = MagicMock(
+        return_value={"model": "test_model"}
+    )
+    inputs["training_options"].as_core_arguments = MagicMock(
+        return_value={"epochs": 5}
+    )
+    inputs["misc_inputs"].as_core_arguments = MagicMock(
+        return_value={"n_free_cpus": 1}
+    )
+
+    worker = TrainingWorker(
+        inputs["training_inputs"],
+        inputs["network_inputs"],
+        inputs["training_options"],
+        inputs["misc_inputs"],
+    )
+    worker.signals.update_progress = MagicMock()
+
+    worker.work()
+
+    worker.signals.update_progress.emit.assert_any_call(
+        "Starting training...", 1, 0
+    )
+    worker.signals.update_progress.emit.assert_any_call(
+        "Training complete", 1, 1
+    )
+
+    mock_train_yaml.assert_called_once()
+    assert "epoch_callback" in mock_train_yaml.call_args.kwargs
+
+    callback = mock_train_yaml.call_args.kwargs["epoch_callback"]
+    callback(3, 5)
+    # epoch 3 means 2 completed epochs
+    worker.signals.update_progress.emit.assert_any_call(
+        "Training epoch 3/5", 5, 2
+    )
+
+
+@pytest.mark.xfail(reason="See discussion in #443", raises=AssertionError)
+@patch("cellfinder.napari.train.train.train_yaml")
+def test_widget_progress_bar(mock_train_yaml, get_training_widget):
+    """Test that the progress bar in the actual widget updates correctly."""
+    get_training_widget.yaml_files.value = [Path.home() / "test.yaml"]
+
+    with patch(
+        "cellfinder.napari.train.train.TrainingWorker"
+    ) as mock_worker_class:
+        real_worker = TrainingWorker(
+            TrainingDataInputs(),
+            OptionalNetworkInputs(),
+            OptionalTrainingInputs(),
+            MiscTrainingInputs(),
+        )
+        mock_worker_instance = mock_worker_class.return_value
+        mock_worker_instance.connect_progress_bar_callback.side_effect = (
+            real_worker.connect_progress_bar_callback
+        )
+        mock_worker_instance.signals = real_worker.signals
+
+        get_training_widget.call_button.clicked()
+
+        mock_worker_class.assert_called_once()
+        mock_worker_instance.start.assert_called_once()
+
+        widget_progress_bar = (
+            mock_worker_instance.connect_progress_bar_callback.call_args[0][0]
+        )
+        assert isinstance(widget_progress_bar, ProgressBar)
+
+        assert not widget_progress_bar.visible
+
+        real_worker.signals.update_progress.emit("Starting training...", 1, 0)
+        assert widget_progress_bar.visible
+        assert widget_progress_bar.label == "Starting training..."
+        assert widget_progress_bar.max == 1
+        assert widget_progress_bar.value == 0
+
+        real_worker.signals.update_progress.emit("Training epoch 2/5", 5, 1)
+        assert widget_progress_bar.visible
+        assert widget_progress_bar.label == "Training epoch 2/5"
+        assert widget_progress_bar.max == 5
+        assert widget_progress_bar.value == 1
+
+        real_worker.signals.update_progress.emit("Training complete", 1, 1)
+        assert widget_progress_bar.visible
+        assert widget_progress_bar.label == "Training complete"
+        assert widget_progress_bar.max == 1
+        assert widget_progress_bar.value == 1
