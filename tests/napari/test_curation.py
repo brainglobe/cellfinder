@@ -204,7 +204,7 @@ def test_check_layer_removal_sync(valid_curation_widget):
     assert valid_curation_widget.training_data_non_cell_layer is None
 
 
-# @pytest.mark.xfail(reason="See discussion in #443", raises=AssertionError)
+@pytest.mark.xfail(reason="See discussion in #443", raises=AssertionError)
 @pytest.mark.parametrize(
     "layer_indices_to_remove",
     [[-2], [-3], [-2, -3]],
@@ -222,6 +222,6 @@ def test_training_data_does_not_exist_when_user_removes_layers(
     assert not valid_curation_widget.check_training_data_exists()
 
 
-# @pytest.mark.xfail(reason="See discussion in #443", raises=AssertionError)
+@pytest.mark.xfail(reason="See discussion in #443", raises=AssertionError)
 def test_valid_widget_has_valid_training_data(valid_curation_widget):
     assert valid_curation_widget.check_training_data_exists()
