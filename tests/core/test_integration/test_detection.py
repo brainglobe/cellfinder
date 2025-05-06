@@ -240,18 +240,15 @@ def test_signal_data_types(synthetic_single_spot, no_free_cpus, dtype, device):
         voxel_sizes=voxel_sizes,
         n_free_cpus=no_free_cpus,
         skip_classification=True,
-        classification_torch_device=device,
+        torch_device=device,
     )
 
     assert len(detected) == 1
     assert detected[0] == Cell(center, Cell.UNKNOWN)
 
 
-@pytest.mark.parametrize("use_scipy", [True, False])
 @pytest.mark.parametrize("device", ["cuda", "cpu"])
-def test_detection_scipy_torch(
-    synthetic_single_spot, no_free_cpus, use_scipy, device
-):
+def test_detection_scipy_torch(synthetic_single_spot, no_free_cpus, device):
 
     if device == "cuda" and not torch.cuda.is_available():
         pytest.xfail("Cuda is not available")
@@ -265,7 +262,6 @@ def test_detection_scipy_torch(
         voxel_sizes=voxel_sizes,
         n_free_cpus=no_free_cpus,
         torch_device=device,
-        use_scipy=use_scipy,
     )
 
     assert len(detected) == 1
