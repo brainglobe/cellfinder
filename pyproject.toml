@@ -32,6 +32,7 @@ dependencies = [
     "scikit-learn",
     "keras>=3.7.0",
     "torch>=2.4.1",
+    "monai",
     "tifffile",
     "tqdm",
     "qt-niu"
