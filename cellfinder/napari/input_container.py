@@ -1,6 +1,16 @@
 from abc import abstractmethod
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass, fields
 from typing import Optional
+
+
+def asdict_no_copy(obj: dataclass) -> dict:
+    """
+    Similar to `asdict`, except it makes no copies of the field values.
+    asdict will do a deep copy of field values that are non-basic objects.
+
+    It still creates a new dict to return, though.
+    """
+    return {field.name: getattr(obj, field.name) for field in fields(obj)}
 
 
 @dataclass
@@ -23,7 +33,7 @@ class InputContainer:
         # Derived classes are not expected to be particularly
         # slow to instantiate, so use the default constructor
         # to avoid code repetition.
-        return asdict(cls())
+        return asdict_no_copy(cls())
 
     @abstractmethod
     def as_core_arguments(self) -> dict:
@@ -32,10 +42,10 @@ class InputContainer:
         The implementation provided here can be re-used in derived classes, if
         convenient.
         """
-        # note that asdict returns a new instance of a dict,
+        # note that asdict_no_copy returns a new instance of a dict,
         # so any subsequent modifications of this dict won't affect the class
         # instance
-        return asdict(self)
+        return asdict_no_copy(self)
 
     @classmethod
     def _custom_widget(
