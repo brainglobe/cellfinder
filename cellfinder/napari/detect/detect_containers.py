@@ -30,7 +30,7 @@ class DataInputs(InputContainer):
             self.voxel_size_x,
         )
         # del operator doesn't affect self, because asdict creates a copy of
-        # fields.
+        # the dict.
         del data_input_dict["voxel_size_z"]
         del data_input_dict["voxel_size_y"]
         del data_input_dict["voxel_size_x"]
