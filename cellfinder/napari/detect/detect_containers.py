@@ -1,8 +1,9 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import List, Optional
 
 import numpy
+import torch
 from brainglobe_utils.cells.cells import Cell
 
 from cellfinder.napari.input_container import InputContainer
@@ -144,10 +145,13 @@ class MiscInputs(InputContainer):
     end_plane: int = 0
     n_free_cpus: int = 2
     analyse_local: bool = False
+    use_gpu: bool = field(default_factory=lambda: torch.cuda.is_available())
     debug: bool = False
 
     def as_core_arguments(self) -> dict:
         misc_input_dict = super().as_core_arguments()
+        misc_input_dict["torch_device"] = "cuda" if self.use_gpu else "cpu"
+        del misc_input_dict["use_gpu"]
         del misc_input_dict["debug"]
         del misc_input_dict["analyse_local"]
         return misc_input_dict
@@ -162,5 +166,11 @@ class MiscInputs(InputContainer):
                 "n_free_cpus", custom_label="Number of free CPUs"
             ),
             analyse_local=dict(value=cls.defaults()["analyse_local"]),
+            use_gpu=dict(
+                widget_type="CheckBox",
+                label="Use GPU",
+                value=cls.defaults()["use_gpu"],
+                enabled=torch.cuda.is_available(),
+            ),
             debug=dict(value=cls.defaults()["debug"]),
         )
