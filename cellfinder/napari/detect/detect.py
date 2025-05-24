@@ -244,18 +244,23 @@ def detect_widget() -> FunctionGui:
         detection_options,
         skip_detection: bool,
         soma_diameter: float,
+        log_sigma_size: float,
+        n_sds_above_mean_thresh: float,
         ball_xy_size: float,
         ball_z_size: float,
         ball_overlap_fraction: float,
-        log_sigma_size: float,
-        n_sds_above_mean_thresh: int,
+        detection_batch_size: int,
         soma_spread_factor: float,
         max_cluster_size: int,
+        split_ball_xy_size: int,
+        split_ball_z_size: int,
+        split_ball_overlap_fraction: float,
+        n_splitting_iter: int,
         classification_options,
         skip_classification: bool,
         use_pre_trained_weights: bool,
         trained_model: Optional[Path],
-        batch_size: int,
+        classification_batch_size: int,
         misc_options,
         start_plane: int,
         end_plane: int,
@@ -281,33 +286,61 @@ def detect_widget() -> FunctionGui:
             detected cells from the cell layer below (from a previous
             detection run or import)
         soma_diameter : float
-            The expected in-plane soma diameter (microns)
-        ball_xy_size : float
-            Elliptical morphological in-plane filter size (microns)
-        ball_z_size : float
-            Elliptical morphological axial filter size (microns)
-        ball_overlap_fraction : float
-            Fraction of the morphological filter needed to be filled
-            to retain a voxel
+            The expected in-plane (xy) soma diameter (microns)
         log_sigma_size : float
-            Laplacian of Gaussian filter width (as a fraction of soma diameter)
-        n_sds_above_mean_thresh : int
-            Cell intensity threshold (as a multiple of noise above the mean)
+            Gaussian filter width (as a fraction of soma diameter) used during
+            2d in-plane filtering
+        n_sds_above_mean_thresh : float
+            Intensity threshold (the number of standard deviations above
+            the mean) of the filtered 2d planes used to mark pixels as
+            foreground or background
+        ball_xy_size : float
+            3d filter's in-plane (xy) filter ball size (microns)
+        ball_z_size : float
+            3d filter's axial (z) filter ball size (microns)
+        ball_overlap_fraction : float
+            3d filter's fraction of the ball filter needed to be filled by
+            foreground voxels, centered on a voxel, to retain the voxel
+        detection_batch_size: int
+            The number of planes of the original data volume to process at
+            once. The GPU/CPU memory must be able to contain this many planes
+            for all the filters. Tune to maximize memory usage without running
+            out. Check your GPU/CPU memory to verify it's not full
         soma_spread_factor : float
-            Cell spread factor (for splitting up cell clusters)
+            Cell spread factor for determining the largest cell volume before
+            splitting up cell clusters. Structures with spherical volume of
+            diameter `soma_spread_factor * soma_diameter` or less will not be
+            split
         max_cluster_size : int
-            Largest putative cell cluster (in cubic um) where splitting
-            should be attempted
-        use_pre_trained_weights : bool
-            Select to use pre-trained model weights
-        batch_size : int
-            How many points to classify at one time
+            Largest detected cell cluster (in cubic um) where splitting
+            should be attempted. Clusters above this size will be labeled
+            as artifacts
+        split_ball_xy_size: int
+            Similar to `ball_xy_size`, except the value to use for the 3d
+            filter during cluster splitting
+        split_ball_z_size: int
+            Similar to `ball_z_size`, except the value to use for the 3d filter
+            during cluster splitting
+        split_ball_overlap_fraction: float
+            Similar to `ball_overlap_fraction`, except the value to use for the
+            3d filter during cluster splitting
+        n_splitting_iter: int
+            The number of iterations to run the 3d filtering on a cluster. Each
+            iteration reduces the cluster size by the voxels not retained in
+            the previous iteration
         skip_classification : bool
             If selected, the classification step is skipped and all cells from
             the detection stage are added
+        use_pre_trained_weights : bool
+            Select to use pre-trained model weights
         trained_model : Optional[Path]
             Trained model file path (home directory (default) -> pretrained
             weights)
+        classification_batch_size : int
+            How many potential cells to classify at one time. The GPU/CPU
+            memory must be able to contain at once this many data cubes for
+            the models. Tune to maximize memory usage without running
+            out. Check your GPU/CPU memory to verify it's not full
         start_plane : int
             First plane to process (to process a subset of the data)
         end_plane : int
@@ -373,6 +406,11 @@ def detect_widget() -> FunctionGui:
             n_sds_above_mean_thresh,
             soma_spread_factor,
             max_cluster_size,
+            split_ball_xy_size,
+            split_ball_z_size,
+            split_ball_overlap_fraction,
+            n_splitting_iter,
+            detection_batch_size,
         )
 
         if use_pre_trained_weights:
@@ -381,7 +419,7 @@ def detect_widget() -> FunctionGui:
             skip_classification,
             use_pre_trained_weights,
             trained_model,
-            batch_size,
+            classification_batch_size,
         )
 
         if analyse_local:

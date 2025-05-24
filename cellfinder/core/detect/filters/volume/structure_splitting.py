@@ -1,3 +1,4 @@
+from copy import copy
 from typing import List, Tuple, Type
 
 import numpy as np
@@ -224,6 +225,7 @@ def split_cells(
             where M is the number of individual cells and each centre is
             represented by its x, y, and z coordinates.
     """
+    settings = copy(settings)
     # these points are in x, y, z order columnwise, in absolute pixels
     orig_centre = get_structure_centre(cell_points)
 
