@@ -1,5 +1,6 @@
 import numpy as np
 import pytest
+import torch
 
 import cellfinder.core.tools.tools as tools
 
@@ -246,3 +247,20 @@ def test_swap_elements_list():
 def test_is_any_list_overlap():
     assert tools.is_any_list_overlap(a, b)
     assert not tools.is_any_list_overlap(a, [2, "b", (1, 2, 3)])
+
+
+def test_get_axis_reordering():
+    x = torch.arange(10)
+    y = torch.arange(10) / 10 + 2
+    z = torch.arange(10) + 33
+
+    data = x[:, None, None] * y[None, :, None] * z[None, None, :]
+
+    reordering = tools.get_axis_reordering(("x", "y", "z"), ("y", "x", "z"))
+    reordered = torch.permute(data, reordering)
+
+    manual_reordered = y[:, None, None] * x[None, :, None] * z[None, None, :]
+
+    assert torch.allclose(reordered, manual_reordered)
+    # check data is not already symmetric in x, y
+    assert data[0, 1, 5] != data[1, 0, 5]

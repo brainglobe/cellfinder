@@ -123,7 +123,9 @@ python =
     3.13: py313
 
 [testenv]
-commands = python -m pytest -v --color=yes --cov=cellfinder --cov-report=xml
+commands =
+    python -m pip install monai --no-deps
+    python -m pytest -v --color=yes --cov=cellfinder --cov-report=xml
 extras =
     dev
     napari
