@@ -80,8 +80,14 @@ def setup_filter(
     split_ball_z_size: int = 3,
     split_ball_overlap_fraction: float = 0.8,
     n_splitting_iter: int = 10,
+    start_plane: int = 0,
+    end_plane: int = 0,
 ):
-    signal_array = read_with_dask(str(signal_path))[:10, :, :]
+    signal_array = read_with_dask(str(signal_path))
+    if end_plane <= 0:
+        end_plane = len(signal_array)
+    signal_array = signal_array[start_plane:end_plane, :, :]
+
     signal_array = np.asarray(signal_array).astype(dtype)
     shape = signal_array.shape
 
@@ -216,7 +222,7 @@ def dump_structures(
     arr = np.linalg.norm(sphere - position, axis=0)
     sphere_mask = arr <= dia / 2
 
-    with open(output_root / "structures.csv", "w") as fh:
+    with open(output_root / "structures.csv", "w", newline="") as fh:
         writer = csv.writer(fh, delimiter=",")
         writer.writerow(["id", "x", "y", "z", "volume", "volume_type"])
 
@@ -345,7 +351,7 @@ def run_filter(
             save_tiffs(
                 output_root,
                 "filtered_3d",
-                i + ball_filter.first_valid_plane,
+                n_3d_planes + ball_filter.first_valid_plane,
                 middle_planes,
                 n,
             )
@@ -386,20 +392,21 @@ if __name__ == "__main__":
         filter_args = setup_filter(
             Path(r"D:\tiffs\MF1_158F_W\debug\input"),
             soma_diameter=8,
-            ball_xy_size=50,
-            ball_z_size=25,
-            ball_overlap_fraction=1,
+            ball_xy_size=8,
+            ball_z_size=8,
+            end_plane=0,
+            ball_overlap_fraction=0.8,
             log_sigma_size=0.35,
             n_sds_above_mean_thresh=1,
-            soma_spread_factor=1.5,
+            soma_spread_factor=1.4,
             max_cluster_size=10000000,
             voxel_sizes=(4, 2.03, 2.03),
             torch_device="cuda",
-            batch_size=10,
-            split_ball_xy_size=6,
-            split_ball_z_size=6,
-            split_ball_overlap_fraction=0.6,
-            n_splitting_iter=1,
+            batch_size=4,
+            split_ball_xy_size=10,
+            split_ball_z_size=12,
+            split_ball_overlap_fraction=0.8,
+            n_splitting_iter=2,
         )
         run_filter(
             Path(r"D:\tiffs\MF1_158F_W\debug\output_sig_thresh"), *filter_args
