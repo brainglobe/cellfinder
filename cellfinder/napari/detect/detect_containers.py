@@ -68,9 +68,14 @@ class DetectionInputs(InputContainer):
     ball_z_size: float = 15
     ball_overlap_fraction: float = 0.6
     log_sigma_size: float = 0.2
-    n_sds_above_mean_thresh: int = 10
+    n_sds_above_mean_thresh: float = 10
     soma_spread_factor: float = 1.4
     max_cluster_size: int = 100000
+    split_ball_xy_size: int = 6
+    split_ball_z_size: int = 15
+    split_ball_overlap_fraction: float = 0.8
+    n_splitting_iter: int = 10
+    detection_batch_size: int = 4
 
     def as_core_arguments(self) -> dict:
         return super().as_core_arguments()
@@ -97,13 +102,29 @@ class DetectionInputs(InputContainer):
                 "n_sds_above_mean_thresh", custom_label="Threshold"
             ),
             soma_spread_factor=cls._custom_widget(
-                "soma_spread_factor", custom_label="Cell spread"
+                "soma_spread_factor", custom_label="Split cell spread"
             ),
             max_cluster_size=cls._custom_widget(
                 "max_cluster_size",
-                custom_label="Max cluster",
+                custom_label="Split max cluster",
                 min=0,
                 max=10000000,
+            ),
+            split_ball_xy_size=cls._custom_widget(
+                "split_ball_xy_size", custom_label="Split ball filter (xy)"
+            ),
+            split_ball_z_size=cls._custom_widget(
+                "split_ball_z_size", custom_label="Split ball filter (z)"
+            ),
+            split_ball_overlap_fraction=cls._custom_widget(
+                "split_ball_overlap_fraction",
+                custom_label="Split ball overlap",
+            ),
+            n_splitting_iter=cls._custom_widget(
+                "n_splitting_iter", custom_label="Splitting iterations"
+            ),
+            detection_batch_size=cls._custom_widget(
+                "detection_batch_size", custom_label="Batch size"
             ),
         )
 
@@ -115,7 +136,7 @@ class ClassificationInputs(InputContainer):
     skip_classification: bool = False
     use_pre_trained_weights: bool = True
     trained_model: Optional[Path] = Path.home()
-    batch_size: int = 64
+    classification_batch_size: int = 64
 
     def as_core_arguments(self) -> dict:
         args = super().as_core_arguments()
@@ -133,7 +154,10 @@ class ClassificationInputs(InputContainer):
             skip_classification=dict(
                 value=cls.defaults()["skip_classification"]
             ),
-            batch_size=dict(value=cls.defaults()["batch_size"]),
+            classification_batch_size=dict(
+                value=cls.defaults()["classification_batch_size"],
+                label="Batch size",
+            ),
         )
 
 
