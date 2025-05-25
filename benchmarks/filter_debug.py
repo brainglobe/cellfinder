@@ -348,11 +348,13 @@ def run_filter(
         if ball_filter.ready:
             ball_filter.walk()
             middle_planes = ball_filter.get_processed_planes()
+            buff = middle_planes.copy()
+            buff[buff != settings.soma_centre_value] = 0
             save_tiffs(
                 output_root,
                 "filtered_3d",
                 n_3d_planes + ball_filter.first_valid_plane,
-                middle_planes,
+                buff,
                 n,
             )
 
