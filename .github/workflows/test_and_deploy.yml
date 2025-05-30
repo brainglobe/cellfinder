@@ -86,6 +86,15 @@ jobs:
           secret-codecov-token: ${{ secrets.CODECOV_TOKEN }}
           use-xvfb: true
 
+      # Run tests on napari main if this is a scheduled run
+      - name: Run tests on napari main
+        if: github.event_name == 'schedule'
+        uses: neuroinformatics-unit/actions/test@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+          secret-codecov-token: ${{ secrets.CODECOV_TOKEN }}
+          tox-args: '-e napari-dev'
+
       - name: Notify slack on scheduled failure
         if: failure() && github.event_name == 'schedule'
         uses: ravsamhq/notify-slack-action@v2

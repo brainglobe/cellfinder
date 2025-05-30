@@ -113,7 +113,7 @@ markers = ["slow: marks tests as slow (deselect with '-m \"not slow\"')"]
 legacy_tox_ini = """
 # For more information about tox, see https://tox.readthedocs.io/en/latest/
 [tox]
-envlist = py{311,312,313}
+envlist = py{311,312,313}, napari-dev
 isolated_build = true
 
 [gh-actions]
@@ -139,4 +139,6 @@ passenv =
     NUMPY_EXPERIMENTAL_ARRAY_FUNCTION
     PYVISTA_OFF_SCREEN
     BRAINGLOBE_TEST_DATA_DIR
+deps =
+    napari-dev: git+https://github.com/napari/napari
 """
