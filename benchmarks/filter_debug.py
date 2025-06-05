@@ -249,7 +249,8 @@ def dump_structures(
             writer.writerow(list(map(str, [cell_id, x, y, z, vol, tp])))
             for p in cell_points:
                 struct_type[p[2], p[1], p[0]] = color
-                struct_type_split[p[2], p[1], p[0]] = color
+                if tp != "needs_split":
+                    struct_type_split[p[2], p[1], p[0]] = color
 
             if tp == "needs_split":
                 centers = split_cells(cell_points, settings=splitting_settings)
