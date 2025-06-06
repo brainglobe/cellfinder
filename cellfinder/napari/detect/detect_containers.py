@@ -69,6 +69,8 @@ class DetectionInputs(InputContainer):
     ball_overlap_fraction: float = 0.6
     log_sigma_size: float = 0.2
     n_sds_above_mean_thresh: float = 10
+    n_sds_above_mean_local_thresh: float = 10
+    local_thresh_tile_size: float = 0
     soma_spread_factor: float = 1.4
     max_cluster_size: int = 100000
     detection_batch_size: int = 1
@@ -96,6 +98,13 @@ class DetectionInputs(InputContainer):
             ),
             n_sds_above_mean_thresh=cls._custom_widget(
                 "n_sds_above_mean_thresh", custom_label="Threshold"
+            ),
+            n_sds_above_mean_local_thresh=cls._custom_widget(
+                "n_sds_above_mean_local_thresh", custom_label="Local threshold"
+            ),
+            local_thresh_tile_size=cls._custom_widget(
+                "local_thresh_tile_size",
+                custom_label="Local thresholding tile size",
             ),
             soma_spread_factor=cls._custom_widget(
                 "soma_spread_factor", custom_label="Split cell spread"
