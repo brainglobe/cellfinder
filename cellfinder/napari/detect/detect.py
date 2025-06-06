@@ -254,10 +254,6 @@ def detect_widget() -> FunctionGui:
         detection_batch_size: int,
         soma_spread_factor: float,
         max_cluster_size: int,
-        split_ball_xy_size: int,
-        split_ball_z_size: int,
-        split_ball_overlap_fraction: float,
-        n_splitting_iter: int,
         classification_options,
         skip_classification: bool,
         use_pre_trained_weights: bool,
@@ -317,19 +313,6 @@ def detect_widget() -> FunctionGui:
             Largest detected cell cluster (in cubic um) where splitting
             should be attempted. Clusters above this size will be labeled
             as artifacts
-        split_ball_xy_size: int
-            Similar to `ball_xy_size`, except the value to use for the 3d
-            filter during cluster splitting
-        split_ball_z_size: int
-            Similar to `ball_z_size`, except the value to use for the 3d filter
-            during cluster splitting
-        split_ball_overlap_fraction: float
-            Similar to `ball_overlap_fraction`, except the value to use for the
-            3d filter during cluster splitting
-        n_splitting_iter: int
-            The number of iterations to run the 3d filtering on a cluster. Each
-            iteration reduces the cluster size by the voxels not retained in
-            the previous iteration
         skip_classification : bool
             If selected, the classification step is skipped and all cells from
             the detection stage are added
@@ -410,10 +393,6 @@ def detect_widget() -> FunctionGui:
             local_thresh_tile_size,
             soma_spread_factor,
             max_cluster_size,
-            split_ball_xy_size,
-            split_ball_z_size,
-            split_ball_overlap_fraction,
-            n_splitting_iter,
             detection_batch_size,
         )
 
