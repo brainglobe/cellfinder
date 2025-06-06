@@ -185,6 +185,7 @@ jobs:
           python -m pip install --upgrade pip wheel
           # Install cellfinder from the latest SHA on this branch
           python -m pip install "cellfinder @ git+$GITHUB_SERVER_URL/$GITHUB_REPOSITORY@$GITHUB_SHA"
+          python -m pip install monai --no-deps
 
           # Install checked out copy of brainglobe-workflows
           python -m pip install .[dev]
