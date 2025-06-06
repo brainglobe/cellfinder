@@ -80,23 +80,28 @@ class DetectionSettings:
 
     voxel_sizes: Tuple[float, float, float] = (1.0, 1.0, 1.0)
     """
-    Tuple of voxel sizes in each dimension (z, y, x). We use this to convert
-    from `um` to pixel sizes.
+    Tuple of voxel sizes (microns) in each dimension (z, y, x). We use this
+    to convert from `um` to pixel sizes.
     """
 
     soma_spread_factor: float = 1.4
-    """Spread factor for soma size - how much it may stretch in the images."""
+    """
+    Cell spread factor for determining the largest cell volume before
+    splitting up cell clusters. Structures with spherical volume of
+    diameter `soma_spread_factor * soma_diameter` or less will not be
+    split.
+    """
 
     soma_diameter_um: float = 16
     """
-    Diameter of a typical soma in um. Bright areas larger than this will be
-    split.
+    Diameter of a typical soma in-plane (xy) in microns.
     """
 
     max_cluster_size_um3: float = 100_000
     """
-    Maximum size of a cluster (bright area) that will be processed, in um.
-    Larger bright areas are skipped as artifacts.
+    Largest detected cell cluster (in cubic um) where splitting
+    should be attempted. Clusters above this size will be labeled
+    as artifacts.
     """
 
     ball_xy_size_um: float = 6
@@ -116,18 +121,26 @@ class DetectionSettings:
 
     ball_overlap_fraction: float = 0.6
     """
-    Fraction of overlap between a bright area and the spherical kernel,
-    for the area to be considered a single ball.
+    Fraction of the 3d ball filter needed to be filled by foreground voxels,
+    centered on a voxel, to retain the voxel.
     """
 
     log_sigma_size: float = 0.2
-    """Size of the sigma for the 2d Gaussian filter."""
+    """
+    Gaussian filter width (as a fraction of soma diameter) used during
+    2d in-plane filtering.
+    """
 
     n_sds_above_mean_thresh: float = 10
     """
-    Number of standard deviations above the mean intensity to use for a
-    threshold to define bright areas. Below it, it's not considered bright.
+    Intensity threshold (the number of standard deviations above
+    the mean) of the filtered 2d planes used to mark pixels as
+    foreground or background.
     """
+
+    n_sds_above_mean_local_thresh: float = 10
+
+    local_thresh_tile_size: float | None = None
 
     outlier_keep: bool = False
     """Whether to keep outlier structures during detection."""
@@ -191,6 +204,8 @@ class DetectionSettings:
     """
     During the structure splitting phase we iteratively shrink the bright areas
     and re-filter with the 3d filter. This is the number of iterations to do.
+    Each iteration reduces the cluster size by the voxels not retained in the
+    previous iteration.
 
     This is a maximum because we also stop if there are no more structures left
     during any iteration.
