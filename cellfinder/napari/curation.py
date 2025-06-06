@@ -495,24 +495,29 @@ class CurationWidget(QWidget):
             return False
 
     def check_training_data_exists(self) -> bool:
+        """
+        Returns true if both training layers exist, and have len > 0.
+        Otherwise displays useful explanatory info and returns False.
+        """
         if not (
-            self.training_data_cell_layer or self.training_data_non_cell_layer
+            self.training_data_cell_layer and self.training_data_non_cell_layer
         ):
             show_info(
                 "No training data layers have been added. "
-                "Please add a layer and annotate some points.",
+                "Please add layers for both cells and non-cells,"
+                "and annotate some points in both.",
             )
             return False
         else:
             if (
                 len(self.training_data_cell_layer.data) > 0
-                or len(self.training_data_non_cell_layer.data) > 0
+                and len(self.training_data_non_cell_layer.data) > 0
             ):
                 return True
             else:
                 show_info(
                     "No training data points have been added. "
-                    "Please annotate some points.",
+                    "Please annotate points in both training data layers.",
                 )
                 return False
 
