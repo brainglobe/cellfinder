@@ -21,7 +21,7 @@ out `save_tiffs` or filtering steps if you don't want wish to run / save them):
 - struct_type: Voxel values are 0 for background, 1 if it's a potential cell,
       2 if it's a structure to be split, and 3 if it's too big to be split.
 - struct_type_split: Same as struct_type except we put a sphere with value 1
-      centered on the structures that were split into cells.
+      centered on the structures that were split into cells instead of `2`.
 
 There's also a `structures.csv` output that lists all the detected structures,
 their volumes, and type.
@@ -402,14 +402,14 @@ if __name__ == "__main__":
             log_sigma_size=0.35,
             n_sds_above_mean_thresh=1,
             soma_spread_factor=4,
-            max_cluster_size=1000,
+            max_cluster_size=10000,
             voxel_sizes=(4, 2.03, 2.03),
             torch_device="cuda",
-            batch_size=4,
-            split_ball_xy_size=10,
-            split_ball_z_size=12,
+            split_ball_xy_size=6,
+            split_ball_z_size=15,
             split_ball_overlap_fraction=0.8,
-            n_splitting_iter=2,
+            n_splitting_iter=10,
+            batch_size=1,
         )
         run_filter(
             Path(r"D:\tiffs\MF1_158F_W\debug\output_sig_thresh"), *filter_args
