@@ -138,10 +138,6 @@ class DetectionSettings:
     foreground or background.
     """
 
-    n_sds_above_mean_local_thresh: float = 10
-
-    local_thresh_tile_size: float | None = None
-
     outlier_keep: bool = False
     """Whether to keep outlier structures during detection."""
 
