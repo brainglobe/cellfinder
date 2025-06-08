@@ -41,6 +41,7 @@ def main(
     detected_cells: List[Cell] = None,
     detection_batch_size: Optional[int] = None,
     torch_device: Optional[str] = None,
+    pin_memory: bool = False,
     *,
     detect_callback: Optional[Callable[[int], None]] = None,
     classify_callback: Optional[Callable[[int], None]] = None,
@@ -148,6 +149,12 @@ def main(
         The device on which to run the computation. If not specified (None),
         "cuda" will be used if a GPU is available, otherwise "cpu".
         You can also manually specify "cuda" or "cpu".
+    pin_memory: bool
+        Pins data to be sent to the GPU to the CPU memory. This allows faster
+        GPU data speeds, but can only be used if the data used by the GPU can
+        stay in the CPU RAM while the GPU uses it. I.e. there's enough RAM.
+        Otherwise, if there's a risk of the RAM being paged, it shouldn't be
+        used. Defaults to False.
     detect_callback : Callable[int], optional
         Called every time a plane has finished being processed during the
         detection stage. Called with the plane number that has finished.
@@ -180,6 +187,7 @@ def main(
             n_sds_above_mean_thresh,
             batch_size=detection_batch_size,
             torch_device=torch_device,
+            pin_memory=pin_memory,
             callback=detect_callback,
             split_ball_z_size=split_ball_z_size,
             split_ball_xy_size=split_ball_xy_size,
