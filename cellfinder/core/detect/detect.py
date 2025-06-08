@@ -43,8 +43,8 @@ def main(
     n_free_cpus: int = 2,
     log_sigma_size: float = 0.2,
     n_sds_above_mean_thresh: float = 10,
-    n_sds_above_mean_local_thresh: float = 10,
-    local_thresh_tile_size: float | None = None,
+    n_sds_above_mean_tiled_thresh: float = 10,
+    tiled_thresh_tile_size: float | None = None,
     outlier_keep: bool = False,
     artifact_keep: bool = False,
     save_planes: bool = False,
@@ -97,9 +97,23 @@ def main(
         Gaussian filter width (as a fraction of soma diameter) used during
         2d in-plane filtering.
     n_sds_above_mean_thresh : float
-        Intensity threshold (the number of standard deviations above
-        the mean) of the filtered 2d planes used to mark pixels as
+        Per-plane intensity threshold (the number of standard deviations
+        above the mean) of the filtered 2d planes used to mark pixels as
         foreground or background.
+    n_sds_above_mean_tiled_thresh : float
+        Per-plane, per-tile intensity threshold (the number of standard
+        deviations above the mean) for the filtered 2d planes used to mark
+        pixels as foreground or background. When used, (tile size is not zero)
+        a pixel is marked as foreground if its intensity is above both the
+        per-plane and per-tile threshold. I.e. it's above the set number of
+        standard deviations of the per-plane average and of the per-plane
+        per-tile average for the tile that contains it.
+    tiled_thresh_tile_size : float
+        The tile size used to tile the x, y plane to calculate the local
+        average intensity for the tiled threshold. The value is multiplied
+        by soma diameter (i.e. 1 means one soma diameter). If zero or None, the
+        tiled threshold is disabled and only the per-plane threshold is used.
+        Tiling is done with 50% overlap when striding.
     outlier_keep : bool, optional
         Whether to keep outliers during detection. Defaults to False.
     artifact_keep : bool, optional
@@ -187,8 +201,8 @@ def main(
         ball_overlap_fraction=ball_overlap_fraction,
         log_sigma_size=log_sigma_size,
         n_sds_above_mean_thresh=n_sds_above_mean_thresh,
-        n_sds_above_mean_local_thresh=n_sds_above_mean_local_thresh,
-        local_thresh_tile_size=local_thresh_tile_size,
+        n_sds_above_mean_tiled_thresh=n_sds_above_mean_tiled_thresh,
+        tiled_thresh_tile_size=tiled_thresh_tile_size,
         outlier_keep=outlier_keep,
         artifact_keep=artifact_keep,
         save_planes=save_planes,
@@ -224,8 +238,8 @@ def main(
         clipping_value=settings.clipping_value,
         threshold_value=settings.threshold_value,
         n_sds_above_mean_thresh=settings.n_sds_above_mean_thresh,
-        n_sds_above_mean_local_thresh=settings.n_sds_above_mean_local_thresh,
-        local_thresh_tile_size=settings.local_thresh_tile_size,
+        n_sds_above_mean_tiled_thresh=settings.n_sds_above_mean_tiled_thresh,
+        tiled_thresh_tile_size=settings.tiled_thresh_tile_size,
         log_sigma_size=log_sigma_size,
         soma_diameter=settings.soma_diameter,
         torch_device=torch_device,

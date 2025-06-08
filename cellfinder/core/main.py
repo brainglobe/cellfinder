@@ -26,8 +26,8 @@ def main(
     ball_overlap_fraction: float = 0.6,
     log_sigma_size: float = 0.2,
     n_sds_above_mean_thresh: float = 10,
-    n_sds_above_mean_local_thresh: float = 10,
-    local_thresh_tile_size: float | None = None,
+    n_sds_above_mean_tiled_thresh: float = 10,
+    tiled_thresh_tile_size: float | None = None,
     soma_spread_factor: float = 1.4,
     max_cluster_size: int = 100000,
     split_ball_xy_size: int = 6,
@@ -94,9 +94,23 @@ def main(
         Gaussian filter width (as a fraction of soma diameter) used during
         2d in-plane filtering.
     n_sds_above_mean_thresh : float
-        Intensity threshold (the number of standard deviations above
-        the mean) of the filtered 2d planes used to mark pixels as
+        Per-plane intensity threshold (the number of standard deviations
+        above the mean) of the filtered 2d planes used to mark pixels as
         foreground or background.
+    n_sds_above_mean_tiled_thresh : float
+        Per-plane, per-tile intensity threshold (the number of standard
+        deviations above the mean) for the filtered 2d planes used to mark
+        pixels as foreground or background. When used, (tile size is not zero)
+        a pixel is marked as foreground if its intensity is above both the
+        per-plane and per-tile threshold. I.e. it's above the set number of
+        standard deviations of the per-plane average and of the per-plane
+        per-tile average for the tile that contains it.
+    tiled_thresh_tile_size : float
+        The tile size used to tile the x, y plane to calculate the local
+        average intensity for the tiled threshold. The value is multiplied
+        by soma diameter (i.e. 1 means one soma diameter). If zero or None, the
+        tiled threshold is disabled and only the per-plane threshold is used.
+        Tiling is done with 50% overlap when striding.
     soma_spread_factor : float
         Cell spread factor for determining the largest cell volume before
         splitting up cell clusters. Structures with spherical volume of
@@ -178,8 +192,8 @@ def main(
             n_free_cpus,
             log_sigma_size,
             n_sds_above_mean_thresh,
-            n_sds_above_mean_local_thresh,
-            local_thresh_tile_size,
+            n_sds_above_mean_tiled_thresh,
+            tiled_thresh_tile_size,
             batch_size=detection_batch_size,
             torch_device=torch_device,
             callback=detect_callback,
