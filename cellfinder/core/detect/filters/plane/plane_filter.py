@@ -202,7 +202,10 @@ def _threshold_planes(
         y_rem = y % stride
         x_rem = x % stride
         enhanced_planes_raw = enhanced_planes
-        enhanced_planes = enhanced_planes[:, y_rem // 2 :, x_rem // 2 :]
+        if do_tile_y:
+            enhanced_planes = enhanced_planes[:, y_rem // 2 :, :]
+        if do_tile_x:
+            enhanced_planes = enhanced_planes[:, :, x_rem // 2 :]
 
         # add empty channel dim after z "batch" dim -> zcyx
         enhanced_planes = enhanced_planes.unsqueeze(1)
