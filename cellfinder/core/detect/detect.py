@@ -35,7 +35,7 @@ def main(
     end_plane: int = -1,
     voxel_sizes: Tuple[float, float, float] = (5, 2, 2),
     soma_diameter: float = 16,
-    max_cluster_size: float = 100_000,
+    max_cluster_size: int = 100_000,
     ball_xy_size: float = 6,
     ball_z_size: float = 15,
     ball_overlap_fraction: float = 0.6,
@@ -49,8 +49,8 @@ def main(
     plane_directory: Optional[str] = None,
     batch_size: Optional[int] = None,
     torch_device: Optional[str] = None,
-    split_ball_xy_size: int = 6,
-    split_ball_z_size: int = 15,
+    split_ball_xy_size: float = 6,
+    split_ball_z_size: float = 15,
     split_ball_overlap_fraction: float = 0.8,
     n_splitting_iter: int = 10,
     *,
@@ -93,7 +93,7 @@ def main(
         How many CPU cores to leave free.
     log_sigma_size : float
         Gaussian filter width (as a fraction of soma diameter) used during
-        2d in-plane filtering.
+        2d in-plane Laplacian of Gaussian filtering.
     n_sds_above_mean_thresh : float
         Intensity threshold (the number of standard deviations above
         the mean) of the filtered 2d planes used to mark pixels as
@@ -109,16 +109,17 @@ def main(
     batch_size: int
         The number of planes of the original data volume to process at
         once. The GPU/CPU memory must be able to contain this many planes
-        for all the filters. Tune to maximize memory usage without running
-        out. Check your GPU/CPU memory to verify it's not full.
+        for all the filters. For performance-critical applications, tune to
+        maximize memory usage without running out. Check your GPU/CPU memory
+        to verify it's not full.
     torch_device : str, optional
         The device on which to run the computation. If not specified (None),
         "cuda" will be used if a GPU is available, otherwise "cpu".
         You can also manually specify "cuda" or "cpu".
-    split_ball_xy_size: int
+    split_ball_xy_size: float
         Similar to `ball_xy_size`, except the value to use for the 3d
         filter during cluster splitting.
-    split_ball_z_size: int
+    split_ball_z_size: float
         Similar to `ball_z_size`, except the value to use for the 3d filter
         during cluster splitting.
     split_ball_overlap_fraction: float
@@ -135,7 +136,7 @@ def main(
     Returns
     -------
     List[Cell]
-        List of detected potential cells and artifacts.
+        List of detected cell candidates.
     """
     start_time = datetime.now()
     if torch_device is None:

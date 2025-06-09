@@ -21,15 +21,15 @@ def main(
     n_free_cpus: int = 2,
     network_voxel_sizes: Tuple[float, float, float] = (5, 1, 1),
     soma_diameter: int = 16,
-    ball_xy_size: int = 6,
-    ball_z_size: int = 15,
+    ball_xy_size: float = 6,
+    ball_z_size: float = 15,
     ball_overlap_fraction: float = 0.6,
     log_sigma_size: float = 0.2,
     n_sds_above_mean_thresh: float = 10,
     soma_spread_factor: float = 1.4,
     max_cluster_size: int = 100000,
-    split_ball_xy_size: int = 6,
-    split_ball_z_size: int = 15,
+    split_ball_xy_size: float = 6,
+    split_ball_z_size: float = 15,
     split_ball_overlap_fraction: float = 0.8,
     n_splitting_iter: int = 10,
     cube_width: int = 50,
@@ -72,8 +72,9 @@ def main(
     classification_batch_size : int
         How many potential cells to classify at one time. The GPU/CPU
         memory must be able to contain at once this many data cubes for
-        the models. Tune to maximize memory usage without running
-        out. Check your GPU/CPU memory to verify it's not full.
+        the models. For performance-critical applications, tune to maximize
+        memory usage without running out. Check your GPU/CPU memory to verify
+        it's not full.
     n_free_cpus : int
         How many CPU cores to leave free.
     network_voxel_sizes : 3-tuple of floats
@@ -90,7 +91,7 @@ def main(
         foreground voxels, centered on a voxel, to retain the voxel.
     log_sigma_size : float
         Gaussian filter width (as a fraction of soma diameter) used during
-        2d in-plane filtering.
+        2d in-plane Laplacian of Gaussian filtering.
     n_sds_above_mean_thresh : float
         Intensity threshold (the number of standard deviations above
         the mean) of the filtered 2d planes used to mark pixels as
@@ -104,10 +105,10 @@ def main(
         Largest detected cell cluster (in cubic um) where splitting
         should be attempted. Clusters above this size will be labeled
         as artifacts.
-    split_ball_xy_size: int
+    split_ball_xy_size: float
         Similar to `ball_xy_size`, except the value to use for the 3d
         filter during cluster splitting.
-    split_ball_z_size: int
+    split_ball_z_size: float
         Similar to `ball_z_size`, except the value to use for the 3d filter
         during cluster splitting.
     split_ball_overlap_fraction: float
@@ -140,8 +141,9 @@ def main(
     detection_batch_size: int
         The number of planes of the original data volume to process at
         once. The GPU/CPU memory must be able to contain this many planes
-        for all the filters. Tune to maximize memory usage without running
-        out. Check your GPU/CPU memory to verify it's not full.
+        for all the filters. For performance-critical applications, tune
+        to maximize memory usage without running out. Check your GPU/CPU
+        memory to verify it's not full.
     torch_device : str, optional
         The device on which to run the computation. If not specified (None),
         "cuda" will be used if a GPU is available, otherwise "cpu".

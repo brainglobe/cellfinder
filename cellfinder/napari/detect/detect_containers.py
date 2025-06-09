@@ -107,7 +107,7 @@ class DetectionInputs(InputContainer):
                 max=10000000,
             ),
             detection_batch_size=cls._custom_widget(
-                "detection_batch_size", custom_label="Batch size"
+                "detection_batch_size", custom_label="Batch size (detection)"
             ),
         )
 
@@ -139,7 +139,7 @@ class ClassificationInputs(InputContainer):
             ),
             classification_batch_size=dict(
                 value=cls.defaults()["classification_batch_size"],
-                label="Batch size",
+                label="Batch size (classification)",
             ),
         )
 

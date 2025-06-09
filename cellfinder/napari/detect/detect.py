@@ -285,7 +285,7 @@ def detect_widget() -> FunctionGui:
             The expected in-plane (xy) soma diameter (microns)
         log_sigma_size : float
             Gaussian filter width (as a fraction of soma diameter) used during
-            2d in-plane filtering
+            2d in-plane Laplacian of Gaussian filtering
         n_sds_above_mean_thresh : float
             Intensity threshold (the number of standard deviations above
             the mean) of the filtered 2d planes used to mark pixels as
@@ -300,7 +300,8 @@ def detect_widget() -> FunctionGui:
         detection_batch_size: int
             The number of planes of the original data volume to process at
             once. The GPU/CPU memory must be able to contain this many planes
-            for all the filters. Increase to maximize memory usage without
+            for all the filters. For performance-critical applications, tune
+            to maximize memory usage without
             running out. Check your GPU/CPU memory to verify it's not full
         soma_spread_factor : float
             Cell spread factor for determining the largest cell volume before
@@ -322,7 +323,8 @@ def detect_widget() -> FunctionGui:
         classification_batch_size : int
             How many potential cells to classify at one time. The GPU/CPU
             memory must be able to contain at once this many data cubes for
-            the models. Increase to maximize memory usage without running
+            the models. For performance-critical applications, tune to
+            maximize memory usage without running
             out. Check your GPU/CPU memory to verify it's not full
         start_plane : int
             First plane to process (to process a subset of the data)

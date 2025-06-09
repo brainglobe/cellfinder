@@ -51,8 +51,9 @@ def main(
     batch_size : int
         How many potential cells to classify at one time. The GPU/CPU
         memory must be able to contain at once this many data cubes for
-        the models. Tune to maximize memory usage without running
-        out. Check your GPU/CPU memory to verify it's not full.
+        the models. For performance-critical applications, tune to maximize
+        memory usage without running out. Check your GPU/CPU memory to verify
+        it's not full.
     cube_height: int
         The height of the data cube centered on the cell used for
         classification. Defaults to `50`.
@@ -73,10 +74,6 @@ def main(
     max_workers: int
         The number of sub-processes to use for data loading / processing.
         Defaults to 8.
-    pin_memory: bool
-        Whether torch should pin any memory to be sent to the GPU. This results
-        in faster GPU uploaded, but, memory cannot be paged while it's in use.
-        So only use if you have enough RAM.
     callback : Callable[int], optional
         A callback function that is called during classification. Called with
         the batch number once that batch has been classified.

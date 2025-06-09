@@ -128,7 +128,7 @@ class DetectionSettings:
     log_sigma_size: float = 0.2
     """
     Gaussian filter width (as a fraction of soma diameter) used during
-    2d in-plane filtering.
+    2d in-plane Laplacian of Gaussian filtering.
     """
 
     n_sds_above_mean_thresh: float = 10
