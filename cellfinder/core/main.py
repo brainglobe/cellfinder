@@ -27,7 +27,7 @@ def main(
     log_sigma_size: float = 0.2,
     n_sds_above_mean_thresh: float = 10,
     soma_spread_factor: float = 1.4,
-    max_cluster_size: int = 100000,
+    max_cluster_size: float = 100000,
     split_ball_xy_size: float = 6,
     split_ball_z_size: float = 15,
     split_ball_overlap_fraction: float = 0.8,
@@ -101,7 +101,7 @@ def main(
         splitting up cell clusters. Structures with spherical volume of
         diameter `soma_spread_factor * soma_diameter` or less will not be
         split.
-    max_cluster_size : int
+    max_cluster_size : float
         Largest detected cell cluster (in cubic um) where splitting
         should be attempted. Clusters above this size will be labeled
         as artifacts.

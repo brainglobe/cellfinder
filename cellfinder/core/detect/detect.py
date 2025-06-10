@@ -35,7 +35,7 @@ def main(
     end_plane: int = -1,
     voxel_sizes: Tuple[float, float, float] = (5, 2, 2),
     soma_diameter: float = 16,
-    max_cluster_size: int = 100_000,
+    max_cluster_size: float = 100_000,
     ball_xy_size: float = 6,
     ball_z_size: float = 15,
     ball_overlap_fraction: float = 0.6,
@@ -73,7 +73,7 @@ def main(
         Size of your voxels in the z, y, and x dimensions (microns).
     soma_diameter : float
         The expected in-plane (xy) soma diameter (microns).
-    max_cluster_size : int
+    max_cluster_size : float
         Largest detected cell cluster (in cubic um) where splitting
         should be attempted. Clusters above this size will be labeled
         as artifacts.

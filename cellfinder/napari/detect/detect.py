@@ -251,7 +251,7 @@ def detect_widget() -> FunctionGui:
         ball_overlap_fraction: float,
         detection_batch_size: int,
         soma_spread_factor: float,
-        max_cluster_size: int,
+        max_cluster_size: float,
         classification_options,
         skip_classification: bool,
         use_pre_trained_weights: bool,
@@ -308,7 +308,7 @@ def detect_widget() -> FunctionGui:
             splitting up cell clusters. Structures with spherical volume of
             diameter `soma_spread_factor * soma_diameter` or less will not be
             split
-        max_cluster_size : int
+        max_cluster_size : float
             Largest detected cell cluster (in cubic um) where splitting
             should be attempted. Clusters above this size will be labeled
             as artifacts
