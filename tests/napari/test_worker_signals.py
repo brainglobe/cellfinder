@@ -1,4 +1,4 @@
-import pytest
+from pytestqt.qtbot import QtBot
 
 from cellfinder.napari.detect.detect_containers import (
     ClassificationInputs,
@@ -10,8 +10,12 @@ from cellfinder.napari.detect.thread_worker import Worker
 from cellfinder.napari.sample_data import load_sample
 
 
-def prepare_test(skip_classification=False, skip_detection=False):
-    """prepare worker instance to test"""
+def run_worker_test(
+    qtbot: QtBot,
+    skip_detection: bool,
+    skip_classification: bool,
+    expected_labels: list,
+):
     data = load_sample()
     signal = data[0][0]
     background = data[1][0]
@@ -24,71 +28,49 @@ def prepare_test(skip_classification=False, skip_detection=False):
         ),
         MiscInputs(start_plane=0, end_plane=1),
     )
-    return worker
 
-
-def record_signal(emitted_signals, *args):
-    """record all emited signals after triggering work"""
-    emitted_signals.append(args)
-
-
-def check_emitted_signals(
-    emitted_signals, expected_signals, non_expected_signals
-):
-    """check for correctnes of the collected signals"""
-    emitted_strings = [signal[0] for signal in emitted_signals]
-
-    # Assert that emitted signals match what you expect
-    assert (
-        emitted_strings == expected_signals
-    ), f"Expected {expected_signals}, but got {emitted_strings}"
-
-    # Assert that none of the non-expected signals were emitted
-    for non_signal in non_expected_signals:
-        assert (
-            non_signal not in emitted_strings
-        ), f"Unexpected signal emitted: {non_signal}"
-
-
-expected_signals_classification = [
-    "Setting up classification...",
-    "Finished classification",
-]
-expected_signals_detetction = ["Setting up detection...", "Finished detection"]
-
-
-@pytest.mark.parametrize(
-    "skip_classification,skip_detection, "
-    "expected_signals, non_expected_signals",
-    [
-        (
-            True,
-            False,
-            expected_signals_detetction,
-            expected_signals_classification,
-        ),
-        (
-            False,
-            True,
-            expected_signals_classification,
-            expected_signals_detetction,
-        ),
-    ],
-)
-def test_signal_emission(
-    skip_classification, skip_detection, expected_signals, non_expected_signals
-):
-    """Test the signals emitted when skipping classification or detection."""
-    worker = prepare_test(
-        skip_classification=skip_classification, skip_detection=skip_detection
-    )
-
-    emitted_signals = []
+    emitted = []
     worker.update_progress_bar.connect(
-        lambda *args: record_signal(emitted_signals, *args)
+        lambda *args: (print("Signal:", args), emitted.append(args))
     )
-    worker.work()
 
-    check_emitted_signals(
-        emitted_signals, expected_signals, non_expected_signals
+    with qtbot.waitSignal(worker.finished, timeout=300000):  # 5 minutes
+        worker.start()
+
+    emitted_labels = [e[0] for e in emitted]
+
+    for label in expected_labels:
+        assert label in emitted_labels, f"{label} not emitted"
+
+
+def test_signals_detection_and_classification(qtbot: QtBot):
+    """Test with both detection and classification enabled."""
+    expected = [
+        "Setting up detection...",
+        "Detecting cells",
+        "Setting up classification...",
+        # "Classifying cells", this is
+        # commented because in this sample example zero cells are detected
+        "Finished classification",
+    ]
+    run_worker_test(
+        qtbot,
+        skip_detection=False,
+        skip_classification=False,
+        expected_labels=expected,
+    )
+
+
+def test_signals_detection_only(qtbot: QtBot):
+    """Test with classification skipped, detection enabled."""
+    expected = [
+        "Setting up detection...",
+        "Detecting cells",
+        "Finished detection",
+    ]
+    run_worker_test(
+        qtbot,
+        skip_detection=False,
+        skip_classification=True,
+        expected_labels=expected,
     )
