@@ -19,8 +19,8 @@ def main(
     signal_array: types.array,
     background_array: types.array,
     n_free_cpus: int,
-    voxel_sizes: Tuple[int, int, int],
-    network_voxel_sizes: Tuple[int, int, int],
+    voxel_sizes: Tuple[float, float, float],
+    network_voxel_sizes: Tuple[float, float, float],
     batch_size: int,
     cube_height: int,
     cube_width: int,
@@ -29,12 +29,58 @@ def main(
     model_weights: Optional[os.PathLike],
     network_depth: depth_type,
     max_workers: int = 3,
+    pin_memory: bool = False,
     *,
     callback: Optional[Callable[[int], None]] = None,
 ) -> List[Cell]:
     """
     Parameters
     ----------
+
+    points: List of Cell objects
+        The potential cells to classify.
+    signal_array : numpy.ndarray or dask array
+        3D array representing the signal data in z, y, x order.
+    background_array : numpy.ndarray or dask array
+        3D array representing the signal data in z, y, x order.
+    n_free_cpus : int
+        How many CPU cores to leave free.
+    voxel_sizes : 3-tuple of floats
+        Size of your voxels in the z, y, and x dimensions.
+    network_voxel_sizes : 3-tuple of floats
+        Size of the pre-trained network's voxels in the z, y, and x dimensions.
+    batch_size : int
+        How many potential cells to classify at one time. The GPU/CPU
+        memory must be able to contain at once this many data cubes for
+        the models. For performance-critical applications, tune to maximize
+        memory usage without running out. Check your GPU/CPU memory to verify
+        it's not full.
+    cube_height: int
+        The height of the data cube centered on the cell used for
+        classification. Defaults to `50`.
+    cube_width: int
+        The width of the data cube centered on the cell used for
+        classification. Defaults to `50`.
+    cube_depth: int
+        The depth of the data cube centered on the cell used for
+        classification. Defaults to `20`.
+    trained_model : Optional[Path]
+        Trained model file path (home directory (default) -> pretrained
+        weights).
+    model_weights : Optional[Path]
+        Model weights path (home directory (default) -> pretrained
+        weights).
+    network_depth: str
+        The network depth to use during classification. Defaults to `"50"`.
+    max_workers: int
+        The number of sub-processes to use for data loading / processing.
+        Defaults to 8.
+    pin_memory: bool
+        Pins data to be sent to the GPU to the CPU memory. This allows faster
+        GPU data speeds, but can only be used if the data used by the GPU can
+        stay in the CPU RAM while the GPU uses it. I.e. there's enough RAM.
+        Otherwise, if there's a risk of the RAM being paged, it shouldn't be
+        used. Defaults to False.
     callback : Callable[int], optional
         A callback function that is called during classification. Called with
         the batch number once that batch has been classified.

@@ -78,11 +78,11 @@ class BallFilter:
     ----------
     plane_height, plane_width : int
         Height/width of the planes.
-    ball_xy_size : int
-        Diameter of the spherical kernel in the x/y dimensions.
-    ball_z_size : int
-        Diameter of the spherical kernel in the z dimension.
-        Equal to the number of planes stacked to filter
+    ball_xy_size : float
+        Diameter of the spherical kernel (in microns) in the x/y dimensions.
+    ball_z_size : float
+        Diameter of the spherical kernel in the z dimension in microns.
+        Determines the number of planes stacked to filter
         the central plane of the stack.
     overlap_fraction : float
         The fraction of pixels within the spherical kernel that
