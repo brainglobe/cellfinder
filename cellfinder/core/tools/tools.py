@@ -1,6 +1,6 @@
-from functools import wraps
+from functools import partial, wraps
 from random import getrandbits, uniform
-from typing import Callable, Optional, Type
+from typing import Any, Callable, Optional, Sequence, Type
 
 import numpy as np
 import torch
@@ -56,6 +56,34 @@ def get_min_possible_int_value(dtype: Type[np.number]) -> int:
     raise ValueError("datatype must be of integer or floating data type")
 
 
+def _unchanged(data: np.ndarray) -> np.ndarray:
+    return np.asarray(data)
+
+
+def _float_to_float_scale_down(
+    data: np.ndarray,
+    in_abs_max: float,
+    out_abs_max: float,
+    dest_dtype: np.dtype,
+) -> np.ndarray:
+    return ((np.asarray(data) / in_abs_max) * out_abs_max).astype(dest_dtype)
+
+
+def _int_to_float_scale_down(
+    data: np.ndarray,
+    in_abs_max: float,
+    out_abs_max: float,
+    dest_dtype: np.dtype,
+) -> np.ndarray:
+    # data must fit in float64
+    data = np.asarray(data).astype(np.float64)
+    return ((data / in_abs_max) * out_abs_max).astype(dest_dtype)
+
+
+def _to_float_unscaled(data: np.ndarray, dest_dtype: np.dtype) -> np.ndarray:
+    return np.asarray(data).astype(dest_dtype)
+
+
 def get_data_converter(
     src_dtype: Type[np.number], dest_dtype: Type[np.floating]
 ) -> Callable[[np.ndarray], np.ndarray]:
@@ -82,6 +110,8 @@ def get_data_converter(
         A function that takes a single input data parameter and returns
         the converted data.
     """
+    # converter functions must be global functions so they can be serialized
+    # and passed to other processes
     if not np.issubdtype(dest_dtype, np.float32) and not np.issubdtype(
         dest_dtype, np.float64
     ):
@@ -97,28 +127,12 @@ def get_data_converter(
     in_abs_max = max(in_max, abs(in_min))
     out_abs_max = max(out_max, abs(out_min))
 
-    def unchanged(data: np.ndarray) -> np.ndarray:
-        return np.asarray(data)
-
-    def float_to_float_scale_down(data: np.ndarray) -> np.ndarray:
-        return ((np.asarray(data) / in_abs_max) * out_abs_max).astype(
-            dest_dtype
-        )
-
-    def int_to_float_scale_down(data: np.ndarray) -> np.ndarray:
-        # data must fit in float64
-        data = np.asarray(data).astype(np.float64)
-        return ((data / in_abs_max) * out_abs_max).astype(dest_dtype)
-
-    def to_float_unscaled(data: np.ndarray) -> np.ndarray:
-        return np.asarray(data).astype(dest_dtype)
-
     if src_dtype == dest_dtype:
-        return unchanged
+        return _unchanged
 
     # out can hold the largest in values - just convert to float
     if out_min <= in_min < in_max <= out_max:
-        return to_float_unscaled
+        return partial(_to_float_unscaled, dest_dtype=dest_dtype)
 
     # need to scale down before converting to float
     if np.issubdtype(src_dtype, np.integer):
@@ -131,11 +145,21 @@ def get_data_converter(
                 f"The input datatype {src_dtype} cannot fit in a "
                 f"64-bit float"
             )
-        return int_to_float_scale_down
+        return partial(
+            _int_to_float_scale_down,
+            in_abs_max=in_abs_max,
+            out_abs_max=out_abs_max,
+            dest_dtype=dest_dtype,
+        )
 
     # for float input, however big it is, we can always scale it down in the
     # input data type before changing type
-    return float_to_float_scale_down
+    return partial(
+        _float_to_float_scale_down,
+        in_abs_max=in_abs_max,
+        out_abs_max=out_abs_max,
+        dest_dtype=dest_dtype,
+    )
 
 
 def union(a, b):
@@ -293,3 +317,27 @@ def all_elements_equal(x) -> bool:
     :return: True if all elements are equal, False otherwise.
     """
     return len(set(x)) <= 1
+
+
+def get_axis_reordering(
+    in_order: Sequence[Any], out_order: Sequence[Any]
+) -> list[int]:
+    """
+    Helps re-order a tensor, given an arbitrary labeled input and output axis
+    ordering.
+
+    E.g. if the original ordering of 3d data was (a, b, c) and we want
+    (b, a, c)::
+
+        reordering = get_axis_reordering(("a", "b", "c"), ("b", "a", "c"))
+        reordered = torch.permute(data, reordering)
+
+    :param in_order: A sequence of named axes. They could be arbitrary values.
+    :param out_order: A re-ordered sequence of in_order with the desired order.
+    :return: A list of indices that can be passed to `torch.permute` to reorder
+        the data tensor.
+    """
+    indices = []
+    for value in out_order:
+        indices.append(in_order.index(value))
+    return indices

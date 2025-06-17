@@ -323,10 +323,13 @@ class ThreadWithException(ExceptionWithQueueMixIn):
 
     def __init__(self, target, args=(), **kwargs):
         super().__init__(target=target, **kwargs)
-        self.to_thread_queue = Queue(maxsize=0)
-        self.from_thread_queue = Queue(maxsize=0)
+        self._setup_queues()
         self.args = args
         self.thread = Thread(target=self.user_func_runner)
+
+    def _setup_queues(self):
+        self.to_thread_queue = Queue(maxsize=0)
+        self.from_thread_queue = Queue(maxsize=0)
 
     def start(self) -> None:
         """Starts the thread that runs the target function."""
@@ -340,6 +343,43 @@ class ThreadWithException(ExceptionWithQueueMixIn):
         To know if it exited, you need to check `is_alive` of the `thread`.
         """
         self.thread.join(timeout=timeout)
+
+
+class ThreadWithExceptionMPSafe(ThreadWithException):
+    """
+    Similar to `ThreadWithException`, except it is safe to use in objects
+    that are expected to be shared across multiple sub-process.
+
+    `ThreadWithException` cannot be used if it's an attribute of an object that
+    will be "forked" or "spawned" (i.e. duplicated) in a sub-process because
+    some of the objects used are multiprocess incompatible as well as
+    unserializable and you'll get exceptions. This class fixes it.
+
+    The downside is it uses more resilient queues for communication, which
+    requires any message content to be serializable as well as passable to a
+    sub-process. E.g. `ThreadWithExceptionMPSafe` itself or any
+    multiprocessing queues cannot be passed across multiprocess queues. So it
+    cannot be sent as a message. Instead, when it's an attribute of an object
+    Python ensures that all spawned sub-processes that can access that object
+    (or rather a copy of it) can also access queues or this class via the
+    attribute. But it cannot be sent in a queue.
+
+    So *only* use this class if you must and only send serializable messages.
+    """
+
+    def _setup_queues(self):
+        # use multiprocess queues so subprocesses can communicate with thread
+        ctx = mp.get_context("spawn")
+        self.to_thread_queue = ctx.Queue(maxsize=0)
+        self.from_thread_queue = ctx.Queue(maxsize=0)
+
+    def __getstate__(self):
+        items = self.__dict__.copy()
+        # don't pickle thread or args passed to it because thread and
+        # potentially args can't be sent to other processes
+        del items["thread"]
+        del items["args"]
+        return items
 
 
 class ProcessWithException(ExceptionWithQueueMixIn):
