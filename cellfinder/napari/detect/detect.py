@@ -246,6 +246,8 @@ def detect_widget() -> FunctionGui:
         soma_diameter: float,
         log_sigma_size: float,
         n_sds_above_mean_thresh: float,
+        n_sds_above_mean_tiled_thresh: float,
+        tiled_thresh_tile_size: float,
         ball_xy_size: float,
         ball_z_size: float,
         ball_overlap_fraction: float,
@@ -287,9 +289,23 @@ def detect_widget() -> FunctionGui:
             Gaussian filter width (as a fraction of soma diameter) used during
             2d in-plane Laplacian of Gaussian filtering
         n_sds_above_mean_thresh : float
-            Intensity threshold (the number of standard deviations above
-            the mean) of the filtered 2d planes used to mark pixels as
+            Per-plane intensity threshold (the number of standard deviations
+            above the mean) of the filtered 2d planes used to mark pixels as
             foreground or background
+        n_sds_above_mean_tiled_thresh : float
+            Per-plane, per-tile intensity threshold (the number of standard
+            deviations above the mean) for the filtered 2d planes used to mark
+            pixels as foreground or background. When used, (tile size is not
+            zero) a pixel is marked as foreground if its intensity is above
+            both the per-plane and per-tile threshold. I.e. it's above the set
+            number of standard deviations of the per-plane average and of the
+            per-plane per-tile average for the tile that contains it.
+        tiled_thresh_tile_size : float
+            The tile size used to tile the x, y plane to calculate the local
+            average intensity for the tiled threshold. The value is multiplied
+            by soma diameter (i.e. 1 means one soma diameter). If zero, the
+            tiled threshold is disabled and only the per-plane threshold is
+            used. Tiling is done with 50% overlap when striding.
         ball_xy_size : float
             3d filter's in-plane (xy) filter ball size (microns)
         ball_z_size : float
@@ -389,6 +405,8 @@ def detect_widget() -> FunctionGui:
             ball_overlap_fraction,
             log_sigma_size,
             n_sds_above_mean_thresh,
+            n_sds_above_mean_tiled_thresh,
+            tiled_thresh_tile_size,
             soma_spread_factor,
             max_cluster_size,
             detection_batch_size,

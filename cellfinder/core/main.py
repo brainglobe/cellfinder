@@ -41,6 +41,8 @@ def main(
     split_ball_z_size: float = 15,
     split_ball_overlap_fraction: float = 0.8,
     n_splitting_iter: int = 10,
+    n_sds_above_mean_tiled_thresh: float = 10,
+    tiled_thresh_tile_size: float | None = None,
     *,
     detect_callback: Optional[Callable[[int], None]] = None,
     classify_callback: Optional[Callable[[int], None]] = None,
@@ -93,8 +95,8 @@ def main(
         Gaussian filter width (as a fraction of soma diameter) used during
         2d in-plane Laplacian of Gaussian filtering.
     n_sds_above_mean_thresh : float
-        Intensity threshold (the number of standard deviations above
-        the mean) of the filtered 2d planes used to mark pixels as
+        Per-plane intensity threshold (the number of standard deviations
+        above the mean) of the filtered 2d planes used to mark pixels as
         foreground or background.
     soma_spread_factor : float
         Cell spread factor for determining the largest cell volume before
@@ -148,6 +150,20 @@ def main(
         The number of iterations to run the 3d filtering on a cluster. Each
         iteration reduces the cluster size by the voxels not retained in
         the previous iteration.
+    n_sds_above_mean_tiled_thresh : float
+        Per-plane, per-tile intensity threshold (the number of standard
+        deviations above the mean) for the filtered 2d planes used to mark
+        pixels as foreground or background. When used, (tile size is not zero)
+        a pixel is marked as foreground if its intensity is above both the
+        per-plane and per-tile threshold. I.e. it's above the set number of
+        standard deviations of the per-plane average and of the per-plane
+        per-tile average for the tile that contains it.
+    tiled_thresh_tile_size : float
+        The tile size used to tile the x, y plane to calculate the local
+        average intensity for the tiled threshold. The value is multiplied
+        by soma diameter (i.e. 1 means one soma diameter). If zero or None, the
+        tiled threshold is disabled and only the per-plane threshold is used.
+        Tiling is done with 50% overlap when striding.
     detect_callback : Callable[int], optional
         Called every time a plane has finished being processed during the
         detection stage. Called with the plane number that has finished.
@@ -165,19 +181,21 @@ def main(
         logger.info("Detecting cell candidates")
 
         points = detect.main(
-            signal_array,
-            start_plane,
-            end_plane,
-            voxel_sizes,
-            soma_diameter,
-            max_cluster_size,
-            ball_xy_size,
-            ball_z_size,
-            ball_overlap_fraction,
-            soma_spread_factor,
-            n_free_cpus,
-            log_sigma_size,
-            n_sds_above_mean_thresh,
+            signal_array=signal_array,
+            start_plane=start_plane,
+            end_plane=end_plane,
+            voxel_sizes=voxel_sizes,
+            soma_diameter=soma_diameter,
+            max_cluster_size=max_cluster_size,
+            ball_xy_size=ball_xy_size,
+            ball_z_size=ball_z_size,
+            ball_overlap_fraction=ball_overlap_fraction,
+            soma_spread_factor=soma_spread_factor,
+            n_free_cpus=n_free_cpus,
+            log_sigma_size=log_sigma_size,
+            n_sds_above_mean_thresh=n_sds_above_mean_thresh,
+            n_sds_above_mean_tiled_thresh=n_sds_above_mean_tiled_thresh,
+            tiled_thresh_tile_size=tiled_thresh_tile_size,
             batch_size=detection_batch_size,
             torch_device=torch_device,
             callback=detect_callback,
