@@ -22,6 +22,12 @@ from qtpy.QtWidgets import (
     QLabel,
     QWidget,
 )
+from torch.utils.data import DataLoader
+
+from cellfinder.core.classify.cube_generator import (
+    CuboidBatchSampler,
+    CuboidStackDataset,
+)
 
 # Constants used throughout
 WINDOW_HEIGHT = 750
@@ -30,6 +36,7 @@ COLUMN_WIDTH = 150
 
 
 class CurationWidget(QWidget):
+
     def __init__(
         self,
         viewer: napari.viewer.Viewer,
@@ -43,8 +50,8 @@ class CurationWidget(QWidget):
     ):
         super(CurationWidget, self).__init__()
 
-        self.non_cells_to_extract = None
-        self.cells_to_extract = None
+        self.non_cells_to_extract: list[Cell] = []
+        self.cells_to_extract: list[Cell] = []
 
         self.cube_depth = cube_depth
         self.cube_width = cube_width
@@ -618,9 +625,6 @@ class CurationWidget(QWidget):
             Attributes used to update a progress bar. The keys can be any of
             the properties of `magicgui.widgets.ProgressBar`.
         """
-        from cellfinder.core.classify.cube_generator import (
-            CubeGeneratorFromFile,
-        )
 
         to_extract = {
             "cells": self.cells_to_extract,
@@ -638,40 +642,56 @@ class CurationWidget(QWidget):
 
             self.update_status_label(f"Saving {cell_type}...")
 
-            cube_generator = CubeGeneratorFromFile(
-                cell_list,
-                self.signal_layer.data,
-                self.background_layer.data,
-                self.voxel_sizes,
-                self.network_voxel_sizes,
-                batch_size=self.batch_size,
-                cube_width=self.cube_width,
-                cube_height=self.cube_height,
-                cube_depth=self.cube_depth,
-                extract=True,
+            cube_generator = CuboidStackDataset(
+                signal_array=self.signal_layer.data,
+                background_array=self.background_layer.data,
+                points=cell_list,
+                data_voxel_sizes=self.voxel_sizes,
+                network_voxel_sizes=self.network_voxel_sizes,
+                network_cuboid_voxels=(
+                    self.cube_depth,
+                    self.cube_height,
+                    self.cube_width,
+                ),
+                axis_order=("z", "y", "x"),
+                output_axis_order=("z", "y", "x", "c"),
+                max_axis_0_cuboids_buffered=1,
+                target_output="cell",
+            )
+            # use sampler and data loader so we can use the z sorting for
+            # better caching. Potentially also for multiple workers.
+            sampler = CuboidBatchSampler(
+                dataset=cube_generator,
+                batch_size=1,
+                sort_by_axis="z",
+            )
+            dataloader = DataLoader(
+                cube_generator,
+                batch_sampler=sampler,
+                num_workers=0,
             )
             # Set up progress bar
             yield {
                 "value": 0,
                 "min": 0,
-                "max": len(cube_generator),
+                "max": len(dataloader),
             }
 
-            for i, (image_batch, batch_info) in enumerate(cube_generator):
-                image_batch = image_batch.astype(np.int16)
-
-                for point, point_info in zip(image_batch, batch_info):
-                    point = np.moveaxis(point, 2, 0)
-                    for channel in range(point.shape[-1]):
+            i = 0
+            for images, cells in dataloader:
+                for image, cell in zip(images, cells):
+                    image = image.numpy()
+                    for channel in range(image.shape[-1]):
                         save_cube(
-                            point,
-                            point_info,
+                            image,
+                            cell.to_dict(),
                             channel,
                             cell_type_output_directory,
                         )
 
-                # Update progress bar
-                yield {"value": i + 1}
+                    # Update progress bar
+                    yield {"value": i + 1}
+                    i += 1
 
             self.update_status_label("Finished saving cubes")
 
