@@ -39,7 +39,7 @@ class TileProcessor:
         Number of standard deviations above the mean threshold to use for
         determining whether a voxel is bright.
     log_sigma_size : float
-        Size of the sigma for the gaussian filter.
+        Size of the Gaussian sigma for the Laplacian of Gaussian filtering.
     soma_diameter : float
         Diameter of the soma in voxels.
     torch_device: str
