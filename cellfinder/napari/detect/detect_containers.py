@@ -69,6 +69,8 @@ class DetectionInputs(InputContainer):
     ball_overlap_fraction: float = 0.6
     log_sigma_size: float = 0.2
     n_sds_above_mean_thresh: float = 10
+    n_sds_above_mean_tiled_thresh: float = 10
+    tiled_thresh_tile_size: float = 0
     soma_spread_factor: float = 1.4
     max_cluster_size: float = 100000
     detection_batch_size: int = 1
@@ -95,7 +97,14 @@ class DetectionInputs(InputContainer):
                 "log_sigma_size", custom_label="Filter width"
             ),
             n_sds_above_mean_thresh=cls._custom_widget(
-                "n_sds_above_mean_thresh", custom_label="Threshold"
+                "n_sds_above_mean_thresh", custom_label="Plane threshold"
+            ),
+            n_sds_above_mean_tiled_thresh=cls._custom_widget(
+                "n_sds_above_mean_tiled_thresh", custom_label="Tiled threshold"
+            ),
+            tiled_thresh_tile_size=cls._custom_widget(
+                "tiled_thresh_tile_size",
+                custom_label="Thresholding tile size",
             ),
             soma_spread_factor=cls._custom_widget(
                 "soma_spread_factor", custom_label="Split cell spread"
