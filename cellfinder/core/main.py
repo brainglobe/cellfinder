@@ -20,7 +20,7 @@ def main(
     classification_batch_size: int = 64,
     n_free_cpus: int = 2,
     network_voxel_sizes: Tuple[float, float, float] = (5, 1, 1),
-    soma_diameter: int = 16,
+    soma_diameter: float = 16,
     ball_xy_size: float = 6,
     ball_z_size: float = 15,
     ball_overlap_fraction: float = 0.6,
@@ -28,10 +28,6 @@ def main(
     n_sds_above_mean_thresh: float = 10,
     soma_spread_factor: float = 1.4,
     max_cluster_size: float = 100000,
-    split_ball_xy_size: float = 6,
-    split_ball_z_size: float = 15,
-    split_ball_overlap_fraction: float = 0.8,
-    n_splitting_iter: int = 10,
     cube_width: int = 50,
     cube_height: int = 50,
     cube_depth: int = 20,
@@ -41,6 +37,10 @@ def main(
     detected_cells: List[Cell] = None,
     detection_batch_size: Optional[int] = None,
     torch_device: Optional[str] = None,
+    split_ball_xy_size: float = 6,
+    split_ball_z_size: float = 15,
+    split_ball_overlap_fraction: float = 0.8,
+    n_splitting_iter: int = 10,
     *,
     detect_callback: Optional[Callable[[int], None]] = None,
     classify_callback: Optional[Callable[[int], None]] = None,
@@ -105,19 +105,6 @@ def main(
         Largest detected cell cluster (in cubic um) where splitting
         should be attempted. Clusters above this size will be labeled
         as artifacts.
-    split_ball_xy_size: float
-        Similar to `ball_xy_size`, except the value to use for the 3d
-        filter during cluster splitting.
-    split_ball_z_size: float
-        Similar to `ball_z_size`, except the value to use for the 3d filter
-        during cluster splitting.
-    split_ball_overlap_fraction: float
-        Similar to `ball_overlap_fraction`, except the value to use for the
-        3d filter during cluster splitting.
-    n_splitting_iter: int
-        The number of iterations to run the 3d filtering on a cluster. Each
-        iteration reduces the cluster size by the voxels not retained in
-        the previous iteration.
     cube_width: int
         The width of the data cube centered on the cell used for
         classification. Defaults to `50`.
@@ -148,6 +135,19 @@ def main(
         The device on which to run the computation. If not specified (None),
         "cuda" will be used if a GPU is available, otherwise "cpu".
         You can also manually specify "cuda" or "cpu".
+    split_ball_xy_size: float
+        Similar to `ball_xy_size`, except the value to use for the 3d
+        filter during cluster splitting.
+    split_ball_z_size: float
+        Similar to `ball_z_size`, except the value to use for the 3d filter
+        during cluster splitting.
+    split_ball_overlap_fraction: float
+        Similar to `ball_overlap_fraction`, except the value to use for the
+        3d filter during cluster splitting.
+    n_splitting_iter: int
+        The number of iterations to run the 3d filtering on a cluster. Each
+        iteration reduces the cluster size by the voxels not retained in
+        the previous iteration.
     detect_callback : Callable[int], optional
         Called every time a plane has finished being processed during the
         detection stage. Called with the plane number that has finished.
