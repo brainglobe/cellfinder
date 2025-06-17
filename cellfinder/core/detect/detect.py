@@ -49,10 +49,10 @@ def main(
     plane_directory: Optional[str] = None,
     batch_size: Optional[int] = None,
     torch_device: Optional[str] = None,
-    split_ball_xy_size: int = 3,
-    split_ball_z_size: int = 3,
+    split_ball_xy_size: float = 6,
+    split_ball_z_size: float = 15,
     split_ball_overlap_fraction: float = 0.8,
-    split_soma_diameter: int = 7,
+    n_splitting_iter: int = 10,
     *,
     callback: Optional[Callable[[int], None]] = None,
 ) -> List[Cell]:
@@ -61,69 +61,74 @@ def main(
 
     Parameters
     ----------
-    signal_array : numpy.ndarray
-        3D array representing the signal data.
-
+    signal_array : numpy.ndarray or dask array
+        3D array representing the signal data in z, y, x order.
     start_plane : int
-        Index of the starting plane for detection.
-
+        First plane index to process (inclusive, to process a subset of the
+        data).
     end_plane : int
-        Index of the ending plane for detection.
-
-    voxel_sizes : Tuple[float, float, float]
-        Tuple of voxel sizes in each dimension (z, y, x).
-
+        Last plane index to process (exclusive, to process a subset of the
+        data).
+    voxel_sizes : 3-tuple of floats
+        Size of your voxels in the z, y, and x dimensions (microns).
     soma_diameter : float
-        Diameter of the soma in physical units.
-
+        The expected in-plane (xy) soma diameter (microns).
     max_cluster_size : float
-        Maximum size of a cluster in physical units.
-
+        Largest detected cell cluster (in cubic um) where splitting
+        should be attempted. Clusters above this size will be labeled
+        as artifacts.
     ball_xy_size : float
-        Size of the XY ball used for filtering in physical units.
-
+        3d filter's in-plane (xy) filter ball size (microns).
     ball_z_size : float
-        Size of the Z ball used for filtering in physical units.
-
+        3d filter's axial (z) filter ball size (microns).
     ball_overlap_fraction : float
-        Fraction of overlap allowed between balls.
-
+        3d filter's fraction of the ball filter needed to be filled by
+        foreground voxels, centered on a voxel, to retain the voxel.
     soma_spread_factor : float
-        Spread factor for soma size.
-
+        Cell spread factor for determining the largest cell volume before
+        splitting up cell clusters. Structures with spherical volume of
+        diameter `soma_spread_factor * soma_diameter` or less will not be
+        split.
     n_free_cpus : int
-        Number of free CPU cores available for parallel processing.
-
+        How many CPU cores to leave free.
     log_sigma_size : float
-        Size of the sigma for the log filter.
-
+        Gaussian filter width (as a fraction of soma diameter) used during
+        2d in-plane Laplacian of Gaussian filtering.
     n_sds_above_mean_thresh : float
-        Number of standard deviations above the mean threshold.
-
+        Intensity threshold (the number of standard deviations above
+        the mean) of the filtered 2d planes used to mark pixels as
+        foreground or background.
     outlier_keep : bool, optional
         Whether to keep outliers during detection. Defaults to False.
-
     artifact_keep : bool, optional
         Whether to keep artifacts during detection. Defaults to False.
-
     save_planes : bool, optional
         Whether to save the planes during detection. Defaults to False.
-
     plane_directory : str, optional
         Directory path to save the planes. Defaults to None.
-
-    batch_size : int, optional
-        The number of planes to process in each batch. Defaults to 1.
-        For CPU, there's no benefit for a larger batch size. Only a memory
-        usage increase. For CUDA, the larger the batch size the better the
-        performance. Until it fills up the GPU memory - after which it
-        becomes slower.
-
+    batch_size: int
+        The number of planes of the original data volume to process at
+        once. The GPU/CPU memory must be able to contain this many planes
+        for all the filters. For performance-critical applications, tune to
+        maximize memory usage without running out. Check your GPU/CPU memory
+        to verify it's not full.
     torch_device : str, optional
         The device on which to run the computation. If not specified (None),
         "cuda" will be used if a GPU is available, otherwise "cpu".
         You can also manually specify "cuda" or "cpu".
-
+    split_ball_xy_size: float
+        Similar to `ball_xy_size`, except the value to use for the 3d
+        filter during cluster splitting.
+    split_ball_z_size: float
+        Similar to `ball_z_size`, except the value to use for the 3d filter
+        during cluster splitting.
+    split_ball_overlap_fraction: float
+        Similar to `ball_overlap_fraction`, except the value to use for the
+        3d filter during cluster splitting.
+    n_splitting_iter: int
+        The number of iterations to run the 3d filtering on a cluster. Each
+        iteration reduces the cluster size by the voxels not retained in
+        the previous iteration.
     callback : Callable[int], optional
         A callback function that is called every time a plane has finished
         being processed. Called with the plane number that has finished.
@@ -131,7 +136,7 @@ def main(
     Returns
     -------
     List[Cell]
-        List of detected cells.
+        List of detected cell candidates.
     """
     start_time = datetime.now()
     if torch_device is None:
@@ -187,19 +192,15 @@ def main(
         plane_directory=plane_directory,
         batch_size=batch_size,
         torch_device=torch_device,
+        n_splitting_iter=n_splitting_iter,
     )
 
     # replicate the settings specific to splitting, before we access anything
     # of the original settings, causing cached properties
     kwargs = dataclasses.asdict(settings)
-    kwargs["ball_z_size_um"] = split_ball_z_size * settings.z_pixel_size
-    kwargs["ball_xy_size_um"] = (
-        split_ball_xy_size * settings.in_plane_pixel_size
-    )
+    kwargs["ball_z_size_um"] = split_ball_z_size
+    kwargs["ball_xy_size_um"] = split_ball_xy_size
     kwargs["ball_overlap_fraction"] = split_ball_overlap_fraction
-    kwargs["soma_diameter_um"] = (
-        split_soma_diameter * settings.in_plane_pixel_size
-    )
     # always run on cpu because copying to gpu overhead is likely slower than
     # any benefit for detection on smallish volumes
     kwargs["torch_device"] = "cpu"
