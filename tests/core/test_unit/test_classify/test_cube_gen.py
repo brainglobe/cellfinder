@@ -10,6 +10,8 @@ from torch.utils.data import DataLoader
 
 from cellfinder.core.classify.cube_generator import (
     CachedArrayStackImageData,
+    CachedCuboidImageDataBase,
+    CachedStackImageDataBase,
     CachedTiffCuboidImageData,
     CuboidBatchSampler,
     CuboidDatasetBase,
@@ -18,6 +20,7 @@ from cellfinder.core.classify.cube_generator import (
     ImageDataBase,
     get_data_cuboid_range,
 )
+from cellfinder.core.tools.threading import ExecutionFailure
 
 try:
     from brainglobe_utils.cells.cells import file_name_from_cell
@@ -54,7 +57,7 @@ def sample_volume(x: int, y: int, z: int, c: int, seed: int) -> np.ndarray:
         c,
     )
     data = np.arange(x * y * z * c) + seed
-    data = data.reshape((x, y, z, c)).astype(np.int16)
+    data = data.reshape((x, y, z, c)).astype(np.uint16)
     return data
 
 
@@ -772,3 +775,337 @@ def test_dataset_voxel_scale(scale, axis):
                 for cube in scaled_cubes:
                     # check that for all channels, the voxel is set/unset
                     assert torch.all(f(cube[tuple(pos)], 25))
+
+
+def get_single_point_dataset():
+    volume = np.empty((30, 60, 60, 2), dtype=np.uint16)
+    dataset = CuboidStackDataset(
+        points=[Cell((30, 30, 15), Cell.UNKNOWN)],
+        data_voxel_sizes=(5, 1, 1),
+        augment=False,
+        network_cuboid_voxels=(20, 50, 50),
+        signal_array=volume[..., 0],
+        background_array=volume[..., 1],
+    )
+    return dataset
+
+
+def test_dataset_thread_exception():
+    """
+    Checks that the external thread that reads the data for all the
+    requesting threads/processes properly forwards exceptions.
+    """
+    dataset = get_single_point_dataset()
+
+    try:
+        dataset.start_dataset_thread(1)
+        with pytest.raises(ExecutionFailure):
+            dataset.get_point_data(5)
+    finally:
+        dataset.stop_dataset_thread()
+
+
+def test_dataset_thread_bad_msg():
+    """
+    Checks that the external thread can handle bad queue msg.
+    """
+    dataset = get_single_point_dataset()
+
+    try:
+        dataset.start_dataset_thread(1)
+        with pytest.raises(ExecutionFailure):
+            dataset._send_rcv_thread_msg(
+                dataset.cuboid_with_channels_size, "baaad", 0
+            )
+    finally:
+        dataset.stop_dataset_thread()
+
+
+@pytest.mark.parametrize("index", [1, [1]])
+@pytest.mark.parametrize("do_thread", [True, False])
+def test_dataset_single_point_access(unique_int, do_thread, index):
+    """
+    Checks getting one and a batch of cubes with / without external thread.
+    """
+    dataset, _, cubes = get_sample_dataset_12(unique_int)
+
+    try:
+        if do_thread:
+            dataset.start_dataset_thread(1)
+
+        res = dataset[index]
+        if isinstance(index, list):
+            # remove batch dim
+            res = res[0]
+        assert np.array_equal(res.numpy(), cubes[1])
+    finally:
+        dataset.stop_dataset_thread()
+
+
+def test_get_data_cuboid_range():
+    """Validate input parameters."""
+    assert get_data_cuboid_range(10, 10, "x") == (5, 15)
+    assert get_data_cuboid_range(10, 10, "y") == (5, 15)
+    assert get_data_cuboid_range(10, 10, "z") == (5, 15)
+
+    with pytest.raises(ValueError):
+        get_data_cuboid_range(10, 10, "m")
+
+
+def test_img_data_base_bad_args():
+    """Validate input parameters."""
+    points = np.empty(5, dtype=[("x", "<f8"), ("y", "<f8"), ("z", "<f8")])
+
+    with pytest.raises(ValueError):
+        ImageDataBase(points_arr=points, data_axis_order=("x", "y"))
+
+
+def test_img_data_not_impl():
+    """Validate calling base, not-implemented functions."""
+    points = np.empty(5, dtype=[("x", "<f8"), ("y", "<f8"), ("z", "<f8")])
+    data = ImageDataBase(points_arr=points)
+
+    with pytest.raises(NotImplementedError):
+        data.get_point_cuboid_data(0)
+    with pytest.raises(NotImplementedError):
+        data.get_point_batch_cuboid_data(
+            torch.empty(1, *data.cuboid_with_channels_size), [0]
+        )
+
+
+def test_img_stack_not_impl():
+    """Validate calling base, not-implemented functions."""
+    points = np.empty(5, dtype=[("x", "<f8"), ("y", "<f8"), ("z", "<f8")])
+    data = CachedStackImageDataBase(points_arr=points)
+
+    with pytest.raises(NotImplementedError):
+        data.read_plane(0, 0)
+
+
+def test_img_cuboid_not_impl():
+    """Validate calling base, not-implemented functions."""
+    points = np.empty(5, dtype=[("x", "<f8"), ("y", "<f8"), ("z", "<f8")])
+    data = CachedCuboidImageDataBase(points_arr=points)
+
+    with pytest.raises(NotImplementedError):
+        data.read_cuboid(0, 0)
+
+
+def test_img_cuboid_bad_arg(tmp_path):
+    """Validate input parameters."""
+    # 2 points but only 1 filename set
+    points = np.empty(2, dtype=[("x", "<f8"), ("y", "<f8"), ("z", "<f8")])
+    filenames = np.array(
+        [(str(tmp_path / "a.tif"), str(tmp_path / "b.tif"))]
+    ).astype(np.str_)
+
+    tifffile.imwrite(
+        filenames[0, 0].item(), np.empty((10, 10, 10), dtype=np.uint16)
+    )
+    tifffile.imwrite(
+        filenames[0, 1].item(), np.empty((10, 10, 10), dtype=np.uint16)
+    )
+
+    with pytest.raises(ValueError):
+        # no filenames, 1 point
+        CachedTiffCuboidImageData(
+            points_arr=points[:1], filenames_arr=filenames[:0]
+        )
+
+    with pytest.raises(ValueError):
+        # 1 filename set, but 2 points
+        CachedTiffCuboidImageData(points_arr=points, filenames_arr=filenames)
+
+    # one of each - should work
+    data = CachedTiffCuboidImageData(
+        points_arr=points[:1], filenames_arr=filenames
+    )
+    assert len(data.points_arr)
+
+
+def test_dataset_base_bad_args():
+    """Validate input parameters."""
+    points = [Cell((0, 0, 0), Cell.CELL)]
+
+    with pytest.raises(ValueError):
+        # needs 3 axis xyz
+        CuboidDatasetBase(
+            points=points,
+            data_voxel_sizes=(5, 1, 1),
+            axis_order=("x", "y"),
+        )
+
+    with pytest.raises(ValueError):
+        # needs 4 dims xyzc
+        CuboidDatasetBase(
+            points=points,
+            data_voxel_sizes=(5, 1, 1),
+            output_axis_order=("x", "y", "c"),
+        )
+
+    with pytest.raises(ValueError):
+        # c must be last dim
+        CuboidDatasetBase(
+            points=points,
+            data_voxel_sizes=(5, 1, 1),
+            output_axis_order=("x", "y", "c", "z"),
+        )
+
+    with pytest.raises(ValueError):
+        # sizes must be 3-tuple
+        CuboidDatasetBase(
+            points=points,
+            data_voxel_sizes=(5, 1, 1),
+            network_voxel_sizes=(20, 50),
+        )
+
+
+def test_dataset_manual_image_data():
+    """Check that we can manually pass an image data instance to dataset."""
+    points = np.zeros(1, dtype=[("x", "<f8"), ("y", "<f8"), ("z", "<f8")])
+    data = CachedStackImageDataBase(
+        points_arr=points,
+        data_axis_order=("x", "y", "z"),
+        cuboid_size=(20, 50, 50),
+    )
+
+    dataset = CuboidDatasetBase(
+        points=[Cell((0, 0, 0), Cell.CELL)],
+        data_voxel_sizes=(5, 1, 1),
+        axis_order=("z", "y", "x"),
+        network_cuboid_voxels=(20, 50, 50),
+        src_image_data=data,
+    )
+    # should have 5 elements (x, y, z, c, b) because we are re-ordering
+    assert len(dataset._output_data_dim_reordering) == 5
+
+
+def test_dataset_target_bad_values():
+    """Validate that target must be valid both for single point and batch."""
+    dataset = get_single_point_dataset()
+    dataset.target_output = "blah"
+
+    with pytest.raises(ValueError):
+        dataset[0]
+
+    with pytest.raises(ValueError):
+        # batch of points
+        dataset[[0]]
+
+
+def test_rescale_dataset_bad_arg():
+    """Validate input parameters."""
+    volume = np.empty((30, 60, 60, 2), dtype=np.uint16)
+    dataset = CuboidStackDataset(
+        points=[Cell((30, 30, 15), Cell.UNKNOWN)],
+        data_voxel_sizes=(4, 1, 1),
+        augment=False,
+        network_cuboid_voxels=(20, 50, 50),
+        signal_array=volume[..., 0],
+        background_array=volume[..., 1],
+    )
+
+    with pytest.raises(ValueError):
+        # must be 5-dim, batch, xyzc
+        dataset.rescale_to_output_size(torch.zeros((50, 50, 20, 2)))
+
+
+def test_stack_dataset_bad_arg_diff_shapes():
+    """Validates that we check signal and background must have same shape."""
+    volume = np.empty((30, 60, 60, 2, 2), dtype=np.uint16)
+    with pytest.raises(ValueError):
+        CuboidStackDataset(
+            points=[Cell((30, 30, 15), Cell.UNKNOWN)],
+            data_voxel_sizes=(5, 1, 1),
+            signal_array=volume[..., 0, 0],
+            background_array=volume[..., 1],
+        )
+
+
+def test_stack_dataset_bad_arg_bad_shape():
+    """Validates that we check signal/background are 4-dim."""
+    volume = np.empty((30, 60, 60, 2, 2), dtype=np.uint16)
+    with pytest.raises(ValueError):
+        CuboidStackDataset(
+            points=[Cell((30, 30, 15), Cell.UNKNOWN)],
+            data_voxel_sizes=(5, 1, 1),
+            signal_array=volume[..., 0],
+            background_array=volume[..., 1],
+        )
+
+
+def test_dataset_cuboid_bad_arg(tmp_path):
+    """Validate input parameters."""
+    filenames = [(str(tmp_path / "a.tif"), str(tmp_path / "b.tif"))]
+
+    tifffile.imwrite(filenames[0][0], np.empty((10, 10, 10), dtype=np.uint16))
+    tifffile.imwrite(filenames[0][1], np.empty((10, 10, 10), dtype=np.uint16))
+
+    with pytest.raises(ValueError):
+        # filenames must have at least one sample
+        CuboidTiffDataset(
+            points=[Cell((30, 30, 15), Cell.UNKNOWN)],
+            data_voxel_sizes=(5, 1, 1),
+            points_filenames=filenames[:0],
+        )
+
+    with pytest.raises(ValueError):
+        # filenames (1) must have same num as points (2)
+        CuboidTiffDataset(
+            points=[
+                Cell((30, 30, 15), Cell.UNKNOWN),
+                Cell((32, 30, 15), Cell.UNKNOWN),
+            ],
+            data_voxel_sizes=(5, 1, 1),
+            points_filenames=filenames,
+        )
+
+
+def test_point_has_full_cuboid_unscaled():
+    """
+    Tests that only cuboids that have full cubes around the point's center
+    are included. Tested under condition where network and data have same
+    voxel size.
+    """
+    volume = np.empty((30, 30, 30, 2), dtype=np.uint16)
+    dataset = CuboidStackDataset(
+        points=[
+            Cell((5, 15, 15), Cell.UNKNOWN),
+            Cell((3, 15, 15), Cell.UNKNOWN),
+            Cell((27, 15, 15), Cell.UNKNOWN),
+        ],
+        data_voxel_sizes=(1, 1, 1),
+        network_voxel_sizes=(1, 1, 1),
+        network_cuboid_voxels=(10, 10, 10),
+        axis_order=("x", "y", "z"),
+        signal_array=volume[..., 0],
+        background_array=volume[..., 1],
+    )
+    assert len(dataset.points_arr) == 1
+    p = dataset.points_arr[0]
+    assert (p["x"], p["y"], p["z"]) == (5, 15, 15)
+
+
+def test_point_has_full_cuboid_scaled():
+    """
+    Tests that only cuboids that have full cubes around the point's center
+    are included. Tested under condition where data is half of network's
+    voxel size.
+    """
+    volume = np.empty((30, 30, 30, 2), dtype=np.uint16)
+    dataset = CuboidStackDataset(
+        points=[
+            Cell((10, 15, 15), Cell.UNKNOWN),
+            Cell((6, 15, 15), Cell.UNKNOWN),
+            Cell((24, 15, 15), Cell.UNKNOWN),
+        ],
+        data_voxel_sizes=(1, 1, 1),
+        network_voxel_sizes=(2, 1, 1),
+        network_cuboid_voxels=(10, 10, 10),
+        axis_order=("x", "y", "z"),
+        signal_array=volume[..., 0],
+        background_array=volume[..., 1],
+    )
+    assert len(dataset.points_arr) == 1
+    p = dataset.points_arr[0]
+    assert (p["x"], p["y"], p["z"]) == (10, 15, 15)

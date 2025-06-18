@@ -504,7 +504,9 @@ class CachedTiffCuboidImageData(CachedCuboidImageDataBase):
     ):
         super().__init__(**kwargs)
         if not len(filenames_arr):
-            raise ValueError("No data was provided")
+            raise ValueError(
+                "No data was provided, must have at least one readable point"
+            )
         if len(filenames_arr) != len(self.points_arr):
             raise ValueError(
                 "Points and filenames must have same number of elements"
@@ -546,8 +548,11 @@ class CuboidDatasetBase(Dataset):
     depending on `target_output`.
 
     :param points: A list of `Cell`instances containing the cell centers.
+        Units are in voxels of the input data - not in microns.
     :param data_voxel_sizes: A 3-tuple indicating the input data's 3d voxel
-        size in `um`. The tuple's order corresponds to `axis_order`.
+        size in `um`. The tuple's order corresponds to `axis_order`. This is
+        used along with `network_voxel_sizes` to extract and scale a cube
+        around each point of similar size as that the network was trained on.
     :param network_voxel_sizes: A 3-tuple indicating the trained network's 3d
         voxel size in `um`. The tuple's order corresponds to `axis_order`.
     :param network_cuboid_voxels: A 3-tuple indicating the cuboid size used to
@@ -595,7 +600,7 @@ class CuboidDatasetBase(Dataset):
     """A generated Nx4 array. Each row is `(x, y, z, type)` with the 3d
     position of the potential cell and the type of the point (`Cell.type`).
 
-    Units are voxels of the input data (`data_voxel_sizes`).
+    Units are voxels in the input data, not microns.
     """
 
     src_image_data: ImageDataBase | None = None
@@ -971,6 +976,19 @@ class CuboidThreadedDatasetBase(CuboidDatasetBase):
             del state["src_image_data"]
         return state
 
+    def get_point_data(self, point_key: int) -> torch.Tensor:
+        thread = self._dataset_thread
+        if thread is None:
+            # if start_dataset_thread was not called, use the default
+            # functionality of each process reading on its own
+            return super().get_point_data(point_key)
+
+        return self._send_rcv_thread_msg(
+            self.cuboid_with_channels_size,
+            "point",
+            point_key,
+        )
+
     def get_points_data(self, points_key: Sequence[int]) -> torch.Tensor:
         thread = self._dataset_thread
         if thread is None:
@@ -978,19 +996,25 @@ class CuboidThreadedDatasetBase(CuboidDatasetBase):
             # functionality of each process reading on its own
             return super().get_points_data(points_key)
 
-        data = torch.empty(
+        return self._send_rcv_thread_msg(
             (len(points_key), *self.cuboid_with_channels_size),
-            dtype=torch.float32,
+            "points",
+            points_key,
         )
 
+    def _send_rcv_thread_msg(
+        self, buffer_shape: tuple[int, ...], subject: str, key: Any
+    ) -> torch.Tensor:
+        data = torch.empty(buffer_shape, dtype=torch.float32)
+
         queues = self._worker_queues
-        # for host, it's the last queue
+        # for main-thread, we use the last queue
         queue_id = len(queues) - 1
         if get_worker_info() is not None:
             queue_id = get_worker_info().id
         queue = queues[queue_id]
 
-        thread.send_msg_to_thread(("points", points_key, data, queue_id))
+        self._dataset_thread.send_msg_to_thread((subject, key, data, queue_id))
         # todo: consider adding a long timeout in case the serving thread was
         #  asked to exit while workers are still waiting for data. But we
         #  clearly state in the API thread should not be asked to exit while
@@ -1001,7 +1025,7 @@ class CuboidThreadedDatasetBase(CuboidDatasetBase):
             raise ExecutionFailure(
                 "Reporting failure from data thread"
             ) from value
-        assert msg == "points"
+        assert msg == subject
 
         return data
 
