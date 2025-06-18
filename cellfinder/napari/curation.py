@@ -23,7 +23,6 @@ from qtpy.QtWidgets import (
     QLabel,
     QWidget,
 )
-from torch.utils.data import DataLoader
 
 from cellfinder.core.classify.cube_generator import (
     CuboidBatchSampler,
@@ -670,20 +669,16 @@ class CurationWidget(QWidget):
                 batch_size=1,
                 sort_by_axis="z",
             )
-            dataloader = DataLoader(
-                cube_generator,
-                batch_sampler=sampler,
-                num_workers=0,
-            )
             # Set up progress bar
             yield {
                 "value": 0,
                 "min": 0,
-                "max": len(dataloader),
+                "max": len(sampler),
             }
 
             i = 0
-            for images, cells in dataloader:
+            for batch in sampler:
+                images, cells = cube_generator[batch]
                 for image, cell in zip(images, cells):
                     image = image.numpy()
                     for channel in range(image.shape[-1]):
