@@ -1195,9 +1195,11 @@ class CuboidBatchSampler(Sampler):
 
         dataset = CuboidStackDataset(...)
         sampler = CuboidBatchSampler(dataset=dataset, ...)
-        samples = list(sampler)
+        for batch in sampler:
+            data, labels = dataset[batch]
+            ...
 
-    To get the batches values.
+    To get the batche values.
 
     When used with a `DataLoader`, `CuboidBatchSampler` is doing the
     shuffling instead of the `DataLoader` itself so `batch_size` and `shuffle`
