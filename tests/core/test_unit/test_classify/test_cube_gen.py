@@ -1007,7 +1007,7 @@ def test_rescale_dataset_bad_arg():
 
     with pytest.raises(ValueError):
         # must be 5-dim, batch, xyzc
-        dataset.rescale_to_output_size(torch.zeros((50, 50, 20, 2)))
+        dataset.convert_to_output(torch.zeros((50, 50, 20, 2)))
 
 
 def test_stack_dataset_bad_arg_diff_shapes():
