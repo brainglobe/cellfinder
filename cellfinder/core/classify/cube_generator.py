@@ -1082,7 +1082,8 @@ class CuboidStackDataset(CuboidThreadedDatasetBase):
 
 
     :param signal_array: The signal data array.
-    :param background_array: The background data array.
+    :param background_array: The background data array. If None, only the
+        signal channel is used.
     :param max_axis_0_cuboids_buffered: Each cuboid requires `n` planes
         along axis 0. With the assumption that data is read from disk in
         planes of this first axis, buffering these planes is advantages.
@@ -1094,19 +1095,27 @@ class CuboidStackDataset(CuboidThreadedDatasetBase):
     def __init__(
         self,
         signal_array: types.array,
-        background_array: types.array,
+        background_array: types.array | None,
         max_axis_0_cuboids_buffered: float = 0,
         **kwargs,
     ):
         super().__init__(**kwargs)
-        self.num_channels = 2
+        if background_array is None:
+            data_arrays = [
+                signal_array,
+            ]
+            self.num_channels = 1
+        else:
+            data_arrays = [signal_array, background_array]
+            self.num_channels = 2
 
-        if signal_array.shape != background_array.shape:
-            raise ValueError(
-                f"Shape of signal images ({signal_array.shape}) does not "
-                f"match the shape of the background images "
-                f"({background_array.shape}"
-            )
+            if signal_array.shape != background_array.shape:
+                raise ValueError(
+                    f"Shape of signal images ({signal_array.shape}) does not "
+                    f"match the shape of the background images "
+                    f"({background_array.shape}"
+                )
+
         if len(signal_array.shape) != 3:
             raise ValueError("Expected a 3d in data array")
 
@@ -1119,7 +1128,6 @@ class CuboidStackDataset(CuboidThreadedDatasetBase):
         self.points_arr = self.points_arr[mask]
         self.points = [p for sel, p in zip(mask, self.points) if sel]
 
-        data_arrays = [signal_array, background_array]
         self.src_image_data = CachedArrayStackImageData(
             points_arr=self.points_arr,
             input_arrays=data_arrays,
