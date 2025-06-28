@@ -190,7 +190,7 @@ class CurationWidget(QWidget):
             2,
             callback=self.set_background_image,
         )
-        box = add_float_box(
+        box_z = add_float_box(
             self.load_data_layout,
             self.voxel_sizes[0],
             0,
@@ -200,9 +200,8 @@ class CurationWidget(QWidget):
             tooltip="Size of your voxels in the axial dimension (microns)",
             row=3,
         )
-        box.valueChanged.connect(partial(self._set_voxel_size, index=0))
-
-        box = add_float_box(
+        box_z.valueChanged.connect(partial(self._set_voxel_size, index=0))
+        box_y = add_float_box(
             self.load_data_layout,
             self.voxel_sizes[1],
             0,
@@ -213,8 +212,8 @@ class CurationWidget(QWidget):
             "(top to bottom) (microns)",
             row=4,
         )
-        box.valueChanged.connect(partial(self._set_voxel_size, index=1))
-        box = add_float_box(
+        box_y.valueChanged.connect(partial(self._set_voxel_size, index=1))
+        box_x = add_float_box(
             self.load_data_layout,
             self.voxel_sizes[2],
             0,
@@ -225,7 +224,8 @@ class CurationWidget(QWidget):
             "(left to right) (microns)",
             row=5,
         )
-        box.valueChanged.connect(partial(self._set_voxel_size, index=2))
+        box_x.valueChanged.connect(partial(self._set_voxel_size, index=2))
+        self.voxel_sizes_boxes = box_z, box_y, box_x
         self.training_data_cell_choice, _ = add_combobox(
             self.load_data_layout,
             "Training data (cells)",

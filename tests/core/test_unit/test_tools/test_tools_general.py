@@ -1,6 +1,7 @@
 import numpy as np
 import pytest
 import torch
+from pytest_mock.plugin import MockerFixture
 
 import cellfinder.core.tools.tools as tools
 
@@ -221,6 +222,7 @@ def test_check_unique_list():
 
 def test_common_member():
     assert (True, [10, 30]) == tools.common_member(a, b)
+    assert (False, []) == tools.common_member(a, [])
 
 
 def test_get_number_of_bins_nd():
@@ -247,6 +249,30 @@ def test_swap_elements_list():
 def test_is_any_list_overlap():
     assert tools.is_any_list_overlap(a, b)
     assert not tools.is_any_list_overlap(a, [2, "b", (1, 2, 3)])
+
+
+def test_random_bool():
+    assert tools.random_bool() in (0, 1)
+    assert tools.random_bool(0.5) in (True, False)
+
+
+@pytest.mark.parametrize("ret_val,sign_val", [(1, 1), (0, -1)])
+def test_random_sign_false(mocker: MockerFixture, ret_val, sign_val):
+    def ret():
+        return ret_val
+
+    mocker.patch("cellfinder.core.tools.tools.random_bool", new=ret)
+    assert tools.random_sign() == sign_val
+
+
+def test_random_probability():
+    assert 0 <= tools.random_probability() <= 1
+
+
+def test_all_elements_equal():
+    assert not tools.all_elements_equal([1, 1, 2])
+    assert tools.all_elements_equal([1, 1])
+    assert tools.all_elements_equal([])
 
 
 def test_get_axis_reordering():
