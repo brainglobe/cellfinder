@@ -404,6 +404,42 @@ def test_array_dataset(unique_int):
     assert_dataset_cubes_bad_indices(stack, [15], [[1, 14]])
 
 
+def test_array_dataset_signal_only(unique_int):
+    """
+    Checks that when using only the signal channel, the data returned by the
+    CuboidStackDataset for given points matches the data it should return.
+    """
+    volume = sample_volume(60, 60, 30, 1, unique_int)
+    points = [(x, 28, 18) for x in (27, 29)]
+    cube_size = 50, 50, 20
+    cubes, _ = to_numpy_cubes(volume, points, cube_size)
+
+    stack = CuboidStackDataset(
+        points=[Cell(pos, Cell.UNKNOWN) for pos in points],
+        data_voxel_sizes=(1, 1, 5),
+        network_voxel_sizes=(1, 1, 5),
+        network_cuboid_voxels=cube_size,
+        axis_order=("x", "y", "z"),
+        output_axis_order=("x", "y", "z", "c"),
+        signal_array=volume[..., 0],
+        background_array=None,
+    )
+
+    cube_size = cubes[0].shape
+
+    assert stack.cuboid_with_channels_size == cube_size
+    assert stack.src_image_data.cuboid_with_channels_size == cube_size
+
+    # check various batches are correctly returned
+    assert_dataset_cubes_matches_cubes(
+        cubes,
+        stack,
+        [
+            [0, 1],
+        ],
+    )
+
+
 def test_tiff_image_dataset(unique_int, tmp_path):
     """
     Checks that the data returned by the CuboidTiffDataset for given points
