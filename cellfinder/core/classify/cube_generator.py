@@ -764,7 +764,7 @@ class CuboidDatasetBase(Dataset):
         if self._output_data_dim_reordering is not None:
             data = torch.permute(data, self._output_data_dim_reordering)
 
-        data = self.rescale_to_output_size(data)
+        data = self.convert_to_output(data)
         data = data[0, ...]
 
         augmentation = self.augmentation
@@ -804,7 +804,7 @@ class CuboidDatasetBase(Dataset):
         data = self.get_points_data(indices)
         if self._output_data_dim_reordering is not None:
             data = torch.permute(data, self._output_data_dim_reordering)
-        data = self.rescale_to_output_size(data)
+        data = self.convert_to_output(data)
 
         augmentation = self.augmentation
         if augmentation is not None:
@@ -837,11 +837,12 @@ class CuboidDatasetBase(Dataset):
 
         return data, labels
 
-    def rescale_to_output_size(self, data: torch.Tensor) -> torch.Tensor:
+    def convert_to_output(self, data: torch.Tensor) -> torch.Tensor:
         """
         Takes the input cuboids, ordered already according to the
-        `output_axis_order` with the additional batch dim at the start and
-        scales the cuboids to the network cuboid size.
+        `output_axis_order` with the additional batch dim at the start, and
+        scales the cuboids to the network cuboid size to be returned by the
+        dataset.
         """
         if self.data_voxel_sizes == self.network_voxel_sizes:
             return data

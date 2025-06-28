@@ -35,6 +35,9 @@ COLUMN_WIDTH = 150
 
 
 class CurationWidget(QWidget):
+    """
+    Voxel size parameters are in z, y, x order.
+    """
 
     def __init__(
         self,
