@@ -1109,3 +1109,21 @@ def test_point_has_full_cuboid_scaled():
     assert len(dataset.points_arr) == 1
     p = dataset.points_arr[0]
     assert (p["x"], p["y"], p["z"]) == (10, 15, 15)
+
+
+def test_points_unchanged():
+    volume = np.empty((30, 60, 60, 2), dtype=np.uint16)
+    cell = Cell((30, 30, 15), Cell.UNKNOWN)
+    dataset = CuboidStackDataset(
+        points=[cell],
+        data_voxel_sizes=(5, 1, 1),
+        augment=False,
+        network_cuboid_voxels=(20, 50, 50),
+        signal_array=volume[..., 0],
+        background_array=volume[..., 1],
+    )
+
+    assert len(dataset.points) == 1
+    assert dataset.points[0] is cell
+    x, y, z, tp = dataset.points_arr[0]
+    assert (x, y, z, tp) == (30, 30, 15, Cell.UNKNOWN)
