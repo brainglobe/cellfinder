@@ -548,7 +548,8 @@ class CuboidDatasetBase(Dataset):
     depending on `target_output`.
 
     :param points: A list of `Cell`instances containing the cell centers.
-        Units are in voxels of the input data - not in microns.
+        Units are in voxels of the input data - not in microns. The cells are
+        saved in `points`, with some caveats. See their docs.
     :param data_voxel_sizes: A 3-tuple indicating the input data's 3d voxel
         size in `um`. The tuple's order corresponds to `axis_order`. This is
         used along with `network_voxel_sizes` to extract and scale a cube
@@ -570,11 +571,16 @@ class CuboidDatasetBase(Dataset):
     :param target_output: A literal indicating the type of label output dataset
         should return during training / testing. It is one of `"cell"`
         (it returns the `Cell` instance), `"label"` (it returns a one-hot
-        vector labeling `Cell.type - 1` as the correct class), or None (not
+        vector labeling `Cell.type - 1` as the correct class), or `None` (no
         label is returned).
 
         I.e. if it's None, we do `batch_data = dataset[i]`. Otherwise, it's
-        `batch_data, batche_label = dataset[i]`.
+        `batch_data, batch_label = dataset[i]`.
+
+        NOTE: When passed to a `DataLoader`, `DataLoader` can only yield values
+        that are simple types, including lists and dicts, but not `Cells`. So
+        `"cell"` cannot be selected. But you can get the corresponding `Cell`
+        via the `CuboidBatchSampler`, if used.
     :param augment: Whether to augment the dataset with the subsequent
         parameters.
     :param augment_likelihood: Value `[0, 1]` with the probability of a data
@@ -601,6 +607,15 @@ class CuboidDatasetBase(Dataset):
     position of the potential cell and the type of the point (`Cell.type`).
 
     Units are voxels in the input data, not microns.
+    """
+
+    points: Sequence[Cell] = None
+    """The cells from which `points_arr` was generated. This list may have
+    different content that the `points` passed to the dataset (e.g. if edge
+    cells were filtered out), or it may be in a different order.
+
+    But all the cells in this list are the original cell objects passed in as
+    `points`, minus any that were removed.
     """
 
     src_image_data: ImageDataBase | None = None
@@ -671,6 +686,7 @@ class CuboidDatasetBase(Dataset):
         if output_axis_order[-1] != "c":
             raise ValueError("output_axis_order must have c last, for now")
 
+        self.points = points
         self.points_arr = np.empty(
             len(points),
             dtype=[("x", "<f8"), ("y", "<f8"), ("z", "<f8"), ("type", "<i8")],
@@ -756,7 +772,7 @@ class CuboidDatasetBase(Dataset):
         """
         Handles `dataset[i]`, when `i` is an int.
         """
-        point = self.points_arr[idx]
+        point = self.points[idx]
         data = self.get_point_data(idx)
 
         # batch dim
@@ -776,16 +792,9 @@ class CuboidDatasetBase(Dataset):
                 return data
 
             case "cell":
-                label = Cell(
-                    pos=[
-                        float(point["x"]),
-                        float(point["y"]),
-                        float(point["z"]),
-                    ],
-                    cell_type=int(point["type"]),
-                )
+                label = point
             case "label":
-                cls = torch.tensor(point["type"] - 1)
+                cls = torch.tensor(point.type - 1)
                 label = F.one_hot(cls, num_classes=self.classes)
             case _:
                 raise ValueError(f"Unknown target value {self.target_output}")
@@ -799,7 +808,8 @@ class CuboidDatasetBase(Dataset):
         Handles `dataset[i]`, when `i` is a list of ints.
         """
         # numpy arrays can't be indexed with tuples
-        points = self.points_arr[list(indices)]
+        all_points = self.points
+        points = [all_points[i] for i in indices]
 
         data = self.get_points_data(indices)
         if self._output_data_dim_reordering is not None:
@@ -818,19 +828,9 @@ class CuboidDatasetBase(Dataset):
                 return data
 
             case "cell":
-                labels = [
-                    Cell(
-                        pos=[
-                            float(point["x"]),
-                            float(point["y"]),
-                            float(point["z"]),
-                        ],
-                        cell_type=int(point["type"]),
-                    )
-                    for point in points
-                ]
+                labels = points
             case "label":
-                cls = torch.tensor([point["type"] - 1 for point in points])
+                cls = torch.tensor([point.type - 1 for point in points])
                 labels = F.one_hot(cls, num_classes=self.classes)
             case _:
                 raise ValueError(f"Unknown target value {self.target_output}")
@@ -975,6 +975,8 @@ class CuboidThreadedDatasetBase(CuboidDatasetBase):
             # we have to prevent copies of src_image_data so that data is not
             # duplicated among sub-processes if we use them.
             del state["src_image_data"]
+            # points (list of cells instances) is also heavy
+            del state["points"]
         return state
 
     def get_point_data(self, point_key: int) -> torch.Tensor:
@@ -1115,6 +1117,7 @@ class CuboidStackDataset(CuboidThreadedDatasetBase):
             dtype=np.bool_,
         )
         self.points_arr = self.points_arr[mask]
+        self.points = [p for sel, p in zip(mask, self.points) if sel]
 
         data_arrays = [signal_array, background_array]
         self.src_image_data = CachedArrayStackImageData(
@@ -1200,11 +1203,19 @@ class CuboidBatchSampler(Sampler):
             data, labels = dataset[batch]
             ...
 
-    To get the batche values.
+    To get the batch values.
 
     When used with a `DataLoader`, `CuboidBatchSampler` is doing the
     shuffling instead of the `DataLoader` itself so `batch_size` and `shuffle`
     shouldn't be used if you use this sampler.
+
+    `DataLoader` will return the data according to the order specified by the
+    sampler. So e.g. `items = list(DataLoader(..., batch_sampler=...))` will
+    have yielded items in the same index order as the corresponding indices in
+    `batches = list(sampler)` (assuming the sampler doesn't automatically
+    reshuffle). So to get the original cells passed to a dataset, associated
+    with a data item, just index dataset.points[i] for a given i in a batch in
+    `batches`.
 
     :param dataset: The `CuboidDatasetBase` that will be sampled.
     :param batch_size: The size of the batches that `CuboidBatchSampler` will
