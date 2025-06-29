@@ -1199,7 +1199,8 @@ class CuboidBatchSampler(Sampler):
         sampler = CuboidBatchSampler(dataset=dataset, ...)
         data_loader = torch.utils.data.DataLoader(
             dataset=dataset,
-            batch_sampler=sampler,
+            sampler=sampler,
+            batch_size=None,
             ...
         )
 
@@ -1214,11 +1215,12 @@ class CuboidBatchSampler(Sampler):
     To get the batch values.
 
     When used with a `DataLoader`, `CuboidBatchSampler` is doing the
-    shuffling instead of the `DataLoader` itself so `batch_size` and `shuffle`
-    shouldn't be used if you use this sampler.
+    batching, including any shuffling, instead of the `DataLoader` itself.
+    Our `sampler` must be passed to the `sampler` argument, `batch_size` must
+    be set to `None`, and `shuffle` shouldn't be used.
 
     `DataLoader` will return the data according to the order specified by the
-    sampler. So e.g. `items = list(DataLoader(..., batch_sampler=...))` will
+    sampler. So e.g. `items = list(DataLoader(..., sampler=...))` will
     have yielded items in the same index order as the corresponding indices in
     `batches = list(sampler)` (assuming the sampler doesn't automatically
     reshuffle). So to get the original cells passed to a dataset, associated

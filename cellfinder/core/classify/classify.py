@@ -120,7 +120,8 @@ def main(
     )
     data_loader = DataLoader(
         dataset=dataset,
-        batch_sampler=sampler,
+        sampler=sampler,
+        batch_size=None,
         num_workers=workers,
         pin_memory=pin_memory,
     )

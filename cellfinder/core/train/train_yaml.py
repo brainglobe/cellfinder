@@ -358,7 +358,8 @@ def get_dataloader(
     )
     data_loader = DataLoader(
         dataset=dataset,
-        batch_sampler=sampler,
+        sampler=sampler,
+        batch_size=None,
         num_workers=n_processes,
         pin_memory=pin_memory,
     )
