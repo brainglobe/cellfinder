@@ -1,3 +1,4 @@
+from functools import partial
 from pathlib import Path
 from typing import List, Optional, Tuple
 
@@ -12,7 +13,7 @@ from magicgui.widgets import ProgressBar
 from napari.qt.threading import thread_worker
 from napari.utils.notifications import show_info
 from qt_niu.dialog import display_warning
-from qt_niu.interaction import add_button, add_combobox
+from qt_niu.interaction import add_button, add_combobox, add_float_box
 from qtpy import QtCore
 from qtpy.QtWidgets import (
     QComboBox,
@@ -23,6 +24,11 @@ from qtpy.QtWidgets import (
     QWidget,
 )
 
+from cellfinder.core.classify.cube_generator import (
+    CuboidBatchSampler,
+    CuboidStackDataset,
+)
+
 # Constants used throughout
 WINDOW_HEIGHT = 750
 WINDOW_WIDTH = 1500
@@ -30,6 +36,10 @@ COLUMN_WIDTH = 150
 
 
 class CurationWidget(QWidget):
+    """
+    Voxel size parameters are in z, y, x order.
+    """
+
     def __init__(
         self,
         viewer: napari.viewer.Viewer,
@@ -43,8 +53,8 @@ class CurationWidget(QWidget):
     ):
         super(CurationWidget, self).__init__()
 
-        self.non_cells_to_extract = None
-        self.cells_to_extract = None
+        self.non_cells_to_extract: list[Cell] = []
+        self.cells_to_extract: list[Cell] = []
 
         self.cube_depth = cube_depth
         self.cube_width = cube_width
@@ -159,6 +169,9 @@ class CurationWidget(QWidget):
 
         self.setLayout(self.layout)
 
+    def _set_voxel_size(self, value: float, index: int) -> None:
+        self.voxel_sizes[index] = value
+
     def add_loading_panel(self, row: int, column: int = 0):
         self.load_data_panel = QGroupBox("Load data")
         self.load_data_layout = QGridLayout()
@@ -180,32 +193,68 @@ class CurationWidget(QWidget):
             2,
             callback=self.set_background_image,
         )
+        box_z = add_float_box(
+            self.load_data_layout,
+            self.voxel_sizes[0],
+            0,
+            1000,
+            "Voxel size (z)",
+            0.01,
+            tooltip="Size of your voxels in the axial dimension (microns)",
+            row=3,
+        )
+        box_z.valueChanged.connect(partial(self._set_voxel_size, index=0))
+        box_y = add_float_box(
+            self.load_data_layout,
+            self.voxel_sizes[1],
+            0,
+            1000,
+            "Voxel size (y)",
+            0.01,
+            tooltip="Size of your voxels in the y direction "
+            "(top to bottom) (microns)",
+            row=4,
+        )
+        box_y.valueChanged.connect(partial(self._set_voxel_size, index=1))
+        box_x = add_float_box(
+            self.load_data_layout,
+            self.voxel_sizes[2],
+            0,
+            1000,
+            "Voxel size (x)",
+            0.01,
+            tooltip="Size of your voxels in the x direction "
+            "(left to right) (microns)",
+            row=5,
+        )
+        box_x.valueChanged.connect(partial(self._set_voxel_size, index=2))
+        self.voxel_sizes_boxes = box_z, box_y, box_x
         self.training_data_cell_choice, _ = add_combobox(
             self.load_data_layout,
             "Training data (cells)",
             self.point_layer_names,
-            3,
+            6,
             callback=self.set_training_data_cell,
         )
         self.training_data_non_cell_choice, _ = add_combobox(
             self.load_data_layout,
             "Training_data (non_cells)",
             self.point_layer_names,
-            row=4,
+            row=7,
             callback=self.set_training_data_non_cell,
         )
         self.mark_as_cell_button = add_button(
             "Mark as cell(s)",
             self.load_data_layout,
             self.mark_as_cell,
-            row=5,
+            row=8,
             tooltip="Mark all selected points as non cell. Shortcut: 'c'",
         )
         self.mark_as_non_cell_button = add_button(
             "Mark as non cell(s)",
             self.load_data_layout,
             self.mark_as_non_cell,
-            row=5,
+            row=8,
             column=1,
             tooltip="Mark all selected points as non cell. Shortcut: 'x'",
         )
@@ -213,13 +262,13 @@ class CurationWidget(QWidget):
             "Add training data layers",
             self.load_data_layout,
             self.add_training_data,
-            row=6,
+            row=9,
         )
         self.save_training_data_button = add_button(
             "Save training data",
             self.load_data_layout,
             self.save_training_data,
-            row=6,
+            row=9,
             column=1,
         )
         self.load_data_layout.setColumnMinimumWidth(0, COLUMN_WIDTH)
@@ -583,9 +632,6 @@ class CurationWidget(QWidget):
             Attributes used to update a progress bar. The keys can be any of
             the properties of `magicgui.widgets.ProgressBar`.
         """
-        from cellfinder.core.classify.cube_generator import (
-            CubeGeneratorFromFile,
-        )
 
         to_extract = {
             "cells": self.cells_to_extract,
@@ -603,40 +649,52 @@ class CurationWidget(QWidget):
 
             self.update_status_label(f"Saving {cell_type}...")
 
-            cube_generator = CubeGeneratorFromFile(
-                cell_list,
-                self.signal_layer.data,
-                self.background_layer.data,
-                self.voxel_sizes,
-                self.network_voxel_sizes,
-                batch_size=self.batch_size,
-                cube_width=self.cube_width,
-                cube_height=self.cube_height,
-                cube_depth=self.cube_depth,
-                extract=True,
+            cube_generator = CuboidStackDataset(
+                signal_array=self.signal_layer.data,
+                background_array=self.background_layer.data,
+                points=cell_list,
+                data_voxel_sizes=self.voxel_sizes,
+                network_voxel_sizes=self.network_voxel_sizes,
+                network_cuboid_voxels=(
+                    self.cube_depth,
+                    self.cube_height,
+                    self.cube_width,
+                ),
+                axis_order=("z", "y", "x"),
+                output_axis_order=("z", "y", "x", "c"),
+                max_axis_0_cuboids_buffered=1,
+                target_output="cell",
+            )
+            # use sampler and data loader so we can use the z sorting for
+            # better caching. Potentially also for multiple workers.
+            sampler = CuboidBatchSampler(
+                dataset=cube_generator,
+                batch_size=1,
+                sort_by_axis="z",
             )
             # Set up progress bar
             yield {
                 "value": 0,
                 "min": 0,
-                "max": len(cube_generator),
+                "max": len(sampler),
             }
 
-            for i, (image_batch, batch_info) in enumerate(cube_generator):
-                image_batch = image_batch.astype(np.int16)
-
-                for point, point_info in zip(image_batch, batch_info):
-                    point = np.moveaxis(point, 2, 0)
-                    for channel in range(point.shape[-1]):
+            i = 0
+            for batch in sampler:
+                images, cells = cube_generator[batch]
+                for image, cell in zip(images, cells):
+                    image = image.numpy()
+                    for channel in range(image.shape[-1]):
                         save_cube(
-                            point,
-                            point_info,
+                            image,
+                            cell.to_dict(),
                             channel,
                             cell_type_output_directory,
                         )
 
-                # Update progress bar
-                yield {"value": i + 1}
+                    # Update progress bar
+                    yield {"value": i + 1}
+                    i += 1
 
             self.update_status_label("Finished saving cubes")
 

@@ -1,3 +1,5 @@
+import multiprocessing as mp
+
 import pytest
 
 from cellfinder.core.tools.threading import (
@@ -6,6 +8,7 @@ from cellfinder.core.tools.threading import (
     ExecutionFailure,
     ProcessWithException,
     ThreadWithException,
+    ThreadWithExceptionMPSafe,
 )
 
 cls_to_test = [ThreadWithException, ProcessWithException]
@@ -33,7 +36,7 @@ def do_nothing(*args):
     pass
 
 
-def send_back_msg(thread: ExceptionWithQueueMixIn):
+def send_back_msg(thread: ExceptionWithQueueMixIn, *args):
     # do this single op and exit
     thread.send_msg_to_mainthread(("back", thread.get_msg_from_mainthread()))
 
@@ -139,3 +142,70 @@ def test_skip_until_eof(cls):
     # eof to main-thread, which is the last thing thread does before exiting
     assert thread._saw_eof
     thread.join()
+
+
+def _do_nothing(*args):
+    pass
+
+
+class BlankClass:
+    pass
+
+
+@pytest.mark.parametrize(
+    "cls", [ThreadWithException, ThreadWithExceptionMPSafe]
+)
+def test_thread_with_multiprocess(cls):
+    inst = BlankClass()
+    inst.thread = cls(target=_do_nothing)
+
+    proc = ProcessWithException(target=_do_nothing, args=(inst,))
+
+    if cls is ThreadWithException:
+        # ThreadWithException cannot be shared with subprocess
+        with pytest.raises(TypeError):
+            proc.start()
+    else:
+        proc.start()
+        proc.join()
+
+
+def test_share_queue_sub_process_bad(capsys):
+    # we cannot pass queues to sub-process via messages
+    ctx = mp.get_context("spawn")
+    queue = ctx.Queue(maxsize=0)
+
+    proc = ProcessWithException(target=send_back_msg, pass_self=True)
+    proc.start()
+    proc.send_msg_to_thread(queue)
+
+    proc.notify_to_end_thread()
+    proc.clear_remaining()
+    proc.join()
+
+    # we cannot catch the exception because the exception "RuntimeError: Queue
+    # objects should only be shared between processes through inheritance" is
+    # raised in some 3rd party thread/process and is not propagated, only
+    # printed to stderr
+    err = capsys.readouterr().err
+    assert "RuntimeError" in err
+
+
+def test_share_queue_sub_process_good(capsys):
+    # we can pass queues to sub-process via args
+    ctx = mp.get_context("spawn")
+    queue = ctx.Queue(maxsize=0)
+
+    proc = ProcessWithException(
+        target=send_back_msg, args=(queue,), pass_self=True
+    )
+    proc.start()
+    proc.send_msg_to_thread("hello")
+    proc.get_msg_from_thread()
+
+    proc.notify_to_end_thread()
+    proc.clear_remaining()
+    proc.join()
+
+    err = capsys.readouterr().err
+    assert "RuntimeError" not in err
