@@ -516,7 +516,7 @@ class CachedTiffCuboidImageData(CachedCuboidImageDataBase):
         self.num_channels = len(filenames_arr[0])
         self._converters = [
             get_data_converter(
-                imread(str(channel_filenames)).dtype, np.float32
+                imread(channel_filenames.item()).dtype, np.float32
             )
             for channel_filenames in filenames_arr[0]
         ]
@@ -527,7 +527,7 @@ class CachedTiffCuboidImageData(CachedCuboidImageDataBase):
         that we want to read.
         """
         converter = self._converters[channel]
-        data = imread(str(self.filenames_arr[point_key][channel]))
+        data = imread(self.filenames_arr[point_key][channel].item())
         return torch.from_numpy(converter(data))
 
 
@@ -975,8 +975,6 @@ class CuboidThreadedDatasetBase(CuboidDatasetBase):
             # we have to prevent copies of src_image_data so that data is not
             # duplicated among sub-processes if we use them.
             del state["src_image_data"]
-            # points (list of cells instances) is also heavy
-            del state["points"]
         return state
 
     def get_point_data(self, point_key: int) -> torch.Tensor:
