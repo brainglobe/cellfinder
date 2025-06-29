@@ -655,7 +655,9 @@ def test_dataset_dataloader_threads(unique_int, num_workers, data_thread):
         (4, [[0, 1, 2, 3], [4, 5, 6, 7], [8, 9, 10, 11]]),
     ],
 )
-def test_dataset_dataloader_sampler(unique_int, batch_size, batch_idx):
+def test_dataset_dataloader_sampler(
+    unique_int, batch_size, batch_idx, mocker: MockerFixture
+):
     """
     Checks that the torch/keras dataloaders can load the data properly with
     different batch size using the provided sampler.
@@ -670,9 +672,12 @@ def test_dataset_dataloader_sampler(unique_int, batch_size, batch_idx):
     )
     dataloader = DataLoader(
         dataset,
-        batch_sampler=sampler,
+        sampler=sampler,
+        batch_size=None,
         num_workers=0,
     )
+
+    spy = mocker.spy(dataset, "_get_multiple_items")
 
     batches = list(dataloader)
 
@@ -681,6 +686,10 @@ def test_dataset_dataloader_sampler(unique_int, batch_size, batch_idx):
         # compare batch of cubes with cubes from data loader
         cube_batch = torch.concatenate([cubes[i] for i in batch], 0)
         assert torch.equal(cube_batch, batches[k])
+
+    assert len(spy.call_args_list) == len(batch_idx)
+    args = [call.args[0].tolist() for call in spy.call_args_list]
+    assert args == batch_idx
 
 
 @pytest.mark.parametrize("target_output", ["cell", "label", None])
