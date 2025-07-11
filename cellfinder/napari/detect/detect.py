@@ -263,6 +263,7 @@ def detect_widget() -> FunctionGui:
         n_free_cpus: int,
         analyse_local: bool,
         use_gpu: bool,
+        pin_memory: bool,
         debug: bool,
         reset_button,
     ) -> None:
@@ -336,6 +337,12 @@ def detect_widget() -> FunctionGui:
             Only analyse planes around the current position
         use_gpu : bool
             If True, use GPU for processing (if available); otherwise, use CPU.
+        pin_memory: bool
+            Pins data to be sent to the GPU to the CPU memory. This allows
+            faster GPU data speeds, but can only be used if the data used by
+            the GPU can stay in the CPU RAM while the GPU uses it. I.e. there's
+            enough RAM. Otherwise, if there's a risk of the RAM being paged, it
+            shouldn't be used. Defaults to False.
         debug : bool
             Increase logging
         reset_button :
@@ -411,7 +418,13 @@ def detect_widget() -> FunctionGui:
             end_plane = len(signal_image.data)
 
         misc_inputs = MiscInputs(
-            start_plane, end_plane, n_free_cpus, analyse_local, use_gpu, debug
+            start_plane,
+            end_plane,
+            n_free_cpus,
+            analyse_local,
+            use_gpu,
+            pin_memory,
+            debug,
         )
 
         worker = Worker(
