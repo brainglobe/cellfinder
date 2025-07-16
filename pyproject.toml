@@ -59,7 +59,7 @@ napari = [
     "magicgui",
     "napari-ndtiffs",
     "napari-plugin-engine >= 0.1.4",
-    "napari[pyqt5]",
+    "napari[pyqt5]>=0.6.1",
     "pooch >= 1",
     "qtpy",
 ]
