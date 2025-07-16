@@ -140,7 +140,7 @@ class VolumeFilter:
             tensor = torch.empty(
                 (batch_size, *self.settings.plane_shape),
                 dtype=torch_dtype,
-                pin_memory=not cpu,
+                pin_memory=not cpu and self.settings.pin_memory,
                 device="cpu",
             )
 

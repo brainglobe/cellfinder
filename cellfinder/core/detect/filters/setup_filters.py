@@ -189,6 +189,14 @@ class DetectionSettings:
     to run on the first GPU.
     """
 
+    pin_memory: bool = False
+    """
+    Pins data to be sent to the GPU to the CPU memory. This allows faster GPU
+    data speeds, but can only be used if the data used by the GPU can stay in
+    the CPU RAM while the GPU uses it. I.e. there's enough RAM. Otherwise, if
+    there's a risk of the RAM being paged, it shouldn't be used.
+    """
+
     n_free_cpus: int = 2
     """
     Number of free CPU cores to keep available and not use during parallel

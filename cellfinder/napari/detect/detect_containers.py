@@ -153,6 +153,7 @@ class MiscInputs(InputContainer):
     n_free_cpus: int = 2
     analyse_local: bool = False
     use_gpu: bool = field(default_factory=lambda: torch.cuda.is_available())
+    pin_memory: bool = False
     debug: bool = False
 
     def as_core_arguments(self) -> dict:
@@ -178,6 +179,11 @@ class MiscInputs(InputContainer):
                 label="Use GPU",
                 value=cls.defaults()["use_gpu"],
                 enabled=torch.cuda.is_available(),
+            ),
+            pin_memory=dict(
+                widget_type="CheckBox",
+                label="Pin data to memory",
+                value=cls.defaults()["pin_memory"],
             ),
             debug=dict(value=cls.defaults()["debug"]),
         )

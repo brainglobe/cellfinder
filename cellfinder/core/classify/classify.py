@@ -29,6 +29,7 @@ def main(
     model_weights: Optional[os.PathLike],
     network_depth: depth_type,
     max_workers: int = 3,
+    pin_memory: bool = False,
     *,
     callback: Optional[Callable[[int], None]] = None,
 ) -> List[Cell]:
@@ -74,6 +75,12 @@ def main(
     max_workers: int
         The number of sub-processes to use for data loading / processing.
         Defaults to 8.
+    pin_memory: bool
+        Pins data to be sent to the GPU to the CPU memory. This allows faster
+        GPU data speeds, but can only be used if the data used by the GPU can
+        stay in the CPU RAM while the GPU uses it. I.e. there's enough RAM.
+        Otherwise, if there's a risk of the RAM being paged, it shouldn't be
+        used. Defaults to False.
     callback : Callable[int], optional
         A callback function that is called during classification. Called with
         the batch number once that batch has been classified.
