@@ -12,7 +12,7 @@ from cellfinder.napari.sample_data import load_sample
 
 
 @pytest.fixture
-def curation_widget(make_napari_viewer):
+def curation_widget(make_napari_viewer) -> CurationWidget:
     """
     Create a viewer, add the curation widget, and return the widget.
     The viewer can be accessed using ``widget.viewer``.
@@ -37,6 +37,14 @@ def test_add_new_training_layers(curation_widget):
 
     assert layers[0].name == "Training data (cells)"
     assert layers[1].name == "Training data (non cells)"
+
+
+def test_update_voxel_size(curation_widget: CurationWidget):
+    assert curation_widget.voxel_sizes == [5, 2, 2]
+    curation_widget.voxel_sizes_boxes[0].setValue(3)
+    curation_widget.voxel_sizes_boxes[1].setValue(4)
+    curation_widget.voxel_sizes_boxes[2].setValue(5)
+    assert curation_widget.voxel_sizes == [3, 4, 5]
 
 
 @pytest.mark.xfail(reason="See discussion in #443", raises=AssertionError)

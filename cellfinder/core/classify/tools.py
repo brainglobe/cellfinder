@@ -1,9 +1,7 @@
 import os
-from collections.abc import Sequence
-from typing import List, Optional, Tuple, Union
+from typing import Optional
 
 import keras
-import numpy as np
 from keras import Model
 
 from cellfinder.core import logger
@@ -35,7 +33,7 @@ def get_model(
     """
     if existing_model is not None or network_depth is None:
         logger.debug(f"Loading model: {existing_model}")
-        return keras.models.load_model(existing_model)
+        model = keras.models.load_model(existing_model)
     else:
         logger.debug(f"Creating a new instance of model: {network_depth}")
         model = build_model(
@@ -59,29 +57,7 @@ def get_model(
                     "Provided weights don't match the model architecture.\n"
                 ) from e
 
+    if inference:
+        model.trainable = False
+
     return model
-
-
-def make_lists(
-    tiff_files: Sequence,
-    train: bool = True,
-) -> Union[Tuple[List, List], Tuple[List, List, np.ndarray]]:
-    signal_list = []
-    background_list = []
-    if train:
-        labels = []
-
-    for group in tiff_files:
-        for image in group:
-            signal_list.append(image.img_files[0])
-            background_list.append(image.img_files[1])
-            if train:
-                if image.label == "no_cell":
-                    labels.append(0)
-                elif image.label == "cell":
-                    labels.append(1)
-
-    if train:
-        return signal_list, background_list, np.array(labels)
-    else:
-        return signal_list, background_list
