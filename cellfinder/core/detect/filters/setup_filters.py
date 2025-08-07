@@ -133,9 +133,29 @@ class DetectionSettings:
 
     n_sds_above_mean_thresh: float = 10
     """
-    Intensity threshold (the number of standard deviations above
-    the mean) of the filtered 2d planes used to mark pixels as
+    Per-plane intensity threshold (the number of standard deviations
+    above the mean) of the 2d filtered planes used to mark pixels as
     foreground or background.
+    """
+
+    n_sds_above_mean_tiled_thresh: float = 10
+    """
+    Per-plane, per-tile intensity threshold (the number of standard deviations
+    above the mean) for the filtered 2d planes used to mark pixels as
+    foreground or background. When used, (tile size is not zero) a pixel is
+    marked as foreground if its intensity is above both the per-plane and
+    per-tile threshold. I.e. it's above the set number of standard deviations
+    of the per-plane average and of the per-plane per-tile average for the tile
+    that contains it.
+    """
+
+    tiled_thresh_tile_size: float | None = None
+    """
+    The tile size used to tile the x, y plane to calculate the local average
+    intensity for the tiled threshold. The value is multiplied by soma
+    diameter (i.e. 1 means one soma diameter). If zero or None, the tiled
+    threshold is disabled and only the per-plane threshold is used. Tiling is
+    done with 50% overlap when striding.
     """
 
     outlier_keep: bool = False
