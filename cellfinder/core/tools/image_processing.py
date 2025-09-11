@@ -1,5 +1,13 @@
+import math
+
 import numpy as np
+import torch
+import tqdm
 from brainglobe_utils.general.numerical import is_even
+from welford_torch import Welford
+
+from cellfinder.core import types
+from cellfinder.core.tools.tools import get_data_converter
 
 
 def crop_center_2d(img, crop_x=None, crop_y=None):
@@ -85,3 +93,17 @@ def pad_center_2d(img, x_size=None, y_size=None, pad_mode="edge"):
         y_front = y_back = 0
 
     return np.pad(img, ((y_front, y_back), (x_front, x_back)), pad_mode)
+
+
+def dataset_mean_std(
+    dataset: types.array, sampling_factor: int
+) -> tuple[float, float]:
+    converter = get_data_converter(dataset.dtype, np.float32)
+
+    w = Welford()
+    samples = list(range(0, len(dataset), sampling_factor))
+    for i in tqdm.tqdm(samples, desc="Estimating mean/std"):
+        plane = torch.from_numpy(converter(dataset[i, ...]))
+        w.add_all(plane.reshape((-1,)), False)
+
+    return float(w.mean), math.sqrt(w.var_s)

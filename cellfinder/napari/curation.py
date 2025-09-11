@@ -13,7 +13,12 @@ from magicgui.widgets import ProgressBar
 from napari.qt.threading import thread_worker
 from napari.utils.notifications import show_info
 from qt_niu.dialog import display_warning
-from qt_niu.interaction import add_button, add_combobox, add_float_box
+from qt_niu.interaction import (
+    add_button,
+    add_combobox,
+    add_float_box,
+    add_int_box,
+)
 from qtpy import QtCore
 from qtpy.QtWidgets import (
     QComboBox,
@@ -28,6 +33,7 @@ from cellfinder.core.classify.cube_generator import (
     CuboidBatchSampler,
     CuboidStackDataset,
 )
+from cellfinder.core.tools.image_processing import dataset_mean_std
 
 # Constants used throughout
 WINDOW_HEIGHT = 750
@@ -64,6 +70,7 @@ class CurationWidget(QWidget):
         self.save_empty_cubes = save_empty_cubes
         self.max_ram = max_ram
         self.voxel_sizes = [5, 2, 2]
+        self.normalization_down_sampling = 32
         self.batch_size = 64
         self.viewer = viewer
 
@@ -172,6 +179,9 @@ class CurationWidget(QWidget):
     def _set_voxel_size(self, value: float, index: int) -> None:
         self.voxel_sizes[index] = value
 
+    def _set_normalization_down_sampling(self, value: int) -> None:
+        self.normalization_down_sampling = value
+
     def add_loading_panel(self, row: int, column: int = 0):
         self.load_data_panel = QGroupBox("Load data")
         self.load_data_layout = QGridLayout()
@@ -229,32 +239,44 @@ class CurationWidget(QWidget):
         )
         box_x.valueChanged.connect(partial(self._set_voxel_size, index=2))
         self.voxel_sizes_boxes = box_z, box_y, box_x
+        box_norm = add_int_box(
+            self.load_data_layout,
+            self.normalization_down_sampling,
+            1,
+            1000,
+            "Normalization down-sampling",
+            6,
+            tooltip="Down-sampling factor of the z-dimension used to calculate"
+            " the mean and std of the dataset. Used to normalize the "
+            "channels during training.",
+        )
+        box_norm.valueChanged.connect(self._set_normalization_down_sampling)
         self.training_data_cell_choice, _ = add_combobox(
             self.load_data_layout,
             "Training data (cells)",
             self.point_layer_names,
-            6,
+            7,
             callback=self.set_training_data_cell,
         )
         self.training_data_non_cell_choice, _ = add_combobox(
             self.load_data_layout,
             "Training_data (non_cells)",
             self.point_layer_names,
-            row=7,
+            row=8,
             callback=self.set_training_data_non_cell,
         )
         self.mark_as_cell_button = add_button(
             "Mark as cell(s)",
             self.load_data_layout,
             self.mark_as_cell,
-            row=8,
+            row=9,
             tooltip="Mark all selected points as non cell. Shortcut: 'c'",
         )
         self.mark_as_non_cell_button = add_button(
             "Mark as non cell(s)",
             self.load_data_layout,
             self.mark_as_non_cell,
-            row=8,
+            row=9,
             column=1,
             tooltip="Mark all selected points as non cell. Shortcut: 'x'",
         )
@@ -262,13 +284,13 @@ class CurationWidget(QWidget):
             "Add training data layers",
             self.load_data_layout,
             self.add_training_data,
-            row=9,
+            row=10,
         )
         self.save_training_data_button = add_button(
             "Save training data",
             self.load_data_layout,
             self.save_training_data,
-            row=9,
+            row=10,
             column=1,
         )
         self.load_data_layout.setColumnMinimumWidth(0, COLUMN_WIDTH)
@@ -593,7 +615,17 @@ class CurationWidget(QWidget):
         self.cells_to_extract = list(set(self.cells_to_extract))
         self.non_cells_to_extract = list(set(self.non_cells_to_extract))
 
+    def _calculate_channel_stats(self):
+        signal_stat = dataset_mean_std(
+            self.signal_layer.data, self.normalization_down_sampling
+        )
+        bg_stat = dataset_mean_std(
+            self.background_layer.data, self.normalization_down_sampling
+        )
+        return signal_stat, bg_stat
+
     def __save_yaml_file(self):
+        signal_stat, bg_stat = self._calculate_channel_stats()
         yaml_section = [
             {
                 "cube_dir": str(self.cell_cube_dir),
@@ -601,6 +633,10 @@ class CurationWidget(QWidget):
                 "type": "cell",
                 "signal_channel": 0,
                 "bg_channel": 1,
+                "signal_mean": signal_stat[0],
+                "signal_std": signal_stat[1],
+                "bg_mean": bg_stat[0],
+                "bg_std": bg_stat[1],
             },
             {
                 "cube_dir": str(self.no_cell_cube_dir),
@@ -608,6 +644,10 @@ class CurationWidget(QWidget):
                 "type": "no_cell",
                 "signal_channel": 0,
                 "bg_channel": 1,
+                "signal_mean": signal_stat[0],
+                "signal_std": signal_stat[1],
+                "bg_mean": bg_stat[0],
+                "bg_std": bg_stat[1],
             },
         ]
 

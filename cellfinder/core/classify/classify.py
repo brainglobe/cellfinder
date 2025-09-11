@@ -15,6 +15,7 @@ from cellfinder.core.classify.cube_generator import (
     CuboidStackDataset,
 )
 from cellfinder.core.classify.tools import get_model
+from cellfinder.core.tools.image_processing import dataset_mean_std
 from cellfinder.core.train.train_yaml import depth_type, models
 
 
@@ -36,6 +37,8 @@ def main(
     pin_memory: bool = True,
     *,
     callback: Optional[Callable[[int], None]] = None,
+    normalize_channels: bool = True,
+    normalization_down_sampling: int = 32,
 ) -> List[Cell]:
     """
     Parameters
@@ -100,10 +103,27 @@ def main(
     start_time = datetime.now()
 
     voxel_sizes = list(map(float, voxel_sizes))
+
+    signal_normalization = background_normalization = None
+    if normalize_channels:
+        logger.debug("Calculating channels norms")
+        signal_normalization = dataset_mean_std(
+            signal_array, normalization_down_sampling
+        )
+        background_normalization = dataset_mean_std(
+            background_array, normalization_down_sampling
+        )
+        logger.debug(
+            f"Signal channel norm is: {signal_normalization}. "
+            f"Background channel norm is: {background_normalization}"
+        )
+
     logger.debug("Initialising cube generator")
     dataset = CuboidStackDataset(
         signal_array=signal_array,
         background_array=background_array,
+        signal_normalization=signal_normalization,
+        background_normalization=background_normalization,
         points=points,
         data_voxel_sizes=voxel_sizes,
         network_voxel_sizes=network_voxel_sizes,
