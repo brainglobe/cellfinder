@@ -37,7 +37,7 @@ def main(
     pin_memory: bool = True,
     *,
     callback: Optional[Callable[[int], None]] = None,
-    normalize_channels: bool = True,
+    normalize_channels: bool = False,
     normalization_down_sampling: int = 32,
 ) -> List[Cell]:
     """
