@@ -27,6 +27,9 @@ DIM = Literal[AXIS, "c"]
 RandRange = Sequence[float] | Sequence[tuple[float, float]] | None
 
 
+_point_ax_map = {"x": 0, "y": 1, "z": 2}
+
+
 class StackSizeError(Exception):
     pass
 
@@ -141,15 +144,9 @@ class ImageDataBase:
     the addition of the channels dimension.
     """
 
-    points_arr: np.ndarray = None
+    points_arr: torch.Tensor = None
     """An Nx3 array. Each row is a 3d point with the position of a potential
-    cell. Units are voxels of the input data.
-
-    The datatype must be `("x", "<f8"), ("y", "<f8"), ("z", "<f8")` so we can
-    index each column by name. E.g.::
-
-        points = np.zeros(5, dtype=[("x", "<f8"), ("y", "<f8"), ("z", "<f8")])
-        points[0] = ...
+    cell. Units are voxels of the input data. The columns are in x, y, z order.
     """
 
     num_channels: int = 1
@@ -170,7 +167,7 @@ class ImageDataBase:
 
     def __init__(
         self,
-        points_arr: np.ndarray,
+        points_arr: torch.Tensor,
         data_axis_order: tuple[AXIS, AXIS, AXIS] = ("z", "y", "x"),
         cuboid_size: tuple[int, int, int] = (1, 1, 1),
     ):
@@ -298,7 +295,7 @@ class CachedStackImageDataBase(ImageDataBase):
         """
         data = torch.empty(self.cuboid_with_channels_size, dtype=torch.float32)
 
-        point = self.points_arr[point_key]
+        point = self.points_arr[point_key, :].tolist()
         for j, plane in enumerate(self._get_cuboid_planes(point)):
             data[j, ...] = plane
 
@@ -318,11 +315,11 @@ class CachedStackImageDataBase(ImageDataBase):
 
         points_arr = self.points_arr
         for i, point_key in enumerate(points_key):
-            point = points_arr[point_key]
+            point = points_arr[point_key, :].tolist()
             for j, plane in enumerate(self._get_cuboid_planes(point)):
                 batch[i, j, ...] = plane
 
-    def _get_cuboid_planes(self, point: np.ndarray) -> list[torch.Tensor]:
+    def _get_cuboid_planes(self, point: Sequence[float]) -> list[torch.Tensor]:
         """
         Takes a 3d point and returns a list of sequential planes, where when
         concatenated in the first axis yields a cube of the correct size.
@@ -334,7 +331,8 @@ class CachedStackImageDataBase(ImageDataBase):
 
         cuboid_indices = []
         for ax, size in zip(self.data_axis_order, self.cuboid_size):
-            cuboid_indices.append(get_data_cuboid_range(point[ax], size, ax))
+            idx = _point_ax_map[ax]
+            cuboid_indices.append(get_data_cuboid_range(point[idx], size, ax))
         ax1 = slice(*cuboid_indices[1])
         ax2 = slice(*cuboid_indices[2])
 
@@ -602,20 +600,20 @@ class CuboidDatasetBase(Dataset):
         probability `augment_likelihood`. Or `None` if there's no scaling.
     """
 
-    points_arr: np.ndarray = None
-    """A generated Nx4 array. Each row is `(x, y, z, type)` with the 3d
-    position of the potential cell and the type of the point (`Cell.type`).
+    points_arr: torch.Tensor = None
+    """A generated Nx3 tensor. Each row is `(x, y, z)` columns with the
+    3d position of the potential cell.
 
     Units are voxels in the input data, not microns.
     """
 
-    points: Sequence[Cell] = None
+    points: Sequence[dict] = None
     """The cells from which `points_arr` was generated. This list may have
     different content that the `points` passed to the dataset (e.g. if edge
     cells were filtered out), or it may be in a different order.
 
-    But all the cells in this list are the original cell objects passed in as
-    `points`, minus any that were removed.
+    But all the cells in this list are the dicts representation of the cells
+    as passed in as `points`, minus any that were removed.
     """
 
     src_image_data: ImageDataBase | None = None
@@ -686,17 +684,17 @@ class CuboidDatasetBase(Dataset):
         if output_axis_order[-1] != "c":
             raise ValueError("output_axis_order must have c last, for now")
 
-        self.points = points
-        self.points_arr = np.empty(
-            len(points),
-            dtype=[("x", "<f8"), ("y", "<f8"), ("z", "<f8"), ("type", "<i8")],
-        )
+        # it's more efficient to store it as dict, especially as it gets
+        # copied to workers
+        self.points = [p.to_dict() for p in points]
+        self.points_arr = torch.empty((len(points), 3), dtype=torch.float64)
         data = self.points_arr
         for i, cell in enumerate(points):
-            data[i]["x"] = cell.x
-            data[i]["y"] = cell.y
-            data[i]["z"] = cell.z
-            data[i]["type"] = cell.type
+            data[i, 0] = cell.x
+            data[i, 1] = cell.y
+            data[i, 2] = cell.z
+        # move it to shared memory so it doesn't get duplicated in workers
+        data.share_memory_()
 
         self.src_image_data = src_image_data
         self.data_voxel_sizes = tuple(data_voxel_sizes)
@@ -792,9 +790,13 @@ class CuboidDatasetBase(Dataset):
                 return data
 
             case "cell":
-                label = point
+                label = Cell(
+                    (point["x"], point["y"], point["z"]),
+                    point["type"],
+                    point["metadata"],
+                )
             case "label":
-                cls = torch.tensor(point.type - 1)
+                cls = torch.tensor(point["type"] - 1)
                 label = F.one_hot(cls, num_classes=self.classes)
             case _:
                 raise ValueError(f"Unknown target value {self.target_output}")
@@ -828,9 +830,16 @@ class CuboidDatasetBase(Dataset):
                 return data
 
             case "cell":
-                labels = points
+                labels = [
+                    Cell(
+                        (point["x"], point["y"], point["z"]),
+                        point["type"],
+                        point["metadata"],
+                    )
+                    for point in points
+                ]
             case "label":
-                cls = torch.tensor([point.type - 1 for point in points])
+                cls = torch.tensor([point["type"] - 1 for point in points])
                 labels = F.one_hot(cls, num_classes=self.classes)
             case _:
                 raise ValueError(f"Unknown target value {self.target_output}")
@@ -1121,11 +1130,13 @@ class CuboidStackDataset(CuboidThreadedDatasetBase):
 
         self.stack_shape = signal_array.shape
 
-        mask = np.array(
-            [self.point_has_full_cuboid(p) for p in self.points_arr],
-            dtype=np.bool_,
+        mask = torch.tensor(
+            [self.point_has_full_cuboid(p.tolist()) for p in self.points_arr],
+            dtype=torch.bool,
         )
-        self.points_arr = self.points_arr[mask]
+        self.points_arr = self.points_arr[mask, :]
+        # move it to shared memory so it doesn't get duplicated in workers
+        self.points_arr.share_memory_()
         self.points = [p for sel, p in zip(mask, self.points) if sel]
 
         self.src_image_data = CachedArrayStackImageData(
@@ -1140,7 +1151,7 @@ class CuboidStackDataset(CuboidThreadedDatasetBase):
         self.signal_normalization = signal_normalization
         self.background_normalization = background_normalization
 
-    def point_has_full_cuboid(self, point: np.ndarray) -> bool:
+    def point_has_full_cuboid(self, point: Sequence[float]) -> bool:
         """
         Takes a 3d point and returns whether a cuboid centered on this point
         is fully contained within the signal / background array. I.e. it's not
@@ -1149,7 +1160,8 @@ class CuboidStackDataset(CuboidThreadedDatasetBase):
         for ax, axis_size, cuboid_size in zip(
             self.axis_order, self.stack_shape, self.data_cuboid_voxels
         ):
-            start, end = get_data_cuboid_range(point[ax], cuboid_size, ax)
+            idx = _point_ax_map[ax]
+            start, end = get_data_cuboid_range(point[idx], cuboid_size, ax)
             if start < 0:
                 return False
             if end > axis_size:
@@ -1302,7 +1314,9 @@ class CuboidBatchSampler(Sampler):
             # respected
             points_raw = defaultdict(list)
             for i, point in enumerate(dataset.points_arr):
-                points_raw[point[sort_by_axis]].append(i)
+                p_idx = _point_ax_map[sort_by_axis]
+                plane = point[p_idx].item()
+                points_raw[plane].append(i)
             points_sorted = sorted(points_raw.items(), key=lambda x: x[0])
 
             # convert the segregated lists into arrays

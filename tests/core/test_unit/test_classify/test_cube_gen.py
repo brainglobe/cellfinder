@@ -74,14 +74,12 @@ def point_to_slice(
 
 def to_numpy_cubes(
     volume: np.ndarray, points: Sequence[PT_TYPE], cube_size: PT_TYPE
-) -> tuple[list[np.ndarray], np.ndarray]:
+) -> tuple[list[np.ndarray], torch.Tensor]:
     """Extracts numpy cubes around the points in the volume."""
-    points_arr = np.empty(
-        len(points), dtype=[("x", "<f8"), ("y", "<f8"), ("z", "<f8")]
-    )
+    points_arr = torch.empty((len(points), 3))
     cubes = []
     for i, point in enumerate(points):
-        points_arr[i] = tuple(point)
+        points_arr[i] = torch.tensor(point)
         cube = volume[tuple(point_to_slice(point, cube_size))]
         cubes.append(cube)
     return cubes, points_arr
@@ -89,7 +87,7 @@ def to_numpy_cubes(
 
 def to_tiff_cubes(
     volume: np.ndarray, cube_size: PT_TYPE, points: Sequence[PT_TYPE], tmp_path
-) -> tuple[list[Sequence[str]], list[np.ndarray], np.ndarray]:
+) -> tuple[list[Sequence[str]], list[np.ndarray], torch.Tensor]:
     """Creates tiff files for the cubes around the points in the volume."""
     cubes, points_arr = to_numpy_cubes(volume, points, cube_size)
     # create the tiff files, one per channel per point
@@ -588,8 +586,8 @@ def test_sampler_shuffle_sort():
     )
 
     # prob of a particular ordering is 1 / (4! * 4! * 4!) because each batch
-    # is individually reshuffled. This 1 / 13,824. Doing this 5 times is
-    # also astronomical, since they are all independent events
+    # is individually reshuffled. This 1 / 13,824. Doing this 5 times with them
+    # all being the same is astronomical, since they are all independent events
     same = True
     last = None
     last_raw = None
@@ -899,7 +897,7 @@ def test_get_data_cuboid_range():
 
 def test_img_data_base_bad_args():
     """Validate input parameters."""
-    points = np.empty(5, dtype=[("x", "<f8"), ("y", "<f8"), ("z", "<f8")])
+    points = torch.empty((5, 3))
 
     with pytest.raises(ValueError):
         ImageDataBase(points_arr=points, data_axis_order=("x", "y"))
@@ -907,7 +905,7 @@ def test_img_data_base_bad_args():
 
 def test_img_data_not_impl():
     """Validate calling base, not-implemented functions."""
-    points = np.empty(5, dtype=[("x", "<f8"), ("y", "<f8"), ("z", "<f8")])
+    points = torch.empty((5, 3))
     data = ImageDataBase(points_arr=points)
 
     with pytest.raises(NotImplementedError):
@@ -920,7 +918,7 @@ def test_img_data_not_impl():
 
 def test_img_stack_not_impl():
     """Validate calling base, not-implemented functions."""
-    points = np.empty(5, dtype=[("x", "<f8"), ("y", "<f8"), ("z", "<f8")])
+    points = torch.empty((5, 3))
     data = CachedStackImageDataBase(points_arr=points)
 
     with pytest.raises(NotImplementedError):
@@ -929,7 +927,7 @@ def test_img_stack_not_impl():
 
 def test_img_cuboid_not_impl():
     """Validate calling base, not-implemented functions."""
-    points = np.empty(5, dtype=[("x", "<f8"), ("y", "<f8"), ("z", "<f8")])
+    points = torch.empty((5, 3))
     data = CachedCuboidImageDataBase(points_arr=points)
 
     with pytest.raises(NotImplementedError):
@@ -1007,7 +1005,7 @@ def test_dataset_base_bad_args():
 
 def test_dataset_manual_image_data():
     """Check that we can manually pass an image data instance to dataset."""
-    points = np.zeros(1, dtype=[("x", "<f8"), ("y", "<f8"), ("z", "<f8")])
+    points = torch.zeros((1, 3))
     data = CachedStackImageDataBase(
         points_arr=points,
         data_axis_order=("x", "y", "z"),
@@ -1127,8 +1125,8 @@ def test_point_has_full_cuboid_unscaled():
         background_array=volume[..., 1],
     )
     assert len(dataset.points_arr) == 1
-    p = dataset.points_arr[0]
-    assert (p["x"], p["y"], p["z"]) == (5, 15, 15)
+    p = dataset.points_arr[0].tolist()
+    assert tuple(p) == (5, 15, 15)
 
 
 def test_point_has_full_cuboid_scaled():
@@ -1152,8 +1150,8 @@ def test_point_has_full_cuboid_scaled():
         background_array=volume[..., 1],
     )
     assert len(dataset.points_arr) == 1
-    p = dataset.points_arr[0]
-    assert (p["x"], p["y"], p["z"]) == (10, 15, 15)
+    p = dataset.points_arr[0].tolist()
+    assert tuple(p) == (10, 15, 15)
 
 
 def test_points_unchanged():
@@ -1169,6 +1167,6 @@ def test_points_unchanged():
     )
 
     assert len(dataset.points) == 1
-    assert dataset.points[0] is cell
-    x, y, z, tp = dataset.points_arr[0]
-    assert (x, y, z, tp) == (30, 30, 15, Cell.UNKNOWN)
+    assert dataset.points[0] == cell.to_dict()
+    x, y, z = dataset.points_arr[0].tolist()
+    assert (x, y, z) == (30, 30, 15)

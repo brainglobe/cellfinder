@@ -181,9 +181,10 @@ def main(
     k = 0
     for arr in sampler:
         for i in arr:
-            p = dataset.points_arr[i]
+            # it is in x, y, z order
+            point = dataset.points_arr[i].tolist()
             cell = Cell(
-                (p["x"], p["y"], p["z"]),
+                point,
                 cell_type=(predictions[k] + 1).item(),
             )
             points_list.append(cell)
