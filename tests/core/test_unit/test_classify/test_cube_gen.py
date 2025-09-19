@@ -620,8 +620,8 @@ def test_dataset_dataloader_threads(unique_int, num_workers, data_thread):
     different threading conditions including whether data is loaded in separate
     threads or only the main thread.
 
-    Also check that we can load the data in each sub-process, without a main
-    data thread.
+    Also check that we can load the data in each sub-process directly, without
+    a main data reading thread.
     """
     dataset, points, cubes = get_sample_dataset_12(unique_int)
     dataloader = DataLoader(
@@ -632,18 +632,51 @@ def test_dataset_dataloader_threads(unique_int, num_workers, data_thread):
         drop_last=False,
     )
 
+    chunks = [[0, 1, 2, 3, 4], [5, 6, 7, 8, 9], [10, 11]]
     try:
         if data_thread:
             dataset.start_dataset_thread(num_workers)
+        # check that going through the data loader works
         batches = list(dataloader)
+        # check that asking the dataset directly works
+        batches_manual = [dataset[chunk] for chunk in chunks]
     finally:
         dataset.stop_dataset_thread()
 
     cubes = [torch.from_numpy(cube)[None, ...] for cube in cubes]
-    for k, batch in enumerate([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9], [10, 11]]):
+    for k, batch in enumerate(chunks):
         # compare batch of cubes with cubes from data loader
         cube_batch = torch.concatenate([cubes[i] for i in batch], 0)
         assert torch.equal(cube_batch, batches[k])
+        assert torch.equal(cube_batch, batches_manual[k])
+
+
+def test_dataset_dataloader_worker_exit_early():
+    """
+    Checks that if we request to exit the reader thread while torch is still
+    reading the data, instead of hanging forever, torch will raise an error
+    that we closed.
+    """
+    dataset, points, cubes = get_sample_dataset_12(0)
+    dataloader = DataLoader(
+        dataset,
+        batch_size=3,
+        shuffle=False,
+        num_workers=2,
+        drop_last=False,
+        prefetch_factor=1,
+    )
+
+    try:
+        dataset.start_dataset_thread(2)
+        it = iter(dataloader)
+        next(it)
+    finally:
+        dataset.stop_dataset_thread()
+
+    # this should raise an exception that the workers were closed
+    with pytest.raises(ValueError):
+        next(it)
 
 
 @pytest.mark.parametrize(

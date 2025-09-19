@@ -908,35 +908,51 @@ class CuboidThreadedDatasetBase(CuboidDatasetBase):
     process reads the data, while the other processes only handle processing
     the batches.
 
+    The overall pattern is as follows. When we use a PyTorch data loader, it
+    creates worker processes internally and duplicates the dataset for each
+    worker (via pickling). The PyTorch data loader also automatically
+    assigns the batches each worker loads and yields their result.
+
     `CuboidDatasetBase` loads the data directly via its `src_image_data`
-    (`ImageDataBase`) instance. When a `Dataset` is processed using multiple
-    torch workers, each worker is run in its own sub-process and therefore
-    each worker gets its own copy of `src_image_data` that it reads from.
-    The downside is that the sub-processes are trying to read similar data
-    from disk causing disk contention.
+    (`ImageDataBase`) instance. When the `Dataset` is duplicated for each
+    worker, each worker gets its own copy of `src_image_data` that it reads
+    from. This causes the sub-processes to read similar data from disk causing
+    disk contention, as well as cache duplication.
 
     This class adds the ability for the dataset to read the data from its
-    `src_image_data` via a sub-thread in the main process. Each worker in
-    its own process uses a queue to request data from this singular
-    sub-thread, which reads it from disk quickly and sends it back to the
-    worker to process (rescale / orient etc.). This ensures that only one
-    thread reads the data from disk.
+    `src_image_data` via a sub-thread in the main process, if
+    `start_dataset_thread` is called. Each worker (including the main process)
+    in its own process uses a queue to request data from this singular thread,
+    which reads it from disk (or cache) and sends it back to the worker to
+    process (rescale / orient etc.). This ensures that only one thread reads
+    the data from disk. And only the main process gets access to
+    `src_image_data` so there's no copies.
 
-    Additionally, each worker allocates a batch buffer, which is shared in
-    memory with the main sub-thread as it requests it to read a batch. The main
-    thread can then directly write into it the read data without having to copy
-    the data back and forth.
+    Each worker allocates a batch buffer, which is sent and shared in
+    memory with the main process sub-thread when it requests it to read a
+    batch. The thread can then directly write into it the loaded data without
+    having to copy the data back and forth between processes.
 
     `start_dataset_thread` and `stop_dataset_thread` must be called to start
     and close this main sub-thread. Otherwise, each sub-process worker will
-    have its own copy of the dataset, removing this class' functionality.
+    have its own copy of the dataset, obsoleting this class' functionality.
 
-    Each worker uses its own queue to communicate with the main thread.
-    So the main thread listens to requests via its own single queue. Each
-    worder's request tells it the points for which to load cuboids and the
-    queue to use to send the data back along. If it encounters an error
+    Overall, each worker uses its own queue to communicate with the main
+    thread. The main reader thread listens to requests via its own single
+    queue. Each worder's request tells it the points for which to load cuboids
+    and the queue to use to send the data back along. If it encounters an error
     reading the data, it'll instead send the exception back with that queue
-    so it doesn't hang.
+    so it doesn't hang. The reader thread never exits on its own because it
+    catches all exceptions. It only exits when `stop_dataset_thread` is called.
+
+    Similarly, the worker processes don't exit until PyTorch closes them at its
+    own leisure. But if we call `stop_dataset_thread` while the workers are
+    still running, it'll cause them to raise exceptions to PyTorch (and exit).
+
+    This class doesn't interfere with our ability to manually request a cube
+    from the dataset in the main process. Depending on whether
+    `start_dataset_thread` was called it may load the data via the reader
+    thread. But from the requesters POV, `dataset[indices]` will always work.
     """
 
     _dataset_thread: ThreadWithExceptionMPSafe | None = None
@@ -998,26 +1014,31 @@ class CuboidThreadedDatasetBase(CuboidDatasetBase):
     def _send_rcv_thread_msg(
         self, buffer_shape: tuple[int, ...], subject: str, key: Any
     ) -> torch.Tensor:
+        # create buffer into which the read thread will write the data into
         data = torch.empty(buffer_shape, dtype=torch.float32)
 
         queues = self._worker_queues
-        # for main-thread, we use the last queue
+        # main-process, uses the last queue, if/(and when) there are no workers
         queue_id = len(queues) - 1
         if get_worker_info() is not None:
             queue_id = get_worker_info().id
         queue = queues[queue_id]
 
+        # request the data from the main process data thread
         self._dataset_thread.send_msg_to_thread((subject, key, data, queue_id))
-        # todo: consider adding a long timeout in case the serving thread was
-        #  asked to exit while workers are still waiting for data. But we
-        #  clearly state in the API thread should not be asked to exit while
-        #  workers exist
+        # do a single request and wait for the result
         msg, value = queue.get(block=True)
         # if there's no error, we just sent back the point
         if msg == "exception":
+            # the reader thread reported an error
             raise ExecutionFailure(
                 "Reporting failure from data thread"
             ) from value
+        if msg == "eof":
+            # the main process wants to exit
+            raise ValueError(
+                "Worker processes was asked to exit while waiting for data"
+            )
         assert msg == subject
 
         return data
@@ -1031,10 +1052,12 @@ class CuboidThreadedDatasetBase(CuboidDatasetBase):
             If it's zero, meaning only the main process will process the
             batches, we still use a sub-thread to read the data. If you don't
             wish this, don't call `start_dataset_thread` and it'll be loaded
-            directly in the main process.
+            directly in the main process without the sub-thread.
         """
         # include queue for host thread
         ctx = mp.get_context("spawn")
+        # we use maxsize=0 to prevent potential locking issues. But, we never
+        # actually request more than one data batch at a time over a queue
         queues = [ctx.Queue(maxsize=0) for _ in range(num_workers + 1)]
         self._worker_queues = queues
 
@@ -1047,22 +1070,25 @@ class CuboidThreadedDatasetBase(CuboidDatasetBase):
 
     def stop_dataset_thread(self) -> None:
         """
-        Must be called to shut down the sub-thread when data loading is done.
+        Must be called to shut down the data leading sub-thread when done.
 
-        This should only be called once the sub-process workers have stopped
-        reading data, otherwise, if the sub-thread exits and the processes are
-        waiting for returned data in their queues they'll never exit.
+        This should be called when the sub-process workers have stopped
+        reading data. If the worker processes are still waiting for returned
+        data in their queues, they will raise an error.
         """
         thread = self._dataset_thread
         if thread is None:
             return
 
-        self._dataset_thread = None
-        self._worker_queues = []
-
         thread.notify_to_end_thread()
         thread.clear_remaining()
         thread.join()
+
+        self._dataset_thread = None
+        # if we exit while workers are still waiting, let them know to not hang
+        for queue in self._worker_queues:
+            queue.put(("eof", None), block=False)
+        self._worker_queues = []
 
 
 class CuboidStackDataset(CuboidThreadedDatasetBase):
