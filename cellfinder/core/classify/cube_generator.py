@@ -566,19 +566,18 @@ class CuboidDatasetBase(Dataset):
         voxel cuboids for a given point.
     :param classes: The number of classes used by the network when classifying
         cuboids.
-    :param target_output: A literal indicating the type of label output dataset
-        should return during training / testing. It is one of `"cell"`
-        (it returns the `Cell` instance), `"label"` (it returns a one-hot
-        vector labeling `Cell.type - 1` as the correct class), or `None` (no
-        label is returned).
+    :param target_output: A literal indicating the type of label the dataset
+        should return during training / testing. It is one of `"index"`
+        (it returns the `index` of the point in the original `points` input
+        list), `"label"` (it returns a one-hot vector indicating the instance
+        class label - values are the valid `Cell.type` minus 1, i.e. a cell
+        would be `Cell.CELL - 1`), or `None` (no label is returned).
 
-        I.e. if it's None, we do `batch_data = dataset[i]`. Otherwise, it's
+        I.e. if it's None, we get `batch_data = dataset[i]`. Otherwise, it's
         `batch_data, batch_label = dataset[i]`.
 
-        NOTE: When passed to a `DataLoader`, `DataLoader` can only yield values
-        that are simple types, including lists and dicts, but not `Cells`. So
-        `"cell"` cannot be selected. But you can get the corresponding `Cell`
-        via the `CuboidBatchSampler`, if used.
+        Usage of `"index"` is to get the original point index. Because
+        internally, the input points may be filtered or re-ordered.
     :param augment: Whether to augment the dataset with the subsequent
         parameters.
     :param augment_likelihood: Value `[0, 1]` with the probability of a data
@@ -601,19 +600,10 @@ class CuboidDatasetBase(Dataset):
     """
 
     points_arr: torch.Tensor = None
-    """A generated Nx3 tensor. Each row is `(x, y, z)` columns with the
-    3d position of the potential cell.
+    """A generated Nx5 tensor. Each row is `(x, y, z, type, index)` columns
+    with the 3d position of the potential cell.
 
     Units are voxels in the input data, not microns.
-    """
-
-    points: Sequence[dict] = None
-    """The cells from which `points_arr` was generated. This list may have
-    different content that the `points` passed to the dataset (e.g. if edge
-    cells were filtered out), or it may be in a different order.
-
-    But all the cells in this list are the dicts representation of the cells
-    as passed in as `points`, minus any that were removed.
     """
 
     src_image_data: ImageDataBase | None = None
@@ -656,7 +646,7 @@ class CuboidDatasetBase(Dataset):
         output_axis_order: tuple[DIM, DIM, DIM, DIM] = ("y", "x", "z", "c"),
         src_image_data: ImageDataBase | None = None,
         classes: int = 2,
-        target_output: Literal["cell", "label"] | None = None,
+        target_output: Literal["index", "label"] | None = None,
         augment: bool = False,
         augment_likelihood: float = 0.9,
         flippable_axis: Sequence[int] = (0, 1, 2),
@@ -684,15 +674,18 @@ class CuboidDatasetBase(Dataset):
         if output_axis_order[-1] != "c":
             raise ValueError("output_axis_order must have c last, for now")
 
-        # it's more efficient to store it as dict, especially as it gets
-        # copied to workers
-        self.points = [p.to_dict() for p in points]
-        self.points_arr = torch.empty((len(points), 3), dtype=torch.float64)
+        # very important: we can't save the original points in the instance,
+        # because then it gets duplicated in sub-process. For many million
+        # cells, this is easily tens of GB. So only save a tensor representing
+        # the cells that can be shared in memory between processes.
+        self.points_arr = torch.empty((len(points), 5), dtype=torch.float64)
         data = self.points_arr
         for i, cell in enumerate(points):
             data[i, 0] = cell.x
             data[i, 1] = cell.y
             data[i, 2] = cell.z
+            data[i, 3] = cell.type
+            data[i, 4] = i
         # move it to shared memory so it doesn't get duplicated in workers
         data.share_memory_()
 
@@ -770,7 +763,7 @@ class CuboidDatasetBase(Dataset):
         """
         Handles `dataset[i]`, when `i` is an int.
         """
-        point = self.points[idx]
+        point = self.points_arr[idx]
         data = self.get_point_data(idx)
 
         # batch dim
@@ -789,14 +782,10 @@ class CuboidDatasetBase(Dataset):
             case None:
                 return data
 
-            case "cell":
-                label = Cell(
-                    (point["x"], point["y"], point["z"]),
-                    point["type"],
-                    point["metadata"],
-                )
+            case "index":
+                label = point[4]
             case "label":
-                cls = torch.tensor(point["type"] - 1)
+                cls = torch.tensor(point[3] - 1, dtype=torch.long)
                 label = F.one_hot(cls, num_classes=self.classes)
             case _:
                 raise ValueError(f"Unknown target value {self.target_output}")
@@ -810,8 +799,7 @@ class CuboidDatasetBase(Dataset):
         Handles `dataset[i]`, when `i` is a list of ints.
         """
         # numpy arrays can't be indexed with tuples
-        all_points = self.points
-        points = [all_points[i] for i in indices]
+        points = self.points_arr[indices, :]
 
         data = self.get_points_data(indices)
         if self._output_data_dim_reordering is not None:
@@ -829,18 +817,13 @@ class CuboidDatasetBase(Dataset):
             case None:
                 return data
 
-            case "cell":
-                labels = [
-                    Cell(
-                        (point["x"], point["y"], point["z"]),
-                        point["type"],
-                        point["metadata"],
-                    )
-                    for point in points
-                ]
+            case "index":
+                labels = points[:, 4]
             case "label":
-                cls = torch.tensor([point["type"] - 1 for point in points])
-                labels = F.one_hot(cls, num_classes=self.classes)
+                cls = points[:, 3] - 1
+                labels = F.one_hot(
+                    cls.to(torch.long), num_classes=self.classes
+                )
             case _:
                 raise ValueError(f"Unknown target value {self.target_output}")
 
@@ -885,7 +868,7 @@ class CuboidDatasetBase(Dataset):
     def get_point_data(self, point_key: int) -> torch.Tensor:
         """
         Takes a key used to identify a specific point (typically the index in
-        the points list) and returns the cuboid centered around the point.
+        points_arr) and returns the cuboid centered around the point.
 
         This handles getting the cuboids for `dataset[i]`, when `i` is an int.
 
@@ -1131,16 +1114,18 @@ class CuboidStackDataset(CuboidThreadedDatasetBase):
         self.stack_shape = signal_array.shape
 
         mask = torch.tensor(
-            [self.point_has_full_cuboid(p.tolist()) for p in self.points_arr],
+            [
+                self.point_has_full_cuboid(p[:3].tolist())
+                for p in self.points_arr
+            ],
             dtype=torch.bool,
         )
         self.points_arr = self.points_arr[mask, :]
         # move it to shared memory so it doesn't get duplicated in workers
         self.points_arr.share_memory_()
-        self.points = [p for sel, p in zip(mask, self.points) if sel]
 
         self.src_image_data = CachedArrayStackImageData(
-            points_arr=self.points_arr,
+            points_arr=self.points_arr[:, :3],
             input_arrays=data_arrays,
             data_axis_order=self.axis_order,
             max_axis_0_cuboids_buffered=max_axis_0_cuboids_buffered,
@@ -1220,7 +1205,7 @@ class CuboidTiffDataset(CuboidThreadedDatasetBase):
             self.points_norm_arr = torch.tensor(points_normalization)
 
         self.src_image_data = CachedTiffCuboidImageData(
-            points_arr=self.points_arr,
+            points_arr=self.points_arr[:, :3],
             filenames_arr=filenames_arr,
             data_axis_order=self.axis_order,
             max_cuboids_buffered=max_cuboids_buffered,

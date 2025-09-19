@@ -1,4 +1,5 @@
 import os
+from copy import deepcopy
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Tuple
@@ -179,14 +180,16 @@ def main(
 
     # only go through the "extractable" points
     k = 0
+    # the sampler doesn't auto shuffle, so the classification order (i.e. order
+    # in `predictions`) is the same order as the sampler returns the batches.
+    # Use that to get the corresponding row in points_arr, which gives us the
+    # `index` of the row in the original point in the input points list
     for arr in sampler:
         for i in arr:
-            # it is in x, y, z order
-            point = dataset.points_arr[i].tolist()
-            cell = Cell(
-                point,
-                cell_type=(predictions[k] + 1).item(),
-            )
+            p_idx = int(dataset.points_arr[i, 4].item())
+            # don't use the original cell, use a copy
+            cell = deepcopy(points[p_idx])
+            cell.type = int((predictions[k] + 1).item())
             points_list.append(cell)
             k += 1
 

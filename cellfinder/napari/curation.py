@@ -703,7 +703,7 @@ class CurationWidget(QWidget):
                 axis_order=("z", "y", "x"),
                 output_axis_order=("z", "y", "x", "c"),
                 max_axis_0_cuboids_buffered=1,
-                target_output="cell",
+                target_output="index",
             )
             # use sampler and data loader so we can use the z sorting for
             # better caching. Potentially also for multiple workers.
@@ -721,9 +721,13 @@ class CurationWidget(QWidget):
 
             i = 0
             for batch in sampler:
-                images, cells = cube_generator[batch]
-                for image, cell in zip(images, cells):
+                # manually sample the dataset using the sampler so it's sampled
+                # ordered by z, for efficiency
+                images, points_index = cube_generator[batch]
+                for image, point_index in zip(images, points_index):
                     image = image.numpy()
+                    # the  output is the index of the input points
+                    cell = cell_list[int(point_index.item())]
                     for channel in range(image.shape[-1]):
                         save_cube(
                             image,

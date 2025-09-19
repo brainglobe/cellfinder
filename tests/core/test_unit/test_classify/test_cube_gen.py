@@ -76,10 +76,10 @@ def to_numpy_cubes(
     volume: np.ndarray, points: Sequence[PT_TYPE], cube_size: PT_TYPE
 ) -> tuple[list[np.ndarray], torch.Tensor]:
     """Extracts numpy cubes around the points in the volume."""
-    points_arr = torch.empty((len(points), 3))
+    points_arr = torch.empty((len(points), 5))
     cubes = []
     for i, point in enumerate(points):
-        points_arr[i] = torch.tensor(point)
+        points_arr[i] = torch.tensor([*point, 0, i])
         cube = volume[tuple(point_to_slice(point, cube_size))]
         cubes.append(cube)
     return cubes, points_arr
@@ -183,7 +183,7 @@ def test_array_image_data(unique_int):
         max_axis_0_cuboids_buffered=3,
         data_axis_order=("x", "y", "z"),
         cuboid_size=cube_size,
-        points_arr=points_arr,
+        points_arr=points_arr[:, :3],
     )
 
     assert stack.cuboid_with_channels_size == (*cube_size, 2)
@@ -213,7 +213,7 @@ def test_tiff_image_data(unique_int, tmp_path):
         max_cuboids_buffered=3,
         data_axis_order=("x", "y", "z"),
         cuboid_size=cube_size,
-        points_arr=points_arr,
+        points_arr=points_arr[:, :3],
     )
 
     assert tiffs.cuboid_with_channels_size == (*cube_size, 2)
@@ -239,7 +239,7 @@ def test_array_image_data_cache(unique_int, cached, mocker: MockerFixture):
         max_axis_0_cuboids_buffered=cached,
         data_axis_order=("x", "y", "z"),
         cuboid_size=cube_size,
-        points_arr=points_arr,
+        points_arr=points_arr[:, :3],
     )
 
     spy = mocker.spy(stack, "read_plane")
@@ -278,7 +278,7 @@ def test_tiff_image_data_cache(
         max_cuboids_buffered=cached,
         data_axis_order=("x", "y", "z"),
         cuboid_size=cube_size,
-        points_arr=points_arr,
+        points_arr=points_arr[:, :3],
     )
 
     spy = mocker.spy(tiffs, "read_cuboid")
@@ -690,7 +690,7 @@ def test_dataset_dataloader_sampler(
     assert args == batch_idx
 
 
-@pytest.mark.parametrize("target_output", ["cell", "label", None])
+@pytest.mark.parametrize("target_output", ["index", "label", None])
 def test_dataset_target_output(unique_int, target_output):
     """Checks that dataset's output for different requested target labels."""
     stack, points, cubes = get_sample_dataset_12(unique_int, target_output)
@@ -704,17 +704,14 @@ def test_dataset_target_output(unique_int, target_output):
         data = {k: v[0] for k, v in data.items()}
 
     assert_dataset_cubes_matches_cubes(cubes, data, [(1, 5), (1,)])
-    if target_output == "cell":
-        # labels should be cells
-        cells = {
-            (1, 5): [Cell(points[1], 1), Cell(points[5], 1)],
-            (1,): [
-                Cell(points[1], 1),
-            ],
-            1: Cell(points[1], 1),
-            5: Cell(points[5], 1),
-        }
-        assert cells == target
+    if target_output == "index":
+        # labels are sample indices
+        assert torch.equal(
+            target[(1, 5)], torch.tensor([1, 5], dtype=torch.int)
+        )
+        assert torch.equal(target[(1,)], torch.tensor([1], dtype=torch.int))
+        assert torch.equal(target[1], torch.tensor(1, dtype=torch.int))
+        assert torch.equal(target[5], torch.tensor(5, dtype=torch.int))
     elif target_output == "label":
         # labels are one-hot vectors
         assert torch.equal(
@@ -897,7 +894,7 @@ def test_get_data_cuboid_range():
 
 def test_img_data_base_bad_args():
     """Validate input parameters."""
-    points = torch.empty((5, 3))
+    points = torch.empty((5, 5))
 
     with pytest.raises(ValueError):
         ImageDataBase(points_arr=points, data_axis_order=("x", "y"))
@@ -905,7 +902,7 @@ def test_img_data_base_bad_args():
 
 def test_img_data_not_impl():
     """Validate calling base, not-implemented functions."""
-    points = torch.empty((5, 3))
+    points = torch.empty((5, 5))
     data = ImageDataBase(points_arr=points)
 
     with pytest.raises(NotImplementedError):
@@ -918,7 +915,7 @@ def test_img_data_not_impl():
 
 def test_img_stack_not_impl():
     """Validate calling base, not-implemented functions."""
-    points = torch.empty((5, 3))
+    points = torch.empty((5, 5))
     data = CachedStackImageDataBase(points_arr=points)
 
     with pytest.raises(NotImplementedError):
@@ -927,7 +924,7 @@ def test_img_stack_not_impl():
 
 def test_img_cuboid_not_impl():
     """Validate calling base, not-implemented functions."""
-    points = torch.empty((5, 3))
+    points = torch.empty((5, 5))
     data = CachedCuboidImageDataBase(points_arr=points)
 
     with pytest.raises(NotImplementedError):
@@ -937,7 +934,7 @@ def test_img_cuboid_not_impl():
 def test_img_cuboid_bad_arg(tmp_path):
     """Validate input parameters."""
     # 2 points but only 1 filename set
-    points = np.empty(2, dtype=[("x", "<f8"), ("y", "<f8"), ("z", "<f8")])
+    points = torch.empty((2, 5))
     filenames = np.array(
         [(str(tmp_path / "a.tif"), str(tmp_path / "b.tif"))]
     ).astype(np.str_)
@@ -952,16 +949,18 @@ def test_img_cuboid_bad_arg(tmp_path):
     with pytest.raises(ValueError):
         # no filenames, 1 point
         CachedTiffCuboidImageData(
-            points_arr=points[:1], filenames_arr=filenames[:0]
+            points_arr=points[:1, :3], filenames_arr=filenames[:0]
         )
 
     with pytest.raises(ValueError):
         # 1 filename set, but 2 points
-        CachedTiffCuboidImageData(points_arr=points, filenames_arr=filenames)
+        CachedTiffCuboidImageData(
+            points_arr=points[:, :3], filenames_arr=filenames
+        )
 
     # one of each - should work
     data = CachedTiffCuboidImageData(
-        points_arr=points[:1], filenames_arr=filenames
+        points_arr=points[:1, :3], filenames_arr=filenames
     )
     assert len(data.points_arr)
 
@@ -1005,7 +1004,7 @@ def test_dataset_base_bad_args():
 
 def test_dataset_manual_image_data():
     """Check that we can manually pass an image data instance to dataset."""
-    points = torch.zeros((1, 3))
+    points = torch.zeros((1, 5))
     data = CachedStackImageDataBase(
         points_arr=points,
         data_axis_order=("x", "y", "z"),
@@ -1126,7 +1125,9 @@ def test_point_has_full_cuboid_unscaled():
     )
     assert len(dataset.points_arr) == 1
     p = dataset.points_arr[0].tolist()
-    assert tuple(p) == (5, 15, 15)
+    assert tuple(p[:3]) == (5, 15, 15)
+    assert p[3] == Cell.UNKNOWN
+    assert p[4] == 0
 
 
 def test_point_has_full_cuboid_scaled():
@@ -1151,14 +1152,17 @@ def test_point_has_full_cuboid_scaled():
     )
     assert len(dataset.points_arr) == 1
     p = dataset.points_arr[0].tolist()
-    assert tuple(p) == (10, 15, 15)
+    assert tuple(p[:3]) == (10, 15, 15)
+    assert p[3] == Cell.UNKNOWN
+    assert p[4] == 0
 
 
 def test_points_unchanged():
     volume = np.empty((30, 60, 60, 2), dtype=np.uint16)
     cell = Cell((30, 30, 15), Cell.UNKNOWN)
+    cell2 = Cell((30, 33, 15), Cell.CELL)
     dataset = CuboidStackDataset(
-        points=[cell],
+        points=[cell, cell2],
         data_voxel_sizes=(5, 1, 1),
         augment=False,
         network_cuboid_voxels=(20, 50, 50),
@@ -1166,7 +1170,13 @@ def test_points_unchanged():
         background_array=volume[..., 1],
     )
 
-    assert len(dataset.points) == 1
-    assert dataset.points[0] == cell.to_dict()
-    x, y, z = dataset.points_arr[0].tolist()
+    assert len(dataset.points_arr) == 2
+    x, y, z, tp, i = dataset.points_arr[0].tolist()
     assert (x, y, z) == (30, 30, 15)
+    assert tp == Cell.UNKNOWN
+    assert i == 0
+
+    x, y, z, tp, i = dataset.points_arr[1].tolist()
+    assert (x, y, z) == (30, 33, 15)
+    assert tp == Cell.CELL
+    assert i == 1
