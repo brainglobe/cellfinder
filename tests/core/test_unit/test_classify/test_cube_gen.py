@@ -1097,6 +1097,23 @@ def test_stack_dataset_bad_arg_diff_shapes():
         )
 
 
+@pytest.mark.parametrize("channel", ["signal", "background"])
+def test_stack_dataset_bad_arg_signal_dtype(channel):
+    """Validates that we check signal and background must have same shape."""
+    volume_bad = np.empty((30, 60, 60), dtype=np.float64)
+    volume_good = np.empty((30, 60, 60), dtype=np.float32)
+
+    with pytest.raises(ValueError):
+        CuboidStackDataset(
+            points=[Cell((30, 30, 15), Cell.UNKNOWN)],
+            data_voxel_sizes=(5, 1, 1),
+            signal_array=volume_bad if channel == "signal" else volume_good,
+            background_array=(
+                volume_bad if channel == "background" else volume_good
+            ),
+        )
+
+
 def test_stack_dataset_bad_arg_bad_shape():
     """Validates that we check signal/background are 4-dim."""
     volume = np.empty((30, 60, 60, 2, 2), dtype=np.uint16)
@@ -1213,3 +1230,103 @@ def test_points_unchanged():
     assert (x, y, z) == (30, 33, 15)
     assert tp == Cell.CELL
     assert i == 1
+
+
+def _get_volume_with_stats(normalize):
+    sig_norm = back_norm = None
+    sig_mean, sig_std = 222, 20
+    back_mean, back_std = 555, 5
+    if normalize:
+        sig_norm = sig_mean, sig_std
+        back_norm = back_mean, back_std
+
+    volume = np.empty((20, 20, 30, 2), dtype=np.float32)
+    volume[..., 0] = np.random.normal(sig_mean, sig_std, (20, 20, 30))
+    volume[..., 1] = np.random.normal(back_mean, back_std, (20, 20, 30))
+
+    return (
+        volume,
+        sig_norm,
+        back_norm,
+        (sig_mean, sig_std),
+        (back_mean, back_std),
+    )
+
+
+def _check_cube_normalization(
+    stack, sig_mean, sig_std, back_mean, back_std, normalize
+):
+    # get a single and a batch of 2 cubes
+    cube_1 = stack[0]
+    cube_2 = stack[[0, 0]]
+    for cube in [cube_1, cube_2]:
+        for ch, ex_mean, ex_std in [
+            (0, sig_mean, sig_std),
+            (1, back_mean, back_std),
+        ]:
+            # get output stats
+            std, mean = torch.std_mean(cube[..., ch])
+
+            lower_mean = ex_mean * 0.8
+            upper_mean = ex_mean * 1.2
+            # if normalized, it should be standard normal
+            if normalize:
+                ex_mean, ex_std = 0, 1
+                lower_mean = -0.2
+                upper_mean = 0.2
+
+            assert lower_mean <= mean.item() < upper_mean
+            assert ex_std * 0.8 <= std.item() < ex_std * 1.2
+
+
+@pytest.mark.parametrize("normalize", [True, False])
+def test_array_image_data_normalization(normalize):
+    """
+    Checks that the data returned by the CuboidStackDataset is normalized
+    if requested, otherwise it shouldn't be normalized.
+    """
+    volume, sig_norm, back_norm, sig_stat, back_stat = _get_volume_with_stats(
+        normalize
+    )
+
+    stack = CuboidStackDataset(
+        points=[Cell((10, 10, 10), Cell.UNKNOWN)],
+        data_voxel_sizes=(1, 1, 1),
+        network_voxel_sizes=(1, 1, 1),
+        network_cuboid_voxels=(5, 5, 8),
+        axis_order=("x", "y", "z"),
+        output_axis_order=("x", "y", "z", "c"),
+        signal_array=volume[..., 0],
+        background_array=volume[..., 1],
+        signal_normalization=sig_norm,
+        background_normalization=back_norm,
+    )
+    _check_cube_normalization(stack, *sig_stat, *back_stat, normalize)
+
+
+@pytest.mark.parametrize("normalize", [True, False])
+def test_tiff_image_data_normalization(normalize, tmp_path):
+    """
+    Checks that the data returned by the CuboidTiffDataset is normalized
+    if requested, otherwise it shouldn't be normalized.
+    """
+    volume, sig_norm, back_norm, sig_stat, back_stat = _get_volume_with_stats(
+        normalize
+    )
+
+    points = [(10, 10, 10)]
+    cube_size = 5, 5, 8
+    filenames, _, _ = to_tiff_cubes(volume, cube_size, points, tmp_path)
+
+    tiffs = CuboidTiffDataset(
+        points=[Cell(p, Cell.UNKNOWN) for p in points],
+        data_voxel_sizes=(1, 1, 1),
+        network_voxel_sizes=(1, 1, 1),
+        network_cuboid_voxels=(5, 5, 8),
+        axis_order=("x", "y", "z"),
+        output_axis_order=("x", "y", "z", "c"),
+        points_filenames=filenames,
+        points_normalization=[[sig_norm, back_norm]] if normalize else None,
+    )
+
+    _check_cube_normalization(tiffs, *sig_stat, *back_stat, normalize)

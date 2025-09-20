@@ -4,6 +4,7 @@ from unittest.mock import patch
 import napari
 import numpy as np
 import pytest
+import yaml
 from napari.layers import Image, Points
 
 from cellfinder.napari import sample_data
@@ -45,6 +46,12 @@ def test_update_voxel_size(curation_widget: CurationWidget):
     curation_widget.voxel_sizes_boxes[1].setValue(4)
     curation_widget.voxel_sizes_boxes[2].setValue(5)
     assert curation_widget.voxel_sizes == [3, 4, 5]
+
+
+def test_update_normalization_down_sampling(curation_widget: CurationWidget):
+    assert curation_widget.normalization_down_sampling == 32
+    curation_widget.norm_sampling_box.setValue(8)
+    assert curation_widget.normalization_down_sampling == 8
 
 
 @pytest.mark.xfail(reason="See discussion in #443", raises=AssertionError)
@@ -97,6 +104,19 @@ def test_cell_marking(curation_widget, tmp_path):
     # Check that two .tif files are saved for both cells and non_cells
     assert len(list((tmp_path / "non_cells").glob("*.tif"))) == 2
     assert len(list((tmp_path / "cells").glob("*.tif"))) == 2
+
+    with open(tmp_path / "training.yaml", "r") as fh:
+        yaml_data = yaml.safe_load(fh)
+
+    for item in yaml_data["data"]:
+        assert "cube_dir" in item
+        assert "signal_channel" in item
+        assert "bg_channel" in item
+        assert "type" in item
+        assert "signal_mean" in item
+        assert "signal_std" in item
+        assert "bg_mean" in item
+        assert "bg_std" in item
 
 
 @pytest.fixture

@@ -1,0 +1,19 @@
+data:
+- bg_channel: 1
+  cell_def: ''
+  cube_dir: tests/data/integration/training/cells
+  signal_channel: 0
+  type: cell
+  signal_mean: 241.31
+  signal_std: 154.92
+  bg_mean: 650.94
+  bg_std: 217.90
+- bg_channel: 1
+  cell_def: ''
+  cube_dir: tests/data/integration/training/cells
+  signal_channel: 0
+  type: no_cell
+  signal_mean: 231.28
+  signal_std: 79.60
+  bg_mean: 836.21
+  bg_std: 348.35

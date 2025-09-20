@@ -45,6 +45,8 @@ def main(
     detect_callback: Optional[Callable[[int], None]] = None,
     classify_callback: Optional[Callable[[int], None]] = None,
     detect_finished_callback: Optional[Callable[[list], None]] = None,
+    classify_normalize_channels: bool = False,
+    classify_normalization_down_sampling: int = 32,
 ) -> List[Cell]:
     """
     Parameters
@@ -156,6 +158,15 @@ def main(
         Called with the batch number that has just finished.
     detect_finished_callback : Callable[list], optional
         Called after detection is finished with the list of detected points.
+    classify_normalize_channels : bool
+        If True, the signal and background data will be each normalized
+        to a mean of zero and standard deviation of 1 before classification.
+        Defaults to False.
+    classify_normalization_down_sampling : int
+        If `normalize_channels` is True, the data arrays will be down-sampled
+        in the first axis by this value before calculating their statistics
+        before classification. E.g. a value of 2 means every second plane will
+        be used. Defaults to 32.
     """
     from cellfinder.core.classify import classify
     from cellfinder.core.detect import detect
@@ -215,6 +226,8 @@ def main(
                 model_weights,
                 network_depth,
                 callback=classify_callback,
+                normalize_channels=classify_normalize_channels,
+                normalization_down_sampling=classify_normalization_down_sampling,
             )
         else:
             logger.info("No candidates, skipping classification")

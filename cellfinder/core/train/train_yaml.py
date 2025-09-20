@@ -374,12 +374,11 @@ def get_dataloader(
     points_norm = None
     if normalize_channels:
         points_norm = []
-        for _, channels_norm in filenames:
+        for names, channels_norm in filenames:
             # check the first channel for metadata. We expect all or none
             # of the channels to have metadata
             if not channels_norm[0]:
-                # CuboidTiffDataset checks that we either have no or all norms
-                continue
+                raise ValueError(f"Data mean and std not found for {names}")
 
             norms = [(ch["mean"], ch["std"]) for ch in channels_norm]
             points_norm.append(norms)
@@ -553,7 +552,7 @@ def run(
             validation_dataset.start_dataset_thread(n_processes)
     try:
         model.fit(
-            training_data_loader,
+            x=training_data_loader,
             validation_data=validation_data_loader,
             epochs=epochs,
             callbacks=callbacks,

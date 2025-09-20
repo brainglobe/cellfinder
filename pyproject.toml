@@ -51,6 +51,7 @@ dev = [
     "pytest-qt",
     "pytest-timeout",
     "pytest",
+    "PyYAML",
     "tox",
     "pooch >= 1",
 ]

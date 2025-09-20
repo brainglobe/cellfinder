@@ -251,6 +251,7 @@ class CurationWidget(QWidget):
             "channels during training.",
         )
         box_norm.valueChanged.connect(self._set_normalization_down_sampling)
+        self.norm_sampling_box = box_norm
         self.training_data_cell_choice, _ = add_combobox(
             self.load_data_layout,
             "Training data (cells)",

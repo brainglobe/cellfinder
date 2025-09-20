@@ -86,6 +86,14 @@ def main(
     callback : Callable[int], optional
         A callback function that is called during classification. Called with
         the batch number once that batch has been classified.
+    normalize_channels : bool
+        If True, the signal and background data will be each normalized
+        to a mean of zero and standard deviation of 1. Defaults to False.
+    normalization_down_sampling : int
+        If `normalize_channels` is True, the data arrays will be down-sampled
+        in the first axis by this value before calculating their statistics.
+        E.g. a value of 2 means every second plane will be used. Defaults to
+        32.
     """
     if signal_array.ndim != 3:
         raise IOError("Signal data must be 3D")

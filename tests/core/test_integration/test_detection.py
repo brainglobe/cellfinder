@@ -178,13 +178,15 @@ def test_callbacks(signal_array, background_array, no_free_cpus):
     assert npoints == 120, f"Expected 120 points, found {npoints}"
 
 
-def test_synthetic_data(synthetic_bright_spots, no_free_cpus):
+@pytest.mark.parametrize("normalize", [True, False])
+def test_synthetic_data(synthetic_bright_spots, no_free_cpus, normalize):
     signal_array, background_array = synthetic_bright_spots
     detected = main(
         signal_array,
         background_array,
         voxel_sizes,
         n_free_cpus=no_free_cpus,
+        classify_normalize_channels=normalize,
     )
     assert len(detected) == 8
 
