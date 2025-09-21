@@ -15,8 +15,8 @@ from cellfinder.napari.sample_data import load_sample
 
 
 @pytest.fixture
-def get_detect_widget(make_napari_viewer):
-    viewer = make_napari_viewer()
+def get_detect_widget(create_napari_viewer):
+    viewer = create_napari_viewer()
     widget = detect_widget()
     for layer in load_sample():
         viewer.add_layer(napari.layers.Image(layer[0], **layer[1]))
@@ -43,7 +43,6 @@ def test_detect_worker():
     worker.work()
 
 
-@pytest.mark.xfail(reason="See discussion in #443", raises=AssertionError)
 @pytest.mark.parametrize(
     argnames="analyse_local",
     argvalues=[True, False],  # increase test coverage by covering both cases
@@ -68,7 +67,6 @@ def test_run_detect_without_inputs():
         assert show_info.called
 
 
-@pytest.mark.xfail(reason="See discussion in #443", raises=AssertionError)
 def test_reset_defaults(get_detect_widget):
     """Smoke test that restore defaults doesn't error."""
     get_detect_widget.reset_button.clicked()

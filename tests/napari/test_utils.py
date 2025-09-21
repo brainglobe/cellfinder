@@ -1,5 +1,4 @@
 import numpy as np
-import pytest
 from brainglobe_utils.cells.cells import Cell
 
 from cellfinder.napari.utils import (
@@ -11,8 +10,7 @@ from cellfinder.napari.utils import (
 )
 
 
-@pytest.mark.xfail(reason="See discussion in #443", raises=AssertionError)
-def test_add_classified_layers(make_napari_viewer):
+def test_add_classified_layers(create_napari_viewer):
     """Smoke test for add_classified_layers utility"""
     cell_pos = [1, 2, 3]
     unknown_pos = [4, 5, 6]
@@ -20,7 +18,7 @@ def test_add_classified_layers(make_napari_viewer):
         Cell(pos=cell_pos, cell_type=Cell.CELL),
         Cell(pos=unknown_pos, cell_type=Cell.UNKNOWN),
     ]
-    viewer = make_napari_viewer()
+    viewer = create_napari_viewer()
     n_layers = len(viewer.layers)
     # adds a "detected" and a "rejected layer"
     add_classified_layers(

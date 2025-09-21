@@ -13,8 +13,8 @@ from cellfinder.napari.train.train_containers import (
 
 
 @pytest.fixture
-def get_training_widget(make_napari_viewer):
-    viewer = make_napari_viewer()
+def get_training_widget(create_napari_viewer):
+    viewer = create_napari_viewer()
     widget = training_widget()
     _, widget = viewer.window.add_plugin_dock_widget(
         plugin_name="cellfinder", widget_name="Train network"
@@ -23,7 +23,6 @@ def get_training_widget(make_napari_viewer):
     return widget
 
 
-@pytest.mark.xfail(reason="See discussion in #443", raises=AssertionError)
 def test_reset_to_defaults(get_training_widget):
     """
     A simple test for the reset button.
@@ -46,7 +45,6 @@ def test_reset_to_defaults(get_training_widget):
     assert get_training_widget.test_fraction.value == 0.10
 
 
-@pytest.mark.xfail(reason="See discussion in #443", raises=AssertionError)
 def test_run_with_no_yaml_files(get_training_widget):
     """
     Checks whether expected info message will be shown to user if they don't
@@ -59,7 +57,6 @@ def test_run_with_no_yaml_files(get_training_widget):
         )
 
 
-@pytest.mark.xfail(reason="See discussion in #443", raises=AssertionError)
 def test_run_with_virtual_yaml_files(get_training_widget):
     """
     Checks that training is run with expected set of parameters.
