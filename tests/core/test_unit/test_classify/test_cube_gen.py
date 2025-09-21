@@ -660,7 +660,7 @@ def test_dataset_dataloader_worker_exit_early():
     dataset, points, cubes = get_sample_dataset_12(0)
     dataloader = DataLoader(
         dataset,
-        batch_size=3,
+        batch_size=1,
         shuffle=False,
         num_workers=2,
         drop_last=False,
@@ -676,7 +676,9 @@ def test_dataset_dataloader_worker_exit_early():
 
     # this should raise an exception that the workers were closed
     with pytest.raises(ValueError):
-        next(it)
+        # there might be some data already fetched, but not more than ~4
+        for i in range(10):
+            next(it)
 
 
 @pytest.mark.parametrize(
