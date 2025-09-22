@@ -186,7 +186,7 @@ def test_synthetic_data(synthetic_bright_spots, no_free_cpus, normalize):
         background_array,
         voxel_sizes,
         n_free_cpus=no_free_cpus,
-        classify_normalize_channels=normalize,
+        normalize_channels=normalize,
     )
     assert len(detected) == 8
 
