@@ -82,6 +82,8 @@ class OptionalTrainingInputs(InputContainer):
     batch_size: int = 16
     test_fraction: float = 0.1
     normalize_channels: bool = False
+    lr_schedule: list[int] | tuple[int, ...] = ()
+    lr_multiplier: float = 0.1
 
     def as_core_arguments(self) -> dict:
         arguments = super().as_core_arguments()
@@ -107,6 +109,12 @@ class OptionalTrainingInputs(InputContainer):
                 "test_fraction", step=0.05, min=0.05, max=0.95
             ),
             normalize_channels=cls._custom_widget("normalize_channels"),
+            lr_schedule=cls._custom_widget(
+                "lr_schedule", custom_label="LR schedule"
+            ),
+            lr_multiplier=cls._custom_widget(
+                "lr_multiplier", custom_label="LR multiplier"
+            ),
         )
 
 

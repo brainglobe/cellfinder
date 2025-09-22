@@ -65,6 +65,8 @@ def training_widget() -> FunctionGui:
         save_progress: bool,
         epochs: int,
         learning_rate: float,
+        lr_schedule: list[int],
+        lr_multiplier: float,
         batch_size: int,
         test_fraction: float,
         misc_options: dict,
@@ -109,6 +111,15 @@ def training_widget() -> FunctionGui:
             (How many times to use each training data point)
         learning_rate : float
             Learning rate for training the model
+        lr_schedule : list of ints
+            If not empty, the list of epochs when to multiply the current
+            learning rate by the lr_multiplier. E.g. if it's [10, 25], we start
+            with a learning rate of 0.001, and `lr_multiplier` is 0.1, then the
+            LR will be 0.001 for epochs 0-9, 0.0001 for 10-24, and 00001
+            for epoch 25 and beyond.
+        lr_multiplier : float
+            The multiplier by which to multiply the previous learning rate
+            at the epochs listed in `lr_schedule`.
         batch_size : int
             Training batch size
         test_fraction : float
@@ -141,6 +152,8 @@ def training_widget() -> FunctionGui:
             batch_size,
             test_fraction,
             normalize_channels,
+            lr_schedule,
+            lr_multiplier,
         )
 
         misc_training_inputs = MiscTrainingInputs(number_of_free_cpus)
