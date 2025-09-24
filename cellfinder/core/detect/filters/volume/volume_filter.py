@@ -177,12 +177,12 @@ class VolumeFilter:
         # should only have 2d filter processors on the cpu
         assert bool(processors) == cpu
 
-        # seed the queue with tokens for the buffers
+        # seed our queue with tokens that give access to their buffers
         for token in range(len(buffers)):
             thread.send_msg_to_thread(token)
 
         for z in range(start_plane, end_plane, batch_size):
-            # convert the data to the right type
+            # convert the input data to the right type
             np_data = data_converter(data[z : z + batch_size, :, :])
             # if we ran out of batches, we are done!
             n = np_data.shape[0]
@@ -190,19 +190,28 @@ class VolumeFilter:
 
             # thread/underlying queues get first crack at msg. Unless we get
             # eof, this will block until a buffer is returned from the main
-            # thread for reuse
+            # thread for reuse, or give us a buffer if we have unused buffers
             token = thread.get_msg_from_mainthread()
             if token is EOFSignal:
                 return
 
-            # buffer is free, get it from token
+            # buffer is free, get it from its token
             tensor, masks = buffers[token]
 
             # for last batch, it can be smaller than normal so only set up to n
             tensor[:n, :, :] = torch.from_numpy(np_data)
             tensor = tensor[:n, :, :]
+            if masks is not None:
+                masks = masks[:n]
+            # For CPU, we send the tensor token to the 2d filtering processes
+            # who have access to the tensors already. They overwrite the data
+            # in the tensor with the filtered data and let the main thread
+            # know. For GPU, we don't use these external processes, so we send
+            # the tensor directly, after moving it to the device. Either way,
+            # we don't reuse the tensor until the main thread let us know its
+            # free
             if not cpu:
-                # send to device - it won't block here because we pinned memory
+                # send to device - it won't block here if we pinned memory
                 tensor = tensor.to(device=device, non_blocking=True)
 
             # if used, send each plane in batch to processor
@@ -213,7 +222,7 @@ class VolumeFilter:
                     process.send_msg_to_thread((token, i))
 
             # tell the main thread to wait for processors (if used)
-            msg = token, tensor, masks, used_processors, n
+            msg = token, np_data, tensor, masks, used_processors, n
 
             if n < batch_size:
                 # on last batch, we are also done after this
@@ -326,27 +335,28 @@ class VolumeFilter:
             # feeder thread exits at the end, causing a eof to be sent
             if msg is EOFSignal:
                 break
-            token, tensor, masks, used_processors, n = msg
-            # this token is in use until we return it
+            token, np_data, tensor, masks, used_processors, n = msg
+            # this token is in use until we return it, meaning tensor is in use
             processing_tokens.append(token)
 
             if cpu:
                 # we did 2d filtering in different process. Make sure all the
-                # planes are done filtering. Each msg from feeder thread has
-                # corresponding msg for each used processor (unless exception)
+                # planes in the tensor/masks are done filtering. Each msg from
+                # feeder thread has corresponding msg for each used processor
+                # (unless exception), which corresponds to a plane
                 for process in used_processors:
                     process.get_msg_from_thread()
-                # batch size can change at the end so resize buffer
-                planes = tensor[:n, :, :]
-                masks = masks[:n, :, :]
+                planes = tensor
             else:
                 # we're not doing 2d filtering in different process
                 planes, masks = tile_processor.get_tile_mask(tensor)
 
-            self.ball_filter.append(planes, masks)
+            self.ball_filter.append(planes, masks, np_data)
             if self.ball_filter.ready:
                 self.ball_filter.walk()
                 middle_planes = self.ball_filter.get_processed_planes()
+                # we always include the raw planes, even if we don't use it
+                raw_planes = self.ball_filter.get_raw_planes()
 
                 # at this point we know input tensor can be reused - return
                 # it so feeder thread can load more data into it
@@ -364,7 +374,9 @@ class VolumeFilter:
                 if token is EOFSignal:
                     break
                 # send it more data and return the token
-                cells_thread.send_msg_to_thread((middle_planes, token))
+                cells_thread.send_msg_to_thread(
+                    (middle_planes, raw_planes, token)
+                )
 
     @inference_wrapper
     def _run_filter_thread(
@@ -404,18 +416,18 @@ class VolumeFilter:
             # convert plane to the type needed by detection system
             # we should not need scaling because throughout
             # filtering we make sure result fits in this data type
-            middle_planes, token = msg
+            middle_planes, raw_planes, token = msg
             detection_middle_planes = detection_converter(middle_planes)
 
             logger.debug(f"🏫 Detecting structures for planes {self.z}+")
-            for plane, detection_plane in zip(
-                middle_planes, detection_middle_planes
+            for raw_plane, plane, detection_plane in zip(
+                raw_planes, middle_planes, detection_middle_planes
             ):
                 if save_planes:
                     self.save_plane(plane.astype(original_dtype))
 
                 previous_plane = detector.process(
-                    detection_plane, previous_plane
+                    detection_plane, previous_plane, raw_plane
                 )
 
                 if callback is not None:
@@ -452,26 +464,32 @@ class VolumeFilter:
 
         root_settings = self.settings
         max_cell_volume = settings.max_cell_volume
+        use_centre_of_intensity = settings.detect_centre_of_intensity
 
         # valid cells
         cells = []
         # regions that must be split into cells
         needs_split = []
         structures = self.cell_detector.get_structures().items()
+        intensities = self.cell_detector.get_structures_intensities()
         logger.debug(f"Processing {len(structures)} found cells")
 
         # first get all the cells that are not clusters
         for cell_id, cell_points in structures:
+            intensity = None
+            # if we don't use COI, don't pass on intensity. That'll disable it
+            if use_centre_of_intensity:
+                intensity = intensities[cell_id]
             cell_volume = len(cell_points)
 
             if cell_volume < max_cell_volume:
-                cell_centre = get_structure_centre(cell_points)
+                cell_centre = get_structure_centre(cell_points, intensity)
                 cells.append(Cell(cell_centre.tolist(), Cell.UNKNOWN))
             else:
                 if cell_volume < settings.max_cluster_size:
-                    needs_split.append((cell_id, cell_points))
+                    needs_split.append((cell_id, cell_points, intensity))
                 else:
-                    cell_centre = get_structure_centre(cell_points)
+                    cell_centre = get_structure_centre(cell_points, intensity)
                     cells.append(Cell(cell_centre.tolist(), Cell.ARTIFACT))
 
         if not needs_split:
@@ -516,8 +534,8 @@ def _split_cells(arg, settings: DetectionSettings):
     # likely small and using multiple threads would cost more in overhead than
     # is worth. num threads can be set only at processes level.
     torch.set_num_threads(1)
-    cell_id, cell_points = arg
+    cell_id, cell_points, intensity = arg
     try:
-        return split_cells(cell_points, settings=settings)
+        return split_cells(cell_points, settings=settings, intensity=intensity)
     except (ValueError, AssertionError) as err:
         raise StructureSplitException(f"Cell {cell_id}, error; {err}")

@@ -1,5 +1,5 @@
 from copy import copy
-from typing import List, Tuple, Type
+from typing import List, Optional, Tuple, Type
 
 import numpy as np
 import torch
@@ -36,11 +36,12 @@ def coords_to_volume(
     xs: np.ndarray,
     ys: np.ndarray,
     zs: np.ndarray,
+    intensity: Optional[np.ndarray],
     volume_shape: Tuple[int, int, int],
     ball_radius: int,
     dtype: Type[np.number],
     threshold_value: int,
-) -> torch.Tensor:
+) -> tuple[torch.Tensor, Optional[np.ndarray]]:
     """
     Takes the series of x, y, z points along with the shape of the volume
     that fully enclose them (also x, y, z order). It than expands the
@@ -48,6 +49,9 @@ def coords_to_volume(
     by the radius internally is set to the threshold value.
 
     The volume is then transposed and returned in the Z, Y, X order.
+
+    If `intensity` is not None, it also returns a volume, with the intensity
+    of every point set to the corresponding intensity value.
     """
     # it's faster doing the work in numpy and then returning as torch array,
     # than doing the work in torch
@@ -56,6 +60,11 @@ def coords_to_volume(
     expanded_shape = [dim_size + ball_diameter for dim_size in volume_shape]
     # volume is now x, y, z order
     volume = np.zeros(expanded_shape, dtype=dtype)
+    # use largest type. These are small volumes and not processed much except
+    # to find center, so it's not a large memory/cpu cost
+    raw_volume = None
+    if intensity is not None:
+        raw_volume = np.zeros(volume.shape, dtype=np.float64)
 
     x_min, y_min, z_min = xs.min(), ys.min(), zs.min()
 
@@ -67,13 +76,19 @@ def coords_to_volume(
 
     # set each point as the center with a value of threshold
     volume[relative_xs, relative_ys, relative_zs] = threshold_value
+    if intensity is not None:
+        raw_volume[relative_xs, relative_ys, relative_zs] = intensity
 
     volume = volume.swapaxes(0, 2)
-    return torch.from_numpy(volume)
+    if intensity is not None:
+        raw_volume = raw_volume.swapaxes(0, 2)
+    return torch.from_numpy(volume), raw_volume
 
 
 def ball_filter_imgs(
-    volume: torch.Tensor, settings: DetectionSettings
+    volume: torch.Tensor,
+    settings: DetectionSettings,
+    raw_volume: Optional[np.ndarray],
 ) -> np.ndarray:
     """
     Apply ball filtering to a 3D volume and detect cell centres.
@@ -81,12 +96,18 @@ def ball_filter_imgs(
     Uses the `BallFilter` class to perform ball filtering on the volume
     and the `CellDetector` class to detect cell centres.
 
-    Args:
-        volume (torch.Tensor): The 3D volume to be filtered (Z, Y, X order).
-        settings (DetectionSettings):
-            The settings to use.
+    Parameters
+    ----------
+    volume : torch.Tensor
+        The 3D volume to be 3D filtered (Z, Y, X order). Edited in place.
+    settings : DetectionSettings
+        The settings to use.
+    raw_volume : np.ndarray or None
+        The original input data of the same shape as `volume`, if provided.
 
-    Returns:
+    Returns
+    -------
+    centre : np.ndarray
         The 2D array of cell centres (N, 3) - X, Y, Z order.
 
     """
@@ -123,12 +144,16 @@ def ball_filter_imgs(
 
     previous_plane = None
     for z in range(0, volume.shape[0], batch_size):
-        bf.append(volume[z : z + batch_size, :, :])
+        raw_planes_in = None
+        if raw_volume is not None:
+            raw_planes_in = raw_volume[z : z + batch_size, :, :]
+        bf.append(volume[z : z + batch_size, :, :], raw_planes=raw_planes_in)
 
         if bf.ready:
             bf.walk()
 
             middle_planes = bf.get_processed_planes()
+            raw_planes = None if raw_volume is None else bf.get_raw_planes()
             n = middle_planes.shape[0]
 
             # we edit volume, but only for planes already processed that won't
@@ -140,34 +165,44 @@ def ball_filter_imgs(
 
             # convert to type needed for detection
             middle_planes = detection_convert(middle_planes)
-            for plane in middle_planes:
-                previous_plane = cell_detector.process(plane, previous_plane)
+            for i, plane in enumerate(middle_planes):
+                raw_plane = None if raw_volume is None else raw_planes[i]
+                previous_plane = cell_detector.process(
+                    plane, previous_plane, raw_plane
+                )
 
-    return cell_detector.get_cell_centres()
+    return cell_detector.get_cell_centres(settings.detect_centre_of_intensity)
 
 
 def iterative_ball_filter(
-    volume: torch.Tensor, settings: DetectionSettings
+    volume: torch.Tensor,
+    settings: DetectionSettings,
+    raw_volume: Optional[np.ndarray],
 ) -> Tuple[List[int], List[np.ndarray]]:
     """
     Apply iterative ball filtering to the given volume.
     The volume is eroded at each iteration, by subtracting 1 from the volume.
 
-    Parameters:
-        volume (torch.Tensor): The input volume. It is edited inplace.
-            Of shape Z, Y, X.
-        settings (DetectionSettings): The settings to use.
+    Parameters
+    ----------
+    volume : torch.Tensor
+        The input volume. It is edited inplace. Of shape Z, Y, X.
+    settings : DetectionSettings
+        The settings to use.
+    raw_volume : np.ndarray or None
+        The original input data of the same shape as `volume`, if provided.
 
-    Returns:
-        tuple: A tuple containing two lists:
-            The number of structures found in each iteration.
-            The cell centres found in each iteration.
+    Returns
+    -------
+    tuple: A tuple containing two lists:
+        The number of structures found in each iteration.
+        The cell centres found in each iteration.
     """
     ns = []
     centres = []
 
     for i in range(settings.n_splitting_iter):
-        cell_centres = ball_filter_imgs(volume, settings)
+        cell_centres = ball_filter_imgs(volume, settings, raw_volume)
         volume.sub_(1)
 
         n_structures = len(cell_centres)
@@ -185,7 +220,6 @@ def check_centre_in_cuboid(centre: np.ndarray, max_coords: np.ndarray) -> bool:
 
     Parameters
     ----------
-
     centre : np.ndarray
         x, y, z coordinate.
     max_coords : np.ndarray
@@ -207,26 +241,41 @@ def check_centre_in_cuboid(centre: np.ndarray, max_coords: np.ndarray) -> bool:
 
 
 def split_cells(
-    cell_points: np.ndarray, settings: DetectionSettings
+    cell_points: np.ndarray,
+    settings: DetectionSettings,
+    intensity: Optional[np.ndarray] = None,
 ) -> np.ndarray:
     """
-    Split the given cell points into individual cell centres.
+    Split the given structure built from the given cell coordinates into
+    smaller structures with their own cell centres.
 
-    Args:
-        cell_points (np.ndarray): Array of cell points with shape (N, 3),
-            where N is the number of cell points and each point is represented
-            by its x, y, and z coordinates.
-        settings (DetectionSettings) : The settings to use for splitting. It is
-            modified inplace.
+    Parameters
+    ----------
+    cell_points : np.ndarray
+        Array of cell points with shape (N, 3),
+        where N is the number of cell points and each point is represented
+        by its x, y, and z coordinates.
+    settings : DetectionSettings
+        The settings to use for splitting.
+    intensity : np.ndarray or None
+        An array of size N with the intensity of each point. Needed for
+        computing the cell centre using the center of mass method, if selected.
 
-    Returns:
-        np.ndarray: Array of absolute cell centres with shape (M, 3),
-            where M is the number of individual cells and each centre is
-            represented by its x, y, and z coordinates.
+    Returns
+    -------
+    np.ndarray: Array of absolute cell centres with shape (M, 3),
+        where M is the number of individual cells and each centre is
+        represented by its x, y, and z coordinates.
     """
     settings = copy(settings)
+    if settings.detect_centre_of_intensity and intensity is None:
+        raise ValueError(
+            "Using center of intensity, but intensity no provided"
+        )
+
     # these points are in x, y, z order columnwise, in absolute pixels
-    orig_centre = get_structure_centre(cell_points)
+    # get real unweighed center to start from
+    orig_centre = get_structure_centre(cell_points, intensity=None)
 
     xs = cell_points[:, 0]
     ys = cell_points[:, 1]
@@ -252,10 +301,11 @@ def split_cells(
     # set both to float32)
     assert settings.filtering_dtype == settings.plane_original_np_dtype
     # volume will now be z, y, x order
-    vol = coords_to_volume(
+    vol, raw_vol = coords_to_volume(
         xs,
         ys,
         zs,
+        intensity,
         volume_shape=original_bounding_cuboid_shape,
         ball_radius=ball_radius,
         dtype=settings.filtering_dtype,
@@ -279,7 +329,8 @@ def split_cells(
 
     # centres is a list of arrays of centres (1 array of centres per ball run)
     # in x, y, z order
-    ns, centres = iterative_ball_filter(vol, settings)
+    ns, centres = iterative_ball_filter(vol, settings, raw_vol)
+    # add original centre. That's valid, even if using centre of intensity
     ns.insert(0, 1)
     centres.insert(0, np.array([relative_orig_centre]))
 

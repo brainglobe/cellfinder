@@ -1,3 +1,4 @@
+import numpy as np
 import pytest
 import torch
 
@@ -24,6 +25,9 @@ def test_filter_not_ready():
 
     with pytest.raises(TypeError):
         bf.get_processed_planes()
+
+    with pytest.raises(TypeError):
+        bf.get_raw_planes()
 
     with pytest.raises(TypeError):
         bf.walk()
@@ -54,19 +58,26 @@ def test_filtered_planes(kernel_size, batch_size):
     kwargs["ball_z_size"] = kernel_size
     bf = BallFilter(**kwargs, use_mask=False)
 
-    data = torch.empty(
-        (batch_size, kwargs["plane_height"], kwargs["plane_width"]),
-        dtype=getattr(torch, kwargs["dtype"]),
-        device=kwargs["torch_device"],
-    )
-
     num_planes = 20
+    n_batches = num_planes // batch_size
+    total_planes = n_batches * batch_size
     sent_planes = 0
     gotten_planes = 0
     num_padded_planes = kernel_size - 1
 
-    for _ in range(num_planes // batch_size):
-        bf.append(data)
+    h, w = kwargs["plane_height"], kwargs["plane_width"]
+    data = torch.arange(total_planes * h * w).reshape((total_planes, h, w))
+    data = data.to(
+        dtype=getattr(torch, kwargs["dtype"]), device=kwargs["torch_device"]
+    )
+    data_np = data.numpy()
+
+    all_raw_planes = []
+    for i in range(n_batches):
+        bf.append(
+            data[i * batch_size : (i + 1) * batch_size],
+            raw_planes=data_np[i * batch_size : (i + 1) * batch_size],
+        )
         sent_planes += batch_size
         # volume only includes batch and some padding from end of last batch
         assert bf.volume.shape[0] <= batch_size + kernel_size - 1
@@ -75,13 +86,25 @@ def test_filtered_planes(kernel_size, batch_size):
             # no need to walk because walking only modifies the contents not
             # size of volume
             planes = bf.get_processed_planes()
+            raw_planes = bf.get_raw_planes()
+            all_raw_planes.extend(raw_planes)
             # first batch is 1 or batch minus padding. Remaining is batch size
             assert planes.shape[0] in (
                 1,
                 batch_size,
                 batch_size - num_padded_planes,
             )
+            assert len(raw_planes) == planes.shape[0]
+
+            for raw_plane in raw_planes:
+                assert raw_plane.shape == planes.shape[1:]
 
             gotten_planes += planes.shape[0]
 
     assert gotten_planes == sent_planes - num_padded_planes
+    all_raw_planes_np = np.stack(all_raw_planes, axis=0)
+    p1 = bf.first_valid_plane
+    data_np_unpadded = data_np[p1 : total_planes - (num_padded_planes - p1)]
+
+    assert data_np_unpadded.shape == all_raw_planes_np.shape
+    assert np.array_equal(data_np_unpadded, all_raw_planes_np)

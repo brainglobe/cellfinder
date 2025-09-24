@@ -7,7 +7,6 @@ import numpy.typing as npt
 from numba import njit, objmode, typed
 from numba.core import types
 from numba.experimental import jitclass
-from numba.types import DictType
 
 from cellfinder.core.tools.tools import get_max_possible_int_value
 
@@ -57,44 +56,76 @@ def traverse_dict(d: Dict[T, T], a: T) -> T:
 
 
 @njit
-def get_structure_centre(structure: np.ndarray) -> np.ndarray:
+def get_structure_centre(
+    structure: np.ndarray, intensity: Optional[np.ndarray] = None
+) -> np.ndarray:
     """
-    Get the pixel coordinates of the centre of a structure.
+    Get the voxel coordinates of the centre of a structure.
 
-    Centre calculated as the mean of each pixel coordinate,
-    rounded to the nearest integer.
+    :param structure: A 2D of Nx3 array of the coordinates.
+    :param intensity: If provided, an 1D N array containing the intensity of
+        each corresponding voxel in `structure`.
+    :return: The center positions of the coordinates, rounded to the nearest
+        integer. If `intensity` is not provided or it's all zeros, centre is
+        calculated as the mean position for each dimension. Otherwise, we use
+        the center of mass calculation, but using the intensity. Pulling the
+        center towards the brighter coordinates.
     """
     # numba support axis for sum, but not mean
-    return np.round(np.sum(structure, axis=0) / structure.shape[0])
+    structure = structure.astype(np.float64)
+    if intensity is None:
+        return np.round(np.sum(structure, axis=0) / structure.shape[0])
+
+    intensity_f = intensity.astype(np.float64)
+    intensity_sum = np.sum(intensity_f)
+    # in case they are all zero
+    if np.isclose(intensity_sum, 0):
+        return np.round(np.sum(structure, axis=0) / structure.shape[0])
+
+    intensity_f = intensity_f / intensity_sum
+    # make it 2d
+    intensity_f = intensity_f[:, None]
+    pos = structure * intensity_f
+    return np.round(np.sum(pos, axis=0))
 
 
 @njit
-def _get_structure_centre(structure: types.ListType) -> np.ndarray:
+def _get_structure_centre(
+    structure: types.ListType, use_centre_of_intensity: bool = False
+) -> np.ndarray:
+    """Same as get_structure_centre, but for internal use."""
     # See get_structure_centre.
     # this is for our own points stored as list optimized by numba
-    a_sum = 0.0
-    b_sum = 0.0
-    c_sum = 0.0
-    for a, b, c in structure:
-        a_sum += a
-        b_sum += b
-        c_sum += c
+    intensity_sum = 0.0
+    if use_centre_of_intensity:
+        for i in range(len(structure)):
+            intensity_sum += structure[i][3]
 
-    return np.round(
-        np.array(
-            [
-                a_sum / len(structure),
-                b_sum / len(structure),
-                c_sum / len(structure),
-            ]
-        )
-    )
+    a_centre = 0.0
+    b_centre = 0.0
+    c_centre = 0.0
+    # in case they are all zero
+    if np.isclose(intensity_sum, 0):
+        n = len(structure)
+        for a, b, c, _ in structure:
+            a_centre += a / n
+            b_centre += b / n
+            c_centre += c / n
+    else:
+        for a, b, c, intensity in structure:
+            intensity_frac = intensity / intensity_sum
+            a_centre += a * intensity_frac
+            b_centre += b * intensity_frac
+            c_centre += c * intensity_frac
+
+    return np.round(np.array([a_centre, b_centre, c_centre]))
 
 
 # Type declaration has to come outside of the class,
 # see https://github.com/numba/numba/issues/8808
+# The point is the 3 coordinates, and the intensity
 tuple_point_type = types.Tuple(
-    (vol_numba_type, vol_numba_type, vol_numba_type)
+    (vol_numba_type, vol_numba_type, vol_numba_type, types.float64)
 )
 list_of_points_type = types.ListType(tuple_point_type)
 
@@ -104,8 +135,8 @@ spec = [
     ("next_structure_id", sid_numba_type),
     ("soma_centre_value", sid_numba_type),  # as large as possible
     ("shape", types.UniTuple(vol_numba_type, 2)),
-    ("obsolete_ids", DictType(sid_numba_type, sid_numba_type)),
-    ("coords_maps", DictType(sid_numba_type, list_of_points_type)),
+    ("obsolete_ids", types.DictType(sid_numba_type, sid_numba_type)),
+    ("coords_maps", types.DictType(sid_numba_type, list_of_points_type)),
 ]
 
 
@@ -131,8 +162,8 @@ class CellDetector:
         are scanned.
     coords_maps :
         Mapping from structure ID to the coordinates of pixels within that
-        structure. Coordinates are stored in a list of (x, y, z) tuples of
-        the coordinates.
+        structure. Coordinates are stored in a list of (x, y, z, intensity)
+        tuples of the coordinates.
 
         Use `get_structures` to get it as a dict whose values are each
         a 2D array, where rows are points, and columns x, y, z of the
@@ -177,20 +208,46 @@ class CellDetector:
         self.soma_centre_value = soma_centre_value
 
     def process(
-        self, plane: np.ndarray, previous_plane: Optional[np.ndarray]
+        self,
+        plane: np.ndarray,
+        previous_plane: Optional[np.ndarray],
+        raw_plane: Optional[np.ndarray] = None,
     ) -> np.ndarray:
         """
-        Process a new plane (should be in Y, X axis order).
+        Process the next plane in the z-stack.
+
+        Parameters
+        ----------
+        plane : np.ndarray
+            The 3D filtered plane (2D array) to be processed for structures.
+            It's in Y, X axis order.
+        previous_plane : np.ndarray or None
+            The plane returned in the last call to `process`, or None for
+            the first call.
+        raw_plane : np.ndarray or None
+            The original raw data before it was processed in the 2D/3D filters.
+            If provided, the intensity of the detected structures points will
+            be saved. Otherwise the intensity will be recorded as zero.
+
+        Returns
+        -------
+        plane : np.ndarray
+            Processed plane as described in `connect_four`.
+
+            It is to be passed in the next iteration of `process`.
         """
         if plane.shape[:2] != self.shape:
             raise ValueError("plane does not have correct shape")
 
-        plane = self.connect_four(plane, previous_plane)
+        plane = self.connect_four(plane, previous_plane, raw_plane)
         self.z += 1
         return plane
 
     def connect_four(
-        self, plane: np.ndarray, previous_plane: Optional[np.ndarray]
+        self,
+        plane: np.ndarray,
+        previous_plane: Optional[np.ndarray],
+        raw_plane: Optional[np.ndarray] = None,
     ) -> np.ndarray:
         """
         Perform structure labelling.
@@ -200,6 +257,15 @@ class CellDetector:
         the pixel at the same location in the previous plane. If structures are
         found, they are added to the structure manager and the pixel labeled
         accordingly.
+
+        Parameters
+        ----------
+        plane : np.ndarray
+            See `process`.
+        previous_plane : np.ndarray or None
+            See `process`.
+        raw_plane : np.ndarray or None
+            See `process`.
 
         Returns
         -------
@@ -229,7 +295,11 @@ class CellDetector:
                             )
                         neighbour_ids[0] = self.next_structure_id
                         self.next_structure_id += 1
-                    struct_id = self.add(x, y, self.z, neighbour_ids)
+
+                    intensity = 0 if raw_plane is None else raw_plane[y, x]
+                    struct_id = self.add(
+                        x, y, self.z, neighbour_ids, intensity
+                    )
                 else:
                     # reset so that grayscale value does not count as
                     # structure in next iterations
@@ -239,16 +309,33 @@ class CellDetector:
 
         return plane
 
-    def get_cell_centres(self) -> np.ndarray:
+    def get_cell_centres(
+        self, use_centre_of_intensity: bool = False
+    ) -> np.ndarray:
         """
-        Returns the 2D array of cell centers. It's (N, 3) with X, Y, Z columns.
+        Returns the 2D Nx3 array of cell centers for all the detected
+        structures.
+
+        Parameters
+        ----------
+        use_centre_of_intensity: bool
+            If False, the centres are calculated as the mean position of all
+            coordinates for each dimension. Otherwise, we use the center of
+            mass calculation, but using the intensity. Pulling the center
+            towards the brighter coordinates.
+
+        Returns
+        -------
+        centres : np.ndarray
+            Nx3 array in X, Y, Z column order, rounded to nearest int.
+
         """
-        return self.structures_to_cells()
+        return self.structures_to_cells(use_centre_of_intensity)
 
     def get_structures(self) -> Dict[int, np.ndarray]:
         """
-        Gets the structures as a dict of structure IDs mapped to the 2D array
-        of structure points (points vs x, y, z columns).
+        Gets the detected structures as a dict of structure IDs mapped to the
+        2D array of structure points (Nx3 in x, y, z column order).
         """
         d = {}
         for sid, points in self.coords_maps.items():
@@ -262,15 +349,42 @@ class CellDetector:
             d[types.int64(sid)] = item
 
             for i, point in enumerate(points):
-                item[i, :] = point
+                item[i, :] = point[:3]
+
+        return d
+
+    def get_structures_intensities(self) -> Dict[int, np.ndarray]:
+        """
+        Similar to `get_structures`, but instead of the dict values being the
+        coordinates of the structure, it's an array of size N with the
+        intensity of the corresponding coordinates.
+
+        `get_structures_intensities[s][i]` is the corresponding intensity of
+        the coordinate `get_structures[s][i]`
+        """
+        d = {}
+        for sid, points in self.coords_maps.items():
+            # see get_structures
+            intensity = np.empty(len(points), dtype=np.float64)
+            d[types.int64(sid)] = intensity
+
+            for i, point in enumerate(points):
+                intensity[i] = point[3]
 
         return d
 
     def add_point(
-        self, sid: int, point: Union[tuple, list, np.ndarray]
+        self,
+        sid: int,
+        point: Union[tuple, list, np.ndarray],
+        intensity: float = 0,
     ) -> None:
         """
-        Add single 3d (x, y, z) *point* to the structure with the given *sid*.
+        Add single 3d (x, y, z) *point* with intensity `intensity` to the
+        structure with the given *sid*.
+
+        If all points have the same intensity, computing their centre with and
+        without the center of intensity weighing leads to the same result.
         """
         # cast in case user passes in int64 (default type for int in python)
         # and numba complains
@@ -278,12 +392,31 @@ class CellDetector:
         if key not in self.coords_maps:
             self.coords_maps[key] = typed.List.empty_list(tuple_point_type)
 
-        self._add_point(key, (int(point[0]), int(point[1]), int(point[2])))
+        self._add_point(
+            key,
+            (
+                int(point[0]),
+                int(point[1]),
+                int(point[2]),
+                np.float64(intensity),
+            ),
+        )
 
-    def add_points(self, sid: int, points: np.ndarray):
+    def add_points(
+        self,
+        sid: int,
+        points: np.ndarray,
+        intensity: Optional[np.ndarray] = None,
+    ):
         """
-        Adds ndarray of *points* to the structure with the given *sid*.
-        Each row is a 3-column (x, y, z) point.
+        Adds Nx3 array of `points` with corresponding `intensity` array of size
+        N to the structure with the given *sid*.
+
+        Each row in `points` is a 3-column (x, y, z) point. If intensity is
+        None they all default to intensity of zero.
+
+        If all points have the same intensity, computing their centre with and
+        without the center of intensity weighing leads to the same result.
         """
         # cast in case user passes in int64 (default type for int in python)
         # and numba complains
@@ -293,17 +426,31 @@ class CellDetector:
 
         append = self.coords_maps[key].append
         pts = np.round(points).astype(vol_np_type)
-        for point in pts:
-            append((point[0], point[1], point[2]))
+        if intensity is None:
+            its = np.zeros(len(pts), dtype=np.float64)
+        else:
+            its = np.asarray(intensity, dtype=np.float64)
+
+        for i in range(len(pts)):
+            x, y, z = pts[i, :]
+            append((x, y, z, its[i]))
 
     def _add_point(
-        self, sid: sid_numba_type, point: Tuple[int, int, int]
+        self,
+        sid: sid_numba_type,
+        point: Tuple[int, int, int, np.float64],
     ) -> None:
+        """Point is `(x, y, z, intensity).`"""
         # sid must exist
         self.coords_maps[sid].append(point)
 
     def add(
-        self, x: int, y: int, z: int, neighbour_ids: npt.NDArray[sid_np_type]
+        self,
+        x: int,
+        y: int,
+        z: int,
+        neighbour_ids: npt.NDArray[sid_np_type],
+        intensity: float = 0.0,
     ) -> sid_numba_type:
         """
         For the current coordinates takes all the neighbours and find the
@@ -311,9 +458,9 @@ class CellDetector:
         the neighbours recursively.
 
         Once the correct structure id is found, append a point with the
-        current coordinates to the coordinates map entry for the correct
-        structure. Hence each entry of the map will be a vector of all the
-        pertaining points.
+        current coordinates (and its input intensity) to the coordinates map
+        entry for the correct structure. Hence each entry of the map will be a
+        vector of all the pertaining points.
         """
         updated_id = self.sanitise_ids(neighbour_ids)
         if updated_id not in self.coords_maps:
@@ -323,7 +470,9 @@ class CellDetector:
         self.merge_structures(updated_id, neighbour_ids)
 
         # Add point for that structure
-        self._add_point(updated_id, (int(x), int(y), int(z)))
+        self._add_point(
+            updated_id, (int(x), int(y), int(z), np.float64(intensity))
+        )
         return updated_id
 
     def sanitise_ids(
@@ -372,10 +521,30 @@ class CellDetector:
                 self.coords_maps.pop(neighbour_id)
                 self.obsolete_ids[neighbour_id] = updated_id
 
-    def structures_to_cells(self) -> np.ndarray:
+    def structures_to_cells(
+        self, use_centre_of_intensity: bool = False
+    ) -> np.ndarray:
+        """
+        Returns the centre coordinates of all the structures.
+
+        Parameters
+        ----------
+        use_centre_of_intensity : bool
+            If False or if all coordinates in a structure have the same
+            intensity, centre is calculated as the mean position for each
+            dimension. Otherwise, we use the center of mass calculation, but
+            using the intensity. Pulling the center towards the brighter
+            coordinates.
+
+        Returns
+        -------
+        center : np.ndarray
+            A Nx3 array with the centre x, y, z position of the N structures
+            detected.
+        """
         cell_centres = np.empty((len(self.coords_maps), 3))
         for idx, structure in enumerate(self.coords_maps.values()):
-            p = _get_structure_centre(structure)
+            p = _get_structure_centre(structure, use_centre_of_intensity)
             cell_centres[idx] = p
         return cell_centres
 

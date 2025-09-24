@@ -47,7 +47,7 @@ def background_array(repo_data_path):
     )
 
 
-def test_structure_splitting(signal_array, background_array):
+def test_structure_splitting(signal_array, background_array, no_free_cpus):
     """
     Smoke test to ensure structure splitting code doesn't break.
     """
@@ -55,7 +55,7 @@ def test_structure_splitting(signal_array, background_array):
         signal_array,
         background_array,
         voxel_sizes,
-        n_free_cpus=0,
+        n_free_cpus=no_free_cpus,
     )
 
 
