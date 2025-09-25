@@ -49,8 +49,7 @@ def test_signals_detection_and_classification(qtbot: QtBot):
         "Setting up detection...",
         "Detecting cells",
         "Setting up classification...",
-        # "Classifying cells", this is
-        # commented because in this sample example zero cells are detected
+        "Classifying cells"
         "Finished classification",
     ]
     run_worker_test(
