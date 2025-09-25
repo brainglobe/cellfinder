@@ -16,7 +16,10 @@ def run_worker_test(
     skip_classification: bool,
     expected_labels: list,
 ):
-    """A helper function to setup code for testing progress bar worker signals"""
+    """
+    A helper function to set up code
+    for testing progress bar worker signals.
+    """
     data = load_sample()
     signal = data[1][0]
     background = data[0][0]
