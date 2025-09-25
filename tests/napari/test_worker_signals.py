@@ -26,7 +26,7 @@ def run_worker_test(
         ClassificationInputs(
             skip_classification=skip_classification, trained_model=None
         ),
-        MiscInputs(start_plane=0, end_plane=1),
+        MiscInputs(start_plane=0, end_plane=-1),
     )
 
     emitted = []
