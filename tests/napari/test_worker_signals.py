@@ -21,7 +21,6 @@ def run_worker_test(
     signal = data[1][0]
     background = data[0][0]
 
-
     worker = Worker(
         DataInputs(signal_array=signal, background_array=background),
         DetectionInputs(skip_detection=skip_detection),
