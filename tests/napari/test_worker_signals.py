@@ -17,8 +17,8 @@ def run_worker_test(
     expected_labels: list,
 ):
     data = load_sample()
-    signal = data[0][0]
-    background = data[1][0]
+    signal = data[1][0]
+    background = data[0][0]
 
     worker = Worker(
         DataInputs(signal_array=signal, background_array=background),
