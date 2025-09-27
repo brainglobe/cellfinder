@@ -81,7 +81,7 @@ def main(
     network_depth: str
         The network depth to use during classification. Defaults to `"50"`.
     max_workers: int
-        The number of sub-processes to use for data loading / processing.
+        The max number of sub-processes to use for data loading / processing.
         Defaults to 8.
     callback : Callable[int], optional
         A callback function that is called during classification. Called with

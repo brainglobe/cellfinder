@@ -47,6 +47,7 @@ def main(
     detect_finished_callback: Optional[Callable[[list], None]] = None,
     normalize_channels: bool = False,
     normalization_down_sampling: int = 32,
+    classification_max_workers: int = 6,
 ) -> List[Cell]:
     """
     Parameters
@@ -167,6 +168,9 @@ def main(
         in the first axis by this value before calculating their statistics
         before classification. E.g. a value of 2 means every second plane will
         be used. Defaults to 32.
+    classification_max_workers : int
+        The max number of sub-processes to use for data loading / processing
+        during classification. Defaults to 6.
     """
     from cellfinder.core.classify import classify
     from cellfinder.core.detect import detect
@@ -228,6 +232,7 @@ def main(
                 callback=classify_callback,
                 normalize_channels=normalize_channels,
                 normalization_down_sampling=normalization_down_sampling,
+                max_workers=classification_max_workers,
             )
         else:
             logger.info("No candidates, skipping classification")

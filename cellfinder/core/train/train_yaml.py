@@ -204,6 +204,13 @@ def training_parse():
         help="Number of training epochs",
     )
     training_parser.add_argument(
+        "--max-workers",
+        dest="max_workers",
+        type=check_positive_int,
+        default=3,
+        help="Maximum number of worker processes to use to load data",
+    )
+    training_parser.add_argument(
         "--test-fraction",
         dest="test_fraction",
         type=float,
@@ -222,6 +229,15 @@ def training_parse():
         dest="no_augment",
         action="store_true",
         help="Don't apply data augmentation",
+    )
+    training_parser.add_argument(
+        "--augment-likelihood",
+        dest="augment_likelihood",
+        type=check_positive_float,
+        default=0.9,
+        help="Value `[0, 1]` with the probability of a data item being "
+        "augmented. I.e. `0.9` means 90% of the data will have been "
+        "augmented.",
     )
     training_parser.add_argument(
         "--save-weights",
@@ -382,7 +398,9 @@ def cli():
         continue_training=args.continue_training,
         test_fraction=args.test_fraction,
         batch_size=args.batch_size,
+        max_workers=args.max_workers,
         no_augment=args.no_augment,
+        augment_likelihood=args.augment_likelihood,
         tensorboard=args.tensorboard,
         save_weights=args.save_weights,
         no_save_checkpoints=args.no_save_checkpoints,
@@ -402,6 +420,7 @@ def get_dataloader(
     pin_memory: bool,
     auto_shuffle: bool,
     augment: bool,
+    augment_likelihood: float,
     normalize_channels: bool,
 ) -> tuple[DataLoader, CuboidTiffDataset]:
     points_filenames = [f[0] for f in filenames]
@@ -428,6 +447,7 @@ def get_dataloader(
         axis_order=("z", "y", "x"),
         target_output="label",
         augment=augment,
+        augment_likelihood=augment_likelihood,
     )
     # we use our own sampler so we can control the ordering
     sampler = CuboidBatchSampler(
@@ -469,6 +489,7 @@ def run(
     normalize_channels: bool = False,
     lr_schedule: Sequence[int] = (),
     lr_multiplier: float = 0.1,
+    augment_likelihood: float = 0.9,
 ):
     start_time = datetime.now()
 
@@ -525,6 +546,7 @@ def run(
             pin_memory,
             auto_shuffle=False,
             augment=False,
+            augment_likelihood=augment_likelihood,
             normalize_channels=normalize_channels,
         )
 
@@ -545,6 +567,7 @@ def run(
         pin_memory,
         auto_shuffle=True,
         augment=not no_augment,
+        augment_likelihood=augment_likelihood,
         normalize_channels=normalize_channels,
     )
     callbacks = []
