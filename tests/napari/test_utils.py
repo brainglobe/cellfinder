@@ -11,7 +11,6 @@ from cellfinder.napari.utils import (
 )
 
 
-@pytest.mark.xfail(reason="See discussion in #443", raises=AssertionError)
 def test_add_classified_layers(make_napari_viewer):
     """Smoke test for add_classified_layers utility"""
     cell_pos = [1, 2, 3]

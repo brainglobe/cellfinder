@@ -43,7 +43,6 @@ def test_detect_worker():
     worker.work()
 
 
-@pytest.mark.xfail(reason="See discussion in #443", raises=AssertionError)
 @pytest.mark.parametrize(
     argnames="analyse_local",
     argvalues=[True, False],  # increase test coverage by covering both cases
@@ -68,7 +67,6 @@ def test_run_detect_without_inputs():
         assert show_info.called
 
 
-@pytest.mark.xfail(reason="See discussion in #443", raises=AssertionError)
 def test_reset_defaults(get_detect_widget):
     """Smoke test that restore defaults doesn't error."""
     get_detect_widget.reset_button.clicked()
