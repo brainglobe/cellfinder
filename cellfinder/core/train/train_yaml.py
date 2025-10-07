@@ -29,7 +29,7 @@ from fancylog import fancylog
 from keras.callbacks import CSVLogger, ModelCheckpoint, TensorBoard
 from sklearn.model_selection import train_test_split
 
-import cellfinder.core as program_for_log
+import cellfinder.core as package_for_log
 from cellfinder.core import logger
 from cellfinder.core.classify.cube_generator import CubeGeneratorFromDisk
 from cellfinder.core.classify.resnet import layer_type
@@ -269,7 +269,7 @@ def cli():
 
     fancylog.start_logging(
         args.output_dir,
-        program_for_log,
+        package=package_for_log,
         variables=[args],
         log_header="CELLFINDER TRAINING LOG",
     )
