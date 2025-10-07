@@ -24,7 +24,7 @@ dependencies = [
     "brainglobe-utils>=0.5.0",
     "brainglobe-napari-io>=0.3.4",
     "dask[array]",
-    "fancylog>=0.0.7",
+    "fancylog>=0.6.0",
     "natsort",
     "numba",
     "numpy",
