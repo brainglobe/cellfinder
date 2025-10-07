@@ -1,5 +1,4 @@
 import numpy as np
-import pytest
 from brainglobe_utils.cells.cells import Cell
 
 from cellfinder.napari.utils import (
