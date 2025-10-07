@@ -228,8 +228,8 @@ class CurationWidget(QWidget):
         self.layout.addWidget(self.load_data_panel, row, column, 1, 1)
 
     def setup_keybindings(self):
-        self.viewer.bind_key("c", self.mark_as_cell)
-        self.viewer.bind_key("x", self.mark_as_non_cell)
+        self.viewer.bind_key("c", self.mark_as_cell, overwrite=True)
+        self.viewer.bind_key("x", self.mark_as_non_cell, overwrite=True)
 
     def set_signal_image(self):
         """
