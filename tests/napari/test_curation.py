@@ -24,7 +24,6 @@ def curation_widget(make_napari_viewer):
     return widget
 
 
-@pytest.mark.xfail(reason="See discussion in #443", raises=AssertionError)
 def test_add_new_training_layers(curation_widget):
     viewer = curation_widget.viewer
     layers = viewer.layers
@@ -39,7 +38,6 @@ def test_add_new_training_layers(curation_widget):
     assert layers[1].name == "Training data (non cells)"
 
 
-@pytest.mark.xfail(reason="See discussion in #443", raises=AssertionError)
 def test_cell_marking(curation_widget, tmp_path):
     """
     Check that marking cells and non-cells works as expected.
@@ -103,11 +101,11 @@ def valid_curation_widget(make_napari_viewer) -> CurationWidget:
     for layer in image_layers:
         viewer.add_layer(napari.layers.Image(layer[0], **layer[1]))
 
-    num_dw = len(viewer.window._dock_widgets)
+    num_dw = len(viewer.window.dock_widgets)
     _, curation_widget = viewer.window.add_plugin_dock_widget(
         plugin_name="cellfinder", widget_name="Curation"
     )
-    assert len(viewer.window._dock_widgets) == num_dw + 1
+    assert len(viewer.window.dock_widgets) == num_dw + 1
 
     curation_widget.add_training_data()
     # Add a points layer to select points from
@@ -132,7 +130,6 @@ def valid_curation_widget(make_napari_viewer) -> CurationWidget:
     return curation_widget
 
 
-@pytest.mark.xfail(reason="See discussion in #443", raises=AssertionError)
 def test_check_image_data_for_extraction(valid_curation_widget):
     """
     Check valid curation widget has extractable data.
@@ -140,7 +137,6 @@ def test_check_image_data_for_extraction(valid_curation_widget):
     assert valid_curation_widget.check_image_data_for_extraction()
 
 
-@pytest.mark.xfail(reason="See discussion in #443", raises=AssertionError)
 def test_check_image_data_wrong_shape(valid_curation_widget):
     """
     Check curation widget shows expected user message if images don't have
@@ -160,7 +156,6 @@ def test_check_image_data_wrong_shape(valid_curation_widget):
         )
 
 
-@pytest.mark.xfail(reason="See discussion in #443", raises=AssertionError)
 def test_check_image_data_missing_signal(valid_curation_widget):
     """
     Check curation widget shows expected user message if signal image is
@@ -175,14 +170,12 @@ def test_check_image_data_missing_signal(valid_curation_widget):
         )
 
 
-@pytest.mark.xfail(reason="See discussion in #443", raises=AssertionError)
 def test_is_data_extractable(curation_widget, valid_curation_widget):
     """Check is_data_extractable works as expected."""
     assert not curation_widget.is_data_extractable()
     assert valid_curation_widget.is_data_extractable()
 
 
-@pytest.mark.xfail(reason="See discussion in #443", raises=AssertionError)
 def test_get_output_directory(valid_curation_widget):
     """Check get_output_directory returns expected value."""
     with patch(
@@ -197,7 +190,6 @@ def test_get_output_directory(valid_curation_widget):
         assert valid_curation_widget.output_directory == Path.home()
 
 
-@pytest.mark.xfail(reason="See discussion in #443", raises=AssertionError)
 def test_check_layer_removal_sync(valid_curation_widget):
     """
     Check that removing a layer from the viewer also removes it from the
