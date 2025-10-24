@@ -140,6 +140,8 @@ def test_2d_filtering_parity(
         soma_diameter=soma_diameter,
         log_sigma_size=0.2,
         n_sds_above_mean_thresh=10,
+        n_sds_above_mean_tiled_thresh=10,
+        tiled_thresh_tile_size=0,
         torch_device=torch_device,
         dtype=settings.filtering_dtype.__name__,
         use_scipy=use_scipy,
@@ -187,6 +189,8 @@ def test_2d_filter_padding(plane_size):
         soma_diameter=16,
         log_sigma_size=0.2,
         n_sds_above_mean_thresh=10,
+        n_sds_above_mean_tiled_thresh=10,
+        tiled_thresh_tile_size=0,
         torch_device="cpu",
         dtype=settings.filtering_dtype.__name__,
         use_scipy=False,
@@ -243,3 +247,195 @@ def test_tile_walker_size(sizes, soma_diameter=5):
     data = torch.rand((1, *plane_size), dtype=torch.float32)
     tiles = walker.get_bright_tiles(data)
     assert tiles.shape == (1, *tile_size)
+
+
+def get_filtered_data(
+    data: np.ndarray,
+    soma_diameter=16,
+    log_sigma_size=0.2,
+    n_sds_above_mean_thresh=10.0,
+    n_sds_above_mean_tiled_thresh=10.0,
+    tiled_thresh_tile_size=0.0,
+) -> np.ndarray:
+    settings = DetectionSettings(plane_original_np_dtype=np.uint16)
+    data = data.astype(settings.filtering_dtype)
+
+    tile_processor = TileProcessor(
+        plane_shape=data.shape[1:],
+        clipping_value=settings.clipping_value,
+        threshold_value=settings.threshold_value,
+        soma_diameter=soma_diameter,
+        log_sigma_size=log_sigma_size,
+        n_sds_above_mean_thresh=n_sds_above_mean_thresh,
+        n_sds_above_mean_tiled_thresh=n_sds_above_mean_tiled_thresh,
+        tiled_thresh_tile_size=tiled_thresh_tile_size,
+        torch_device="cpu",
+        dtype=settings.filtering_dtype.__name__,
+        use_scipy=True,
+    )
+
+    filtered, _ = tile_processor.get_tile_mask(torch.from_numpy(data))
+    return (filtered == settings.threshold_value).numpy()
+
+
+def test_2d_filter_plane_threshold_single_spot():
+    # make bright area of 5x5 = 25
+    data = np.zeros((1, 50, 50))
+    data[0, 23:28, 23:28] = 10
+
+    # use normal threshold
+    filtered = get_filtered_data(
+        data,
+        soma_diameter=5,
+        log_sigma_size=0.2,
+        n_sds_above_mean_thresh=1,
+        n_sds_above_mean_tiled_thresh=1,
+        tiled_thresh_tile_size=0,
+    )
+    # about 25 pixels should be marked
+    assert 20 <= np.sum(filtered) <= 30
+
+    # use very high threshold
+    filtered = get_filtered_data(
+        data,
+        soma_diameter=5,
+        log_sigma_size=0.2,
+        n_sds_above_mean_thresh=50,
+        n_sds_above_mean_tiled_thresh=1,
+        tiled_thresh_tile_size=0,
+    )
+    # with high threshold, should be no marked pixels
+    assert not np.sum(filtered)
+
+
+def test_2d_filter_plane_threshold_2_spots():
+    # create 2 bright areas of 5x5 = 25px, one bright, one darker
+    data = np.zeros((1, 50, 50))
+    data[0, 13:18, 13:18] = 5
+    data[0, 33:38, 33:38] = 20
+
+    # low threshold should get both areas
+    filtered = get_filtered_data(
+        data,
+        soma_diameter=5,
+        log_sigma_size=0.2,
+        n_sds_above_mean_thresh=0.1,
+        n_sds_above_mean_tiled_thresh=1,
+        tiled_thresh_tile_size=0,
+    )
+    assert 40 <= np.sum(filtered) <= 60
+
+    # medium threshold should get very bright area
+    filtered = get_filtered_data(
+        data,
+        soma_diameter=5,
+        log_sigma_size=0.2,
+        n_sds_above_mean_thresh=2,
+        n_sds_above_mean_tiled_thresh=1,
+        tiled_thresh_tile_size=0,
+    )
+    assert 20 <= np.sum(filtered) <= 35
+
+    # high threshold should get no area
+    filtered = get_filtered_data(
+        data,
+        soma_diameter=5,
+        log_sigma_size=0.2,
+        n_sds_above_mean_thresh=50,
+        n_sds_above_mean_tiled_thresh=1,
+        tiled_thresh_tile_size=0,
+    )
+    assert not np.sum(filtered)
+
+
+def test_2d_filter_tiled_threshold_2_spots():
+    # create 2 bright areas of 5x5 = 25px, one bright, one darker
+    data = np.zeros((1, 50, 50))
+    data[0, 3:8, 3:8] = 5
+    data[0, 43:48, 43:48] = 20
+
+    # medium plane threshold should get only very bright area
+    filtered = get_filtered_data(
+        data,
+        soma_diameter=5,
+        log_sigma_size=0.2,
+        n_sds_above_mean_thresh=2,
+        n_sds_above_mean_tiled_thresh=2,
+        tiled_thresh_tile_size=0,
+    )
+    assert 20 <= np.sum(filtered) <= 35
+
+    # with small tiles (size of soma) the mean would be high for the tiles with
+    # both bright areas so we should get no pixels
+    filtered = get_filtered_data(
+        data,
+        soma_diameter=5,
+        log_sigma_size=0.2,
+        n_sds_above_mean_thresh=2,
+        n_sds_above_mean_tiled_thresh=2,
+        tiled_thresh_tile_size=1,
+    )
+    assert not np.sum(filtered)
+
+    # but with a very low tiled threshold we should get same as with plane
+    # threshold only
+    filtered = get_filtered_data(
+        data,
+        soma_diameter=5,
+        log_sigma_size=0.2,
+        n_sds_above_mean_thresh=2,
+        n_sds_above_mean_tiled_thresh=-2,
+        tiled_thresh_tile_size=1,
+    )
+    assert 20 <= np.sum(filtered) <= 35
+
+    # and with a low plane threshold as well we should get everything
+    filtered = get_filtered_data(
+        data,
+        soma_diameter=5,
+        log_sigma_size=0.2,
+        n_sds_above_mean_thresh=0,
+        n_sds_above_mean_tiled_thresh=-2,
+        tiled_thresh_tile_size=1,
+    )
+    assert 40 <= np.sum(filtered) <= 60
+
+
+@pytest.mark.parametrize(
+    "shape", [(1, 50, 23), (1, 23, 50), (1, 25, 25), (1, 57, 57)]
+)
+def test_2d_filter_tiled_threshold_odd_shapes(shape):
+    # our tile size is 5 * 5 = 25, check that plane shapes that don't fit two
+    # tiles or are not multiple of tile size still works
+    # create bright area of 5x5 = 25px
+    data = np.zeros(shape)
+    data[0, 3:8, 3:8] = 5
+
+    # use tiles size of 25 (5 x soma diameter of 5)
+    filtered = get_filtered_data(
+        data,
+        soma_diameter=5,
+        log_sigma_size=0.2,
+        n_sds_above_mean_thresh=1,
+        n_sds_above_mean_tiled_thresh=1,
+        tiled_thresh_tile_size=5,
+    )
+    # about 25 pixels should be marked
+    assert 20 <= np.sum(filtered) <= 30
+
+
+@pytest.mark.parametrize("size", [0, 1, 2, 3])
+def test_2d_filter_tiled_threshold_odd_tile_size(size):
+    # check that tiny tile sizes works.
+    data = np.zeros((1, 10, 10))
+
+    # use tiles size of 25 (5 x soma diameter of 5)
+    filtered = get_filtered_data(
+        data,
+        soma_diameter=1,
+        log_sigma_size=0.2,
+        n_sds_above_mean_thresh=1,
+        n_sds_above_mean_tiled_thresh=1,
+        tiled_thresh_tile_size=size,
+    )
+    assert filtered.shape == (1, 10, 10)

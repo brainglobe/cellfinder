@@ -50,6 +50,8 @@ def setup_filter(
         soma_diameter=settings.soma_diameter,
         log_sigma_size=settings.log_sigma_size,
         n_sds_above_mean_thresh=settings.n_sds_above_mean_thresh,
+        n_sds_above_mean_tiled_thresh=settings.n_sds_above_mean_tiled_thresh,
+        tiled_thresh_tile_size=settings.tiled_thresh_tile_size,
         torch_device=torch_device,
         dtype=settings.filtering_dtype.__name__,
         use_scipy=use_scipy,

@@ -1,13 +1,12 @@
-from dataclasses import dataclass, field
 from typing import Tuple
 
 import torch
+import torch.nn.functional as F
 
 from cellfinder.core.detect.filters.plane.classical_filter import PeakEnhancer
 from cellfinder.core.detect.filters.plane.tile_walker import TileWalker
 
 
-@dataclass
 class TileProcessor:
     """
     Processor that filters each plane to highlight the peaks and also
@@ -63,12 +62,22 @@ class TileProcessor:
     # voxels who are this many std above mean or more are set to
     # threshold_value
     n_sds_above_mean_thresh: float
+    # If used, voxels who are this many or more std above mean of the
+    # containing tile as well as above n_sds_above_mean_thresh for the plane
+    # average are set to threshold_value.
+    n_sds_above_mean_tiled_thresh: float
+    # the tile size, in pixels, that will be used to tile the x, y plane when
+    # we calculate the per-tile mean / std for use with
+    # n_sds_above_mean_tiled_thresh. We use 50% overlap when tiling.
+    local_threshold_tile_size_px: int = 0
+    # the torch device name
+    torch_device: str = ""
 
     # filter that finds the peaks in the planes
-    peak_enhancer: PeakEnhancer = field(init=False)
+    peak_enhancer: PeakEnhancer = None
     # generates tiles of the planes, with each tile marked as being inside
     # or outside the brain based on brightness
-    tile_walker: TileWalker = field(init=False)
+    tile_walker: TileWalker = None
 
     def __init__(
         self,
@@ -76,6 +85,8 @@ class TileProcessor:
         clipping_value: int,
         threshold_value: int,
         n_sds_above_mean_thresh: float,
+        n_sds_above_mean_tiled_thresh: float,
+        tiled_thresh_tile_size: float | None,
         log_sigma_size: float,
         soma_diameter: int,
         torch_device: str,
@@ -85,6 +96,12 @@ class TileProcessor:
         self.clipping_value = clipping_value
         self.threshold_value = threshold_value
         self.n_sds_above_mean_thresh = n_sds_above_mean_thresh
+        self.n_sds_above_mean_tiled_thresh = n_sds_above_mean_tiled_thresh
+        if tiled_thresh_tile_size:
+            self.local_threshold_tile_size_px = int(
+                round(soma_diameter * tiled_thresh_tile_size)
+            )
+        self.torch_device = torch_device
 
         laplace_gaussian_sigma = log_sigma_size * soma_diameter
         self.peak_enhancer = PeakEnhancer(
@@ -131,7 +148,10 @@ class TileProcessor:
             planes,
             enhanced_planes,
             self.n_sds_above_mean_thresh,
+            self.n_sds_above_mean_tiled_thresh,
+            self.local_threshold_tile_size_px,
             self.threshold_value,
+            self.torch_device,
         )
 
         return planes, inside_brain_tiles
@@ -145,21 +165,98 @@ def _threshold_planes(
     planes: torch.Tensor,
     enhanced_planes: torch.Tensor,
     n_sds_above_mean_thresh: float,
+    n_sds_above_mean_tiled_thresh: float,
+    local_threshold_tile_size_px: int,
     threshold_value: int,
+    torch_device: str,
 ) -> None:
     """
     Sets each plane (in-place) to threshold_value, where the corresponding
     enhanced_plane > mean + n_sds_above_mean_thresh*std. Each plane will be
     set to zero elsewhere.
     """
-    planes_1d = enhanced_planes.view(enhanced_planes.shape[0], -1)
+    z, y, x = enhanced_planes.shape
 
+    # ---- get per-plane global threshold ----
+    planes_1d = enhanced_planes.view(z, -1)
     # add back last dim
-    avg = torch.mean(planes_1d, dim=1, keepdim=True).unsqueeze(2)
-    sd = torch.std(planes_1d, dim=1, keepdim=True).unsqueeze(2)
-    threshold = avg + n_sds_above_mean_thresh * sd
+    std, mean = torch.std_mean(planes_1d, dim=1, keepdim=True)
+    threshold = mean.unsqueeze(2) + n_sds_above_mean_thresh * std.unsqueeze(2)
+    above_global = enhanced_planes > threshold
 
-    above = enhanced_planes > threshold
+    # ---- calculate the local tiled threshold ----
+    # we do 50% overlap so there's no jumps at boundaries
+    stride = local_threshold_tile_size_px // 2
+    # make tile even for ease of computation
+    tile_size = stride * 2
+    # Due to 50% overlap, to get tiles we move the tile by half tile (stride).
+    # Total moves will be y // stride - 2 (we start already with mask on first
+    # tile). So add back 1 for the first tile. Partial tiles are dropped
+    n_y_tiles = max(y // stride - 1, 1) if stride else 1
+    n_x_tiles = max(x // stride - 1, 1) if stride else 1
+    do_tile_y = n_y_tiles >= 2
+    do_tile_x = n_x_tiles >= 2
+    # we want at least one axis to have at least two tiles
+    if local_threshold_tile_size_px >= 2 and (do_tile_y or do_tile_x):
+        # num edge pixels dropped b/c moving by stride would move tile off edge
+        y_rem = y % stride
+        x_rem = x % stride
+        enhanced_planes_raw = enhanced_planes
+        if do_tile_y:
+            enhanced_planes = enhanced_planes[:, y_rem // 2 :, :]
+        if do_tile_x:
+            enhanced_planes = enhanced_planes[:, :, x_rem // 2 :]
+
+        # add empty channel dim after z "batch" dim -> zcyx
+        enhanced_planes = enhanced_planes.unsqueeze(1)
+        # unfold makes it 3 dim, z, M, L. L is number of tiles, M is tile area
+        unfolded = F.unfold(
+            enhanced_planes,
+            (tile_size if do_tile_y else y, tile_size if do_tile_x else x),
+            stride=stride,
+        )
+        # average the tile areas, for each tile
+        std, mean = torch.std_mean(unfolded, dim=1, keepdim=True)
+        threshold = mean + n_sds_above_mean_tiled_thresh * std
+
+        # reshape it back into Y by X tiles, instead of YX being one dim
+        threshold = threshold.reshape((z, n_y_tiles, n_x_tiles))
+
+        # we need total size of n_tiles * stride + stride + rem for the
+        # original size. So we add 2 strides and then chop off the excess above
+        # rem. We center it because of 50% overlap, the first tile is actually
+        # centered in between the first two strides
+        offsets = [(0, y), (0, x)]
+        for dim, do_tile, n_tiles, n, rem in [
+            (1, do_tile_y, n_y_tiles, y, y_rem),
+            (2, do_tile_x, n_x_tiles, x, x_rem),
+        ]:
+            if do_tile:
+                repeats = (
+                    torch.ones(n_tiles, dtype=torch.int, device=torch_device)
+                    * stride
+                )
+                # add total of 2 additional strides
+                repeats[0] = 2 * stride
+                repeats[-1] = 2 * stride
+                output_size = (n_tiles + 2) * stride
+
+                threshold = threshold.repeat_interleave(
+                    repeats, dim=dim, output_size=output_size
+                )
+                # drop the excess we gained from padding rem to whole stride
+                offset = (stride - rem) // 2
+                offsets[dim - 1] = offset, n + offset
+
+        # can't use slice(...) objects in jit code so use actual indices
+        (a, b), (c, d) = offsets
+        threshold = threshold[:, a:b, c:d]
+
+        above_local = enhanced_planes_raw > threshold
+        above = torch.logical_and(above_global, above_local)
+    else:
+        above = above_global
+
     planes[above] = threshold_value
     # subsequent steps only care about the values that are set to threshold or
     # above in planes. We set values in *planes* to threshold based on the
