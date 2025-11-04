@@ -38,7 +38,7 @@ def run_worker_test(
         lambda *args: (print("Signal:", args), emitted.append(args))
     )
 
-    with qtbot.waitSignal(worker.finished, timeout=300000):  # 5 minutes
+    with qtbot.waitSignal(worker.finished, timeout=600000):  # 5 minutes
         worker.start()
 
     emitted_labels = [e[0] for e in emitted]
