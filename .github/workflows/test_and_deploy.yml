@@ -59,6 +59,16 @@ jobs:
             python-version: "3.13"
 
     steps:
+      # Free up disk space on ubuntu runners
+      - name: Free Disk Space
+        if: matrix.os == 'ubuntu-latest'
+        uses: endersonmenezes/free-disk-space@v3
+        with:
+          remove_android: true
+          remove_dotnet: true
+          rm_cmd: 'rmz'
+          rmz_version: '3.1.1'
+
       - uses: actions/checkout@v4
       - name: Cache pooch data
         uses: actions/cache@v4
@@ -116,6 +126,16 @@ jobs:
       BRAINGLOBE_TEST_DATA_DIR: "~/.pooch_cache"
 
     steps:
+      # Free up disk space on ubuntu runners
+      - name: Free Disk Space
+        if: matrix.os == 'ubuntu-latest'
+        uses: endersonmenezes/free-disk-space@v3
+        with:
+          remove_android: true
+          remove_dotnet: true
+          rm_cmd: 'rmz'
+          rmz_version: '3.1.1'
+
       - uses: actions/checkout@v4
       - name: Cache brainglobe directory
         uses: actions/cache@v3
@@ -163,6 +183,16 @@ jobs:
       KERAS_BACKEND: torch
       CELLFINDER_TEST_DEVICE: cpu
     steps:
+      # Free up disk space on ubuntu runners
+      - name: Free Disk Space
+        if: matrix.os == 'ubuntu-latest'
+        uses: endersonmenezes/free-disk-space@v3
+        with:
+          remove_android: true
+          remove_dotnet: true
+          rm_cmd: 'rmz'
+          rmz_version: '3.1.1'
+
       - name: Cache brainglobe directory
         uses: actions/cache@v3
         with:
