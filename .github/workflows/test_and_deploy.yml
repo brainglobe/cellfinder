@@ -62,7 +62,7 @@ jobs:
       # Free up disk space on ubuntu runners
       - name: Free Disk Space
         if: matrix.os == 'ubuntu-latest'
-        uses: endersonmenezes/free-disk-space@v3
+        uses: endersonmenezes/free-disk-space@6c4664f # v3
         with:
           remove_android: true
           remove_dotnet: true
@@ -129,7 +129,7 @@ jobs:
       # Free up disk space on ubuntu runners
       - name: Free Disk Space
         if: matrix.os == 'ubuntu-latest'
-        uses: endersonmenezes/free-disk-space@v3
+        uses: endersonmenezes/free-disk-space@6c4664f # v3
         with:
           remove_android: true
           remove_dotnet: true
@@ -186,7 +186,7 @@ jobs:
       # Free up disk space on ubuntu runners
       - name: Free Disk Space
         if: matrix.os == 'ubuntu-latest'
-        uses: endersonmenezes/free-disk-space@v3
+        uses: endersonmenezes/free-disk-space@6c4664f # v3
         with:
           remove_android: true
           remove_dotnet: true
