@@ -173,7 +173,7 @@ def get_results_callback(
                 viewer=viewer,
                 unknown_name="Rejected",
                 cell_name="Detected",
-                scale=scale, 
+                scale=scale,
             )
 
     return done_func
@@ -455,7 +455,11 @@ def detect_widget() -> FunctionGui:
         )
 
         worker.returned.connect(
-            get_results_callback(skip_classification, options["viewer"], options["signal_image"].scale)
+            get_results_callback(
+                skip_classification,
+                options["viewer"],
+                options["signal_image"].scale,
+            )
         )
         # Make sure if the worker emits an error, it is propagated to this
         # thread
