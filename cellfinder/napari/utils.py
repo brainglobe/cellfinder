@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 
 import napari
 import napari.layers
@@ -44,6 +44,7 @@ def add_classified_layers(
     viewer: napari.Viewer,
     unknown_name: str = "Rejected",
     cell_name: str = "Detected",
+    scale: Optional[Tuple[float, float, float]] = None,
 ) -> None:
     """
     Adds cell candidates as two separate point layers - unknowns and cells, to
@@ -60,6 +61,7 @@ def add_classified_layers(
         face_color="lightskyblue",
         visible=False,
         metadata=dict(point_type=Cell.UNKNOWN),
+        scale=scale,
     )
     viewer.add_points(
         cells_to_array(points, Cell.CELL, napari_order=True),
@@ -70,6 +72,7 @@ def add_classified_layers(
         symbol="ring",
         face_color="lightgoldenrodyellow",
         metadata=dict(point_type=Cell.CELL),
+        scale=scale,
     )
 
 
@@ -78,6 +81,7 @@ def add_single_layer(
     viewer: napari.Viewer,
     name: str,
     cell_type: int,
+    scale: Optional[Tuple[float, float, float]] = None,
 ) -> None:
     """
     Adds all cells of cell_type Cell.TYPE to a new point layer in the napari
@@ -93,6 +97,7 @@ def add_single_layer(
         face_color="lightskyblue",
         visible=True,
         metadata=dict(point_type=cell_type),
+        scale=scale,
     )
 
 
