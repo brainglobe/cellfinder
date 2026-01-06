@@ -222,8 +222,10 @@ class CellDetector:
                         neighbour_ids[2] = previous_plane[y, x]
 
                     if is_new_structure(neighbour_ids):
-                        if (self.soma_centre_value == 65535 and
-                            self.next_structure_id > 65535):
+                        if (
+                            self.soma_centre_value == 65535
+                            and self.next_structure_id > 65535
+                        ):
                             raise ValueError(
                                 "uint16 label overflow: number of connected "
                                 "components exceeds label capacity"
