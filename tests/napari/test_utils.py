@@ -65,6 +65,32 @@ def test_add_classified_layers(make_napari_viewer):
     assert cells_again == points
 
 
+def test_add_classified_layers_propagates_scale(make_napari_viewer):
+    """Ensure scale is propagated to created Points layers."""
+    scale = (5.0, 1.46, 1.46)
+
+    points = [
+        Cell(pos=[1, 2, 3], cell_type=Cell.CELL),
+        Cell(pos=[4, 5, 6], cell_type=Cell.UNKNOWN),
+    ]
+
+    viewer = make_napari_viewer()
+
+    add_classified_layers(
+        points,
+        viewer,
+        unknown_name="rejected",
+        cell_name="accepted",
+        scale=scale,
+    )
+    # scale is applied to both created Points layers
+    accepted = viewer.layers["accepted"]
+    rejected = viewer.layers["rejected"]
+
+    assert np.allclose(accepted.scale, scale)
+    assert np.allclose(rejected.scale, scale)
+
+
 def test_html_label_widget():
     """Simple unit test for the HTML Label widget"""
     label_widget = html_label_widget("A nice label", tag="h1")
