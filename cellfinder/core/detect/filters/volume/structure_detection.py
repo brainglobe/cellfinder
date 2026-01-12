@@ -103,7 +103,6 @@ spec = [
     ("z", vol_numba_type),
     ("next_structure_id", sid_numba_type),
     ("soma_centre_value", sid_numba_type),  # as large as possible
-    ("max_label", sid_numba_type),
     ("shape", types.UniTuple(vol_numba_type, 2)),
     ("obsolete_ids", DictType(sid_numba_type, sid_numba_type)),
     ("coords_maps", DictType(sid_numba_type, list_of_points_type)),
