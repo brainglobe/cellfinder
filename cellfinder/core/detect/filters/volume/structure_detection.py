@@ -103,6 +103,7 @@ spec = [
     ("z", vol_numba_type),
     ("next_structure_id", sid_numba_type),
     ("soma_centre_value", sid_numba_type),  # as large as possible
+    ("max_label", sid_numba_type),
     ("shape", types.UniTuple(vol_numba_type, 2)),
     ("obsolete_ids", DictType(sid_numba_type, sid_numba_type)),
     ("coords_maps", DictType(sid_numba_type, list_of_points_type)),
@@ -145,6 +146,7 @@ class CellDetector:
         width: int,
         start_z: int,
         soma_centre_value: sid_numba_type,
+        max_label: sid_numba_type,
     ):
         """
         Parameters
@@ -158,6 +160,7 @@ class CellDetector:
         self.z = start_z
         self.next_structure_id = 1
         self.soma_centre_value = soma_centre_value
+        self.max_label = max_label
 
         # Mapping from obsolete IDs to the IDs that they have been
         # made obsolete by
@@ -208,6 +211,10 @@ class CellDetector:
             with their structure ID. Plane is in Y, X axis order.
         """
         soma_centre_value = self.soma_centre_value
+
+        with objmode(max_label="u8"):
+            max_label = np.iinfo(plane.dtype).max
+
         for y in range(plane.shape[0]):
             for x in range(plane.shape[1]):
                 if plane[y, x] == soma_centre_value:
@@ -222,10 +229,9 @@ class CellDetector:
                         neighbour_ids[2] = previous_plane[y, x]
 
                     if is_new_structure(neighbour_ids):
-                        if (self.soma_centre_value == 65535 and
-                            self.next_structure_id > 65535):
+                        if self.next_structure_id > max_label:
                             raise ValueError(
-                                "uint16 label overflow: number of connected "
+                                "label overflow: number of connected "
                                 "components exceeds label capacity"
                             )
                         neighbour_ids[0] = self.next_structure_id

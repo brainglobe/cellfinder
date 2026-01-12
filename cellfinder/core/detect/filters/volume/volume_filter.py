@@ -99,12 +99,13 @@ class VolumeFilter:
         )
 
         self.z = settings.start_plane + self.ball_filter.first_valid_plane
-
+        max_label = np.iinfo(settings.detection_dtype).max
         self.cell_detector = CellDetector(
             settings.plane_height,
             settings.plane_width,
             start_z=self.z,
             soma_centre_value=settings.detection_soma_centre_value,
+            max_label=max_label,
         )
         # make sure we load enough data to filter. Otherwise, we won't be ready
         # to filter and the data loading thread will wait for data to be

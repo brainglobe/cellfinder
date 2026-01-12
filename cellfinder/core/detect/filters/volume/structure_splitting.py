@@ -115,11 +115,13 @@ def ball_filter_imgs(
         return np.empty((0, 3))
 
     start_z = bf.first_valid_plane
+    max_label = np.iinfo(settings.detection_dtype).max
     cell_detector = CellDetector(
         settings.plane_height,
         settings.plane_width,
         start_z=start_z,
         soma_centre_value=settings.detection_soma_centre_value,
+        max_label=max_label,
     )
 
     previous_plane = None
