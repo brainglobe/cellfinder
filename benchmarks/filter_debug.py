@@ -163,13 +163,11 @@ def setup_filter(
         torch_device=torch_device,
         use_mask=True,
     )
-    max_label = np.iinfo(settings.detection_dtype).max
     cell_detector = CellDetector(
         settings.plane_height,
         settings.plane_width,
         start_z=ball_filter.first_valid_plane,
         soma_centre_value=settings.detection_soma_centre_value,
-        max_label=max_label,
     )
 
     return (

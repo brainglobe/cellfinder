@@ -51,10 +51,7 @@ def test_connect_four_limits(
         actual_nonzeros == expected_nonzeros
     ), "Checkerboard didn't have the expected number of non-zeros"
 
-    max_label = np.iinfo(datatype).max
-    cell_detector = CellDetector(
-        height, width, 0, soma_centre_value, max_label
-    )
+    cell_detector = CellDetector(height, width, 0, soma_centre_value)
     labelled_plane = cell_detector.connect_four(checkerboard, None)
     one_count = np.count_nonzero(labelled_plane == 1)
 
@@ -80,10 +77,7 @@ def test_connect_four_uint16_overflow(linear_size: int) -> None:
     j = np.arange(width)[np.newaxis, :]
     checkerboard[(i + j) % 2 == 0] = soma_centre_value
 
-    max_label = np.iinfo(datatype).max
-    cell_detector = CellDetector(
-        height, width, 0, soma_centre_value, max_label
-    )
+    cell_detector = CellDetector(height, width, 0, soma_centre_value)
 
     with pytest.raises(ValueError, match="overflow|label"):
         cell_detector.connect_four(checkerboard, None)
