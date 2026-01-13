@@ -208,7 +208,6 @@ class CellDetector:
             with their structure ID. Plane is in Y, X axis order.
         """
         soma_centre_value = self.soma_centre_value
-        max_label = np.iinfo(plane.dtype).max
         for y in range(plane.shape[0]):
             for x in range(plane.shape[1]):
                 if plane[y, x] == soma_centre_value:
@@ -223,7 +222,7 @@ class CellDetector:
                         neighbour_ids[2] = previous_plane[y, x]
 
                     if is_new_structure(neighbour_ids):
-                        if self.next_structure_id > max_label:
+                        if self.next_structure_id > self.soma_centre_value:
                             raise ValueError(
                                 "label overflow: number of connected "
                                 "components exceeds label capacity"
