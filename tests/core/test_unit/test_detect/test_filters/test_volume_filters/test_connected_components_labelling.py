@@ -13,12 +13,6 @@ from cellfinder.core.tools.tools import get_max_possible_int_value
     "linear_size, datatype",
     [
         (254, np.uint16),  # results in < 2**16 structures, so not a problem
-        pytest.param(
-            256, np.uint16, marks=pytest.mark.xfail
-        ),  # results in 2**16 structures, so last structure gets labelled 0
-        pytest.param(
-            258, np.uint16, marks=pytest.mark.xfail
-        ),  # results in > 2**16 structures, so two structures with label 1
         (254, np.uint32),  # none of these are a problem with uint32
         (256, np.uint32),
         (258, np.uint32),
@@ -68,3 +62,22 @@ def test_connect_four_limits(
     assert np.all(
         (labelled_plane != 0) == (checkerboard != 0)
     ), "Structures should be exactly where centers were marked"
+
+
+@pytest.mark.parametrize("linear_size", [256, 258])
+def test_connect_four_uint16_overflow(linear_size: int) -> None:
+    datatype = np.uint16
+
+    height = linear_size * 2
+    width = linear_size
+    soma_centre_value = get_max_possible_int_value(datatype)
+
+    checkerboard = np.zeros((height, width), dtype=datatype)
+    i = np.arange(height)[:, np.newaxis]
+    j = np.arange(width)[np.newaxis, :]
+    checkerboard[(i + j) % 2 == 0] = soma_centre_value
+
+    cell_detector = CellDetector(height, width, 0, soma_centre_value)
+
+    with pytest.raises(ValueError, match="overflow|label"):
+        cell_detector.connect_four(checkerboard, None)
