@@ -15,8 +15,7 @@
 [![Mastodon](https://img.shields.io/badge/Mastodon-6364FF?logo=mastodon&logoColor=fff)](https://mastodon.online/@brainglobe)
 # cellfinder
 
-cellfinder is software for automated 3D cell detection in very large 3D images (e.g., serial two-photon or lightsheet volumes of whole mouse brains).
-There are three different ways to interact and use it, each with different user interfaces and objectives in mind.
+cellfinder is software for automated 3D cell detection in very large 3D images (e.g., serial two-photon or lightsheet volumes of whole mouse brains).It requires Python 3.11 or later.There are three different ways to interact and use it, each with different user interfaces and objectives in mind.
 For more details, head over to [the documentation website](https://brainglobe.info/documentation/cellfinder/index.html).
 
 At a glance:
