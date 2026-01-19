@@ -222,6 +222,11 @@ class CellDetector:
                         neighbour_ids[2] = previous_plane[y, x]
 
                     if is_new_structure(neighbour_ids):
+                        if self.next_structure_id > self.soma_centre_value:
+                            raise ValueError(
+                                "label overflow: number of connected "
+                                "components exceeds label capacity"
+                            )
                         neighbour_ids[0] = self.next_structure_id
                         self.next_structure_id += 1
                     struct_id = self.add(x, y, self.z, neighbour_ids)
