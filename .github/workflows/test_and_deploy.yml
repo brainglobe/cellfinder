@@ -90,7 +90,7 @@ jobs:
       # Setup VTK with headless display
       - uses: pyvista/setup-headless-display-action@v3
       # Run all tests
-      - uses: neuroinformatics-unit/actions/test@v2
+      - uses: neuroinformatics-unit/actions/test@tox-uv
         with:
           python-version: ${{ matrix.python-version }}
           secret-codecov-token: ${{ secrets.CODECOV_TOKEN }}
@@ -156,7 +156,7 @@ jobs:
       # Setup VTK with headless display
       - uses: pyvista/setup-headless-display-action@v3
       # Run test suite with numba disabled
-      - uses: neuroinformatics-unit/actions/test@v2
+      - uses: neuroinformatics-unit/actions/test@tox-uv
         with:
           python-version: "3.12"
           secret-codecov-token: ${{ secrets.CODECOV_TOKEN }}
