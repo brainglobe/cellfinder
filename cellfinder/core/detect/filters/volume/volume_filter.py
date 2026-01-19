@@ -99,7 +99,7 @@ class VolumeFilter:
         )
 
         self.z = settings.start_plane + self.ball_filter.first_valid_plane
-        
+
         self.cell_detector = CellDetector(
             settings.plane_height,
             settings.plane_width,

@@ -163,7 +163,7 @@ def setup_filter(
         torch_device=torch_device,
         use_mask=True,
     )
-    
+
     cell_detector = CellDetector(
         settings.plane_height,
         settings.plane_width,
