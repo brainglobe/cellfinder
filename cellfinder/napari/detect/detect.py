@@ -148,7 +148,7 @@ def restore_options_defaults(widget: FunctionGui) -> None:
 
 
 def get_results_callback(
-    skip_classification: bool, viewer: napari.Viewer
+    skip_classification: bool, viewer: napari.Viewer, scale
 ) -> Callable:
     """
     Returns the callback that is connected to output of the pipeline.
@@ -162,6 +162,7 @@ def get_results_callback(
                 viewer=viewer,
                 name="Cell candidates",
                 cell_type=Cell.UNKNOWN,
+                scale=scale,
             )
 
     else:
@@ -172,6 +173,7 @@ def get_results_callback(
                 viewer=viewer,
                 unknown_name="Rejected",
                 cell_name="Detected",
+                scale=scale,
             )
 
     return done_func
@@ -453,7 +455,11 @@ def detect_widget() -> FunctionGui:
         )
 
         worker.returned.connect(
-            get_results_callback(skip_classification, options["viewer"])
+            get_results_callback(
+                skip_classification,
+                options["viewer"],
+                options["signal_image"].scale,
+            )
         )
         # Make sure if the worker emits an error, it is propagated to this
         # thread
