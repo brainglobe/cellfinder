@@ -497,18 +497,18 @@ class CurationWidget(QWidget):
     def check_training_data_exists(self) -> bool:
         """
         Checks that
-        - at least one training data layers exists
-        - it contains annotated points.
+        - both training data layers exists
+        - at least one of them is not empty.
 
-        If only one training layer exists, an info message is shown,
-        but this is considered valid. If no training layers exist or
-        all training layers are empty, a warning is displayed.
+        Will display a popup dialog if these conditions are not fulfilled.
+        Will show a notification if only one layer is non-empty, but this
+        is considered valid.
 
         Returns
         -------
         bool
-            True if at least one training data layer containing points exists,
-            False otherwise.
+            True if both training layers exists and at least one
+            of them contains some data. False otherwise.
         """
         both_training_layers_exist = (
             self.training_data_cell_layer and self.training_data_non_cell_layer
@@ -519,7 +519,7 @@ class CurationWidget(QWidget):
                 self,
                 "No training data layers have been added.",
                 "Please add layers for both cells and non-cells,"
-                "and annotate some points in both.",
+                "and annotate some points.",
             )
             return False
 
@@ -536,16 +536,16 @@ class CurationWidget(QWidget):
         if at_least_one_training_layer_contains_data:
             if not both_training_layers_contain_data:
                 show_info(
-                    "One of the training layers is empty. For optimal "
-                    "(re-)training ensure you have roughly equal number "
-                    "of points in each of your training points layers."
+                    "One of the training layers is empty. This is OK, but"
+                    "For optimal (re-)training ensure you have roughly equal "
+                    "number of points in each of your training points layers."
                 )
             return True
         else:
             display_info(
                 self,
                 "No training data points have been added.",
-                "Please annotate points in both training data layers.",
+                "Please annotate points in the training data layers.",
             )
             return False
 
