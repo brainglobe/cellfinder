@@ -500,7 +500,9 @@ class CurationWidget(QWidget):
         - both training data layers exists
         - at least one of them is not empty.
 
-        Will display a popup dialog if these conditions are not fulfilled.
+        Will display a popup dialog and return False if these conditions
+        are not both fulfilled.
+
         Will show a notification if only one layer is non-empty, but this
         is considered valid.
 
