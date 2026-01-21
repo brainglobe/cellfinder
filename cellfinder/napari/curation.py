@@ -496,30 +496,57 @@ class CurationWidget(QWidget):
 
     def check_training_data_exists(self) -> bool:
         """
-        Returns true if both training layers exist, and have len > 0.
-        Otherwise displays useful explanatory info and returns False.
+        Checks that
+        - at least one training data layers exists
+        - it contains annotated points.
+
+        If only one training layer exists, an info message is shown,
+        but this is considered valid. If no training layers exist or
+        all training layers are empty, a warning is displayed.
+
+        Returns
+        -------
+        bool
+            True if at least one training data layer containing points exists,
+            False otherwise.
         """
-        if not (
+        both_training_layers_exist = (
             self.training_data_cell_layer and self.training_data_non_cell_layer
-        ):
+        )
+        at_least_one_training_layer_exists = (
+            self.training_data_cell_layer or self.training_data_non_cell_layer
+        )
+        at_least_one_training_layer_contains_data = (
+            len(self.training_data_cell_layer.data) > 0
+            or len(self.training_data_non_cell_layer.data) > 0
+        )
+
+        if not both_training_layers_exist:
+            # we don't want to fully prohibit this situation
+            # to allow users to start with just one layer
+            # but at the same time nudge users towards having
+            # both layers when doing "real" retraining
             show_info(
+                "Ensure you have both a cell and a non-cell layer with "
+                "roughly equal number of points for a balanced (re-)training"
+            )
+
+        if not at_least_one_training_layer_exists:
+            display_warning(
                 "No training data layers have been added. "
                 "Please add layers for both cells and non-cells,"
                 "and annotate some points in both.",
             )
             return False
+
+        if at_least_one_training_layer_contains_data:
+            return True
         else:
-            if (
-                len(self.training_data_cell_layer.data) > 0
-                and len(self.training_data_non_cell_layer.data) > 0
-            ):
-                return True
-            else:
-                show_info(
-                    "No training data points have been added. "
-                    "Please annotate points in both training data layers.",
-                )
-                return False
+            display_warning(
+                "No training data points have been added. "
+                "Please annotate points in both training data layers.",
+            )
+            return False
 
     def get_output_directory(self):
         """
