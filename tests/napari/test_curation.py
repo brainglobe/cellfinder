@@ -238,5 +238,5 @@ def test_show_info_called_on_empty_training_layer(
     valid_curation_widget.viewer.layers["Training data (non cells)"].data = (
         None
     )
-    valid_curation_widget.check_training_data_exists()
+    assert valid_curation_widget.check_training_data_exists()
     mock_info_notification.assert_called_once()
