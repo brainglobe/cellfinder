@@ -170,10 +170,20 @@ def test_check_image_data_missing_signal(valid_curation_widget):
         )
 
 
-def test_is_data_extractable(curation_widget, valid_curation_widget):
-    """Check is_data_extractable works as expected."""
-    assert not curation_widget.is_data_extractable()
+def test_valid_widget_has_extractable_data(valid_curation_widget):
+    """Check is_data_extractable works as expected
+    when the widget has data.
+    """
     assert valid_curation_widget.is_data_extractable()
+
+
+def test_widget_without_data_is_not_extractable(curation_widget, mocker):
+    """Check is_data_extractable is False and shows info when the widget
+    does not have data set up.
+    """
+    mock_info_popup = mocker.patch("cellfinder.napari.curation.display_info")
+    assert not curation_widget.is_data_extractable()
+    mock_info_popup.assert_called_once()
 
 
 def test_get_output_directory(valid_curation_widget):
@@ -202,3 +212,31 @@ def test_check_layer_removal_sync(valid_curation_widget):
     assert valid_curation_widget.background_layer is None
     assert valid_curation_widget.training_data_cell_layer is None
     assert valid_curation_widget.training_data_non_cell_layer is None
+
+
+def test_training_data_does_not_exist_when_user_removes_layers(
+    valid_curation_widget, mocker
+):
+    for layer in ("Training data (cells)", "Training data (non cells)"):
+        valid_curation_widget.viewer.layers.pop(layer)
+
+    mock_info_popup = mocker.patch("cellfinder.napari.curation.display_info")
+    assert not valid_curation_widget.check_training_data_exists()
+    mock_info_popup.assert_called_once()
+
+
+def test_valid_widget_has_valid_training_data(valid_curation_widget):
+    assert valid_curation_widget.check_training_data_exists()
+
+
+def test_show_info_called_on_empty_training_layer(
+    valid_curation_widget, mocker
+):
+    mock_info_notification = mocker.patch(
+        "cellfinder.napari.curation.show_info"
+    )
+    valid_curation_widget.viewer.layers["Training data (non cells)"].data = (
+        None
+    )
+    assert valid_curation_widget.check_training_data_exists()
+    mock_info_notification.assert_called_once()

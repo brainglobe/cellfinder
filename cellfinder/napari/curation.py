@@ -11,7 +11,7 @@ from brainglobe_utils.IO.yaml import save_yaml
 from magicgui.widgets import ProgressBar
 from napari.qt.threading import thread_worker
 from napari.utils.notifications import show_info
-from qt_niu.dialog import display_warning
+from qt_niu.dialog import display_info, display_warning
 from qt_niu.interaction import add_button, add_combobox
 from qtpy import QtCore
 from qtpy.QtWidgets import (
@@ -495,26 +495,61 @@ class CurationWidget(QWidget):
             return False
 
     def check_training_data_exists(self) -> bool:
-        if not (
-            self.training_data_cell_layer or self.training_data_non_cell_layer
-        ):
-            show_info(
-                "No training data layers have been added. "
-                "Please add a layer and annotate some points.",
+        """
+        Checks that
+        - both training data layers exists
+        - at least one of them is not empty.
+
+        Will display a popup dialog and return False if these conditions
+        are not both fulfilled.
+
+        Will show a notification if only one layer is non-empty, but this
+        is considered valid.
+
+        Returns
+        -------
+        bool
+            True if both training layers exists and at least one
+            of them contains some data. False otherwise.
+        """
+        both_training_layers_exist = (
+            self.training_data_cell_layer and self.training_data_non_cell_layer
+        )
+
+        if not both_training_layers_exist:
+            display_info(
+                self,
+                "No training data layers have been added.",
+                "Please add layers for both cells and non-cells,"
+                "and annotate some points.",
             )
             return False
-        else:
-            if (
-                len(self.training_data_cell_layer.data) > 0
-                or len(self.training_data_non_cell_layer.data) > 0
-            ):
-                return True
-            else:
+
+        at_least_one_training_layer_contains_data = (
+            len(self.training_data_cell_layer.data) > 0
+            or len(self.training_data_non_cell_layer.data) > 0
+        )
+
+        both_training_layers_contain_data = (
+            len(self.training_data_cell_layer.data) > 0
+            and len(self.training_data_non_cell_layer.data) > 0
+        )
+
+        if at_least_one_training_layer_contains_data:
+            if not both_training_layers_contain_data:
                 show_info(
-                    "No training data points have been added. "
-                    "Please annotate some points.",
+                    "One of the training layers is empty. This is OK, but"
+                    "For optimal (re-)training ensure you have roughly equal "
+                    "number of points in each of your training points layers."
                 )
-                return False
+            return True
+        else:
+            display_info(
+                self,
+                "No training data points have been added.",
+                "Please annotate points in the training data layers.",
+            )
+            return False
 
     def get_output_directory(self):
         """
