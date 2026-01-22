@@ -12,6 +12,7 @@ from cellfinder.core.download.download import (
     DEFAULT_DOWNLOAD_DIRECTORY,
     download_models,
 )
+from cellfinder.core.tools.system import force_cpu
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -25,8 +26,6 @@ def set_device_arm_macos_ci():
         os.getenv("GITHUB_ACTIONS") == "true"
         and torch.backends.mps.is_available()
     ):
-        from cellfinder.core.tools.system import force_cpu
-
         force_cpu()
 
 
