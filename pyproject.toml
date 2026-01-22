@@ -139,6 +139,10 @@ passenv =
     NUMPY_EXPERIMENTAL_ARRAY_FUNCTION
     PYVISTA_OFF_SCREEN
     BRAINGLOBE_TEST_DATA_DIR
+    LOGNAME
+    USER
+    LNAME
+    USERNAME
 deps =
     napari-dev: git+https://github.com/napari/napari
 """
