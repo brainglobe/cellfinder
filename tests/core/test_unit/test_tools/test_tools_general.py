@@ -86,6 +86,18 @@ def test_get_min_possible_int_value_bad_dtype():
         tools.get_min_possible_int_value(np.str_)
 
 
+def test_random_bool_likelihood_threshold(monkeypatch):
+    monkeypatch.setattr(tools, "uniform", lambda a, b: 0.05)
+    assert tools.random_bool(likelihood=0.1) is True
+    assert tools.random_bool(likelihood=0.01) is False
+
+
+def test_random_bool_likelihood_upper(monkeypatch):
+    monkeypatch.setattr(tools, "uniform", lambda a, b: 0.95)
+    assert tools.random_bool(likelihood=0.9) is False
+    assert tools.random_bool(likelihood=0.99) is True
+
+
 @pytest.mark.parametrize(
     "src_dtype",
     [
