@@ -66,8 +66,7 @@ def coords_to_volume(
     relative_zs = np.array((zs - z_min + ball_radius), dtype=np.int64)
 
     # set each point as the center with a value of threshold
-    for rel_x, rel_y, rel_z in zip(relative_xs, relative_ys, relative_zs):
-        volume[rel_x, rel_y, rel_z] = threshold_value
+    volume[relative_xs, relative_ys, relative_zs] = threshold_value
 
     volume = volume.swapaxes(0, 2)
     return torch.from_numpy(volume)
