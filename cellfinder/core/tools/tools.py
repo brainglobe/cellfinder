@@ -261,7 +261,7 @@ def random_bool(likelihood: Optional[float] = None) -> bool:
     if likelihood is None:
         return bool(getrandbits(1))
     else:
-        if uniform(0, 1) > likelihood:
+        if uniform(0, 1) < likelihood:
             return True
         else:
             return False
