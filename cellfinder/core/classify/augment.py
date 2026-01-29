@@ -180,9 +180,7 @@ class DataAugmentation:
     def update_parameters(self) -> bool:
         self.do_affine = False
         if self.needs_affine:
-            self.do_affine = random_bool(
-                likelihood=1 - self.augment_likelihood
-            )
+            self.do_affine = random_bool(likelihood=self.augment_likelihood)
         self.update_flip_parameters()
 
         return bool(self.do_affine or self.axes_to_flip)
@@ -194,7 +192,7 @@ class DataAugmentation:
 
         axes_to_flip = self.axes_to_flip = []
         for axis in flippable_axis:
-            if random_bool(likelihood=1 - self.augment_likelihood):
+            if random_bool(likelihood=self.augment_likelihood):
                 # add 1 because of initial channel dim
                 axes_to_flip.append(axis + 1)
 
