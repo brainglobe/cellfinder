@@ -970,6 +970,21 @@ class CuboidThreadedDatasetBase(CuboidDatasetBase):
     is used by the main process if that tries reading data.
     """
 
+    _cached_buffer: tuple[tuple[int, ...], torch.Tensor] | None = None
+    """
+    We cache and reuse the last buffer shared with the reading thread, into
+    which it reads the cuboids that we then use back in the worker that sent
+    it (if it's the correct shape - `_cached_buffer[0]`).
+
+    It seems to reduce some resource consumption (when running heavy loads
+    and multiple inference on the same GPU), than if we use a new buffer for
+    each call. The error was "RuntimeError: Couldn't open shared event:
+    <torch_*_event>, error code: <2>", and it may have gone away with this fix.
+    It's possible that creating and sharing a new buffer with each read creates
+    too many shared internal resources/sockets which is perhaps instead re-used
+    when re-using one buffer.
+    """
+
     def __init__(
         self,
         **kwargs,
@@ -1015,7 +1030,14 @@ class CuboidThreadedDatasetBase(CuboidDatasetBase):
         self, buffer_shape: tuple[int, ...], subject: str, key: Any
     ) -> torch.Tensor:
         # create buffer into which the read thread will write the data into
-        data = torch.empty(buffer_shape, dtype=torch.float32)
+        buffer_shape = tuple(buffer_shape)
+        cache = self._cached_buffer
+        # if we already have a buffer of correct shape, re-use it. It's safe
+        # because we wait below until the buffer is done being used
+        if cache is not None and cache[0] == buffer_shape:
+            data = cache[1]
+        else:
+            data = torch.empty(buffer_shape, dtype=torch.float32)
 
         queues = self._worker_queues
         # main-process, uses the last queue, if/(and when) there are no workers
@@ -1041,7 +1063,9 @@ class CuboidThreadedDatasetBase(CuboidDatasetBase):
             )
         assert msg == subject
 
-        return data
+        self._cached_buffer = buffer_shape, data
+
+        return data.clone()
 
     def start_dataset_thread(self, num_workers: int) -> None:
         """
