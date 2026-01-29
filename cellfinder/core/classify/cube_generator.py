@@ -20,7 +20,11 @@ from cellfinder.core.tools.threading import (
     ExecutionFailure,
     ThreadWithExceptionMPSafe,
 )
-from cellfinder.core.tools.tools import get_axis_reordering, get_data_converter
+from cellfinder.core.tools.tools import (
+    get_axis_reordering,
+    get_data_converter,
+    get_max_possible_int_value,
+)
 
 AXIS = Literal["x", "y", "z"]
 DIM = Literal[AXIS, "c"]
@@ -1140,6 +1144,22 @@ class CuboidStackDataset(CuboidThreadedDatasetBase):
         **kwargs,
     ):
         super().__init__(**kwargs)
+
+        if get_max_possible_int_value(
+            signal_array.dtype
+        ) > get_max_possible_int_value(np.float32):
+            raise ValueError(
+                f"Input signal array has data type {signal_array.dtype}, "
+                f"which cannot fit in a float32"
+            )
+        if background_array is not None and get_max_possible_int_value(
+            background_array.dtype
+        ) > get_max_possible_int_value(np.float32):
+            raise ValueError(
+                f"Input background array has data type "
+                f"{background_array.dtype}, which cannot fit in a float32"
+            )
+
         if background_array is None:
             data_arrays = [
                 signal_array,
@@ -1205,6 +1225,16 @@ class CuboidTiffDataset(CuboidThreadedDatasetBase):
     """
     Implements `CuboidThreadedDatasetBase` using a `CachedTiffCuboidImageData`,
     which reads the cuboids from individual tiff files.
+
+    :param points_filenames: A sequence of sequences of the filenames of the
+        cubes. E.g. `[("cube1.1.tiff", "cube1.2.tiff"), ("cube2.1.tiff",
+        "cube2.2.tiff")]`.
+
+        The outer list is the number of points/samples. The inner lists is the
+        number of channels (e.g. signal/background) for the given point.
+    :param max_cuboids_buffered: Integer
+        The number of the most recently accessed cuboids to cache so it isn't
+        read from disk again.
     """
 
     def __init__(
@@ -1223,6 +1253,8 @@ class CuboidTiffDataset(CuboidThreadedDatasetBase):
 
         self.num_channels = len(points_filenames[0])
         filenames_arr = np.array(points_filenames).astype(np.str_)
+        self.filenames_arr = filenames_arr
+
         self.src_image_data = CachedTiffCuboidImageData(
             points_arr=self.points_arr[:, :3],
             filenames_arr=filenames_arr,
