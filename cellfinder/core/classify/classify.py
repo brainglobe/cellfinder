@@ -2,10 +2,10 @@ import os
 from copy import deepcopy
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Callable, List, Optional, Tuple
 
-import keras
-import torch
+import numpy as np
+import tqdm
 from brainglobe_utils.cells.cells import Cell
 from brainglobe_utils.general.system import get_num_processes
 from torch.utils.data import DataLoader
@@ -95,11 +95,6 @@ def main(
     if background_array.ndim != 3:
         raise IOError("Background data must be 3D")
 
-    if callback is not None:
-        callbacks = [BatchEndCallback(callback)]
-    else:
-        callbacks = None
-
     # Too many workers doesn't increase speed, and uses huge amounts of RAM
     workers = get_num_processes(min_free_cpu_cores=n_free_cpus)
     workers = min(workers, max_workers)
@@ -149,19 +144,29 @@ def main(
     )
 
     logger.info("Running inference")
-    # in Keras 3.0 multiprocessing params are specified in the generator
     if workers:
         dataset.start_dataset_thread(workers)
     try:
-        predictions = model.predict(
-            data_loader,
-            verbose=True,
-            callbacks=callbacks,
-        )
+        outputs = []
+        for step, data in tqdm.tqdm(
+            enumerate(data_loader),
+            total=len(sampler),
+            desc="Classifying",
+            unit="batches",
+            smoothing=1 / (25 * max(1, workers)),
+            mininterval=0.5,
+        ):
+            output = model(data)
+            # in original keras, it seemed to held on to the output until the
+            # end (possibly on GPU). This causes resources issues for very
+            # heavy loads. So instead immediately move it to cpu/numpy
+            outputs.append(output.cpu().numpy())
+            if callback is not None:
+                callback(step)
     finally:
         dataset.stop_dataset_thread()
 
-    predictions = torch.argmax(torch.from_numpy(predictions), dim=1)
+    predictions = np.argmax(np.concatenate(outputs, axis=0), axis=1)
     points_list = []
 
     # only go through the "extractable" points
@@ -169,7 +174,7 @@ def main(
     # the sampler doesn't auto shuffle, so the classification order (i.e. order
     # in `predictions`) is the same order as the sampler returns the batches.
     # Use that to get the corresponding row in points_arr, which gives us the
-    # `index` of the row in the original point in the input points list
+    # `index` of the row in the original input points list
     for arr in sampler:
         for i in arr:
             p_idx = int(dataset.points_arr[i, 4].item())
@@ -186,13 +191,3 @@ def main(
     )
 
     return points_list
-
-
-class BatchEndCallback(keras.callbacks.Callback):
-    def __init__(self, callback: Callable[[int], None]):
-        self._callback = callback
-
-    def on_predict_batch_end(
-        self, batch: int, logs: Optional[Dict[str, Any]] = None
-    ) -> None:
-        self._callback(batch)
