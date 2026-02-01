@@ -586,21 +586,27 @@ class CuboidDatasetBase(Dataset):
         parameters.
     :param augment_likelihood: Value `[0, 1]` with the probability of a data
         item being augmented. I.e. `0.9` means 90% of the data will have been
-        augmented.
-    :param flippable_axis: A sequence of the dimensions in the output
-        data to reverse, if any, with probability `augment_likelihood`.
+        augmented. See ``DataAugmentation`` class for full details.
+    :param flippable_axis: A sequence of the axes indices in ``axis_order`` to
+        potentially flip around its center during augmentation, if any, with
+        probability ``augment_likelihood``. See ``DataAugmentation`` class for
+        full details.
     :param rotate_range: A sequence of floats or sequence of 2-tuples with the
-        radian angle or range of angles to rotate the output data. Each item
-        for the corresponding output data dim, with probability
-        `augment_likelihood`. Or `None` if there's no rotation.
+        radian angle or range of angles to rotate the data in the corresponding
+        ``axis_order`` axis during augmentation with probability
+        ``augment_likelihood``. Where zero means no rotation. Or ``None`` if
+        there's no rotation to any axis. See ``DataAugmentation`` class for
+        full details.
     :param translate_range: A sequence of floats or sequence of 2-tuples with
-        the pixel distance or range of distance to translate the output data.
-        Each item for the corresponding output data dim, with probability
-        `augment_likelihood`. Or `None` if there's no translation.
+        the fractional distance or range of distance to translate the data
+        during augmentation with probability ``augment_likelihood``. Where zero
+        means no translation.  Or `None` if there's no translation to any axis.
+        See ``DataAugmentation`` class for full details.
     :param scale_range: A sequence of floats or sequence of 2-tuples with
-        the amount or range of amount to scale the output data. `1` means
-        no scaling. Each item for the corresponding output data dim, with
-        probability `augment_likelihood`. Or `None` if there's no scaling.
+        the amount or range of amount to scale the data during augmentation
+        with probability ``augment_likelihood``. Where ``1`` means no scaling.
+        Or `None` if there's no scaling to any axis. See ``DataAugmentation``
+        class for full details.
     """
 
     points_arr: torch.Tensor = None

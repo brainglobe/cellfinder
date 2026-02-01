@@ -438,6 +438,52 @@ def test_array_dataset_signal_only(unique_int):
     )
 
 
+def test_array_dataset_bad_array_type():
+    """
+    Checks that when using only the signal channel, the data returned by the
+    CuboidStackDataset for given points matches the data it should return.
+    """
+    data64 = np.empty((60, 60, 30, 2), dtype=np.float64)
+    data32 = np.empty((60, 60, 30, 2), dtype=np.float32)
+    points = [(x, 28, 18) for x in (27, 29)]
+
+    # good dataset
+    CuboidStackDataset(
+        points=[Cell(pos, Cell.UNKNOWN) for pos in points],
+        data_voxel_sizes=(1, 1, 5),
+        network_voxel_sizes=(1, 1, 5),
+        network_cuboid_voxels=(50, 50, 20),
+        axis_order=("x", "y", "z"),
+        output_axis_order=("x", "y", "z", "c"),
+        signal_array=data32[..., 0],
+        background_array=data32[..., 1],
+    )
+
+    with pytest.raises(ValueError):
+        CuboidStackDataset(
+            points=[Cell(pos, Cell.UNKNOWN) for pos in points],
+            data_voxel_sizes=(1, 1, 5),
+            network_voxel_sizes=(1, 1, 5),
+            network_cuboid_voxels=(50, 50, 20),
+            axis_order=("x", "y", "z"),
+            output_axis_order=("x", "y", "z", "c"),
+            signal_array=data64[..., 0],  # data is too big here
+            background_array=data32[..., 1],
+        )
+
+    with pytest.raises(ValueError):
+        CuboidStackDataset(
+            points=[Cell(pos, Cell.UNKNOWN) for pos in points],
+            data_voxel_sizes=(1, 1, 5),
+            network_voxel_sizes=(1, 1, 5),
+            network_cuboid_voxels=(50, 50, 20),
+            axis_order=("x", "y", "z"),
+            output_axis_order=("x", "y", "z", "c"),
+            signal_array=data32[..., 0],
+            background_array=data64[..., 1],  # data is too big here
+        )
+
+
 def test_tiff_image_dataset(unique_int, tmp_path):
     """
     Checks that the data returned by the CuboidTiffDataset for given points
