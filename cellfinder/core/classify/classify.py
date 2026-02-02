@@ -78,7 +78,7 @@ def main(
     network_depth: str
         The network depth to use during classification. Defaults to `"50"`.
     max_workers: int
-        The number of sub-processes to use for data loading / processing.
+        The max number of sub-processes to use for data loading / processing.
         Defaults to 8.
     pin_memory: bool
         Pins data to be sent to the GPU to the CPU memory. This allows faster
@@ -174,7 +174,7 @@ def main(
     # the sampler doesn't auto shuffle, so the classification order (i.e. order
     # in `predictions`) is the same order as the sampler returns the batches.
     # Use that to get the corresponding row in points_arr, which gives us the
-    # `index` of the row in the original input points list
+    # `index` of the row in the original point in the input points list
     for arr in sampler:
         for i in arr:
             p_idx = int(dataset.points_arr[i, 4].item())

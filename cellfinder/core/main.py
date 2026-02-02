@@ -48,6 +48,7 @@ def main(
     detect_callback: Optional[Callable[[int], None]] = None,
     classify_callback: Optional[Callable[[int], None]] = None,
     detect_finished_callback: Optional[Callable[[list], None]] = None,
+    classification_max_workers: int = 3,
 ) -> List[Cell]:
     """
     Parameters
@@ -179,6 +180,9 @@ def main(
         Called with the batch number that has just finished.
     detect_finished_callback : Callable[list], optional
         Called after detection is finished with the list of detected points.
+    classification_max_workers : int
+        The max number of sub-processes to use for data loading / processing
+        during classification. Defaults to 3.
     """
     from cellfinder.core.classify import classify
     from cellfinder.core.detect import detect
@@ -241,6 +245,7 @@ def main(
                 model_weights,
                 network_depth,
                 callback=classify_callback,
+                max_workers=classification_max_workers,
             )
         else:
             logger.info("No candidates, skipping classification")
