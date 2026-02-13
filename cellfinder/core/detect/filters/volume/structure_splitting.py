@@ -274,8 +274,8 @@ def split_cells(
         )
 
     # these points are in x, y, z order columnwise, in absolute pixels
-    # get real unweighed center to start from
-    orig_centre = get_structure_centre(cell_points, intensity=None)
+    # get center to start from in case we find no split points
+    orig_centre = get_structure_centre(cell_points, intensity=intensity)
 
     xs = cell_points[:, 0]
     ys = cell_points[:, 1]

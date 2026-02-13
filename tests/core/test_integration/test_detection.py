@@ -338,20 +338,16 @@ def test_detection_plane_too_small(synthetic_spot_clusters, y, x):
         )
 
 
-@pytest.mark.parametrize("split", [True, False])
 @pytest.mark.parametrize("use_coi", [True, False])
-def test_center_of_intensity_gradient(
-    synthetic_intensity_dropoff_spot, no_free_cpus, use_coi, split
+def test_center_of_intensity_comet_spot(
+    synthetic_intensity_comet_spot, no_free_cpus, use_coi
 ):
     """Checks that using the sphere with dropoff, its center is properly found
     when using the center of intensity calculation, but not otherwise - where
     we just get the overall center of all non-zero values.
-
-    When splitting, the overall bright areas are split in two in either case,
-    so we verify it.
     """
     signal_array, background_array, c_xyz, c_overall_xyz, end_xyz = (
-        synthetic_intensity_dropoff_spot
+        synthetic_intensity_comet_spot
     )
     signal_array = signal_array.astype(np.uint16)
     background_array = background_array.astype(np.uint16)
@@ -365,43 +361,88 @@ def test_center_of_intensity_gradient(
         ball_overlap_fraction=0.7,
         log_sigma_size=0.8,
         n_sds_above_mean_thresh=0,
-        soma_spread_factor=0.5 if split else 10,
-        n_splitting_iter=3,
-        split_ball_z_size=8,
-        split_ball_overlap_fraction=0.7,
+        # 10 ensures we don't split because it's under split limit
+        soma_spread_factor=10,
         voxel_sizes=voxel_sizes,
         n_free_cpus=no_free_cpus,
         skip_classification=True,
         detect_centre_of_intensity=use_coi,
     )
 
-    if split:
-        # if splitting, we get two volumes with minimal splitting
-        _, y, z = c_xyz
-        assert len(detected) == 2
-        for cell in detected:
-            assert abs(y - cell.y) <= 2
-            assert abs(z - cell.z) <= 2
-
-        # we get points centered in y and z, but on the two end in x
-        cx0, cx1 = [c.x for c in detected]
-        assert cx0 != cx1
-        if cx0 > cx1:
-            cx0, cx1 = cx1, cx0
-
-        assert abs(c_xyz[0] - cx0) <= 6
-        assert abs(end_xyz[0] - cx1) <= 6
-
+    if use_coi:
+        # using coi the cell should be close to sphere center
+        c = c_xyz
     else:
-        # if not splitting, we get a single cell with center depending on coi
-        if use_coi:
-            c = c_xyz
-        else:
-            c = c_overall_xyz
-        x, y, z = c
+        # without coi, the cell is near the overall non-zero volume center
+        c = c_overall_xyz
+    x, y, z = c
 
-        assert len(detected) == 1
-        cell = detected[0]
-        assert abs(x - cell.x) <= 2
-        assert abs(y - cell.y) <= 1
-        assert abs(z - cell.z) <= 1
+    assert len(detected) == 1
+    cell = detected[0]
+    assert abs(x - cell.x) <= 2
+    assert abs(y - cell.y) <= 1
+    assert abs(z - cell.z) <= 1
+
+
+@pytest.mark.parametrize("use_coi", [True, False])
+def synthetic_center_of_intensity_linear_intensity_comet_spot(
+    synthetic_intensity_comet_spot, no_free_cpus, use_coi, split
+):
+    """Checks that when splitting cell clusters, using the sphere with dropoff,
+    its center is properly found when using the center of intensity
+    calculation, but not otherwise - where we just get the overall center of
+    all non-zero values.
+
+    We have to use a more linear comet because otherwise the 2d/3d filtering
+    hollows out the original filtered volume creating multiple spots during
+    splitting, but we don't actually want to split. Using a linear comet keeps
+    the "detected" volume intact so splitting leaves it also as a single spot
+    so we can test where it puts the cell.
+    """
+    signal_array, background_array, c_xyz, c_overall_xyz, end_xyz = (
+        synthetic_intensity_comet_spot
+    )
+    signal_array = signal_array.astype(np.uint16)
+    background_array = background_array.astype(np.uint16)
+
+    detected = main(
+        signal_array,
+        background_array,
+        soma_diameter=8,
+        ball_xy_size=8,
+        ball_z_size=8,
+        ball_overlap_fraction=0.7,
+        log_sigma_size=0.8,
+        n_sds_above_mean_thresh=0,
+        # 0.5 ensures we split because cell volume is over the split limit
+        soma_spread_factor=0.5,
+        max_cluster_size=100000,
+        split_ball_xy_size=6,
+        split_ball_z_size=8,
+        split_ball_overlap_fraction=0.2,
+        n_splitting_iter=1,
+        voxel_sizes=voxel_sizes,
+        n_free_cpus=no_free_cpus,
+        skip_classification=True,
+        detect_centre_of_intensity=use_coi,
+    )
+
+    grace = 2
+    if use_coi:
+        # using coi the cell should be close to sphere center
+        c = c_xyz
+        # using the linear comet, the center needs more grace because the tail
+        # weighs more and pulls the cell towards it
+        grace = 4
+        # make sure we don't put the overall center within grace amount
+        assert c_xyz[0] + grace < c_overall_xyz[0]
+    else:
+        # without coi, the cell is near the overall non-zero volume center
+        c = c_overall_xyz
+    x, y, z = c
+
+    assert len(detected) == 1
+    cell = detected[0]
+    assert abs(x - cell.x) <= grace
+    assert abs(y - cell.y) <= 1
+    assert abs(z - cell.z) <= 1

@@ -213,8 +213,7 @@ def synthetic_spot_clusters() -> (
     return signal_array, background_array, centers_xyz
 
 
-@pytest.fixture(scope="session")
-def synthetic_intensity_dropoff_spot() -> tuple[
+def make_intensity_comet_spot(linear: bool) -> tuple[
     np.ndarray,
     np.ndarray,
     tuple[int, int, int],
@@ -234,9 +233,17 @@ def synthetic_intensity_dropoff_spot() -> tuple[
 
     It returns the signal and background np arrays and 3 x, y, z position
     tuples `center`, `mid`, `end`. `center` is the center of the sphere.
-    `mid` is the mid-point of all non-zero voxels. `end` is the of the non-zero
-    voxels in the x-direction. I.e. centered in y, z. But in x it's where the
-    voxels are the least bright at the end of the falloff.
+    `mid` is the mid-point of all non-zero voxels. `end` is the end of the
+    non-zero voxels in the x-direction. I.e. centered in y, z. But in x it's
+    where the voxels are the least bright at the end of the falloff.
+
+    If linear, the falloff happens linearly across the whole non-zero voxels,
+    in particular across the tail relative to the center of the sphere.
+    Otherwise, it drops in 2 segments, once within the sphere, and once in the
+    comet's tail, each with a different slope and with the tail being much less
+    bright.
+
+    Original PR has visual illustrations of the comet.
     """
     # overall shape and center of sphere
     shape_zyx = 20, 50, 50
@@ -249,9 +256,9 @@ def synthetic_intensity_dropoff_spot() -> tuple[
     # brightness of sphere center
     center_val = 1000
     # brightness of the sphere at its radius
-    bright_fill = 100
+    bright_fill = 700 if linear else 100
     # brightness of the end of falloff at x_r.
-    mute_fill = 10
+    mute_fill = 50 if linear else 10
     # center of all the non-zero voxels
     c_overall_zyx = 10, 25, 15 - r + (r + x_r - 1) // 2
     # pos of the end of the falloff
@@ -307,6 +314,38 @@ def synthetic_intensity_dropoff_spot() -> tuple[
         c_overall_zyx[::-1],
         end_zyx[::-1],
     )
+
+
+@pytest.fixture(scope="session")
+def synthetic_intensity_comet_spot() -> tuple[
+    np.ndarray,
+    np.ndarray,
+    tuple[int, int, int],
+    tuple[int, int, int],
+    tuple[int, int, int],
+]:
+    """
+    Creates a comet shaped volume where there's a sphere with a tail that is
+    much less bright than the sphere. See make_intensity_comet_spot for
+    details.
+    """
+    return make_intensity_comet_spot(linear=False)
+
+
+@pytest.fixture(scope="session")
+def synthetic_linear_intensity_comet_spot() -> tuple[
+    np.ndarray,
+    np.ndarray,
+    tuple[int, int, int],
+    tuple[int, int, int],
+    tuple[int, int, int],
+]:
+    """
+    Creates a comet shaped volume where there's a sphere with a tail whose
+    intensity drops off linearly from the center of the sphere. See
+    make_intensity_comet_spot for details.
+    """
+    return make_intensity_comet_spot(linear=True)
 
 
 @pytest.fixture(scope="session")
