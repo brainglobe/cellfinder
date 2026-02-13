@@ -8,10 +8,13 @@ real life data.
 
 import numpy as np
 import pytest
+import torch
 from brainglobe_utils.IO.image.load import read_with_dask
 
 from cellfinder.core.detect.filters.setup_filters import DetectionSettings
 from cellfinder.core.detect.filters.volume.structure_splitting import (
+    ball_filter_imgs,
+    check_centre_in_cuboid,
     split_cells,
 )
 from cellfinder.core.main import main
@@ -97,3 +100,37 @@ def test_underflow_issue_435():
     expected = {(10, 11, 11), (20, 11, 11)}
     got = set(map(tuple, centers.tolist()))
     assert expected == got
+
+
+def test_ball_filter_imgs_invalid_volume():
+    """Checks that an invalid volume returns empty array instead."""
+    settings = DetectionSettings(
+        plane_shape=(100, 30),
+        plane_original_np_dtype=np.float32,
+        voxel_sizes=(1, 1, 1),
+        ball_xy_size_um=50,
+    )
+
+    vol = ball_filter_imgs(torch.zeros((5, 100, 30)), settings, None)
+    assert not vol.shape[0]
+
+
+@pytest.mark.parametrize("inside", [True, False])
+def test_check_centre_in_cuboid(inside):
+    corner = np.array([5, 5, 5])
+    if inside:
+        assert check_centre_in_cuboid(np.array([2, 2, 2]), corner)
+    else:
+        assert not check_centre_in_cuboid(np.array([8, 8, 8]), corner)
+
+
+def test_using_coi_without_intensity():
+    cell_points = np.zeros((30, 20, 20), dtype=np.bool_)
+    settings = DetectionSettings(
+        plane_shape=(100, 100),
+        plane_original_np_dtype=np.float32,
+        detect_centre_of_intensity=True,
+    )
+
+    with pytest.raises(ValueError):
+        split_cells(cell_points, settings, None)
