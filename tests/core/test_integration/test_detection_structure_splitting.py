@@ -97,3 +97,49 @@ def test_underflow_issue_435():
     expected = {(10, 11, 11), (20, 11, 11)}
     got = set(map(tuple, centers.tolist()))
     assert expected == got
+
+
+def test_split_cells_outlier_filtering():
+    """
+    Test that split_cells removes centres where all coordinates exceed
+    the bounding cuboid when outlier_keep=False.
+    """
+    from unittest.mock import patch
+
+    # Points [4,4,4] to [6,6,6] → bounding shape (3,3,3), corner (4,4,4)
+    cell_points = np.array([
+        [4, 4, 4],
+        [5, 5, 5],
+        [6, 6, 6],
+    ])
+
+    settings = DetectionSettings(
+        plane_shape=(100, 100),
+        plane_original_np_dtype=np.float32,
+        voxel_sizes=(1, 1, 1),
+        ball_xy_size_um=3,
+        ball_z_size_um=3,
+        ball_overlap_fraction=0.8,
+        soma_diameter_um=7,
+        outlier_keep=False,
+    )
+
+    # Mock iterative_ball_filter to return centres including an outlier.
+    # Centres are relative to the expanded volume, but the outlier check
+    # compares against original_bounding_cuboid_shape = (3,3,3).
+    # [1,1,1] and [2,2,2] are valid; [10,10,10] exceeds (3,3,3) in all dims.
+    mock_centres = np.array([[1.0, 1.0, 1.0], [2.0, 2.0, 2.0], [10.0, 10.0, 10.0]])
+    mock_return = ([3], [mock_centres])
+
+    with patch(
+        "cellfinder.core.detect.filters.volume.structure_splitting"
+        ".iterative_ball_filter",
+        return_value=mock_return,
+    ):
+        centers = split_cells(cell_points, settings)
+
+    # Outlier [10,10,10] should be filtered; valid relative centres [1,1,1]
+    # and [2,2,2] become absolute [5,5,5] and [6,6,6] (corner + relative)
+    expected = {(5.0, 5.0, 5.0), (6.0, 6.0, 6.0)}
+    got = set(map(tuple, centers.tolist()))
+    assert got == expected
