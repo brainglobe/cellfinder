@@ -107,11 +107,13 @@ def test_split_cells_outlier_filtering():
     from unittest.mock import patch
 
     # Points [4,4,4] to [6,6,6] → bounding shape (3,3,3), corner (4,4,4)
-    cell_points = np.array([
-        [4, 4, 4],
-        [5, 5, 5],
-        [6, 6, 6],
-    ])
+    cell_points = np.array(
+        [
+            [4, 4, 4],
+            [5, 5, 5],
+            [6, 6, 6],
+        ]
+    )
 
     settings = DetectionSettings(
         plane_shape=(100, 100),
@@ -128,7 +130,9 @@ def test_split_cells_outlier_filtering():
     # Centres are relative to the expanded volume, but the outlier check
     # compares against original_bounding_cuboid_shape = (3,3,3).
     # [1,1,1] and [2,2,2] are valid; [10,10,10] exceeds (3,3,3) in all dims.
-    mock_centres = np.array([[1.0, 1.0, 1.0], [2.0, 2.0, 2.0], [10.0, 10.0, 10.0]])
+    mock_centres = np.array(
+        [[1.0, 1.0, 1.0], [2.0, 2.0, 2.0], [10.0, 10.0, 10.0]]
+    )
     mock_return = ([3], [mock_centres])
 
     with patch(
