@@ -18,24 +18,33 @@ def get_model(
     inference: bool = False,
     continue_training: bool = False,
 ) -> Model:
-    """Returns the correct model based on the arguments passed
-    :param existing_model: An existing, trained model. This is returned if it
-    exists
-    :param model_weights: This file is used to set the model weights if it
-    exists
-    :param network_depth: This defines the type of model to be created if
-    necessary
-    :param learning_rate: For creating a new model
+    """Returns the correct model based on the arguments passed.
+
+    If ``existing_model`` is provided it is loaded and returned directly,
+    regardless of ``network_depth``.  Otherwise a new model is built using
+    ``network_depth``.
+
+    :param existing_model: Path to an existing, trained model.  Takes
+        precedence over ``network_depth`` when both are supplied.
+    :param model_weights: Path used to set the model weights when
+        ``inference`` or ``continue_training`` is True.
+    :param network_depth: Defines the architecture of a new model to build
+        when no ``existing_model`` is given.
+    :param learning_rate: Learning rate for a newly built model.
     :param inference: If True, will ensure that a trained model exists. E.g.
-    by using the default one
+        by using the default one.
     :param continue_training: If True, will ensure that a trained model
-    exists. E.g. by using the default one
-    :return: A keras model
+        exists. E.g. by using the default one.
+    :return: A keras model.
 
     """
-    if existing_model is not None or network_depth is None:
+    if existing_model is not None:
         logger.debug(f"Loading model: {existing_model}")
         return keras.models.load_model(existing_model)
+    elif network_depth is None:
+        raise ValueError(
+            "Either `existing_model` or `network_depth` must be provided."
+        )
     else:
         logger.debug(f"Creating a new instance of model: {network_depth}")
         model = build_model(
