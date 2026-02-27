@@ -140,13 +140,15 @@ def main(
 
     # Splitting settings
     kwargs = dataclasses.asdict(settings)
-    kwargs.update({
-        "ball_z_size_um": split_ball_z_size,
-        "ball_xy_size_um": split_ball_xy_size,
-        "ball_overlap_fraction": split_ball_overlap_fraction,
-        "torch_device": "cpu",
-        "plane_original_np_dtype": np.float32,
-    })
+    kwargs.update(
+        {
+            "ball_z_size_um": split_ball_z_size,
+            "ball_xy_size_um": split_ball_xy_size,
+            "ball_overlap_fraction": split_ball_overlap_fraction,
+            "torch_device": "cpu",
+            "plane_original_np_dtype": np.float32,
+        }
+    )
     splitting_settings = DetectionSettings(**kwargs)
 
     # Filters
@@ -175,5 +177,7 @@ def main(
     torch.set_num_threads(orig_n_threads)
 
     time_elapsed = datetime.now() - start_time
-    logger.info(f"Detection complete. Found {len(cells)} cells in {time_elapsed}")
+    logger.info(
+        f"Detection complete. Found {len(cells)} cells in {time_elapsed}"
+    )
     return cells

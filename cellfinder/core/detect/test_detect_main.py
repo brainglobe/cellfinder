@@ -1,7 +1,9 @@
-import pytest
 import numpy as np
-from cellfinder.core.detect.detect import main
+import pytest
 from brainglobe_utils.cells.cells import Cell
+
+from cellfinder.core.detect.detect import main
+
 
 def test_main_returns_list_on_zeros():
     """Test main() on a small 3D zero array returns an empty list"""
@@ -10,10 +12,12 @@ def test_main_returns_list_on_zeros():
     assert isinstance(result, list)
     assert all(isinstance(c, Cell) for c in result) or len(result) == 0
 
+
 def test_main_raises_on_none_input():
     """Test main() raises ValueError when given None"""
     with pytest.raises(ValueError):
         main(None, torch_device="cpu")
+
 
 def test_main_raises_on_wrong_dimension():
     """Test main() raises ValueError when array is not 3D"""
