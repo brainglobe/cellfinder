@@ -27,12 +27,27 @@ from cellfinder.core.detect.filters.setup_filters import DetectionSettings
 from cellfinder.core.detect.filters.volume.volume_filter import VolumeFilter
 from cellfinder.core.tools.tools import inference_wrapper
 
+def parse_range(range_str: str | None, max_val: int) -> slice:
+    """
+    Convert a 'start:end' string to a Python slice.
+    If range_str is None, returns full slice(0, max_val).
+    """
+    if not range_str:
+        return slice(0, max_val)
+    start_str, end_str = range_str.split(":")
+    start = max(0, int(start_str))
+    end = min(max_val, int(end_str))
+    return slice(start, end)
+
+
 
 @inference_wrapper
 def main(
     signal_array: types.array,
     start_plane: int = 0,
     end_plane: int = -1,
+    x_range: str | None = None,
+    y_range: str | None = None,
     voxel_sizes: Tuple[float, float, float] = (5, 2, 2),
     soma_diameter: float = 16,
     max_cluster_size: float = 100_000,
@@ -180,8 +195,14 @@ def main(
         raise ValueError("Input data must be 3D")
 
     if end_plane < 0:
-        end_plane = len(signal_array)
-    end_plane = min(len(signal_array), end_plane)
+        end_plane = signal_array.shape[0]
+    end_plane = min(signal_array.shape[0], end_plane)
+
+    #Now slice
+    z_slice = slice(start_plane, end_plane)
+    y_slice = parse_range(y_range, signal_array.shape[1])
+    x_slice = parse_range(x_range, signal_array.shape[2])
+    signal_array = signal_array[z_slice, y_slice, x_slice]
 
     torch_device = torch_device.lower()
     # Use SciPy filtering on CPU (better performance); use PyTorch on GPU
