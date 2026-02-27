@@ -1,9 +1,10 @@
-from typing import Callable, Optional, List
+from typing import Callable, List, Optional
+
 from brainglobe_utils.cells.cells import Cell
 
 from cellfinder.core import types
-from cellfinder.core.tools.tools import inference_wrapper
 from cellfinder.core.detect.detect import main as _detect_main
+from cellfinder.core.tools.tools import inference_wrapper
 
 
 @inference_wrapper
