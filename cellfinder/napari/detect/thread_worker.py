@@ -70,12 +70,23 @@ class Worker(WorkerBase):
         def detect_finished_callback(points: list) -> None:
             self.npoints_detected = len(points)
             if not self.classification_inputs.skip_classification:
-                self.update_progress_bar.emit(
-                    "Setting up classification...", 1, 0
-                )
+                if self.npoints_detected == 0:
+                    self.update_progress_bar.emit(
+                        "No cell candidates detected, "
+                        "skipping classification",
+                        1,
+                        1,
+                    )
+                else:
+                    self.update_progress_bar.emit(
+                        "Setting up classification...", 1, 0
+                    )
 
         def classify_callback(batch: int) -> None:
-            if not self.classification_inputs.skip_classification:
+            if (
+                not self.classification_inputs.skip_classification
+                and self.npoints_detected > 0
+            ):
                 self.update_progress_bar.emit(
                     "Classifying cells",
                     # Default cellfinder-core batch size is 64.

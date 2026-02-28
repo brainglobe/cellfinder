@@ -336,3 +336,44 @@ def test_detection_plane_too_small(synthetic_spot_clusters, y, x):
             voxel_sizes=(1, 1, 1),
             ball_xy_size=50,
         )
+
+
+def test_detection_no_candidates(no_free_cpus):
+    """
+    Test that detection on a very small / empty image returns an empty list
+    without raising an error (issue #344).
+    """
+    # Create a small blank image with no bright structures
+    signal_array = np.zeros((15, 100, 100), dtype=np.uint16)
+    background_array = np.zeros((15, 100, 100), dtype=np.uint16)
+
+    # Should return an empty list, not raise an error
+    detected = main(
+        signal_array,
+        background_array,
+        voxel_sizes,
+        n_free_cpus=no_free_cpus,
+        skip_classification=True,
+    )
+    assert isinstance(detected, list)
+    assert len(detected) == 0
+
+
+def test_detection_no_candidates_with_classification(no_free_cpus):
+    """
+    Test that detection + classification on an empty image returns an empty
+    list without raising an error (issue #344).
+    """
+    signal_array = np.zeros((15, 100, 100), dtype=np.uint16)
+    background_array = np.zeros((15, 100, 100), dtype=np.uint16)
+
+    # Should return an empty list even with classification enabled
+    detected = main(
+        signal_array,
+        background_array,
+        voxel_sizes,
+        n_free_cpus=no_free_cpus,
+    )
+    assert isinstance(detected, list)
+    assert len(detected) == 0
+

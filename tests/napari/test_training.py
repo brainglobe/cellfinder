@@ -61,7 +61,9 @@ def test_run_with_virtual_yaml_files(get_training_widget):
     """
     Checks that training is run with expected set of parameters.
     """
-    with patch("cellfinder.napari.train.train.run_training") as run_training:
+    with patch(
+        "cellfinder.napari.train.train.TrainingWorker"
+    ) as MockWorker:
         # make default input valid - need yaml files (they don't technically
         # have to exist)
         virtual_yaml_files = (
@@ -83,7 +85,7 @@ def test_run_with_virtual_yaml_files(get_training_widget):
         expected_network_args.trained_model = None
         expected_network_args.model_weights = None
 
-        run_training.assert_called_once_with(
+        MockWorker.assert_called_once_with(
             expected_training_args,
             expected_network_args,
             expected_optional_training_args,
