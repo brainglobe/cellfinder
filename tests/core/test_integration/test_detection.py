@@ -376,4 +376,3 @@ def test_detection_no_candidates_with_classification(no_free_cpus):
     )
     assert isinstance(detected, list)
     assert len(detected) == 0
-

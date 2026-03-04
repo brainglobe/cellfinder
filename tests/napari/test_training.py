@@ -61,9 +61,7 @@ def test_run_with_virtual_yaml_files(get_training_widget):
     """
     Checks that training is run with expected set of parameters.
     """
-    with patch(
-        "cellfinder.napari.train.train.TrainingWorker"
-    ) as MockWorker:
+    with patch("cellfinder.napari.train.train.TrainingWorker") as MockWorker:
         # make default input valid - need yaml files (they don't technically
         # have to exist)
         virtual_yaml_files = (

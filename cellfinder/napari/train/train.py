@@ -8,13 +8,13 @@ from qtpy.QtWidgets import QScrollArea
 
 from cellfinder.napari.utils import cellfinder_header, html_label_widget
 
+from .thread_worker import TrainingWorker
 from .train_containers import (
     MiscTrainingInputs,
     OptionalNetworkInputs,
     OptionalTrainingInputs,
     TrainingDataInputs,
 )
-from .thread_worker import TrainingWorker
 
 
 def training_widget() -> FunctionGui:
@@ -164,4 +164,3 @@ def training_widget() -> FunctionGui:
     widget._widget._qwidget = scroll
 
     return widget
-

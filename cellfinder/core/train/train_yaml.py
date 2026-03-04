@@ -26,7 +26,12 @@ from brainglobe_utils.general.system import (
 from brainglobe_utils.IO.cells import find_relevant_tiffs
 from brainglobe_utils.IO.yaml import read_yaml_section
 from fancylog import fancylog
-from keras.callbacks import CSVLogger, LambdaCallback, ModelCheckpoint, TensorBoard
+from keras.callbacks import (
+    CSVLogger,
+    LambdaCallback,
+    ModelCheckpoint,
+    TensorBoard,
+)
 from sklearn.model_selection import train_test_split
 
 import cellfinder.core as package_for_log
