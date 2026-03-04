@@ -26,8 +26,7 @@ from brainglobe_utils.general.system import (
 from brainglobe_utils.IO.cells import find_relevant_tiffs
 from brainglobe_utils.IO.yaml import read_yaml_section
 from fancylog import fancylog
-import keras
-from keras.callbacks import CSVLogger, ModelCheckpoint, TensorBoard
+from keras.callbacks import CSVLogger, LambdaCallback, ModelCheckpoint, TensorBoard
 from sklearn.model_selection import train_test_split
 
 import cellfinder.core as package_for_log
@@ -298,28 +297,6 @@ def cli():
     )
 
 
-class EpochEndCallback(keras.callbacks.Callback):
-    """Keras callback that reports epoch progress via a callback function."""
-
-    def __init__(
-        self,
-        progress_callback: Callable[[str, int, int], None],
-        epochs: int,
-    ):
-        super().__init__()
-        self._progress_callback = progress_callback
-        self._epochs = epochs
-
-    def on_epoch_end(self, epoch, logs=None):
-        # epoch is 0-indexed in Keras
-        current = epoch + 1
-        self._progress_callback(
-            f"Training epoch {current}/{self._epochs}",
-            current,
-            self._epochs,
-        )
-
-
 def run(
     output_dir,
     yaml_file,
@@ -459,7 +436,13 @@ def run(
 
     if progress_callback is not None:
         progress_callback("Beginning training", 0, epochs)
-        callbacks.append(EpochEndCallback(progress_callback, epochs))
+        callbacks.append(
+            LambdaCallback(
+                on_epoch_end=lambda epoch, logs: progress_callback(
+                    f"Training epoch {epoch+1}/{epochs}", epoch + 1, epochs
+                )
+            )
+        )
 
     logger.info("Beginning training.")
     # Keras 3.0: `use_multiprocessing` input is set in the
