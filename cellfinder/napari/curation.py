@@ -461,10 +461,10 @@ class CurationWidget(QWidget):
         else:
 
             @thread_worker(
-                    connect={
-                        "yielded": self.update_progress,
-                        "finished" : self._on_training_data_saved,
-                        }
+                connect={
+                    "yielded": self.update_progress,
+                    "finished": self._on_training_data_saved,
+                }
             )
             def extract_cubes():
                 yield from self.extract_cubes()
