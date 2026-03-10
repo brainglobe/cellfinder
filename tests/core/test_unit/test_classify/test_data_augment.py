@@ -285,7 +285,7 @@ def test_augment_rotate(cube_with_side_dot, reorder):
     )
     # similarly for the other point
     assert bool(augmented[1, 2, 10 - 8, 5] > 0.1) != bool(
-        augmented[1, 10-2, 8, 5] > 0.1
+        augmented[1, 10 - 2, 8, 5] > 0.1
     )
 
 
