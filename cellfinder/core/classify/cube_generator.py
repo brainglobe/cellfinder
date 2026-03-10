@@ -549,7 +549,7 @@ class CuboidDatasetBase(Dataset):
     The data output is either just the data or it also includes the labels,
     depending on `target_output`.
 
-    :param points: A list of `Cell`instances containing the cell centers.
+    :param points: A list of `Cell` instances containing the cell centers.
         Units are in voxels of the input data - not in microns. The cells are
         saved in `points`, with some caveats. See their docs.
     :param data_voxel_sizes: A 3-tuple indicating the input data's 3d voxel
@@ -949,7 +949,7 @@ class CuboidThreadedDatasetBase(CuboidDatasetBase):
 
     Overall, each worker uses its own queue to communicate with the main
     thread. The main reader thread listens to requests via its own single
-    queue. Each worder's request tells it the points for which to load cuboids
+    queue. Each worker's request tells it the points for which to load cuboids
     and the queue to use to send the data back along. If it encounters an error
     reading the data, it'll instead send the exception back with that queue
     so it doesn't hang. The reader thread never exits on its own because it

@@ -17,9 +17,9 @@ class DataAugmentation:
 
     Typical example::
 
-        augmenter = DataAugmentation(...)
+        augmentor = DataAugmentation(...)
         if augmentor.update_parameters():
-            augmented_data = augmenter(data)
+            augmented_data = augmentor(data)
 
     The input data should be 4-dimensional (channel and 3 spatial dimensions),
     with the order specified by ``data_dim_order``. Calling
@@ -258,8 +258,8 @@ class DataAugmentation:
         ``data_dim_order`` to ``DIM_ORDER`` so it can be directly used.
 
         ``test_monai_rotate_input`` verifies the monai input as doing
-        rotations. However, clockwise or anti-clockwise rotations occur
-        depending on whether we rotate around x/y or z axis.
+        rotations. However, clockwise or anti-clockwise rotations occur in MONAI
+        depending on whether we rotate around x/y or z axis, which won't matter for augmentation.
         """
         if rotate_range is None:
             return None

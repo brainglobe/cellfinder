@@ -11,9 +11,9 @@ from cellfinder.core.classify.augment import DataAugmentation
 def cube_with_side_dot() -> torch.Tensor:
     # DataAugmentation.DIM_ORDER of (c, y, x, z)
     data = torch.zeros((2, 11, 11, 7))
-    # put dot at pixel in plane z = 5, on the x/y diagonal - both x and y are 8
+    # put dot in channel 0 at pixel in plane z = 5, on the x/y diagonal - both x and y are 8
     data[0, 8, 8, 5] = 1
-    # put dot at pixel in plane z = 5, but x is 2 and y is 8
+    # put dot in channel 1 at pixel in plane z = 5, but x is 2 and y is 8
     data[1, 8, 2, 5] = 1
     return data
 
@@ -58,7 +58,7 @@ def test_monai_translate_input(offset):
 )
 def test_monai_scale_input(interval, growth):
     """
-    This tests that the unexpected scale interval is indeed expected by monai.
+    This tests that the unexpected scale interval is indeed expected by monai by checking values near the foreground border of a 5x5x5 test data block that contains a 3x3x3 foreground cube in its middle.
     See ``DataAugmentation._fix_scale_range`` for details.
     """
     data = torch.zeros((1, 5, 5, 5))
@@ -225,7 +225,7 @@ def test_augment_translate(cube_with_side_dot, reorder):
         data_dim_order=data_dim_order,
     )
     assert augmenter.update_parameters(), "Parameters should be randomized"
-    # afine is needed for translate/rotate/scale
+    # affine is needed for translate/rotate/scale
     assert augmenter._asked_affine
     assert augmenter._do_affine
     # the cube is not cube but cuboid, so need to make iso before transforming
@@ -285,7 +285,7 @@ def test_augment_rotate(cube_with_side_dot, reorder):
     )
     # similarly for the other point
     assert bool(augmented[1, 2, 10 - 8, 5] > 0.1) != bool(
-        augmented[1, 8, 8, 5] > 0.1
+        augmented[1, 10-2, 8, 5] > 0.1
     )
 
 
@@ -309,7 +309,7 @@ def test_augment_scale(cube_with_center_dot, reorder):
         data_dim_order=data_dim_order,
     )
     assert augmenter.update_parameters(), "Parameters should be randomized"
-    # afine is needed for translate/rotate/scale
+    # affine is needed for translate/rotate/scale
     assert augmenter._asked_affine
     assert augmenter._do_affine
     # the cube is not cube but cuboid, so need to make iso before transforming
