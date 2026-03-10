@@ -1,4 +1,5 @@
 from unittest.mock import patch
+
 from cellfinder.core.download.cli import get_parser, main
 
 
@@ -13,8 +14,12 @@ def test_parser_defaults():
 
 def test_main_calls_download_and_config():
     with patch("sys.argv", ["prog"]):
-        with patch("cellfinder.core.download.cli.download_models") as mock_download:
-            with patch("cellfinder.core.download.cli.amend_user_configuration") as mock_amend:
+        with patch(
+            "cellfinder.core.download.cli.download_models"
+        ) as mock_download:
+            with patch(
+                "cellfinder.core.download.cli.amend_user_configuration"
+            ) as mock_amend:
 
                 mock_download.return_value = "fake_model_path"
 
@@ -26,8 +31,12 @@ def test_main_calls_download_and_config():
 
 def test_main_no_config_update():
     with patch("sys.argv", ["prog", "--no-amend-config"]):
-        with patch("cellfinder.core.download.cli.download_models") as mock_download:
-            with patch("cellfinder.core.download.cli.amend_user_configuration") as mock_amend:
+        with patch(
+            "cellfinder.core.download.cli.download_models"
+        ) as mock_download:
+            with patch(
+                "cellfinder.core.download.cli.amend_user_configuration"
+            ) as mock_amend:
 
                 mock_download.return_value = "fake_model_path"
 
