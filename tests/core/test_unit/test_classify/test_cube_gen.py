@@ -4,32 +4,23 @@ import numpy as np
 import pytest
 import tifffile
 import torch
-from brainglobe_utils.cells.cells import Cell
+from brainglobe_utils.cells.cells import Cell, file_name_from_cell
 from pytest_mock.plugin import MockerFixture
 from torch.utils.data import DataLoader
 
 from cellfinder.core.classify.cube_generator import (
-    CachedArrayStackImageData,
-    CachedCuboidImageDataBase,
-    CachedStackImageDataBase,
-    CachedTiffCuboidImageData,
+    BaseImage,
+    CachedArrayImage,
+    CachedCuboidImage,
+    CachedStackImage,
+    CachedTiffImage,
     CuboidBatchSampler,
     CuboidDatasetBase,
     CuboidStackDataset,
     CuboidTiffDataset,
-    ImageDataBase,
     get_data_cuboid_range,
 )
 from cellfinder.core.tools.threading import ExecutionFailure
-
-try:
-    from brainglobe_utils.cells.cells import file_name_from_cell
-except ImportError:
-
-    def file_name_from_cell(cell: Cell, channel: int) -> str:
-        name = f"x{int(cell.x)}_y{int(cell.y)}_z{int(cell.z)}Ch{channel}.tif"
-        return name
-
 
 PT_TYPE = tuple[int, int, int]
 
@@ -111,7 +102,7 @@ def to_tiff_cubes(
 
 def assert_loader_cubes_matches_cubes(
     cubes: Sequence[np.ndarray],
-    data_loader: ImageDataBase,
+    data_loader: BaseImage,
     batches: Sequence[Sequence[int]],
 ) -> None:
     """
@@ -134,7 +125,7 @@ def assert_loader_cubes_matches_cubes(
 
 def assert_loader_cubes_bad_indices(
     data_shape: Sequence[int],
-    data_loader: ImageDataBase,
+    data_loader: BaseImage,
     individuals: Sequence[int],
     batches: Sequence[Sequence[int]],
 ) -> None:
@@ -153,7 +144,7 @@ def assert_loader_cubes_bad_indices(
 
 def assert_loader_cubes_bad_size(
     data_shape: Sequence[int],
-    data_loader: ImageDataBase,
+    data_loader: BaseImage,
     batch: Sequence[int],
 ) -> None:
     """Checks that providing a wrong sized buffer for cube batches fails."""
@@ -170,7 +161,7 @@ def assert_loader_cubes_bad_size(
 
 def test_array_image_data(unique_int):
     """
-    Checks that the data returned by the CachedArrayStackImageData for given
+    Checks that the data returned by the CachedArrayImage for given
     points matches the data it should return.
     """
     volume = sample_volume(20, 20, 30, 2, unique_int)
@@ -178,7 +169,7 @@ def test_array_image_data(unique_int):
     cube_size = 3, 3, 5
     cubes, points_arr = to_numpy_cubes(volume, points, cube_size)
 
-    stack = CachedArrayStackImageData(
+    stack = CachedArrayImage(
         input_arrays=[volume[:, :, :, 0], volume[:, :, :, 1]],
         max_axis_0_cuboids_buffered=3,
         data_axis_order=("x", "y", "z"),
@@ -198,7 +189,7 @@ def test_array_image_data(unique_int):
 
 def test_tiff_image_data(unique_int, tmp_path):
     """
-    Checks that the data returned by the CachedTiffCuboidImageData for given
+    Checks that the data returned by the CachedTiffImage for given
     points matches the data it should return.
     """
     volume = sample_volume(20, 20, 30, 2, unique_int)
@@ -208,7 +199,7 @@ def test_tiff_image_data(unique_int, tmp_path):
         volume, cube_size, points, tmp_path
     )
 
-    tiffs = CachedTiffCuboidImageData(
+    tiffs = CachedTiffImage(
         filenames_arr=np.array(filenames).astype(np.str_),
         max_cuboids_buffered=3,
         data_axis_order=("x", "y", "z"),
@@ -228,13 +219,13 @@ def test_tiff_image_data(unique_int, tmp_path):
 
 @pytest.mark.parametrize("cached", [0, 1])
 def test_array_image_data_cache(unique_int, cached, mocker: MockerFixture):
-    """Checks that CachedArrayStackImageData properly caches the first axis."""
+    """Checks that CachedArrayImage properly caches the first axis."""
     volume = sample_volume(20, 20, 30, 2, unique_int)
     points = [(5, 5, 10), (10, 10, 20)]
     cube_size = 3, 3, 5
     cubes, points_arr = to_numpy_cubes(volume, points, cube_size)
 
-    stack = CachedArrayStackImageData(
+    stack = CachedArrayImage(
         input_arrays=[volume[:, :, :, 0], volume[:, :, :, 1]],
         max_axis_0_cuboids_buffered=cached,
         data_axis_order=("x", "y", "z"),
@@ -265,7 +256,7 @@ def test_array_image_data_cache(unique_int, cached, mocker: MockerFixture):
 def test_tiff_image_data_cache(
     unique_int, tmp_path, cached, mocker: MockerFixture
 ):
-    """Checks that CachedTiffCuboidImageData properly caches the first axis."""
+    """Checks that CachedTiffImage properly caches the first axis."""
     volume = sample_volume(20, 20, 30, 2, unique_int)
     points = [(5, 5, 10), (10, 10, 20)]
     cube_size = 3, 3, 5
@@ -273,7 +264,7 @@ def test_tiff_image_data_cache(
         volume, cube_size, points, tmp_path
     )
 
-    tiffs = CachedTiffCuboidImageData(
+    tiffs = CachedTiffImage(
         filenames_arr=np.array(filenames).astype(np.str_),
         max_cuboids_buffered=cached,
         data_axis_order=("x", "y", "z"),
@@ -978,13 +969,13 @@ def test_img_data_base_bad_args():
     points = torch.empty((5, 5))
 
     with pytest.raises(ValueError):
-        ImageDataBase(points_arr=points, data_axis_order=("x", "y"))
+        BaseImage(points_arr=points, data_axis_order=("x", "y"))
 
 
 def test_img_data_not_impl():
     """Validate calling base, not-implemented functions."""
     points = torch.empty((5, 5))
-    data = ImageDataBase(points_arr=points)
+    data = BaseImage(points_arr=points)
 
     with pytest.raises(NotImplementedError):
         data.get_point_cuboid_data(0)
@@ -997,7 +988,7 @@ def test_img_data_not_impl():
 def test_img_stack_not_impl():
     """Validate calling base, not-implemented functions."""
     points = torch.empty((5, 5))
-    data = CachedStackImageDataBase(points_arr=points)
+    data = CachedStackImage(points_arr=points)
 
     with pytest.raises(NotImplementedError):
         data.read_plane(0, 0)
@@ -1006,7 +997,7 @@ def test_img_stack_not_impl():
 def test_img_cuboid_not_impl():
     """Validate calling base, not-implemented functions."""
     points = torch.empty((5, 5))
-    data = CachedCuboidImageDataBase(points_arr=points)
+    data = CachedCuboidImage(points_arr=points)
 
     with pytest.raises(NotImplementedError):
         data.read_cuboid(0, 0)
@@ -1029,20 +1020,14 @@ def test_img_cuboid_bad_arg(tmp_path):
 
     with pytest.raises(ValueError):
         # no filenames, 1 point
-        CachedTiffCuboidImageData(
-            points_arr=points[:1, :3], filenames_arr=filenames[:0]
-        )
+        CachedTiffImage(points_arr=points[:1, :3], filenames_arr=filenames[:0])
 
     with pytest.raises(ValueError):
         # 1 filename set, but 2 points
-        CachedTiffCuboidImageData(
-            points_arr=points[:, :3], filenames_arr=filenames
-        )
+        CachedTiffImage(points_arr=points[:, :3], filenames_arr=filenames)
 
     # one of each - should work
-    data = CachedTiffCuboidImageData(
-        points_arr=points[:1, :3], filenames_arr=filenames
-    )
+    data = CachedTiffImage(points_arr=points[:1, :3], filenames_arr=filenames)
     assert len(data.points_arr)
 
 
@@ -1086,7 +1071,7 @@ def test_dataset_base_bad_args():
 def test_dataset_manual_image_data():
     """Check that we can manually pass an image data instance to dataset."""
     points = torch.zeros((1, 5))
-    data = CachedStackImageDataBase(
+    data = CachedStackImage(
         points_arr=points,
         data_axis_order=("x", "y", "z"),
         cuboid_size=(20, 50, 50),

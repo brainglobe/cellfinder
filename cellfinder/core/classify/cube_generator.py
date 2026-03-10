@@ -40,7 +40,7 @@ class StackSizeError(Exception):
 
 def _read_data_send_cuboids(
     thread: ThreadWithExceptionMPSafe,
-    dataset: "ImageDataBase",
+    dataset: "BaseImage",
     queues: Sequence[Queue],
 ) -> None:
     """
@@ -60,7 +60,7 @@ def _read_data_send_cuboids(
 
     :param thread: The `ThreadWithExceptionMPSafe`, automatically passed to the
         func.
-    :param dataset: The `ImageDataBase` used to read the data and cubes.
+    :param dataset: The `BaseImage` used to read the data and cubes.
     :param queues: A list of queues for sending data. Each request to the
         sub-thread indicates which queue in the list to send the cubes. This
         allows one thread to serve multiple consumers.
@@ -134,7 +134,7 @@ def get_data_cuboid_range(
     return start, start + num_voxels
 
 
-class ImageDataBase:
+class BaseImage:
     """
     A base class for extracting cuboids out of image data.
 
@@ -235,7 +235,7 @@ class ImageDataBase:
         raise NotImplementedError
 
 
-class CachedStackImageDataBase(ImageDataBase):
+class CachedStackImage(BaseImage):
     """
     Takes a 3d image stack (potentially a folder of tiffs or a 3d numpy array)
     and extracts requested cuboids from the stack as torch Tensors. It also
@@ -373,9 +373,9 @@ class CachedStackImageDataBase(ImageDataBase):
         raise NotImplementedError
 
 
-class CachedArrayStackImageData(CachedStackImageDataBase):
+class CachedArrayImage(CachedStackImage):
     """
-    Implements `CachedStackImageDataBase` for a stack represented by an array
+    Implements `CachedStackImage` for a stack represented by an array
     data type. E.g. an Dask array.
     """
 
@@ -406,7 +406,7 @@ class CachedArrayStackImageData(CachedStackImageDataBase):
         )
 
 
-class CachedCuboidImageDataBase(ImageDataBase):
+class CachedCuboidImage(BaseImage):
     """
     Takes a collection of cuboids (e.g. a folder of tiff files, each a cuboid
     or a list of 3d numpy arrays) and returns a requested cuboid as a torch
@@ -482,9 +482,9 @@ class CachedCuboidImageDataBase(ImageDataBase):
         raise NotImplementedError
 
 
-class CachedTiffCuboidImageData(CachedCuboidImageDataBase):
+class CachedTiffImage(CachedCuboidImage):
     """
-    Implements `CachedCuboidImageDataBase` for a list of tiff filenames. Each
+    Implements `CachedCuboidImage` for a list of tiff filenames. Each
     tiff contains a single channel 3d cuboid.
     """
 
@@ -536,7 +536,7 @@ class CachedTiffCuboidImageData(CachedCuboidImageDataBase):
 class CuboidDatasetBase(Dataset):
     """
     Implements a pytorch `Dataset` that takes a list of 3d point coordinates
-    (centers of potential cells) and a `ImageDataBase` instance that contains
+    (centers of potential cells) and a `BaseImage` instance that contains
     voxel data. The dataset yields batches of torch Tensors with cuboids
     of the voxel data centered at these points.
 
@@ -551,7 +551,8 @@ class CuboidDatasetBase(Dataset):
 
     :param points: A list of `Cell` instances containing the cell centers.
         Units are in voxels of the input data - not in microns. The cells are
-        saved in `points`, with some caveats. See their docs.
+        saved in `points_arr` as an array with some metadata. See the
+        `points_arr` docs.
     :param data_voxel_sizes: A 3-tuple indicating the input data's 3d voxel
         size in `um`. The tuple's order corresponds to `axis_order`. This is
         used along with `network_voxel_sizes` to extract and scale a cube
@@ -566,7 +567,7 @@ class CuboidDatasetBase(Dataset):
     :param output_axis_order: A 4-tuple indicating the desired output data's
         three dimensions plus channel axis order. It's any permutations of
         `("x", "y", "z", "c")`. For now, `"c"` is assumed last.
-    :param src_image_data: The `ImageDataBase` that will be used to read the
+    :param src_image_data: The `BaseImage` that will be used to read the
         voxel cuboids for a given point.
     :param classes: The number of classes used by the network when classifying
         cuboids.
@@ -613,12 +614,14 @@ class CuboidDatasetBase(Dataset):
     """A generated Nx5 tensor. Each row is `(x, y, z, type, index)` columns
     with the 3d position of the potential cell.
 
-    Units are voxels in the input data, not microns.
+    Units are voxels in the input data, not microns. `type` is the cell type.
+    `index` is the index of the given cell in the original input `points` list
+    since `points_arr` may be re-ordered.
     """
 
-    src_image_data: ImageDataBase | None = None
+    src_image_data: BaseImage | None = None
     """
-    The `ImageDataBase` that will be used to read the voxel cuboids for a given
+    The `BaseImage` that will be used to read the voxel cuboids for a given
     point.
     """
 
@@ -654,7 +657,7 @@ class CuboidDatasetBase(Dataset):
         network_cuboid_voxels: tuple[int, int, int] = (20, 50, 50),
         axis_order: tuple[AXIS, AXIS, AXIS] = ("z", "y", "x"),
         output_axis_order: tuple[DIM, DIM, DIM, DIM] = ("y", "x", "z", "c"),
-        src_image_data: ImageDataBase | None = None,
+        src_image_data: BaseImage | None = None,
         classes: int = 2,
         target_output: Literal["index", "label"] | None = None,
         augment: bool = False,
@@ -756,7 +759,7 @@ class CuboidDatasetBase(Dataset):
         return self._get_multiple_items(idx)
 
     def _set_output_data_dim_reordering(
-        self, src_image_data: ImageDataBase
+        self, src_image_data: BaseImage
     ) -> None:
         """
         Sets `_output_data_dim_reordering`.
@@ -913,7 +916,7 @@ class CuboidDatasetBase(Dataset):
 
 class CuboidThreadedDatasetBase(CuboidDatasetBase):
     """
-    Adds the ability to share a single `src_image_data` `ImageDataBase`
+    Adds the ability to share a single `src_image_data` `BaseImage`
     instance among multiple sub-process workers so that only the main
     process reads the data, while the other processes only handle processing
     the batches.
@@ -924,7 +927,7 @@ class CuboidThreadedDatasetBase(CuboidDatasetBase):
     assigns the batches each worker loads and yields their result.
 
     `CuboidDatasetBase` loads the data directly via its `src_image_data`
-    (`ImageDataBase`) instance. When the `Dataset` is duplicated for each
+    (`BaseImage`) instance. When the `Dataset` is duplicated for each
     worker, each worker gets its own copy of `src_image_data` that it reads
     from. This causes the sub-processes to read similar data from disk causing
     disk contention, as well as cache duplication.
@@ -1127,7 +1130,7 @@ class CuboidThreadedDatasetBase(CuboidDatasetBase):
 
 class CuboidStackDataset(CuboidThreadedDatasetBase):
     """
-    Implements `CuboidThreadedDatasetBase` using a `CachedArrayStackImageData`,
+    Implements `CuboidThreadedDatasetBase` using a `CachedArrayImage`,
     which reads the cuboids from array type data (e.g. Dask arrays).
 
 
@@ -1198,7 +1201,7 @@ class CuboidStackDataset(CuboidThreadedDatasetBase):
         # move it to shared memory so it doesn't get duplicated in workers
         self.points_arr.share_memory_()
 
-        self.src_image_data = CachedArrayStackImageData(
+        self.src_image_data = CachedArrayImage(
             points_arr=self.points_arr[:, :3],
             input_arrays=data_arrays,
             data_axis_order=self.axis_order,
@@ -1229,7 +1232,7 @@ class CuboidStackDataset(CuboidThreadedDatasetBase):
 
 class CuboidTiffDataset(CuboidThreadedDatasetBase):
     """
-    Implements `CuboidThreadedDatasetBase` using a `CachedTiffCuboidImageData`,
+    Implements `CuboidThreadedDatasetBase` using a `CachedTiffImage`,
     which reads the cuboids from individual tiff files.
 
     :param points_filenames: A sequence of sequences of the filenames of the
@@ -1261,7 +1264,7 @@ class CuboidTiffDataset(CuboidThreadedDatasetBase):
         filenames_arr = np.array(points_filenames).astype(np.str_)
         self.filenames_arr = filenames_arr
 
-        self.src_image_data = CachedTiffCuboidImageData(
+        self.src_image_data = CachedTiffImage(
             points_arr=self.points_arr[:, :3],
             filenames_arr=filenames_arr,
             data_axis_order=self.axis_order,
