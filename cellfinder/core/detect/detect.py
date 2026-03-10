@@ -52,8 +52,7 @@ def _validate_detection_inputs(
 
     # Ensure 3D volume
     if signal_array.ndim != 3:
-        raise ValueError("Input data must be 3D"
-        )
+        raise ValueError("Input data must be 3D")
 
     # Voxel sizes must be positive
     if any(v <= 0 for v in voxel_sizes):
