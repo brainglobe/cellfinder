@@ -258,8 +258,9 @@ class DataAugmentation:
         ``data_dim_order`` to ``DIM_ORDER`` so it can be directly used.
 
         ``test_monai_rotate_input`` verifies the monai input as doing
-        rotations. However, clockwise or anti-clockwise rotations occur in MONAI
-        depending on whether we rotate around x/y or z axis, which won't matter for augmentation.
+        rotations. However, clockwise or anti-clockwise rotations occur in
+        MONAI depending on whether we rotate around x/y or z axis, which won't
+        matter for augmentation.
         """
         if rotate_range is None:
             return None

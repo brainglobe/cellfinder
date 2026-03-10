@@ -11,7 +11,8 @@ from cellfinder.core.classify.augment import DataAugmentation
 def cube_with_side_dot() -> torch.Tensor:
     # DataAugmentation.DIM_ORDER of (c, y, x, z)
     data = torch.zeros((2, 11, 11, 7))
-    # put dot in channel 0 at pixel in plane z = 5, on the x/y diagonal - both x and y are 8
+    # put dot in channel 0 at pixel in plane z = 5, on the x/y diagonal - both
+    # x and y are 8
     data[0, 8, 8, 5] = 1
     # put dot in channel 1 at pixel in plane z = 5, but x is 2 and y is 8
     data[1, 8, 2, 5] = 1
@@ -58,7 +59,10 @@ def test_monai_translate_input(offset):
 )
 def test_monai_scale_input(interval, growth):
     """
-    This tests that the unexpected scale interval is indeed expected by monai by checking values near the foreground border of a 5x5x5 test data block that contains a 3x3x3 foreground cube in its middle.
+    This tests that the unexpected scale interval is indeed expected by monai
+    by checking values near the foreground border of a 5x5x5 test data block
+    that contains a 3x3x3 foreground cube in its middle.
+
     See ``DataAugmentation._fix_scale_range`` for details.
     """
     data = torch.zeros((1, 5, 5, 5))
