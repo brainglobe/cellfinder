@@ -13,7 +13,7 @@ from argparse import (
 )
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, Literal
+from typing import Callable, Dict, Literal, Optional
 
 from brainglobe_utils.general.numerical import (
     check_positive_float,
@@ -26,7 +26,12 @@ from brainglobe_utils.general.system import (
 from brainglobe_utils.IO.cells import find_relevant_tiffs
 from brainglobe_utils.IO.yaml import read_yaml_section
 from fancylog import fancylog
-from keras.callbacks import CSVLogger, ModelCheckpoint, TensorBoard
+from keras.callbacks import (
+    CSVLogger,
+    LambdaCallback,
+    ModelCheckpoint,
+    TensorBoard,
+)
 from sklearn.model_selection import train_test_split
 
 import cellfinder.core as package_for_log
@@ -316,8 +321,12 @@ def run(
     no_save_checkpoints=False,
     save_progress=False,
     epochs=100,
+    progress_callback: Optional[Callable[[str, int, int], None]] = None,
 ):
     start_time = datetime.now()
+
+    if progress_callback is not None:
+        progress_callback("Preparing training", 0, 1)
 
     ensure_directory_exists(output_dir)
     model_weights = prep_model_weights(
@@ -430,6 +439,16 @@ def run(
         csv_logger = CSVLogger(csv_filepath)
         callbacks.append(csv_logger)
 
+    if progress_callback is not None:
+        progress_callback("Beginning training", 0, epochs)
+        callbacks.append(
+            LambdaCallback(
+                on_epoch_end=lambda epoch, logs: progress_callback(
+                    f"Training epoch {epoch+1}/{epochs}", epoch + 1, epochs
+                )
+            )
+        )
+
     logger.info("Beginning training.")
     # Keras 3.0: `use_multiprocessing` input is set in the
     # `training_generator` (False by default)
@@ -446,6 +465,9 @@ def run(
     else:
         logger.info("Saving model")
         model.save(output_dir / "model.keras")
+
+    if progress_callback is not None:
+        progress_callback("Training finished", epochs, epochs)
 
     logger.info(
         "Finished training, " "Total time taken: %s",

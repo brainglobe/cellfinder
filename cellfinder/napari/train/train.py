@@ -2,14 +2,13 @@ from pathlib import Path
 from typing import Optional
 
 from magicgui import magicgui
-from magicgui.widgets import FunctionGui, PushButton
-from napari.qt.threading import thread_worker
+from magicgui.widgets import FunctionGui, ProgressBar, PushButton
 from napari.utils.notifications import show_info
 from qtpy.QtWidgets import QScrollArea
 
-from cellfinder.core.train.train_yaml import run as train_yaml
 from cellfinder.napari.utils import cellfinder_header, html_label_widget
 
+from .thread_worker import TrainingWorker
 from .train_containers import (
     MiscTrainingInputs,
     OptionalNetworkInputs,
@@ -18,24 +17,9 @@ from .train_containers import (
 )
 
 
-@thread_worker
-def run_training(
-    training_data_inputs: TrainingDataInputs,
-    optional_network_inputs: OptionalNetworkInputs,
-    optional_training_inputs: OptionalTrainingInputs,
-    misc_training_inputs: MiscTrainingInputs,
-):
-    show_info("Running training...")
-    train_yaml(
-        **training_data_inputs.as_core_arguments(),
-        **optional_network_inputs.as_core_arguments(),
-        **optional_training_inputs.as_core_arguments(),
-        **misc_training_inputs.as_core_arguments(),
-    )
-    show_info("Training finished!")
-
-
 def training_widget() -> FunctionGui:
+    progress_bar = ProgressBar()
+
     @magicgui(
         training_label=html_label_widget("Network training", tag="h3"),
         **TrainingDataInputs.widget_representation(),
@@ -143,15 +127,24 @@ def training_widget() -> FunctionGui:
             show_info("Please select a YAML file for training")
         else:
             show_info("Starting training process...")
-            worker = run_training(
+            worker = TrainingWorker(
                 training_data_inputs,
                 optional_network_inputs,
                 optional_training_inputs,
                 misc_training_inputs,
             )
+
+            def on_finished():
+                show_info("Training finished!")
+
+            worker.returned.connect(on_finished)
+            worker.connect_progress_bar_callback(progress_bar)
             worker.start()
 
     widget.native.layout().insertWidget(0, cellfinder_header())
+
+    # Insert progress bar before the call and reset buttons
+    widget.insert(widget.index("number_of_free_cpus") + 1, progress_bar)
 
     @widget.reset_button.changed.connect
     def restore_defaults():

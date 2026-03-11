@@ -243,5 +243,10 @@ def main(
                 callback=classify_callback,
             )
         else:
-            logger.info("No candidates, skipping classification")
+            logger.warning(
+                "No cell candidates were detected. "
+                "Classification will be skipped. "
+                "This may occur with very small images or images "
+                "with no bright structures."
+            )
     return points

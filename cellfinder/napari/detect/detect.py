@@ -157,6 +157,13 @@ def get_results_callback(
     if skip_classification:
         # after detection w/o classification, everything is unknown
         def done_func(points):
+            if not points:
+                show_info(
+                    "No cell candidates were detected. "
+                    "Try adjusting detection parameters or "
+                    "using a larger image."
+                )
+                return
             add_single_layer(
                 points,
                 viewer=viewer,
@@ -168,6 +175,14 @@ def get_results_callback(
     else:
         # after classification we have either cell or unknown
         def done_func(points):
+            if not points:
+                show_info(
+                    "No cell candidates were detected. "
+                    "Classification was skipped. "
+                    "Try adjusting detection parameters or "
+                    "using a larger image."
+                )
+                return
             add_classified_layers(
                 points,
                 viewer=viewer,
