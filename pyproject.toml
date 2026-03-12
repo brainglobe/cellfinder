@@ -34,7 +34,8 @@ dependencies = [
     "torch>=2.4.1",
     "tifffile",
     "tqdm",
-    "qt-niu"
+    "qt-niu",
+    "monai"
 ]
 dynamic = ["version"]
 
@@ -123,7 +124,8 @@ python =
     3.13: py313
 
 [testenv]
-commands = python -m pytest -v --color=yes --cov=cellfinder --cov-report=xml
+commands =
+    python -m pytest -v --color=yes --cov=cellfinder --cov-report=xml
 extras =
     dev
     napari

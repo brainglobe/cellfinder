@@ -15,6 +15,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, Literal
 
+from brainglobe_utils.cells.cells import Cell
 from brainglobe_utils.general.numerical import (
     check_positive_float,
     check_positive_int,
@@ -26,16 +27,25 @@ from brainglobe_utils.general.system import (
 from brainglobe_utils.IO.cells import find_relevant_tiffs
 from brainglobe_utils.IO.yaml import read_yaml_section
 from fancylog import fancylog
-from keras.callbacks import CSVLogger, ModelCheckpoint, TensorBoard
+from keras.callbacks import (
+    CSVLogger,
+    ModelCheckpoint,
+    TensorBoard,
+)
 from sklearn.model_selection import train_test_split
+from torch.utils.data import DataLoader
 
 import cellfinder.core as package_for_log
 from cellfinder.core import logger
-from cellfinder.core.classify.cube_generator import CubeGeneratorFromDisk
+from cellfinder.core.classify.cube_generator import (
+    CuboidBatchSampler,
+    CuboidTiffDataset,
+)
 from cellfinder.core.classify.resnet import layer_type
-from cellfinder.core.classify.tools import get_model, make_lists
+from cellfinder.core.classify.tools import get_model
 from cellfinder.core.download.download import DEFAULT_DOWNLOAD_DIRECTORY
 from cellfinder.core.tools.prep import prep_model_weights
+from cellfinder.core.tools.tiff import TiffDir, TiffFile, TiffList
 
 depth_type = Literal["18", "34", "50", "101", "152"]
 
@@ -46,6 +56,11 @@ models: Dict[depth_type, layer_type] = {
     "101": "101-layer",
     "152": "152-layer",
 }
+
+
+CUBE_WIDTH = 50
+CUBE_HEIGHT = 50
+CUBE_DEPTH = 20
 
 
 def valid_model_depth(depth):
@@ -176,6 +191,13 @@ def training_parse():
         help="Number of training epochs",
     )
     training_parser.add_argument(
+        "--max-workers",
+        dest="max_workers",
+        type=check_positive_int,
+        default=3,
+        help="Maximum number of worker processes to use to load data",
+    )
+    training_parser.add_argument(
         "--test-fraction",
         dest="test_fraction",
         type=float,
@@ -194,6 +216,15 @@ def training_parse():
         dest="no_augment",
         action="store_true",
         help="Don't apply data augmentation",
+    )
+    training_parser.add_argument(
+        "--augment-likelihood",
+        dest="augment_likelihood",
+        type=check_positive_float,
+        default=0.9,
+        help="Value `[0, 1]` with the probability of a data item being "
+        "augmented. I.e. `0.9` means 90% of the data will have been "
+        "augmented.",
     )
     training_parser.add_argument(
         "--save-weights",
@@ -234,9 +265,13 @@ def parse_yaml(yaml_files, section="data"):
     return data
 
 
-def get_tiff_files(yaml_contents):
-    from cellfinder.core.tools.tiff import TiffDir, TiffList
-
+def get_tiff_files(yaml_contents: list[dict]) -> list[list[TiffFile]]:
+    """
+    Takes a yaml file representing multiple folders each containing many
+    extracted cube tiff files. It returns a corresponding list of lists of
+    `TiffFile`, where in the sub-list each `TiffFile` represents a tiff in
+    the given directory.
+    """
     tiff_lists = []
     for d in yaml_contents:
         if d["bg_channel"] < 0:
@@ -261,6 +296,21 @@ def get_tiff_files(yaml_contents):
 
     tiff_files = [tiff_dir.make_tifffile_list() for tiff_dir in tiff_lists]
     return tiff_files
+
+
+def make_tiff_lists(
+    tiff_files: list[list[TiffFile]],
+) -> tuple[list[list[str]], list[Cell]]:
+
+    cells = []
+    filenames = []
+
+    for group in tiff_files:
+        for image in group:
+            filenames.append(image.img_files)
+            cells.append(image.as_cell())
+
+    return filenames, cells
 
 
 def cli():
@@ -288,13 +338,52 @@ def cli():
         continue_training=args.continue_training,
         test_fraction=args.test_fraction,
         batch_size=args.batch_size,
+        max_workers=args.max_workers,
         no_augment=args.no_augment,
+        augment_likelihood=args.augment_likelihood,
         tensorboard=args.tensorboard,
         save_weights=args.save_weights,
         no_save_checkpoints=args.no_save_checkpoints,
         save_progress=args.save_progress,
         epochs=args.epochs,
     )
+
+
+def get_dataloader(
+    cells: list[Cell],
+    filenames: list[list[str]],
+    batch_size: int,
+    n_processes: int,
+    pin_memory: bool,
+    auto_shuffle: bool,
+    augment: bool,
+    augment_likelihood: float,
+) -> tuple[DataLoader, CuboidTiffDataset]:
+    dataset = CuboidTiffDataset(
+        points=cells,
+        points_filenames=filenames,
+        data_voxel_sizes=(1, 1, 1),
+        network_voxel_sizes=(1, 1, 1),
+        network_cuboid_voxels=(CUBE_DEPTH, CUBE_HEIGHT, CUBE_WIDTH),
+        axis_order=("z", "y", "x"),
+        target_output="label",
+        augment=augment,
+        augment_likelihood=augment_likelihood,
+    )
+    # we use our own sampler so we can control the ordering
+    sampler = CuboidBatchSampler(
+        dataset=dataset,
+        batch_size=batch_size,
+        auto_shuffle=auto_shuffle,
+    )
+    data_loader = DataLoader(
+        dataset=dataset,
+        sampler=sampler,
+        batch_size=None,
+        num_workers=n_processes,
+        pin_memory=pin_memory,
+    )
+    return data_loader, dataset
 
 
 def run(
@@ -316,6 +405,9 @@ def run(
     no_save_checkpoints=False,
     save_progress=False,
     epochs=100,
+    max_workers: int = 3,
+    pin_memory: bool = True,
+    augment_likelihood: float = 0.9,
 ):
     start_time = datetime.now()
 
@@ -343,37 +435,36 @@ def run(
         continue_training=continue_training,
     )
 
-    signal_train, background_train, labels_train = make_lists(tiff_files)
+    filenames_train, cells_train = make_tiff_lists(tiff_files)
 
     n_processes = get_num_processes(min_free_cpu_cores=n_free_cpus)
+    n_processes = min(n_processes, max_workers)
     if test_fraction > 0:
         logger.info("Splitting data into training and validation datasets")
         (
-            signal_train,
-            signal_test,
-            background_train,
-            background_test,
-            labels_train,
-            labels_test,
+            filenames_train,
+            filenames_test,
+            cells_train,
+            cells_test,
         ) = train_test_split(
-            signal_train,
-            background_train,
-            labels_train,
+            filenames_train,
+            cells_train,
             test_size=test_fraction,
         )
 
         logger.info(
-            f"Using {len(signal_train)} images for training and "
-            f"{len(signal_test)} images for validation"
+            f"Using {len(filenames_train)} images for training and "
+            f"{len(filenames_test)} images for validation"
         )
-        validation_generator = CubeGeneratorFromDisk(
-            signal_test,
-            background_test,
-            labels=labels_test,
-            batch_size=batch_size,
-            train=True,
-            use_multiprocessing=False,
-            workers=n_processes,
+        validation_data_loader, validation_dataset = get_dataloader(
+            cells_test,
+            filenames_test,
+            batch_size,
+            n_processes,
+            pin_memory,
+            auto_shuffle=False,
+            augment=False,
+            augment_likelihood=augment_likelihood,
         )
 
         # for saving checkpoints
@@ -381,19 +472,19 @@ def run(
 
     else:
         logger.info("No validation data selected.")
-        validation_generator = None
+        validation_data_loader = None
+        validation_dataset = None
         base_checkpoint_file_name = "-epoch.{epoch:02d}"
 
-    training_generator = CubeGeneratorFromDisk(
-        signal_train,
-        background_train,
-        labels=labels_train,
-        batch_size=batch_size,
-        shuffle=True,
-        train=True,
+    training_data_loader, training_dataset = get_dataloader(
+        cells_train,
+        filenames_train,
+        batch_size,
+        n_processes,
+        pin_memory,
+        auto_shuffle=True,
         augment=not no_augment,
-        use_multiprocessing=False,
-        workers=n_processes,
+        augment_likelihood=augment_likelihood,
     )
     callbacks = []
 
@@ -431,14 +522,23 @@ def run(
         callbacks.append(csv_logger)
 
     logger.info("Beginning training.")
-    # Keras 3.0: `use_multiprocessing` input is set in the
-    # `training_generator` (False by default)
-    model.fit(
-        training_generator,
-        validation_data=validation_generator,
-        epochs=epochs,
-        callbacks=callbacks,
-    )
+    if n_processes:
+        training_dataset.start_dataset_thread(n_processes)
+        if validation_dataset is not None:
+            validation_dataset.start_dataset_thread(n_processes)
+    try:
+        model.fit(
+            x=training_data_loader,
+            validation_data=validation_data_loader,
+            epochs=epochs,
+            callbacks=callbacks,
+        )
+    finally:
+        try:
+            training_dataset.stop_dataset_thread()
+        finally:
+            if validation_dataset is not None:
+                validation_dataset.stop_dataset_thread()
 
     if save_weights:
         logger.info("Saving model weights")
