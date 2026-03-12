@@ -105,6 +105,9 @@ include = ["cellfinder*"]
 include = ["cellfinder*"]
 
 [tool.setuptools_scm]
+version_scheme = "post-release"
+local_scheme = "node-and-date"
+fallback_version = "1.0.0"
 
 [tool.pytest.ini_options]
 addopts = "--cov=cellfinder"
