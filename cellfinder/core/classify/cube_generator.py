@@ -1128,7 +1128,7 @@ class CuboidThreadedDatasetBase(CuboidDatasetBase):
         self._worker_queues = []
 
 
-class CuboidStackDataset(CuboidThreadedDatasetBase):
+class CuboidArrayDataset(CuboidThreadedDatasetBase):
     """
     Implements `CuboidThreadedDatasetBase` using a `CachedArrayImage`,
     which reads the cuboids from array type data (e.g. Dask arrays).
@@ -1281,7 +1281,7 @@ class CuboidBatchSampler(Sampler):
 
     It is used as::
 
-        dataset = CuboidStackDataset(...)
+        dataset = CuboidArrayDataset(...)
         sampler = CuboidBatchSampler(dataset=dataset, ...)
         data_loader = torch.utils.data.DataLoader(
             dataset=dataset,

@@ -24,8 +24,8 @@ from qtpy.QtWidgets import (
 )
 
 from cellfinder.core.classify.cube_generator import (
+    CuboidArrayDataset,
     CuboidBatchSampler,
-    CuboidStackDataset,
 )
 
 # Constants used throughout
@@ -644,7 +644,7 @@ class CurationWidget(QWidget):
 
             self.update_status_label(f"Saving {cell_type}...")
 
-            cube_generator = CuboidStackDataset(
+            cube_generator = CuboidArrayDataset(
                 signal_array=self.signal_layer.data,
                 background_array=self.background_layer.data,
                 points=cell_list,

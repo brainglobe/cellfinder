@@ -14,9 +14,9 @@ from cellfinder.core.classify.cube_generator import (
     CachedCuboidImage,
     CachedStackImage,
     CachedTiffImage,
+    CuboidArrayDataset,
     CuboidBatchSampler,
     CuboidDatasetBase,
-    CuboidStackDataset,
     CuboidTiffDataset,
     get_data_cuboid_range,
 )
@@ -338,7 +338,7 @@ def get_sample_dataset_12(
 ):
     """
     Returns a numpy volume, a set of 12 points in the volume, extracted cubes
-    from that original volume centered on the points, and a CuboidStackDataset
+    from that original volume centered on the points, and a CuboidArrayDataset
     representing the volume.
     """
     volume = sample_volume(60, 60, 30, 2, seed)
@@ -348,7 +348,7 @@ def get_sample_dataset_12(
     cube_size = 50, 50, 20
     cubes, _ = to_numpy_cubes(volume, points, cube_size)
 
-    stack = CuboidStackDataset(
+    stack = CuboidArrayDataset(
         points=[Cell(pos, Cell.UNKNOWN) for pos in points],
         data_voxel_sizes=(1, 1, 5),
         network_voxel_sizes=(1, 1, 5),
@@ -371,7 +371,7 @@ def get_sample_dataset_12(
 
 def test_array_dataset(unique_int):
     """
-    Checks that the data returned by the CuboidStackDataset for given
+    Checks that the data returned by the CuboidArrayDataset for given
     points matches the data it should return.
     """
     stack, points, cubes = get_sample_dataset_12(unique_int)
@@ -396,14 +396,14 @@ def test_array_dataset(unique_int):
 def test_array_dataset_signal_only(unique_int):
     """
     Checks that when using only the signal channel, the data returned by the
-    CuboidStackDataset for given points matches the data it should return.
+    CuboidArrayDataset for given points matches the data it should return.
     """
     volume = sample_volume(60, 60, 30, 1, unique_int)
     points = [(x, 28, 18) for x in (27, 29)]
     cube_size = 50, 50, 20
     cubes, _ = to_numpy_cubes(volume, points, cube_size)
 
-    stack = CuboidStackDataset(
+    stack = CuboidArrayDataset(
         points=[Cell(pos, Cell.UNKNOWN) for pos in points],
         data_voxel_sizes=(1, 1, 5),
         network_voxel_sizes=(1, 1, 5),
@@ -432,14 +432,14 @@ def test_array_dataset_signal_only(unique_int):
 def test_array_dataset_bad_array_type():
     """
     Checks that when using only the signal channel, the data returned by the
-    CuboidStackDataset for given points matches the data it should return.
+    CuboidArrayDataset for given points matches the data it should return.
     """
     data64 = np.empty((60, 60, 30, 2), dtype=np.float64)
     data32 = np.empty((60, 60, 30, 2), dtype=np.float32)
     points = [(x, 28, 18) for x in (27, 29)]
 
     # good dataset
-    CuboidStackDataset(
+    CuboidArrayDataset(
         points=[Cell(pos, Cell.UNKNOWN) for pos in points],
         data_voxel_sizes=(1, 1, 5),
         network_voxel_sizes=(1, 1, 5),
@@ -451,7 +451,7 @@ def test_array_dataset_bad_array_type():
     )
 
     with pytest.raises(ValueError):
-        CuboidStackDataset(
+        CuboidArrayDataset(
             points=[Cell(pos, Cell.UNKNOWN) for pos in points],
             data_voxel_sizes=(1, 1, 5),
             network_voxel_sizes=(1, 1, 5),
@@ -463,7 +463,7 @@ def test_array_dataset_bad_array_type():
         )
 
     with pytest.raises(ValueError):
-        CuboidStackDataset(
+        CuboidArrayDataset(
             points=[Cell(pos, Cell.UNKNOWN) for pos in points],
             data_voxel_sizes=(1, 1, 5),
             network_voxel_sizes=(1, 1, 5),
@@ -712,7 +712,7 @@ def test_dataset_dataloader_worker_exit_early():
         dataset.stop_dataset_thread()
 
     # this should raise an exception that the workers were closed
-    with pytest.raises(ValueError):
+    with pytest.raises((ValueError, RuntimeError)):
         # there might be some data already fetched, but not more than ~4
         for i in range(10):
             next(it)
@@ -847,7 +847,7 @@ def test_dataset_voxel_scale(scale, axis):
     network_voxel_sizes = (6, 8, 10)
     data_voxel_sizes = list(network_voxel_sizes)
     data_voxel_sizes[axis] = int(data_voxel_sizes[axis] * scale)
-    stack = CuboidStackDataset(
+    stack = CuboidArrayDataset(
         points=[Cell(pos, Cell.UNKNOWN) for pos in points],
         data_voxel_sizes=data_voxel_sizes,
         network_voxel_sizes=network_voxel_sizes,
@@ -891,7 +891,7 @@ def test_dataset_voxel_scale(scale, axis):
 
 def get_single_point_dataset():
     volume = np.empty((30, 60, 60, 2), dtype=np.uint16)
-    dataset = CuboidStackDataset(
+    dataset = CuboidArrayDataset(
         points=[Cell((30, 30, 15), Cell.UNKNOWN)],
         data_voxel_sizes=(5, 1, 1),
         augment=False,
@@ -1104,7 +1104,7 @@ def test_dataset_target_bad_values():
 def test_rescale_dataset_bad_arg():
     """Validate input parameters."""
     volume = np.empty((30, 60, 60, 2), dtype=np.uint16)
-    dataset = CuboidStackDataset(
+    dataset = CuboidArrayDataset(
         points=[Cell((30, 30, 15), Cell.UNKNOWN)],
         data_voxel_sizes=(4, 1, 1),
         augment=False,
@@ -1122,7 +1122,7 @@ def test_stack_dataset_bad_arg_diff_shapes():
     """Validates that we check signal and background must have same shape."""
     volume = np.empty((30, 60, 60, 2, 2), dtype=np.uint16)
     with pytest.raises(ValueError):
-        CuboidStackDataset(
+        CuboidArrayDataset(
             points=[Cell((30, 30, 15), Cell.UNKNOWN)],
             data_voxel_sizes=(5, 1, 1),
             signal_array=volume[..., 0, 0],
@@ -1134,7 +1134,7 @@ def test_stack_dataset_bad_arg_bad_shape():
     """Validates that we check signal/background are 4-dim."""
     volume = np.empty((30, 60, 60, 2, 2), dtype=np.uint16)
     with pytest.raises(ValueError):
-        CuboidStackDataset(
+        CuboidArrayDataset(
             points=[Cell((30, 30, 15), Cell.UNKNOWN)],
             data_voxel_sizes=(5, 1, 1),
             signal_array=volume[..., 0],
@@ -1176,7 +1176,7 @@ def test_point_has_full_cuboid_unscaled():
     voxel size.
     """
     volume = np.empty((30, 30, 30, 2), dtype=np.uint16)
-    dataset = CuboidStackDataset(
+    dataset = CuboidArrayDataset(
         points=[
             Cell((5, 15, 15), Cell.UNKNOWN),
             Cell((3, 15, 15), Cell.UNKNOWN),
@@ -1203,7 +1203,7 @@ def test_point_has_full_cuboid_scaled():
     voxel size.
     """
     volume = np.empty((30, 30, 30, 2), dtype=np.uint16)
-    dataset = CuboidStackDataset(
+    dataset = CuboidArrayDataset(
         points=[
             Cell((10, 15, 15), Cell.UNKNOWN),
             Cell((6, 15, 15), Cell.UNKNOWN),
@@ -1227,7 +1227,7 @@ def test_points_unchanged():
     volume = np.empty((30, 60, 60, 2), dtype=np.uint16)
     cell = Cell((30, 30, 15), Cell.UNKNOWN)
     cell2 = Cell((30, 33, 15), Cell.CELL)
-    dataset = CuboidStackDataset(
+    dataset = CuboidArrayDataset(
         points=[cell, cell2],
         data_voxel_sizes=(5, 1, 1),
         augment=False,

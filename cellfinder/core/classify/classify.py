@@ -12,8 +12,8 @@ from torch.utils.data import DataLoader
 
 from cellfinder.core import logger, types
 from cellfinder.core.classify.cube_generator import (
+    CuboidArrayDataset,
     CuboidBatchSampler,
-    CuboidStackDataset,
 )
 from cellfinder.core.classify.tools import get_model
 from cellfinder.core.train.train_yaml import depth_type, models
@@ -103,7 +103,7 @@ def main(
 
     voxel_sizes = list(map(float, voxel_sizes))
     logger.debug("Initialising cube generator")
-    dataset = CuboidStackDataset(
+    dataset = CuboidArrayDataset(
         signal_array=signal_array,
         background_array=background_array,
         points=points,
