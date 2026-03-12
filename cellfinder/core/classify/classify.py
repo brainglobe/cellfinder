@@ -17,6 +17,7 @@ from cellfinder.core.classify.cube_generator import (
 )
 from cellfinder.core.classify.tools import get_model
 from cellfinder.core.tools.tools import deprecate_positional_args
+from cellfinder.core.tools.image_processing import dataset_mean_std
 from cellfinder.core.train.train_yaml import depth_type, models
 
 
@@ -39,6 +40,8 @@ def main(
     max_workers: int = 3,
     pin_memory: bool = False,
     callback: Optional[Callable[[int], None]] = None,
+    normalize_channels: bool = False,
+    normalization_down_sampling: int = 32,
 ) -> List[Cell]:
     """
     Parameters
@@ -91,6 +94,14 @@ def main(
     callback : Callable[int], optional
         A callback function that is called during classification. Called with
         the batch number once that batch has been classified.
+    normalize_channels : bool
+        If True, the signal and background data will be each normalized
+        to a mean of zero and standard deviation of 1. Defaults to False.
+    normalization_down_sampling : int
+        If `normalize_channels` is True, the data arrays will be down-sampled
+        in the first axis by this value before calculating their statistics.
+        E.g. a value of 2 means every second plane will be used. Defaults to
+        32.
     """
     if signal_array.ndim != 3:
         raise IOError("Signal data must be 3D")
@@ -104,10 +115,27 @@ def main(
     start_time = datetime.now()
 
     voxel_sizes = list(map(float, voxel_sizes))
+
+    signal_normalization = background_normalization = None
+    if normalize_channels:
+        logger.debug("Calculating channels norms")
+        signal_normalization = dataset_mean_std(
+            signal_array, normalization_down_sampling
+        )
+        background_normalization = dataset_mean_std(
+            background_array, normalization_down_sampling
+        )
+        logger.debug(
+            f"Signal channel norm is: {signal_normalization}. "
+            f"Background channel norm is: {background_normalization}"
+        )
+
     logger.debug("Initialising cube generator")
     dataset = CuboidArrayDataset(
         signal_array=signal_array,
         background_array=background_array,
+        signal_normalization=signal_normalization,
+        background_normalization=background_normalization,
         points=points,
         data_voxel_sizes=voxel_sizes,
         network_voxel_sizes=network_voxel_sizes,
