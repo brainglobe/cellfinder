@@ -58,6 +58,8 @@ def main(
     tiled_thresh_tile_size: float | None = None,
     *,
     callback: Optional[Callable[[int], None]] = None,
+    pad_border: bool = False,
+    pad_width: int = 10,
 ) -> List[Cell]:
     """
     Perform cell candidate detection on a 3D signal array.
@@ -178,6 +180,16 @@ def main(
 
     if signal_array.ndim != 3:
         raise ValueError("Input data must be 3D")
+    
+    # Optional padding to improve border detection
+    if pad_border:
+        signal_array = np.pad(
+            signal_array,
+            ((pad_width, pad_width),
+            (pad_width, pad_width),
+            (pad_width, pad_width)),
+            mode="constant"
+        )
 
     if end_plane < 0:
         end_plane = len(signal_array)

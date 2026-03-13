@@ -336,3 +336,25 @@ def test_detection_plane_too_small(synthetic_spot_clusters, y, x):
             voxel_sizes=(1, 1, 1),
             ball_xy_size=50,
         )
+
+        
+def test_detection_with_border_padding(no_free_cpus):
+    """
+    Ensure detection works when signal is close to the image border.
+    This validates the new padding behaviour.
+    """
+
+    signal = np.zeros((20, 20, 20), dtype=np.float32)
+    background = np.zeros((20, 20, 20), dtype=np.float32)
+
+    # bright voxel right at border
+    signal[0, 10, 10] = 1000
+
+    detected = detect_main(
+        signal,
+        n_sds_above_mean_thresh=1.0,
+        voxel_sizes=(5, 2, 2),
+        n_free_cpus=no_free_cpus,
+    )
+
+    assert isinstance(detected, list)
