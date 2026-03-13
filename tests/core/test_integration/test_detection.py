@@ -345,7 +345,6 @@ def test_detection_with_border_padding(no_free_cpus):
     """
 
     signal = np.zeros((20, 20, 20), dtype=np.float32)
-    background = np.zeros((20, 20, 20), dtype=np.float32)
 
     # bright voxel right at border
     signal[0, 10, 10] = 1000
