@@ -81,6 +81,8 @@ class OptionalTrainingInputs(InputContainer):
     learning_rate: float = 1e-4
     batch_size: int = 16
     test_fraction: float = 0.1
+    lr_schedule: list[int] | tuple[int, ...] = ()
+    lr_multiplier: float = 0.1
 
     def as_core_arguments(self) -> dict:
         arguments = super().as_core_arguments()
@@ -104,6 +106,12 @@ class OptionalTrainingInputs(InputContainer):
             batch_size=cls._custom_widget("batch_size"),
             test_fraction=cls._custom_widget(
                 "test_fraction", step=0.05, min=0.05, max=0.95
+            ),
+            lr_schedule=cls._custom_widget(
+                "lr_schedule", custom_label="LR schedule"
+            ),
+            lr_multiplier=cls._custom_widget(
+                "lr_multiplier", custom_label="LR multiplier"
             ),
         )
 
