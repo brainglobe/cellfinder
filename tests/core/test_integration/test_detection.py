@@ -337,7 +337,7 @@ def test_detection_plane_too_small(synthetic_spot_clusters, y, x):
             ball_xy_size=50,
         )
 
-        
+
 def test_detection_with_border_padding(no_free_cpus):
     """
     Ensure detection works when signal is close to the image border.

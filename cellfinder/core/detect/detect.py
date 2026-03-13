@@ -180,15 +180,17 @@ def main(
 
     if signal_array.ndim != 3:
         raise ValueError("Input data must be 3D")
-    
+
     # Optional padding to improve border detection
     if pad_border:
         signal_array = np.pad(
             signal_array,
-            ((pad_width, pad_width),
-            (pad_width, pad_width),
-            (pad_width, pad_width)),
-            mode="constant"
+            (
+                (pad_width, pad_width),
+                (pad_width, pad_width),
+                (pad_width, pad_width),
+            ),
+            mode="constant",
         )
 
     if end_plane < 0:
