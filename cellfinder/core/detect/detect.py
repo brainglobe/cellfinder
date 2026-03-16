@@ -58,6 +58,8 @@ def main(
     tiled_thresh_tile_size: float | None = None,
     *,
     callback: Optional[Callable[[int], None]] = None,
+    pad_border: bool = False,
+    pad_width: int = 10,
 ) -> List[Cell]:
     """
     Perform cell candidate detection on a 3D signal array.
@@ -179,6 +181,18 @@ def main(
     if signal_array.ndim != 3:
         raise ValueError("Input data must be 3D")
 
+    # Optional padding to improve border detection
+    if pad_border:
+        signal_array = np.pad(
+            signal_array,
+            (
+                (pad_width, pad_width),
+                (pad_width, pad_width),
+                (pad_width, pad_width),
+            ),
+            mode="constant",
+        )
+
     if end_plane < 0:
         end_plane = len(signal_array)
     end_plane = min(len(signal_array), end_plane)
@@ -262,6 +276,12 @@ def main(
     # process the data
     mp_3d_filter.process(mp_tile_processor, signal_array, callback=callback)
     cells = mp_3d_filter.get_results(splitting_settings)
+
+    if pad_border:
+        for cell in cells:
+            cell.z -= pad_width
+            cell.y -= pad_width
+            cell.x -= pad_width
 
     torch.set_num_threads(orig_n_threads)
 
