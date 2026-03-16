@@ -277,6 +277,12 @@ def main(
     mp_3d_filter.process(mp_tile_processor, signal_array, callback=callback)
     cells = mp_3d_filter.get_results(splitting_settings)
 
+    if pad_border:
+        for cell in cells:
+            cell.z -= pad_width
+            cell.y -= pad_width
+            cell.x -= pad_width
+            
     torch.set_num_threads(orig_n_threads)
 
     time_elapsed = datetime.now() - start_time
