@@ -282,7 +282,7 @@ def main(
             cell.z -= pad_width
             cell.y -= pad_width
             cell.x -= pad_width
-            
+
     torch.set_num_threads(orig_n_threads)
 
     time_elapsed = datetime.now() - start_time
