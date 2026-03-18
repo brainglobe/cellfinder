@@ -55,10 +55,13 @@ def main(
     ----------
     signal_array : numpy.ndarray or dask array
         3D array representing the signal data in z, y, x order.
+        2D arrays are also accepted and treated as a single z-plane.
     background_array : numpy.ndarray or dask array
         3D array representing the signal data in z, y, x order.
+        2D arrays are also accepted and treated as a single z-plane.
     voxel_sizes : 3-tuple of floats
         Size of your voxels in the z, y, and x dimensions (microns).
+        For 2D inputs, you may pass a 2-tuple (y, x); z is assumed to be 1.0.
     start_plane : int
         First plane index to process (inclusive, to process a subset of the
         data).
@@ -187,6 +190,20 @@ def main(
     from cellfinder.core.classify import classify
     from cellfinder.core.detect import detect
     from cellfinder.core.tools import prep
+
+    if signal_array.ndim == 2:
+        if background_array.ndim != 2:
+            raise ValueError(
+                "For 2D signal inputs, background_array must also be 2D."
+            )
+        if not skip_classification:
+            raise ValueError(
+                "2D classification is not supported in this pipeline yet. "
+                "Set skip_classification=True to run detection only, or "
+                "train a dedicated 2D classifier and wire it in."
+            )
+        if len(voxel_sizes) == 2:
+            voxel_sizes = (1.0, *voxel_sizes)
 
     if not skip_detection:
         logger.info("Detecting cell candidates")
