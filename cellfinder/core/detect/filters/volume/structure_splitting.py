@@ -89,12 +89,13 @@ def ball_filter_imgs(
     volume: torch.Tensor,
     settings: DetectionSettings,
     raw_volume: Optional[np.ndarray],
-) -> np.ndarray:
+) -> CellDetector:
     """
-    Apply ball filtering to a 3D volume and detect cell centres.
+    Apply ball filtering to a 3D volume and detect new structures from the
+    original single structure.
 
     Uses the `BallFilter` class to perform ball filtering on the volume
-    and the `CellDetector` class to detect cell centres.
+    and the `CellDetector` class to detect the new cells.
 
     Parameters
     ----------
@@ -107,8 +108,8 @@ def ball_filter_imgs(
 
     Returns
     -------
-    centre : np.ndarray
-        The 2D array of cell centres (N, 3) - X, Y, Z order.
+    cell_detector : CellDetector
+        The `CellDetector` that tracks the newly detected structures.
 
     """
     detection_convert = settings.detection_data_converter_func
@@ -132,7 +133,12 @@ def ball_filter_imgs(
             use_mask=False,  # we don't need a mask here
         )
     except InvalidVolume:
-        return np.empty((0, 3))
+        return CellDetector(
+            settings.plane_height,
+            settings.plane_width,
+            start_z=0,
+            soma_centre_value=settings.detection_soma_centre_value,
+        )
 
     start_z = bf.first_valid_plane
     cell_detector = CellDetector(
@@ -171,14 +177,14 @@ def ball_filter_imgs(
                     plane, previous_plane, raw_plane
                 )
 
-    return cell_detector.get_cell_centres(settings.detect_centre_of_intensity)
+    return cell_detector
 
 
 def iterative_ball_filter(
     volume: torch.Tensor,
     settings: DetectionSettings,
     raw_volume: Optional[np.ndarray],
-) -> Tuple[List[int], List[np.ndarray]]:
+) -> List[CellDetector]:
     """
     Apply iterative ball filtering to the given volume.
     The volume is eroded at each iteration, by subtracting 1 from the volume.
@@ -194,24 +200,21 @@ def iterative_ball_filter(
 
     Returns
     -------
-    tuple: A tuple containing two lists:
-        The number of structures found in each iteration.
-        The cell centres found in each iteration.
+    cell_detectors: List of CellDetector.
+        A list of CellDetector instances, each corresponding to the result
+        of one iteration, in that order.
     """
-    ns = []
-    centres = []
+    cell_detectors = []
 
     for i in range(settings.n_splitting_iter):
-        cell_centres = ball_filter_imgs(volume, settings, raw_volume)
+        cell_detector = ball_filter_imgs(volume, settings, raw_volume)
         volume.sub_(1)
 
-        n_structures = len(cell_centres)
-        ns.append(n_structures)
-        centres.append(cell_centres)
-        if n_structures == 0:
+        cell_detectors.append(cell_detector)
+        if not cell_detector.n_structures:
             break
 
-    return ns, centres
+    return cell_detectors
 
 
 def check_centre_in_cuboid(centre: np.ndarray, max_coords: np.ndarray) -> bool:
@@ -244,7 +247,7 @@ def split_cells(
     cell_points: np.ndarray,
     settings: DetectionSettings,
     intensity: Optional[np.ndarray] = None,
-) -> np.ndarray:
+) -> tuple[np.ndarray, tuple[CellDetector, np.ndarray] | None]:
     """
     Split the given structure built from the given cell coordinates into
     smaller structures with their own cell centres.
@@ -263,9 +266,17 @@ def split_cells(
 
     Returns
     -------
-    np.ndarray: Array of absolute cell centres with shape (M, 3),
-        where M is the number of individual cells and each centre is
-        represented by its x, y, and z coordinates.
+    centres, (cell_detector, offset): A 2-tuple of,
+        np.ndarray: Array of absolute cell centres with shape (M, 3),
+            where M is the number of individual cells and each centre is
+            represented by its x, y, and z coordinates.
+        (CellDetector, np.ndarray) or None: If None, then we didn't find any
+        better cell candidates during splitting than the original single cell.
+        Otherwise, it's the `CellDetector` with the structs from the best
+        iteration and a size 3 `np.ndarray` with the offset of the structs in
+        the cell detector. I.e. the cell detector uses coordinates relative to
+        the size of the cube containing the input voxels so the offset must be
+        added to convert to absolute voxel indices.
     """
     settings = copy(settings)
     if settings.detect_centre_of_intensity and intensity is None:
@@ -280,17 +291,6 @@ def split_cells(
     xs = cell_points[:, 0]
     ys = cell_points[:, 1]
     zs = cell_points[:, 2]
-
-    # corner coordinates in absolute pixels
-    orig_corner = np.array([xs.min(), ys.min(), zs.min()])
-    # volume center relative to corner
-    relative_orig_centre = np.array(
-        [
-            orig_centre[0] - orig_corner[0],
-            orig_centre[1] - orig_corner[1],
-            orig_centre[2] - orig_corner[2],
-        ]
-    )
 
     # total volume enclosing all points
     original_bounding_cuboid_shape = get_shape(xs, ys, zs)
@@ -329,30 +329,27 @@ def split_cells(
 
     # centres is a list of arrays of centres (1 array of centres per ball run)
     # in x, y, z order
-    ns, centres = iterative_ball_filter(vol, settings, raw_vol)
+    cell_detectors = iterative_ball_filter(vol, settings, raw_vol)
+    struct_counts = [d.n_structures for d in cell_detectors]
+
+    # if best split only resulted in one (or no) struct, stick with original
+    if not struct_counts or max(struct_counts) <= 1:
+        return orig_centre, None
+
+    best_iteration = struct_counts.index(max(struct_counts))
+    cell_detector = cell_detectors[best_iteration]
+    relative_centres = cell_detector.get_cell_centres(
+        settings.detect_centre_of_intensity
+    )
     # add original centre. That's valid, even if using centre of intensity
-    ns.insert(0, 1)
-    centres.insert(0, np.array([relative_orig_centre]))
 
-    best_iteration = ns.index(max(ns))
-    # TODO: put constraint on minimum centres distance ?
-    relative_centres = centres[best_iteration]
+    original_max_coords = np.array(original_bounding_cuboid_shape)
+    for x in relative_centres:
+        assert (x < original_max_coords).all()
 
-    if not settings.outlier_keep:
-        # TODO: change to checking whether in original cluster shape
-        original_max_coords = np.array(original_bounding_cuboid_shape)
-        relative_centres = np.array(
-            [
-                x
-                for x in relative_centres
-                if check_centre_in_cuboid(x, original_max_coords)
-            ]
-        )
+    # corner coordinates in absolute pixels
+    orig_corner = np.array([xs.min(), ys.min(), zs.min()])
+    # convert centers to absolute voxels in original vol
+    absolute_centres = relative_centres + orig_corner[None, :]
 
-    absolute_centres = np.empty((len(relative_centres), 3))
-    # convert centers to absolute pixels
-    absolute_centres[:, 0] = orig_corner[0] + relative_centres[:, 0]
-    absolute_centres[:, 1] = orig_corner[1] + relative_centres[:, 1]
-    absolute_centres[:, 2] = orig_corner[2] + relative_centres[:, 2]
-
-    return absolute_centres
+    return absolute_centres, (cell_detector, orig_corner)

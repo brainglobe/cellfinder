@@ -309,6 +309,11 @@ class CellDetector:
 
         return plane
 
+    @property
+    def n_structures(self) -> int:
+        """The number of structures detected."""
+        return len(self.coords_maps)
+
     def get_cell_centres(
         self, use_centre_of_intensity: bool = False
     ) -> np.ndarray:

@@ -94,12 +94,14 @@ def test_underflow_issue_435():
         ball_overlap_fraction=0.8,
         soma_diameter_um=7,
     )
-    centers = split_cells(bright_indices, settings)
+    centers, (detector, offset) = split_cells(bright_indices, settings)
 
     # for some reason, same with pytorch, it's shifted by 1. Probably rounding
     expected = {(10, 11, 11), (20, 11, 11)}
     got = set(map(tuple, centers.tolist()))
     assert expected == got
+
+    assert detector.n_structures == 2
 
 
 def test_ball_filter_imgs_invalid_volume():
@@ -111,8 +113,8 @@ def test_ball_filter_imgs_invalid_volume():
         ball_xy_size_um=50,
     )
 
-    vol = ball_filter_imgs(torch.zeros((5, 100, 30)), settings, None)
-    assert not vol.shape[0]
+    cell_detector = ball_filter_imgs(torch.zeros((5, 100, 30)), settings, None)
+    assert not cell_detector.n_structures
 
 
 @pytest.mark.parametrize("inside", [True, False])

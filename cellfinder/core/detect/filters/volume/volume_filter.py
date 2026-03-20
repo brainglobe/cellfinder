@@ -536,6 +536,8 @@ def _split_cells(arg, settings: DetectionSettings):
     torch.set_num_threads(1)
     cell_id, cell_points, intensity = arg
     try:
-        return split_cells(cell_points, settings=settings, intensity=intensity)
+        return split_cells(
+            cell_points, settings=settings, intensity=intensity
+        )[0]
     except (ValueError, AssertionError) as err:
         raise StructureSplitException(f"Cell {cell_id}, error; {err}")
