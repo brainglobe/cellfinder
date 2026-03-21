@@ -10,8 +10,8 @@ from cellfinder.core.train.train_yaml import depth_type
 
 def main(
     signal_array: types.array,
-    background_array: Optional[types.array] = None,
     voxel_sizes: Tuple[float, float, float],
+    background_array: Optional[types.array] = None,
     start_plane: int = 0,
     end_plane: int = -1,
     trained_model: Optional[os.PathLike] = None,
@@ -55,10 +55,11 @@ def main(
     ----------
     signal_array : numpy.ndarray or dask array
         3D array representing the signal data in z, y, x order.
-    background_array : numpy.ndarray or dask array
-        3D array representing the signal data in z, y, x order.
     voxel_sizes : 3-tuple of floats
         Size of your voxels in the z, y, and x dimensions (microns).
+    background_array : numpy.ndarray or dask array, optional
+        3D array representing the background data in z, y, x order.
+        Required when skip_classification=False. Defaults to None.
     start_plane : int
         First plane index to process (inclusive, to process a subset of the
         data).
@@ -226,7 +227,8 @@ def main(
     if not skip_classification:
         if background_array is None:
             raise ValueError(
-                "background_array is required when skip_classification=False"
+                "background_array is required when "
+                "skip_classification=False"
             )
         install_path = None
         model_weights = prep.prep_model_weights(
