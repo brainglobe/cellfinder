@@ -10,7 +10,7 @@ from cellfinder.core.train.train_yaml import depth_type
 
 def main(
     signal_array: types.array,
-    background_array: types.array,
+    background_array: Optional[types.array] = None,
     voxel_sizes: Tuple[float, float, float],
     start_plane: int = 0,
     end_plane: int = -1,
@@ -224,6 +224,10 @@ def main(
         detect_finished_callback(points)
 
     if not skip_classification:
+        if background_array is None:
+            raise ValueError(
+                "background_array is required when skip_classification=False"
+            )
         install_path = None
         model_weights = prep.prep_model_weights(
             model_weights, install_path, model
