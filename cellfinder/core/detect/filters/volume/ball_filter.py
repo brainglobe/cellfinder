@@ -78,10 +78,10 @@ class BallFilter:
     ----------
     plane_height, plane_width : int
         Height/width of the planes.
-    ball_xy_size : float
-        Diameter of the spherical kernel (in microns) in the x/y dimensions.
-    ball_z_size : float
-        Diameter of the spherical kernel in the z dimension in microns.
+    ball_xy_size : int
+        Diameter of the spherical kernel (in voxels) in the x/y dimensions.
+    ball_z_size : int
+        Diameter of the spherical kernel in the z dimension in voxels.
         Determines the number of planes stacked to filter
         the central plane of the stack.
     overlap_fraction : float
@@ -214,6 +214,47 @@ class BallFilter:
         by `get_processed_planes`.
         """
         return int(math.floor(self.ball_z_size / 2))
+
+    @classmethod
+    def min_xy_padding(cls, ball_xy_size: int) -> tuple[int, int]:
+        """
+        For a given ball x/y kernel size, it returns the padding needed for the
+        plane so the full input data is filtered. Otherwise, data on the
+        edges of the plane will be zeros because the center of the ball will
+        never be over it. Adding padding will ensure the ball center will be
+        over all input data.
+
+        Parameters
+        ----------
+        ball_xy_size: int
+            The x/y kernel (ball) size in voxels.
+
+        return
+        ----------
+        padding: 2-tuple of ints
+            The padding to add to the start and end of the data to have all
+            input data considered.
+        """
+        n = ball_xy_size
+        # e.g. if starting with just 1 voxel: if kernel is even, say 4, then
+        # left padding will be 1 and right 2. This gives a single voxel output.
+        # If odd, say 5, it'll be 2 on each side
+        left = (n - 1) // 2
+        right = n - 1 - left
+        return left, right
+
+    @classmethod
+    def min_z_padding(cls, ball_z_size: int) -> tuple[int, int]:
+        """
+        Same as for `min_xy_padding`, except in the z-dimension.
+        """
+        n = ball_z_size
+        # e.g. if starting with just 1 voxel: if kernel is even, say 4, then
+        # left padding will be 1 and right 2. This gives a single voxel output.
+        # If odd, say 5, it'll be 2 on each side
+        bottom = (n - 1) // 2
+        top = n - 1 - bottom
+        return bottom, top
 
     @property
     def remaining_planes(self) -> int:

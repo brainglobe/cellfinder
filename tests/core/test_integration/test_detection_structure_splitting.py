@@ -14,7 +14,6 @@ from brainglobe_utils.IO.image.load import read_with_dask
 from cellfinder.core.detect.filters.setup_filters import DetectionSettings
 from cellfinder.core.detect.filters.volume.structure_splitting import (
     ball_filter_imgs,
-    check_centre_in_cuboid,
     split_cells,
 )
 from cellfinder.core.main import main
@@ -96,8 +95,7 @@ def test_underflow_issue_435():
     )
     centers, (detector, offset) = split_cells(bright_indices, settings)
 
-    # for some reason, same with pytorch, it's shifted by 1. Probably rounding
-    expected = {(10, 11, 11), (20, 11, 11)}
+    expected = set(map(tuple, [p1.tolist(), p2.tolist()]))
     got = set(map(tuple, centers.tolist()))
     assert expected == got
 
@@ -115,15 +113,6 @@ def test_ball_filter_imgs_invalid_volume():
 
     cell_detector = ball_filter_imgs(torch.zeros((5, 100, 30)), settings, None)
     assert not cell_detector.n_structures
-
-
-@pytest.mark.parametrize("inside", [True, False])
-def test_check_centre_in_cuboid(inside):
-    corner = np.array([5, 5, 5])
-    if inside:
-        assert check_centre_in_cuboid(np.array([2, 2, 2]), corner)
-    else:
-        assert not check_centre_in_cuboid(np.array([8, 8, 8]), corner)
 
 
 def test_using_coi_without_intensity():

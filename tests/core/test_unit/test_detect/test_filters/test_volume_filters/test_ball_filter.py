@@ -51,6 +51,18 @@ def test_filter_plane_params(sizes):
     assert bf.remaining_planes == remaining
 
 
+@pytest.mark.parametrize(
+    "sizes", [(1, 0, 0), (2, 0, 1), (3, 1, 1), (4, 1, 2), (5, 2, 2), (6, 2, 3)]
+)
+def test_filter_padding(sizes):
+    # checks that for a given kernel size, the start / end padding matches as
+    # expected. The start padding is always the lessor (when even)
+    kernel_size, *padding = sizes
+
+    assert BallFilter.min_xy_padding(kernel_size) == tuple(padding)
+    assert BallFilter.min_z_padding(kernel_size) == tuple(padding)
+
+
 @pytest.mark.parametrize("batch_size", [1, 2, 5, 10])
 @pytest.mark.parametrize("kernel_size", [1, 2, 3, 5])
 def test_filtered_planes(kernel_size, batch_size):

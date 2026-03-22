@@ -4,7 +4,6 @@ from typing import List, Optional, Tuple, Type
 import numpy as np
 import torch
 
-from cellfinder.core import logger
 from cellfinder.core.detect.filters.setup_filters import DetectionSettings
 from cellfinder.core.detect.filters.volume.ball_filter import (
     BallFilter,
@@ -25,7 +24,10 @@ def get_shape(
 ) -> Tuple[int, int, int]:
     """
     Takes a list of x, y, z coordinates and returns a volume size such that
-    all the points will fit into it. With axis order = x, y, z.
+    all the points will fit into it (once the min of each dim is subtracted -
+    i.e. the smallest point in each dim falls on zero).
+
+    Axis order is x, y, z.
     """
     # +1 because difference. TEST:
     shape = tuple(int((dim.max() - dim.min()) + 1) for dim in (xs, ys, zs))
@@ -38,15 +40,23 @@ def coords_to_volume(
     zs: np.ndarray,
     intensity: Optional[np.ndarray],
     volume_shape: Tuple[int, int, int],
-    ball_radius: int,
+    ball_xy_padding: tuple[int, int],
+    ball_z_padding: tuple[int, int],
     dtype: Type[np.number],
     threshold_value: int,
 ) -> tuple[torch.Tensor, Optional[np.ndarray]]:
     """
     Takes the series of x, y, z points along with the shape of the volume
-    that fully enclose them (also x, y, z order). It than expands the
-    shape by the ball diameter in each axis. Then, each point, shifted
-    by the radius internally is set to the threshold value.
+    (also x, y, z order) that fully enclose them, relative to the minimum
+    point in each dim of the data. It than expands the volume in each dim to
+    account for the filtering ball diameter by adding padding
+    before / after the dim. So each point in the expanded volume is shifted
+    by the start padding internally and is then set to the threshold value.
+
+    The result is that after ball filtering, all the points we get will be
+    fully contained in the original volume and not in the padding. Of course
+    the start padding will need to be subtracted from the point indices in the
+    expanded volume.
 
     The volume is then transposed and returned in the Z, Y, X order.
 
@@ -55,9 +65,15 @@ def coords_to_volume(
     """
     # it's faster doing the work in numpy and then returning as torch array,
     # than doing the work in torch
-    ball_diameter = ball_radius * 2
-    # Expanded to ensure the ball fits even at the border
-    expanded_shape = [dim_size + ball_diameter for dim_size in volume_shape]
+    # Expanded to ensure the ball fits at all borders of input cuboid
+    xy_add = sum(ball_xy_padding)
+    z_add = sum(ball_z_padding)
+    expanded_shape = (
+        volume_shape[0] + xy_add,
+        volume_shape[1] + xy_add,
+        volume_shape[2] + z_add,
+    )
+
     # volume is now x, y, z order
     volume = np.zeros(expanded_shape, dtype=dtype)
     # use largest type. These are small volumes and not processed much except
@@ -69,10 +85,11 @@ def coords_to_volume(
     x_min, y_min, z_min = xs.min(), ys.min(), zs.min()
 
     # shift the points so any sphere centered on it would not have its
-    # radius expand beyond the volume
-    relative_xs = np.array((xs - x_min + ball_radius), dtype=np.int64)
-    relative_ys = np.array((ys - y_min + ball_radius), dtype=np.int64)
-    relative_zs = np.array((zs - z_min + ball_radius), dtype=np.int64)
+    # radius expand beyond the volume and so center of sphere would be in
+    # original volume
+    relative_xs = np.array((xs - x_min + ball_xy_padding[0]), dtype=np.int64)
+    relative_ys = np.array((ys - y_min + ball_xy_padding[0]), dtype=np.int64)
+    relative_zs = np.array((zs - z_min + ball_z_padding[0]), dtype=np.int64)
 
     # set each point as the center with a value of threshold
     volume[relative_xs, relative_ys, relative_zs] = threshold_value
@@ -217,32 +234,6 @@ def iterative_ball_filter(
     return cell_detectors
 
 
-def check_centre_in_cuboid(centre: np.ndarray, max_coords: np.ndarray) -> bool:
-    """
-    Checks whether a coordinate is in a cuboid.
-
-    Parameters
-    ----------
-    centre : np.ndarray
-        x, y, z coordinate.
-    max_coords : np.ndarray
-        Far corner of cuboid.
-
-    Returns
-    -------
-    True if within cuboid, otherwise False.
-    """
-    relative_coords = centre
-    if (relative_coords > max_coords).all():
-        logger.info(
-            'Relative coordinates "{}" exceed maximum volume '
-            'dimension of "{}"'.format(relative_coords, max_coords)
-        )
-        return False
-    else:
-        return True
-
-
 def split_cells(
     cell_points: np.ndarray,
     settings: DetectionSettings,
@@ -274,9 +265,11 @@ def split_cells(
         better cell candidates during splitting than the original single cell.
         Otherwise, it's the `CellDetector` with the structs from the best
         iteration and a size 3 `np.ndarray` with the offset of the structs in
-        the cell detector. I.e. the cell detector uses coordinates relative to
-        the size of the cube containing the input voxels so the offset must be
-        added to convert to absolute voxel indices.
+        the cell detector. I.e. all coordinates in the cell detector is
+        relative to the size of the cuboid containing only the `cell_points`.
+        So the offset must be added to convert any voxel indices accessed via
+        the cell detector (e.g. `cell_detector.get_structures`) to absolute
+        voxel indices.
     """
     settings = copy(settings)
     if settings.detect_centre_of_intensity and intensity is None:
@@ -292,22 +285,24 @@ def split_cells(
     ys = cell_points[:, 1]
     zs = cell_points[:, 2]
 
-    # total volume enclosing all points
+    # total volume enclosing all points from the input
     original_bounding_cuboid_shape = get_shape(xs, ys, zs)
 
-    ball_radius = settings.ball_xy_size // 2
     # they should be the same dtype so as to not need a conversion before
     # passing the input data with marked cells to the filters (we currently
     # set both to float32)
     assert settings.filtering_dtype == settings.plane_original_np_dtype
-    # volume will now be z, y, x order
+    # Volume will be padded so not lose points on the edges. It's z, y, x order
+    ball_xy_padding = BallFilter.min_xy_padding(settings.ball_xy_size)
+    ball_z_padding = BallFilter.min_z_padding(settings.ball_z_size)
     vol, raw_vol = coords_to_volume(
         xs,
         ys,
         zs,
         intensity,
         volume_shape=original_bounding_cuboid_shape,
-        ball_radius=ball_radius,
+        ball_xy_padding=ball_xy_padding,
+        ball_z_padding=ball_z_padding,
         dtype=settings.filtering_dtype,
         threshold_value=settings.threshold_value,
     )
@@ -334,22 +329,39 @@ def split_cells(
 
     # if best split only resulted in one (or no) struct, stick with original
     if not struct_counts or max(struct_counts) <= 1:
-        return orig_centre, None
+        return orig_centre[None, :], None
 
     best_iteration = struct_counts.index(max(struct_counts))
     cell_detector = cell_detectors[best_iteration]
-    relative_centres = cell_detector.get_cell_centres(
+    # centers come in where zero is relative to expanded vol corner
+    expanded_relative_centres = cell_detector.get_cell_centres(
         settings.detect_centre_of_intensity
     )
-    # add original centre. That's valid, even if using centre of intensity
 
-    original_max_coords = np.array(original_bounding_cuboid_shape)
-    for x in relative_centres:
-        assert (x < original_max_coords).all()
-
-    # corner coordinates in absolute pixels
+    # corner coordinates of original unexpended vol in absolute voxels
     orig_corner = np.array([xs.min(), ys.min(), zs.min()])
-    # convert centers to absolute voxels in original vol
+    # shape of the original unexpanded volume
+    orig_cuboid_shape = np.array(original_bounding_cuboid_shape)
+    # start padding added to start of original vol to gain expanded volume
+    start_padding = np.array(
+        [ball_xy_padding[0], ball_xy_padding[0], ball_z_padding[0]],
+        dtype=np.int_,
+    )
+
+    # remove padding to get indices relative to original vol corner
+    relative_centres = expanded_relative_centres - start_padding
+    for x in relative_centres:
+        # we allow to be sticking out by one on each side due to rounding, but
+        # more than one should be impossible
+        assert (x <= orig_cuboid_shape).all()
+        assert (x >= -1).all()
+    # but if they do stick out by one, clip so it's in the valid original vol
+    relative_centres = np.clip(relative_centres, 0, orig_cuboid_shape - 1)
+
+    # convert relative centers to absolute voxels in original vol
     absolute_centres = relative_centres + orig_corner[None, :]
 
-    return absolute_centres, (cell_detector, orig_corner)
+    # any indices stored in cell detector is relative to the expanded vol so a
+    # zero there (i.e. offset) should be relative to where the padding starts
+    offset = orig_corner - start_padding
+    return absolute_centres, (cell_detector, offset)
