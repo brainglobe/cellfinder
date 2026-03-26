@@ -36,12 +36,11 @@ def get_kernel(ball_xy_size: int, ball_z_size: int) -> np.ndarray:
         upscale_factor * ball_xy_size,
         upscale_factor * ball_z_size,
     )
-    upscaled_ball_centre_position = (
-        np.floor(upscaled_kernel_shape[0] / 2),
-        np.floor(upscaled_kernel_shape[1] / 2),
-        np.floor(upscaled_kernel_shape[2] / 2),
-    )
-    upscaled_ball_radius = upscaled_kernel_shape[0] / 2.0
+    # subtract one b/c we need to shift from size/count to index
+    upscaled_ball_centre_position = [
+        (u - 1) / 2 for u in upscaled_kernel_shape
+    ]
+    upscaled_ball_radius = [u / 2 for u in upscaled_kernel_shape]
 
     sphere_kernel = make_sphere(
         upscaled_kernel_shape,
