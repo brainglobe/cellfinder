@@ -56,6 +56,10 @@ def prep_models(
             model_weights = get_model_weights(config_file)
     else:
         model_weights = Path(model_weights_path)
+        if not model_weights.exists():
+            raise FileNotFoundError(
+                f"Model weights not found: {model_weights}"
+            )
     return model_weights
 
 
