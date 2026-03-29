@@ -189,6 +189,35 @@ def test_synthetic_data(synthetic_bright_spots, no_free_cpus):
     assert len(detected) == 8
 
 
+def test_skip_classification_without_background_array(
+    synthetic_single_spot, no_free_cpus
+):
+    signal_array, _, center = synthetic_single_spot
+    detected = main(
+        signal_array=signal_array.astype(np.float32),
+        voxel_sizes=voxel_sizes,
+        n_sds_above_mean_thresh=1.0,
+        n_free_cpus=no_free_cpus,
+        skip_classification=True,
+    )
+
+    assert len(detected) == 1
+    assert detected[0] == Cell(center, Cell.UNKNOWN)
+
+
+def test_background_array_required_for_classification():
+    signal_array = np.zeros((5, 5, 5), dtype=np.float32)
+
+    with pytest.raises(
+        ValueError,
+        match=(
+            "background_array must be provided unless "
+            "skip_classification=True"
+        ),
+    ):
+        main(signal_array=signal_array, voxel_sizes=voxel_sizes)
+
+
 @pytest.mark.parametrize("ndim", [1, 2, 4])
 def test_data_dimension_error(ndim):
     # Check for an error when non-3D data input

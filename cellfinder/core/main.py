@@ -10,8 +10,8 @@ from cellfinder.core.train.train_yaml import depth_type
 
 def main(
     signal_array: types.array,
-    background_array: types.array,
-    voxel_sizes: Tuple[float, float, float],
+    background_array: types.array | Tuple[float, float, float] | None = None,
+    voxel_sizes: Tuple[float, float, float] | None = None,
     start_plane: int = 0,
     end_plane: int = -1,
     trained_model: Optional[os.PathLike] = None,
@@ -55,8 +55,10 @@ def main(
     ----------
     signal_array : numpy.ndarray or dask array
         3D array representing the signal data in z, y, x order.
-    background_array : numpy.ndarray or dask array
-        3D array representing the signal data in z, y, x order.
+    background_array : numpy.ndarray or dask array, optional
+        3D array representing the background data in z, y, x order. This is
+        required when classification is enabled and optional when
+        ``skip_classification=True``.
     voxel_sizes : 3-tuple of floats
         Size of your voxels in the z, y, and x dimensions (microns).
     start_plane : int
@@ -187,6 +189,21 @@ def main(
     from cellfinder.core.classify import classify
     from cellfinder.core.detect import detect
     from cellfinder.core.tools import prep
+
+    # Preserve the historical positional API while allowing callers to omit
+    # background data for detection-only runs.
+    if voxel_sizes is None:
+        voxel_sizes = background_array
+        background_array = None
+
+    if voxel_sizes is None:
+        raise TypeError("voxel_sizes must be provided")
+
+    if not skip_classification and background_array is None:
+        raise ValueError(
+            "background_array must be provided unless "
+            "skip_classification=True"
+        )
 
     if not skip_detection:
         logger.info("Detecting cell candidates")
