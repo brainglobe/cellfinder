@@ -1,8 +1,8 @@
+from brainglobe_utils.cells.cells import Cell
 from magicgui.widgets import ProgressBar
 from napari.qt.threading import WorkerBase, WorkerBaseSignals
 from qtpy.QtCore import Signal
 
-from brainglobe_utils.cells.cells import Cell
 from cellfinder.core.main import main as cellfinder_run
 
 from .detect_containers import (
@@ -120,7 +120,8 @@ class Worker(WorkerBase):
             n = len(result)
             self.update_progress_bar.emit("Finished detection", 1, 1)
             self.update_status_label.emit(
-                f"\u2713 Detection complete, {n} candidate{'s' if n != 1 else ''} found"
+                f"\u2713 Detection complete, "
+                f"{n} candidate{'s' if n != 1 else ''} found"
             )
         elif self.npoints_detected == 0:
             # Classification was skipped (no candidates), label already set
@@ -131,7 +132,8 @@ class Worker(WorkerBase):
             n_rejected = len(result) - n_cells
             self.update_progress_bar.emit("Finished classification", 1, 1)
             self.update_status_label.emit(
-                f"\u2713 Done, {n_cells} cell{'s' if n_cells != 1 else ''} detected, "
+                f"\u2713 Done, {n_cells} "
+                f"cell{'s' if n_cells != 1 else ''} detected, "
                 f"{n_rejected} rejected"
             )
 
