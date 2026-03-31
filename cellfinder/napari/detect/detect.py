@@ -216,6 +216,7 @@ def detect_widget() -> FunctionGui:
     """
     progress_bar = ProgressBar()
     status_label = Label(value="")
+    status_label.hide()
 
     # options that is filled in from the gui
     options = {
@@ -468,9 +469,15 @@ def detect_widget() -> FunctionGui:
         # thread
         worker.errored.connect(reraise)
         worker.connect_progress_bar_callback(progress_bar)
-        worker.connect_status_label_callback(
-            lambda text: setattr(status_label, "value", text)
-        )
+
+        def update_status(text: str):
+            if text:
+                status_label.value = text
+                status_label.show()
+            else:
+                status_label.hide()
+
+        worker.connect_status_label_callback(update_status)
 
         worker.start()
 
