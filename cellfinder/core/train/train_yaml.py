@@ -12,8 +12,9 @@ from argparse import (
     ArgumentTypeError,
 )
 from datetime import datetime
+from functools import partial
 from pathlib import Path
-from typing import Dict, Literal
+from typing import Dict, Literal, Sequence
 
 from brainglobe_utils.cells.cells import Cell
 from brainglobe_utils.general.numerical import (
@@ -29,6 +30,7 @@ from brainglobe_utils.IO.yaml import read_yaml_section
 from fancylog import fancylog
 from keras.callbacks import (
     CSVLogger,
+    LearningRateScheduler,
     ModelCheckpoint,
     TensorBoard,
 )
@@ -61,6 +63,17 @@ models: Dict[depth_type, layer_type] = {
 CUBE_WIDTH = 50
 CUBE_HEIGHT = 50
 CUBE_DEPTH = 20
+
+
+def lr_scheduler(
+    epoch: int,
+    lr: float,
+    multiplier: float,
+    epoch_list: Sequence[int],
+) -> float:
+    if epoch in epoch_list:
+        return lr * multiplier
+    return lr
 
 
 def valid_model_depth(depth):
@@ -250,6 +263,26 @@ def training_parse():
         action="store_true",
         help="Save training progress to a .csv file",
     )
+    training_parser.add_argument(
+        "--lr-schedule",
+        dest="lr_schedule",
+        nargs="*",
+        type=partial(check_positive_int, none_allowed=False),
+        default=(),
+        help="If not empty, the list of epochs when to multiply the current "
+        "learning rate by the lr_multiplier. E.g. if it's [10, 25], we "
+        "start with a learning rate of 0.001, and lr_multiplier is "
+        "0.1, then the LR will be 0.001 for epochs 0-9, 0.0001 for 10-24,"
+        " and 00001 for epoch 25 and beyond.",
+    )
+    training_parser.add_argument(
+        "--lr-multiplier",
+        dest="lr_multiplier",
+        type=partial(check_positive_float, none_allowed=False),
+        default=0.1,
+        help="The multiplier by which to multiply the previous learning rate "
+        "at the epochs listed in lr_schedule.",
+    )
 
     training_parser = misc_parse(training_parser)
     training_parser = download_parser(training_parser)
@@ -346,6 +379,8 @@ def cli():
         no_save_checkpoints=args.no_save_checkpoints,
         save_progress=args.save_progress,
         epochs=args.epochs,
+        lr_schedule=args.lr_schedule,
+        lr_multiplier=args.lr_multiplier,
     )
 
 
@@ -407,6 +442,8 @@ def run(
     epochs=100,
     max_workers: int = 3,
     pin_memory: bool = True,
+    lr_schedule: Sequence[int] = (),
+    lr_multiplier: float = 0.1,
     augment_likelihood: float = 0.9,
 ):
     start_time = datetime.now()
@@ -520,6 +557,15 @@ def run(
         csv_filepath = str(output_dir / "training.csv")
         csv_logger = CSVLogger(csv_filepath)
         callbacks.append(csv_logger)
+
+    if lr_schedule:
+        # we need to drop the lr by a given schedule. This is called at the
+        # start of each epoch and is zero based. E.g. if epoch 10 is listed,
+        # it'll drop at the start of the 11th epoch.
+        lr_callback = partial(
+            lr_scheduler, multiplier=lr_multiplier, epoch_list=lr_schedule
+        )
+        callbacks.append(LearningRateScheduler(lr_callback))
 
     logger.info("Beginning training.")
     if n_processes:
