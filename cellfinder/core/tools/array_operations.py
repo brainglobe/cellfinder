@@ -103,11 +103,17 @@ def bin_mean_3d(
             )
         )
 
-    binned_arr = []
-    for i in range(0, arr.shape[2] - 1, bin_depth):
-        sub_stack = [
-            binned_mean_2d(arr[:, :, j], bin_width, bin_height)
-            for j in range(i, i + bin_depth)
-        ]
-        binned_arr.append(np.dstack(sub_stack).mean(axis=2))
-    return np.dstack(binned_arr)
+    width_bins = arr.shape[0] // bin_width
+    height_bins = arr.shape[1] // bin_height
+    depth_bins = arr.shape[2] // bin_depth
+    # all padding check already done above:)
+    arr = np.ascontiguousarray(arr)
+    reshaped = arr.reshape(
+        width_bins,
+        bin_width,
+        height_bins,
+        bin_height,
+        depth_bins,
+        bin_depth,
+    )
+    return reshaped.mean(axis=(1, 3, 5))
