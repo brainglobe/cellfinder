@@ -90,9 +90,19 @@ def main(
         A callback function that is called during classification. Called with
         the batch number once that batch has been classified.
     """
-    if signal_array.ndim != 3:
-        raise IOError("Signal data must be 3D")
-    if background_array.ndim != 3:
+    if signal_array.ndim == 2:
+        if background_array.ndim != 2:
+            raise IOError("For 2D signal data, background must also be 2D")
+        if cube_depth != 1:
+            raise ValueError(
+                "For 2D data, cube_depth must be 1. "
+                "Train/use a 2D classifier or set skip_classification."
+            )
+        signal_array = signal_array[None, ...]
+        background_array = background_array[None, ...]
+    elif signal_array.ndim != 3:
+        raise IOError("Signal data must be 2D or 3D")
+    elif background_array.ndim != 3:
         raise IOError("Background data must be 3D")
 
     # Too many workers doesn't increase speed, and uses huge amounts of RAM
@@ -101,6 +111,8 @@ def main(
 
     start_time = datetime.now()
 
+    if len(voxel_sizes) == 2:
+        voxel_sizes = (1.0, *voxel_sizes)
     voxel_sizes = list(map(float, voxel_sizes))
     logger.debug("Initialising cube generator")
     dataset = CuboidArrayDataset(

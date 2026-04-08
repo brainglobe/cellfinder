@@ -66,6 +66,7 @@ def main(
     ----------
     signal_array : numpy.ndarray or dask array
         3D array representing the signal data in z, y, x order.
+        2D arrays are also accepted and treated as a single z-plane.
     start_plane : int
         First plane index to process (inclusive, to process a subset of the
         data).
@@ -176,8 +177,23 @@ def main(
             f"{signal_array.dtype}"
         )
 
-    if signal_array.ndim != 3:
-        raise ValueError("Input data must be 3D")
+    is_2d = False
+    if signal_array.ndim == 2:
+        is_2d = True
+        signal_array = signal_array[None, ...]
+    elif signal_array.ndim != 3:
+        raise ValueError("Input data must be 2D or 3D")
+
+    if is_2d:
+        if start_plane != 0:
+            raise ValueError("For 2D data, start_plane must be 0.")
+        if end_plane not in (-1, 1):
+            raise ValueError(
+                "For 2D data, end_plane must be 1 (or -1 for default)."
+            )
+        end_plane = 1
+        ball_z_size = 1
+        split_ball_z_size = 1
 
     if end_plane < 0:
         end_plane = len(signal_array)
@@ -192,6 +208,8 @@ def main(
 
     batch_size = max(batch_size, 1)
     # brainmapper can pass them in as str
+    if len(voxel_sizes) == 2:
+        voxel_sizes = (1.0, *voxel_sizes)
     voxel_sizes = list(map(float, voxel_sizes))
 
     settings = DetectionSettings(
