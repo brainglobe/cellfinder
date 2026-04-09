@@ -74,6 +74,7 @@ class DetectionInputs(InputContainer):
     soma_spread_factor: float = 1.4
     max_cluster_size: float = 100000
     detection_batch_size: int = 1
+    detect_centre_of_intensity: bool = False
 
     def as_core_arguments(self) -> dict:
         return super().as_core_arguments()
@@ -105,6 +106,10 @@ class DetectionInputs(InputContainer):
             tiled_thresh_tile_size=cls._custom_widget(
                 "tiled_thresh_tile_size",
                 custom_label="Thresholding tile size",
+            ),
+            detect_centre_of_intensity=cls._custom_widget(
+                "detect_centre_of_intensity",
+                custom_label="Use centre of intensity",
             ),
             soma_spread_factor=cls._custom_widget(
                 "soma_spread_factor", custom_label="Split cell spread"
