@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 from typing import Callable, List, Optional, Tuple
 
 from brainglobe_utils.cells.cells import Cell
@@ -188,6 +189,16 @@ def main(
     from cellfinder.core.detect import detect
     from cellfinder.core.tools import prep
 
+    if not skip_classification:
+        if trained_model is not None and not Path(trained_model).exists():
+            raise FileNotFoundError(
+                f"Trained model not found: {trained_model}"
+            )
+        install_path = None
+        model_weights = prep.prep_model_weights(
+            model_weights, install_path, model
+        )
+
     if not skip_detection:
         logger.info("Detecting cell candidates")
 
@@ -224,10 +235,6 @@ def main(
         detect_finished_callback(points)
 
     if not skip_classification:
-        install_path = None
-        model_weights = prep.prep_model_weights(
-            model_weights, install_path, model
-        )
         if len(points) > 0:
             logger.info("Running classification")
             points = classify.main(
