@@ -223,7 +223,7 @@ def training_parse():
         type=check_positive_float,
         default=0.9,
         help="Value `[0, 1]` with the probability of a data item being "
-        "augmented. I.e. `0.9` means 90% of the data will have been "
+        "augmented. I.e. `0.9` means 90%% of the data will have been "
         "augmented.",
     )
     training_parser.add_argument(
