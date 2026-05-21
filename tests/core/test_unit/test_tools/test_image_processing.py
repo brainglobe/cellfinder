@@ -1,6 +1,7 @@
 import random
 
 import numpy as np
+import pytest
 
 from cellfinder.core.tools import image_processing as img_tools
 
@@ -35,3 +36,16 @@ def test_pad_centre_2d():
         img, x_size=new_x_shape, y_size=new_y_shape
     )
     assert (new_y_shape, new_x_shape) == pad_img.shape
+
+
+@pytest.mark.parametrize("progress", [True, False])
+def test_dataset_mean_std(progress):
+    # checks that dataset_mean_std correctly computes the std/mean
+    data = np.random.normal(100, 10, (10, 10, 10))
+
+    mean, std = img_tools.dataset_mean_std(
+        data, sampling_factor=2, show_progress=progress
+    )
+    # give it enough room for estimation error
+    assert 90 < mean < 110
+    assert 8 < std < 12

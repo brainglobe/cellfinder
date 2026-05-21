@@ -129,6 +129,8 @@ class ClassificationInputs(InputContainer):
     use_pre_trained_weights: bool = True
     trained_model: Optional[Path] = Path.home()
     classification_batch_size: int = 64
+    normalize_channels: bool = False
+    normalization_down_sampling: int = 32
 
     def as_core_arguments(self) -> dict:
         args = super().as_core_arguments()
@@ -149,6 +151,14 @@ class ClassificationInputs(InputContainer):
             classification_batch_size=dict(
                 value=cls.defaults()["classification_batch_size"],
                 label="Batch size (classification)",
+            ),
+            normalize_channels=dict(
+                value=cls.defaults()["normalize_channels"],
+                label="Normalize data",
+            ),
+            normalization_down_sampling=dict(
+                value=cls.defaults()["normalization_down_sampling"],
+                label="Normalization down-sampling",
             ),
         )
 
