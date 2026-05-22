@@ -76,6 +76,9 @@ def test_run_with_virtual_yaml_files(get_training_widget):
         expected_network_args = OptionalNetworkInputs()
         expected_optional_training_args = OptionalTrainingInputs()
         expected_misc_args = MiscTrainingInputs()
+        # run_training calls lr_schedule with empty list instead of tuple,
+        # so to do equality comparison, we need to set default to list also
+        expected_optional_training_args.lr_schedule = []
 
         # we expect the widget to make some changes to the defaults
         # displayed before calling the training backend
