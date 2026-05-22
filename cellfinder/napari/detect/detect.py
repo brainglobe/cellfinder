@@ -6,7 +6,7 @@ import napari
 import napari.layers
 from brainglobe_utils.cells.cells import Cell
 from magicgui import magicgui
-from magicgui.widgets import FunctionGui, ProgressBar
+from magicgui.widgets import FunctionGui, Label, ProgressBar
 from napari.utils.notifications import show_info
 from qtpy.QtWidgets import QScrollArea
 
@@ -215,6 +215,8 @@ def detect_widget() -> FunctionGui:
     Create a detection plugin GUI.
     """
     progress_bar = ProgressBar()
+    status_label = Label(value="")
+    status_label.hide()
 
     # options that is filled in from the gui
     options = {
@@ -468,6 +470,15 @@ def detect_widget() -> FunctionGui:
         worker.errored.connect(reraise)
         worker.connect_progress_bar_callback(progress_bar)
 
+        def update_status(text: str):
+            if text:
+                status_label.value = text
+                status_label.show()
+            else:
+                status_label.hide()
+
+        worker.connect_status_label_callback(update_status)
+
         worker.start()
 
     widget.native.layout().insertWidget(0, cellfinder_header())
@@ -477,8 +488,9 @@ def detect_widget() -> FunctionGui:
         partial(restore_options_defaults, widget)
     )
 
-    # Insert progress bar before the run and reset buttons
+    # Insert progress bar and status label before the run/reset buttons
     widget.insert(widget.index("debug") + 1, progress_bar)
+    widget.insert(widget.index("debug") + 2, status_label)
 
     # add the signal and background image etc.
     add_heavy_widgets(
