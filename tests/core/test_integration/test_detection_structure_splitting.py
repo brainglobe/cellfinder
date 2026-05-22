@@ -8,10 +8,12 @@ real life data.
 
 import numpy as np
 import pytest
+import torch
 from brainglobe_utils.IO.image.load import read_with_dask
 
 from cellfinder.core.detect.filters.setup_filters import DetectionSettings
 from cellfinder.core.detect.filters.volume.structure_splitting import (
+    ball_filter_imgs,
     split_cells,
 )
 from cellfinder.core.main import main
@@ -47,7 +49,7 @@ def background_array(repo_data_path):
     )
 
 
-def test_structure_splitting(signal_array, background_array):
+def test_structure_splitting(signal_array, background_array, no_free_cpus):
     """
     Smoke test to ensure structure splitting code doesn't break.
     """
@@ -55,7 +57,7 @@ def test_structure_splitting(signal_array, background_array):
         signal_array,
         background_array,
         voxel_sizes,
-        n_free_cpus=0,
+        n_free_cpus=no_free_cpus,
     )
 
 
@@ -91,9 +93,35 @@ def test_underflow_issue_435():
         ball_overlap_fraction=0.8,
         soma_diameter_um=7,
     )
-    centers = split_cells(bright_indices, settings)
+    centers, (detector, offset) = split_cells(bright_indices, settings)
 
-    # for some reason, same with pytorch, it's shifted by 1. Probably rounding
-    expected = {(10, 11, 11), (20, 11, 11)}
+    expected = set(map(tuple, [p1.tolist(), p2.tolist()]))
     got = set(map(tuple, centers.tolist()))
     assert expected == got
+
+    assert detector.n_structures == 2
+
+
+def test_ball_filter_imgs_invalid_volume():
+    """Checks that an invalid volume returns empty array instead."""
+    settings = DetectionSettings(
+        plane_shape=(100, 30),
+        plane_original_np_dtype=np.float32,
+        voxel_sizes=(1, 1, 1),
+        ball_xy_size_um=50,
+    )
+
+    cell_detector = ball_filter_imgs(torch.zeros((5, 100, 30)), settings, None)
+    assert not cell_detector.n_structures
+
+
+def test_using_coi_without_intensity():
+    cell_points = np.zeros((30, 20, 20), dtype=np.bool_)
+    settings = DetectionSettings(
+        plane_shape=(100, 100),
+        plane_original_np_dtype=np.float32,
+        detect_centre_of_intensity=True,
+    )
+
+    with pytest.raises(ValueError):
+        split_cells(cell_points, settings, None)

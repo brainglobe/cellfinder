@@ -256,6 +256,7 @@ def detect_widget() -> FunctionGui:
         ball_z_size: float,
         ball_overlap_fraction: float,
         detection_batch_size: int,
+        detect_centre_of_intensity: bool,
         soma_spread_factor: float,
         max_cluster_size: float,
         classification_options,
@@ -324,6 +325,13 @@ def detect_widget() -> FunctionGui:
             for all the filters. For performance-critical applications, tune
             to maximize memory usage without
             running out. Check your GPU/CPU memory to verify it's not full
+        detect_centre_of_intensity : bool
+            If False, a candidate cell's center is just the mean of the
+            positions of all voxels marked as above background, or bright, in
+            that candidate. The voxel intensity is not taken into account. If
+            True, the center is calculated similar to the center of mass, but
+            using the intensity. So the center gets pulled towards the brighter
+            voxels in the volume.
         soma_spread_factor : float
             Cell spread factor for determining the largest cell volume before
             splitting up cell clusters. Structures with spherical volume of
@@ -421,6 +429,7 @@ def detect_widget() -> FunctionGui:
             soma_spread_factor,
             max_cluster_size,
             detection_batch_size,
+            detect_centre_of_intensity,
         )
 
         if use_pre_trained_weights:
