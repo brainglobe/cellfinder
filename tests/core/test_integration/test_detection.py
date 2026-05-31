@@ -201,7 +201,11 @@ def test_data_dimension_error(ndim):
     )
 
     with pytest.raises(ValueError, match="Input data must be 3D"):
-        main(signal_array=signal_array, background_array=background_array, voxel_sizes=voxel_sizes)
+        main(
+            signal_array=signal_array,
+            background_array=background_array,
+            voxel_sizes=voxel_sizes,
+        )
 
 
 @pytest.mark.parametrize("device", ["cuda", "cpu"])

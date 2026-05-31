@@ -6,8 +6,8 @@ from brainglobe_utils.cells.cells import Cell
 
 from cellfinder.core import logger, types
 from cellfinder.core.download.download import model_type
-from cellfinder.core.train.train_yaml import depth_type
 from cellfinder.core.tools.tools import deprecate_positional_args
+from cellfinder.core.train.train_yaml import depth_type
 
 
 @deprecate_positional_args

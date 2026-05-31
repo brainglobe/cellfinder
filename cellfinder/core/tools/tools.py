@@ -357,7 +357,10 @@ def deprecate_positional_args(func):
         name
         for name, param in sig.parameters.items()
         if param.kind
-        not in (inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD)
+        not in (
+            inspect.Parameter.VAR_POSITIONAL,
+            inspect.Parameter.VAR_KEYWORD,
+        )
     ]
 
     @wraps(func)

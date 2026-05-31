@@ -16,8 +16,9 @@ from cellfinder.core.classify.cube_generator import (
     CuboidBatchSampler,
 )
 from cellfinder.core.classify.tools import get_model
-from cellfinder.core.train.train_yaml import depth_type, models
 from cellfinder.core.tools.tools import deprecate_positional_args
+from cellfinder.core.train.train_yaml import depth_type, models
+
 
 @deprecate_positional_args
 def main(

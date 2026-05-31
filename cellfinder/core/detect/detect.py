@@ -25,7 +25,10 @@ from cellfinder.core import logger, types
 from cellfinder.core.detect.filters.plane import TileProcessor
 from cellfinder.core.detect.filters.setup_filters import DetectionSettings
 from cellfinder.core.detect.filters.volume.volume_filter import VolumeFilter
-from cellfinder.core.tools.tools import deprecate_positional_args, inference_wrapper
+from cellfinder.core.tools.tools import (
+    deprecate_positional_args,
+    inference_wrapper,
+)
 
 
 @deprecate_positional_args
