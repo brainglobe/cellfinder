@@ -119,6 +119,42 @@ def test_cell_marking(curation_widget, tmp_path):
         assert "bg_std" in item
 
 
+def test_save_training_data_without_background(curation_widget, tmp_path):
+    """
+    Saving without a background writes single-channel cubes and a YAML
+    that marks the background channel as absent.
+    """
+    widget = curation_widget
+    widget.add_training_data()
+    viewer = widget.viewer
+
+    points = Points(
+        np.array([[16, 17, 18], [13, 14, 15]]), name="selection_points"
+    )
+    viewer.add_layer(points)
+
+    points.selected_data = [0]
+    widget.mark_as_cell()
+    points.selected_data = [1]
+    widget.mark_as_non_cell()
+
+    layer_data = sample_data.load_sample()
+    widget.signal_layer = Image(layer_data[0][0], **layer_data[0][1])
+    widget.background_layer = None
+
+    widget.output_directory = tmp_path
+    widget.save_training_data(prompt_for_directory=False, block=True)
+
+    assert (tmp_path / "training.yaml").exists()
+    # Only the signal channel is saved for both cells and non_cells.
+    assert len(list((tmp_path / "non_cells").glob("*.tif"))) == 1
+    assert len(list((tmp_path / "cells").glob("*.tif"))) == 1
+
+    with open(tmp_path / "training.yaml") as yaml_file:
+        contents = yaml.safe_load(yaml_file)
+    assert all(section["bg_channel"] == -1 for section in contents["data"])
+
+
 @pytest.fixture
 def valid_curation_widget(make_napari_viewer) -> CurationWidget:
     """
@@ -195,9 +231,42 @@ def test_check_image_data_missing_signal(valid_curation_widget):
         valid_curation_widget.signal_layer = None
         valid_curation_widget.check_image_data_for_extraction()
         show_info.assert_called_once_with(
-            "Please ensure both signal and background images are loaded "
-            "into napari, and selected in the sidebar. "
+            "Please ensure a signal image is loaded into napari, and "
+            "selected in the sidebar. "
         )
+
+
+def test_check_image_data_without_background(valid_curation_widget):
+    """
+    A signal image without a background is extractable.
+    """
+    valid_curation_widget.background_layer = None
+    assert valid_curation_widget.check_image_data_for_extraction()
+
+
+def test_deselect_background_resets_layer(valid_curation_widget):
+    """
+    Clearing the background selection drops the stale layer, so a
+    single-channel run stays reachable from the sidebar.
+    """
+    widget = valid_curation_widget
+    assert widget.background_layer is not None
+    widget.background_image_choice.setCurrentText("")
+    widget.set_background_image()
+    assert widget.background_layer is None
+
+
+def test_deselect_signal_resets_layer(valid_curation_widget):
+    """
+    Clearing the signal selection drops the stale layer.
+    """
+    widget = valid_curation_widget
+    widget.signal_image_choice.setCurrentText("Signal")
+    widget.set_signal_image()
+    assert widget.signal_layer is not None
+    widget.signal_image_choice.setCurrentText("")
+    widget.set_signal_image()
+    assert widget.signal_layer is None
 
 
 def test_valid_widget_has_extractable_data(valid_curation_widget):
