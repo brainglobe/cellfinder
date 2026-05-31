@@ -63,3 +63,19 @@ def test_valid_weights_allows_detection(
 
     mock_prep_weights.assert_called_once()
     mock_detect.assert_called_once()
+
+
+@patch("cellfinder.core.detect.detect.main", return_value=[])
+@patch("cellfinder.core.tools.prep.prep_model_weights")
+def test_optional_background_allows_detection(
+    mock_prep_weights, mock_detect, signal_array
+):
+    mock_prep_weights.return_value = "/some/weights.h5"
+
+    main(
+        signal_array=signal_array,
+        background_array=None,
+        voxel_sizes=(5, 2, 2),
+    )
+
+    mock_detect.assert_called_once()
