@@ -20,15 +20,17 @@ MODEL_URL = "https://gin.g-node.org/cellfinder/models/raw/master"
 model_filenames = {
     "resnet50_tv": "resnet50_tv.h5",
     "resnet50_all": "resnet50_weights.h5",
+    "resnet50_1ch": "resnet50_1ch.h5",
 }
 
 model_hashes = {
     "resnet50_tv": "63d36af456640590ba6c896dc519f9f29861015084f4c40777a54c18c1fc4edd",  # noqa: E501
     "resnet50_all": None,
+    "resnet50_1ch": None,
 }
 
 
-model_type = Literal["resnet50_tv", "resnet50_all"]
+model_type = Literal["resnet50_tv", "resnet50_all", "resnet50_1ch"]
 
 
 def download_models(
