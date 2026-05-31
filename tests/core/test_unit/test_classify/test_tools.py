@@ -38,3 +38,11 @@ def test_incorrect_weights(mock_build_model):
             inference=True,
             model_weights="incorrect_weights.h5",
         )
+
+
+@pytest.mark.parametrize("num_channels", [1, 2])
+def test_get_model_num_channels(num_channels):
+    model = tools.get_model(
+        network_depth="18-layer", num_channels=num_channels
+    )
+    assert tools.model_input_channels(model) == num_channels
