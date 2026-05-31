@@ -15,6 +15,7 @@ def get_model(
     learning_rate: float = 0.0001,
     inference: bool = False,
     continue_training: bool = False,
+    num_channels: int = 2,
 ) -> Model:
     """Returns the correct model based on the arguments passed
     :param existing_model: An existing, trained model. This is returned if it
@@ -28,6 +29,9 @@ def get_model(
     by using the default one
     :param continue_training: If True, will ensure that a trained model
     exists. E.g. by using the default one
+    :param num_channels: Number of input channels for a freshly built model.
+    ``2`` for the standard signal+background model, ``1`` for a single-channel
+    (signal-only) model. Ignored when ``existing_model`` is loaded.
     :return: A keras model
 
     """
@@ -37,6 +41,7 @@ def get_model(
     else:
         logger.debug(f"Creating a new instance of model: {network_depth}")
         model = build_model(
+            shape=(50, 50, 20, num_channels),
             network_depth=network_depth,
             learning_rate=learning_rate,
         )
