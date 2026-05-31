@@ -8,6 +8,11 @@ from cellfinder.core import logger
 from cellfinder.core.classify.resnet import build_model, layer_type
 
 
+def model_input_channels(model: Model) -> int:
+    """The number of input channels the model expects."""
+    return tuple(model.inputs[0].shape)[-1]
+
+
 def get_model(
     existing_model: Optional[os.PathLike] = None,
     model_weights: Optional[os.PathLike] = None,
