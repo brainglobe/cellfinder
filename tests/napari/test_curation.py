@@ -7,6 +7,11 @@ import pytest
 import yaml
 from napari.layers import Image, Points
 
+from cellfinder.core.train.train_yaml import (
+    get_tiff_files,
+    make_tiff_lists,
+    parse_yaml,
+)
 from cellfinder.napari import sample_data
 from cellfinder.napari.curation import CurationWidget
 from cellfinder.napari.sample_data import load_sample
@@ -153,6 +158,11 @@ def test_save_training_data_without_background(curation_widget, tmp_path):
     with open(tmp_path / "training.yaml") as yaml_file:
         contents = yaml.safe_load(yaml_file)
     assert all(section["bg_channel"] == -1 for section in contents["data"])
+
+    # The training data is consumed by core training as single-channel.
+    tiff_files = get_tiff_files(parse_yaml([tmp_path / "training.yaml"]))
+    filenames, _ = make_tiff_lists(tiff_files)
+    assert all(len(img_files) == 1 for img_files, _ in filenames)
 
 
 @pytest.fixture
