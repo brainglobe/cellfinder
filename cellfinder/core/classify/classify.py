@@ -17,9 +17,11 @@ from cellfinder.core.classify.cube_generator import (
 )
 from cellfinder.core.classify.tools import get_model
 from cellfinder.core.train.train_yaml import depth_type, models
+from cellfinder.core.tools.tools import deprecate_positional_args
 
-
+@deprecate_positional_args
 def main(
+    *,
     points: List[Cell],
     signal_array: types.array,
     background_array: types.array,
@@ -35,7 +37,6 @@ def main(
     network_depth: depth_type,
     max_workers: int = 3,
     pin_memory: bool = False,
-    *,
     callback: Optional[Callable[[int], None]] = None,
 ) -> List[Cell]:
     """
