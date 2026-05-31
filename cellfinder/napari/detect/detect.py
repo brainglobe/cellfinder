@@ -80,15 +80,16 @@ def get_heavy_widgets(
         auto_call=True,
     )
     def background_image_opt(
-        background_image: napari.layers.Image,
+        background_image: Optional[napari.layers.Image],
     ):
         """
         magicgui widget for setting the background image parameter.
 
         Parameters
         ----------
-        background_image : napari.layers.Image
-             Image layer without labelled cells
+        background_image : napari.layers.Image, optional
+             Image layer without labelled cells. Leave empty to run
+             single-channel detection and classification.
         """
         options["background_image"] = background_image
 
@@ -393,8 +394,20 @@ def detect_widget() -> FunctionGui:
 
         signal_image = options["signal_image"]
 
-        if signal_image is None or options["background_image"] is None:
-            show_info("Both signal and background images must be specified.")
+        if signal_image is None:
+            show_info("Signal image must be specified.")
+            return
+
+        if (
+            options["background_image"] is None
+            and not skip_classification
+            and use_pre_trained_weights
+        ):
+            show_info(
+                "Running without a background image needs a single-channel "
+                "model. Enable 'Skip classification', or uncheck 'Use "
+                "pre-trained weights' and select a single-channel model."
+            )
             return
 
         detected_cells = []
@@ -411,9 +424,14 @@ def detect_widget() -> FunctionGui:
                 options["cell_layer"], Cell.UNKNOWN
             )
 
+        background_image = options["background_image"]
+        background_array = (
+            background_image.data if background_image is not None else None
+        )
+
         data_inputs = DataInputs(
             signal_image.data,
-            options["background_image"].data,
+            background_array,
             voxel_size_z,
             voxel_size_y,
             voxel_size_x,

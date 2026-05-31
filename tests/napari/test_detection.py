@@ -53,6 +53,7 @@ def test_run_detect(get_detect_widget, analyse_local):
     """
     with patch("cellfinder.napari.detect.detect.Worker") as worker:
         get_detect_widget.analyse_local.value = analyse_local
+        get_detect_widget.skip_classification.value = True
         get_detect_widget.call_button.clicked()
         assert worker.called
 

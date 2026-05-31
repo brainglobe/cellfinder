@@ -15,7 +15,7 @@ class DataInputs(InputContainer):
     """Container for image-related ("Data") inputs."""
 
     signal_array: numpy.ndarray = None
-    background_array: numpy.ndarray = None
+    background_array: Optional[numpy.ndarray] = None
     voxel_size_z: float = 5
     voxel_size_y: float = 2
     voxel_size_x: float = 2
