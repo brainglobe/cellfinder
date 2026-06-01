@@ -469,10 +469,8 @@ class CurationWidget(QWidget):
             if self.output_directory is not None:
                 self.__prep_directories_for_save()
                 self.__extract_cubes(block=block)
-                self.__save_yaml_file()
-                show_info("Done")
-
-            self.update_status_label("Ready")
+                if block:
+                    self.__finish_save()
 
     def __prep_directories_for_save(self):
         self.yaml_filename = self.output_directory / "training.yaml"
@@ -511,11 +509,21 @@ class CurationWidget(QWidget):
                     break
         else:
 
-            @thread_worker(connect={"yielded": self.update_progress})
+            @thread_worker(
+                connect={
+                    "yielded": self.update_progress,
+                    "returned": lambda _: self.__finish_save(),
+                }
+            )
             def extract_cubes():
                 yield from self.extract_cubes()
 
             extract_cubes()
+
+    def __finish_save(self):
+        self.__save_yaml_file()
+        show_info("Done")
+        self.update_status_label("Ready")
 
     def is_data_extractable(self) -> bool:
         if (
