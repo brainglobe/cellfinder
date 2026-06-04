@@ -17,7 +17,10 @@ from cellfinder.core.classify.cube_generator import (
 )
 from cellfinder.core.classify.tools import get_model, model_input_channels
 from cellfinder.core.tools.image_processing import dataset_mean_std
-from cellfinder.core.tools.tools import deprecate_positional_args
+from cellfinder.core.tools.tools import (
+    deprecate_positional_args,
+    validate_dimensions,
+)
 from cellfinder.core.train.train_yaml import depth_type, models
 
 
@@ -39,6 +42,7 @@ def main(
     network_depth: depth_type,
     max_workers: int = 3,
     pin_memory: bool = False,
+    dimensions: int = 3,
     callback: Optional[Callable[[int], None]] = None,
     normalize_channels: bool = False,
     normalization_n_sampling_planes: int = 50,
@@ -93,6 +97,10 @@ def main(
         stay in the CPU RAM while the GPU uses it. I.e. there's enough RAM.
         Otherwise, if there's a risk of the RAM being paged, it shouldn't be
         used. Defaults to False.
+    dimensions: int
+        Whether to classify using a 3D network (a z-stack cube, the default)
+        or a 2D network (a single plane). When 2, 2D signal/background arrays
+        are accepted and a depth-1 cube is squeezed to a 2D (y, x, c) image.
     callback : Callable[int], optional
         A callback function that is called during classification. Called with
         the batch number once that batch has been classified.
@@ -106,10 +114,33 @@ def main(
         dataset of 200 planes means every fourth plane will be used. Defaults
         to 50.
     """
-    if signal_array.ndim != 3:
-        raise IOError("Signal data must be 3D")
-    if background_array is not None and background_array.ndim != 3:
-        raise IOError("Background data must be 3D")
+    validate_dimensions(dimensions)
+
+    if dimensions == 3:
+        if signal_array.ndim != 3:
+            raise IOError("Signal data must be 3D")
+        if background_array is not None and background_array.ndim != 3:
+            raise IOError("Background data must be 3D")
+    else:
+        if signal_array.ndim not in (2, 3):
+            raise IOError("2D classification needs 2D or 3D signal data")
+        if background_array is not None and background_array.ndim not in (
+            2,
+            3,
+        ):
+            raise IOError("2D classification needs 2D or 3D background data")
+        if signal_array.ndim == 2:
+            signal_array = signal_array[np.newaxis, ...]
+        if background_array is not None and background_array.ndim == 2:
+            background_array = background_array[np.newaxis, ...]
+        if len(voxel_sizes) == 2:
+            voxel_sizes = (1.0, *voxel_sizes)
+        if len(network_voxel_sizes) == 2:
+            network_voxel_sizes = (1.0, *network_voxel_sizes)
+        # the depth-1 cube must not be rescaled in z, so match the z voxel
+        # size to the data and pull a single plane
+        network_voxel_sizes = (voxel_sizes[0], *network_voxel_sizes[1:])
+        cube_depth = 1
 
     # Too many workers doesn't increase speed, and uses huge amounts of RAM
     workers = get_num_processes(min_free_cpu_cores=n_free_cpus)
@@ -169,12 +200,17 @@ def main(
         model_weights = trained_model
         trained_model = None
 
+    model_shape = None
+    if dimensions == 2:
+        model_shape = (cube_height, cube_width, dataset.num_channels)
     model = get_model(
         existing_model=trained_model,
         model_weights=model_weights,
         network_depth=models[network_depth],
         inference=True,
         num_channels=dataset.num_channels,
+        dimensions=dimensions,
+        shape=model_shape,
     )
 
     model_channels = model_input_channels(model)
@@ -188,6 +224,7 @@ def main(
         )
 
     logger.info("Running inference")
+    z_axis = dataset.output_axis_order.index("z") + 1
     if workers:
         dataset.start_dataset_thread(workers)
     try:
@@ -200,6 +237,13 @@ def main(
             smoothing=1 / (25 * max(1, workers)),
             mininterval=0.5,
         ):
+            if dimensions == 2:
+                if data.shape[z_axis] != 1:
+                    raise ValueError(
+                        "2D classification expects a depth-1 cube, but got "
+                        f"depth {data.shape[z_axis]}"
+                    )
+                data = data.squeeze(z_axis)
             output = model(data)
             # in original keras, it seemed to held on to the output until the
             # end (possibly on GPU). This causes resources issues for very

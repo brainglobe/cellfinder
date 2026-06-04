@@ -1,5 +1,5 @@
 import os
-from typing import Optional
+from typing import Optional, Tuple
 
 import keras
 from keras import Model
@@ -21,6 +21,8 @@ def get_model(
     inference: bool = False,
     continue_training: bool = False,
     num_channels: int = 2,
+    dimensions: int = 3,
+    shape: Optional[Tuple[int, ...]] = None,
 ) -> Model:
     """Returns the correct model based on the arguments passed
     :param existing_model: An existing, trained model. This is returned if it
@@ -36,19 +38,38 @@ def get_model(
     exists. E.g. by using the default one
     :param num_channels: Number of input channels for a freshly built model.
     ``2`` for the standard signal+background model, ``1`` for a single-channel
-    (signal-only) model. Ignored when ``existing_model`` is loaded.
+    (signal-only) model. Ignored when ``existing_model`` is loaded or when
+    ``shape`` is given.
+    :param dimensions: Whether to build a 3D or 2D network when creating a new
+    model.
+    :param shape: The input shape (excluding the batch dimension) to use when
+    creating a new model. If None, a default for `dimensions` with
+    `num_channels` channels is used.
     :return: A keras model
 
     """
     if existing_model is not None or network_depth is None:
         logger.debug(f"Loading model: {existing_model}")
         model = keras.models.load_model(existing_model)
+        expected_rank = dimensions + 2
+        if len(model.input_shape) != expected_rank:
+            raise ValueError(
+                f"Loaded model expects {len(model.input_shape) - 2}D input, "
+                f"but dimensions={dimensions} was requested."
+            )
     else:
         logger.debug(f"Creating a new instance of model: {network_depth}")
+        if shape is None:
+            shape = (
+                (50, 50, num_channels)
+                if dimensions == 2
+                else (50, 50, 20, num_channels)
+            )
         model = build_model(
-            shape=(50, 50, 20, num_channels),
             network_depth=network_depth,
             learning_rate=learning_rate,
+            dimensions=dimensions,
+            shape=shape,
         )
         if inference or continue_training:
             logger.debug(
