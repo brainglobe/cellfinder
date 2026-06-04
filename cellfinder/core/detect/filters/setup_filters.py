@@ -235,6 +235,15 @@ class DetectionSettings:
     during any iteration.
     """
 
+    dimensions: int = 3
+    """
+    Whether the data is processed as 3d (a z-stack) or 2d (a single plane).
+
+    When 2, the 3d ball filter is collapsed to a single plane (`ball_z_size`
+    is forced to 1 voxel), which makes the spherical kernel a 2d disk and the
+    structure detection operate per-plane.
+    """
+
     def __getstate__(self):
         d = self.__dict__.copy()
         # when sending across processes, we need to be able to pickle. This
@@ -429,6 +438,9 @@ class DetectionSettings:
     @cached_property
     def ball_z_size(self) -> int:
         """The `ball_z_size_um`, but in voxels."""
+        if self.dimensions == 2:
+            return 1
+
         ball_z_size = int(round(self.ball_z_size_um / self.z_pixel_size))
 
         if not ball_z_size:
