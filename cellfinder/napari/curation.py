@@ -34,6 +34,7 @@ from cellfinder.core.classify.cube_generator import (
     CuboidBatchSampler,
 )
 from cellfinder.core.tools.image_processing import dataset_mean_std
+from cellfinder.core.tools.tools import validate_dimensions
 
 # Constants used throughout
 WINDOW_HEIGHT = 750
@@ -58,8 +59,11 @@ class CurationWidget(QWidget):
         n_free_cpus: int = 2,
         save_empty_cubes: bool = False,
         max_ram=None,
+        dimensions: int = 3,
     ):
         super(CurationWidget, self).__init__()
+
+        validate_dimensions(dimensions)
 
         self.non_cells_to_extract: list[Cell] = []
         self.cells_to_extract: list[Cell] = []
@@ -67,6 +71,7 @@ class CurationWidget(QWidget):
         self.cube_depth = cube_depth
         self.cube_width = cube_width
         self.cube_height = cube_height
+        self.dimensions = dimensions
         self.network_voxel_sizes = network_voxel_sizes
         self.n_free_cpus = n_free_cpus
         self.save_empty_cubes = save_empty_cubes
@@ -254,32 +259,42 @@ class CurationWidget(QWidget):
             self._set_normalization_n_sampling_planes
         )
         self.norm_sampling_box = box_norm
+        self.dimensions_choice, _ = add_combobox(
+            self.load_data_layout,
+            "Data dimensionality",
+            ["3D", "2D"],
+            7,
+            callback=self.set_dimensions,
+        )
+        self.dimensions_choice.setCurrentText(
+            "2D" if self.dimensions == 2 else "3D"
+        )
         self.training_data_cell_choice, _ = add_combobox(
             self.load_data_layout,
             "Training data (cells)",
             self.point_layer_names,
-            7,
+            8,
             callback=self.set_training_data_cell,
         )
         self.training_data_non_cell_choice, _ = add_combobox(
             self.load_data_layout,
             "Training_data (non_cells)",
             self.point_layer_names,
-            row=8,
+            row=9,
             callback=self.set_training_data_non_cell,
         )
         self.mark_as_cell_button = add_button(
             "Mark as cell(s)",
             self.load_data_layout,
             self.mark_as_cell,
-            row=9,
+            row=10,
             tooltip="Mark all selected points as non cell. Shortcut: 'c'",
         )
         self.mark_as_non_cell_button = add_button(
             "Mark as non cell(s)",
             self.load_data_layout,
             self.mark_as_non_cell,
-            row=9,
+            row=10,
             column=1,
             tooltip="Mark all selected points as non cell. Shortcut: 'x'",
         )
@@ -287,13 +302,13 @@ class CurationWidget(QWidget):
             "Add training data layers",
             self.load_data_layout,
             self.add_training_data,
-            row=10,
+            row=11,
         )
         self.save_training_data_button = add_button(
             "Save training data",
             self.load_data_layout,
             self.save_training_data,
-            row=10,
+            row=11,
             column=1,
         )
         self.load_data_layout.setColumnMinimumWidth(0, COLUMN_WIDTH)
@@ -304,6 +319,13 @@ class CurationWidget(QWidget):
     def setup_keybindings(self):
         self.viewer.bind_key("c", self.mark_as_cell, overwrite=True)
         self.viewer.bind_key("x", self.mark_as_non_cell, overwrite=True)
+
+    def set_dimensions(self):
+        """
+        Set whether cubes are extracted for 2D or 3D training.
+        """
+        text = self.dimensions_choice.currentText()
+        self.dimensions = 2 if text == "2D" else 3
 
     def set_signal_image(self):
         """
@@ -737,22 +759,28 @@ class CurationWidget(QWidget):
             "non_cells": self.no_cell_cube_dir,
         }
 
-        background_array = self.background_data
-
         for cell_type in ["cells", "non_cells"]:
             cell_type_output_directory = directories[cell_type]
             cell_list = to_extract[cell_type]
 
             self.update_status_label(f"Saving {cell_type}...")
 
+            cube_depth = 1 if self.dimensions == 2 else self.cube_depth
+            signal = self.signal_layer.data
+            background = self.background_data
+            if self.dimensions == 2:
+                if signal.ndim == 2:
+                    signal = signal[np.newaxis, ...]
+                if background is not None and background.ndim == 2:
+                    background = background[np.newaxis, ...]
             cube_generator = CuboidArrayDataset(
-                signal_array=self.signal_layer.data,
-                background_array=background_array,
+                signal_array=signal,
+                background_array=background,
                 points=cell_list,
                 data_voxel_sizes=self.voxel_sizes,
                 network_voxel_sizes=self.network_voxel_sizes,
                 network_cuboid_voxels=(
-                    self.cube_depth,
+                    cube_depth,
                     self.cube_height,
                     self.cube_width,
                 ),
