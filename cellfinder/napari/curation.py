@@ -409,13 +409,10 @@ class CurationWidget(QWidget):
                         f"points to layer: {destination_layer.name}"
                     )
 
-                    for selected_point in layer.selected_data:
-                        destination_layer.data = np.vstack(
-                            (
-                                destination_layer.data,
-                                layer.data[selected_point],
-                            )
-                        )
+                    selected_points = layer.data[list(layer.selected_data)]
+                    destination_layer.data = np.vstack(
+                        (destination_layer.data, selected_points)
+                    )
 
                 else:
                     show_info(
