@@ -302,3 +302,29 @@ def test_get_axis_reordering():
     assert torch.allclose(reordered, manual_reordered)
     # check data is not already symmetric in x, y
     assert data[0, 1, 5] != data[1, 0, 5]
+
+
+def test_deprecate_positional_args():
+    import warnings
+
+    @tools.deprecate_positional_args
+    def sample_func(*, a, b=2):
+        return a + b
+
+    # 1. Keyword arguments only (No warning)
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always")
+        assert sample_func(a=5) == 7
+        assert len(w) == 0
+
+    # 2. Positional arguments (Warning)
+    with pytest.warns(DeprecationWarning, match="Calling sample_func with positional arguments is deprecated"):
+        assert sample_func(5, 3) == 8
+
+    # 3. Both positional and keyword for same argument (TypeError)
+    with pytest.raises(TypeError, match="sample_func got multiple values for argument 'a'"):
+        sample_func(5, a=10)
+
+    # 4. Too many positional arguments (TypeError)
+    with pytest.raises(TypeError, match="sample_func takes 2 positional arguments but 3 were given"):
+        sample_func(1, 2, 3)
