@@ -318,13 +318,21 @@ def test_deprecate_positional_args():
         assert len(w) == 0
 
     # 2. Positional arguments (Warning)
-    with pytest.warns(DeprecationWarning, match="Calling sample_func with positional arguments is deprecated"):
+    with pytest.warns(
+        DeprecationWarning,
+        match="Calling sample_func with positional arguments is deprecated",
+    ):
         assert sample_func(5, 3) == 8
 
     # 3. Both positional and keyword for same argument (TypeError)
-    with pytest.raises(TypeError, match="sample_func got multiple values for argument 'a'"):
+    with pytest.raises(
+        TypeError, match="sample_func got multiple values for argument 'a'"
+    ):
         sample_func(5, a=10)
 
     # 4. Too many positional arguments (TypeError)
-    with pytest.raises(TypeError, match="sample_func takes 2 positional arguments but 3 were given"):
+    with pytest.raises(
+        TypeError,
+        match="sample_func takes 2 positional arguments but 3 were given",
+    ):
         sample_func(1, 2, 3)
