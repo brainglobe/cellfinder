@@ -368,8 +368,8 @@ def deprecate_positional_args(func):
         if args:
             warnings.warn(
                 f"Calling {func.__name__} with positional arguments "
-                "is deprecated and will be removed after a 6-12 month "
-                "grace period. Please use keyword arguments.",
+                "is deprecated and will be removed in early 2027. "
+                "Please use keyword arguments.",
                 DeprecationWarning,
                 stacklevel=2,
             )
