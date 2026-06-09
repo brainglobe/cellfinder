@@ -140,8 +140,10 @@ def main(
         model_weights = trained_model
         trained_model = None
 
-    if trained_model is None and model_weights and (
-        Path(model_weights).suffix == ".keras"
+    if (
+        trained_model is None
+        and model_weights
+        and (Path(model_weights).suffix == ".keras")
     ):
         trained_model = model_weights
         model_weights = None
