@@ -6,10 +6,13 @@ from brainglobe_utils.cells.cells import Cell
 
 from cellfinder.core import logger, types
 from cellfinder.core.download.download import model_type
+from cellfinder.core.tools.tools import deprecate_positional_args
 from cellfinder.core.train.train_yaml import depth_type
 
 
+@deprecate_positional_args
 def main(
+    *,
     signal_array: types.array,
     background_array: Optional[types.array],
     voxel_sizes: Tuple[float, float, float],
@@ -45,7 +48,6 @@ def main(
     n_splitting_iter: int = 10,
     n_sds_above_mean_tiled_thresh: float = 10,
     tiled_thresh_tile_size: float | None = None,
-    *,
     detect_callback: Optional[Callable[[int], None]] = None,
     classify_callback: Optional[Callable[[int], None]] = None,
     detect_finished_callback: Optional[Callable[[list], None]] = None,
@@ -242,19 +244,19 @@ def main(
         if len(points) > 0:
             logger.info("Running classification")
             points = classify.main(
-                points,
-                signal_array,
-                background_array,
-                n_free_cpus,
-                voxel_sizes,
-                network_voxel_sizes,
-                classification_batch_size,
-                cube_height,
-                cube_width,
-                cube_depth,
-                trained_model,
-                model_weights,
-                network_depth,
+                points=points,
+                signal_array=signal_array,
+                background_array=background_array,
+                n_free_cpus=n_free_cpus,
+                voxel_sizes=voxel_sizes,
+                network_voxel_sizes=network_voxel_sizes,
+                batch_size=classification_batch_size,
+                cube_height=cube_height,
+                cube_width=cube_width,
+                cube_depth=cube_depth,
+                trained_model=trained_model,
+                model_weights=model_weights,
+                network_depth=network_depth,
                 callback=classify_callback,
                 max_workers=classification_max_workers,
             )

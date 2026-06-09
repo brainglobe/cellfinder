@@ -77,9 +77,9 @@ def count_matched_cells(cell_test, cell_validation, tolerance=0):
 def test_detection_full(signal_array, background_array, free_cpus, request):
     n_free_cpus = request.getfixturevalue(free_cpus)
     cells_test = main(
-        signal_array,
-        background_array,
-        voxel_sizes,
+        signal_array=signal_array,
+        background_array=background_array,
+        voxel_sizes=voxel_sizes,
         n_free_cpus=n_free_cpus,
     )
     cells_validation = cell_io.get_cells(cells_validation_xml)
@@ -128,9 +128,9 @@ def test_detection_small_planes(
     )
 
     main(
-        signal_array[0:n_planes],
-        background_array[0:n_planes],
-        voxel_sizes,
+        signal_array=signal_array[0:n_planes],
+        background_array=background_array[0:n_planes],
+        voxel_sizes=voxel_sizes,
         ball_z_size=5,
         n_free_cpus=no_free_cpus,
     )
@@ -155,9 +155,9 @@ def test_callbacks(signal_array, background_array, no_free_cpus):
         points_found.append(points)
 
     main(
-        signal_array,
-        background_array,
-        voxel_sizes,
+        signal_array=signal_array,
+        background_array=background_array,
+        voxel_sizes=voxel_sizes,
         detect_callback=detect_callback,
         classify_callback=classify_callback,
         detect_finished_callback=detect_finished_callback,
@@ -181,9 +181,9 @@ def test_callbacks(signal_array, background_array, no_free_cpus):
 def test_synthetic_data(synthetic_bright_spots, no_free_cpus):
     signal_array, background_array = synthetic_bright_spots
     detected = main(
-        signal_array,
-        background_array,
-        voxel_sizes,
+        signal_array=signal_array,
+        background_array=background_array,
+        voxel_sizes=voxel_sizes,
         n_free_cpus=no_free_cpus,
     )
     assert len(detected) == 8
@@ -201,7 +201,11 @@ def test_data_dimension_error(ndim):
     )
 
     with pytest.raises(ValueError, match="Input data must be 3D"):
-        main(signal_array, background_array, voxel_sizes)
+        main(
+            signal_array=signal_array,
+            background_array=background_array,
+            voxel_sizes=voxel_sizes,
+        )
 
 
 @pytest.mark.parametrize("device", ["cuda", "cpu"])
@@ -234,8 +238,8 @@ def test_signal_data_types(synthetic_single_spot, no_free_cpus, dtype, device):
 
     background_array = background_array.astype(dtype)
     detected = main(
-        signal_array,
-        background_array,
+        signal_array=signal_array,
+        background_array=background_array,
         n_sds_above_mean_thresh=1.0,
         voxel_sizes=voxel_sizes,
         n_free_cpus=no_free_cpus,
@@ -257,7 +261,7 @@ def test_detection_scipy_torch(synthetic_single_spot, no_free_cpus, device):
     signal_array = signal_array.astype(np.float32)
 
     detected = detect_main(
-        signal_array,
+        signal_array=signal_array,
         n_sds_above_mean_thresh=1.0,
         voxel_sizes=voxel_sizes,
         n_free_cpus=no_free_cpus,
@@ -286,7 +290,7 @@ def test_detection_cluster_splitting(
     signal_array = signal_array.astype(np.float32)
 
     detected = detect_main(
-        signal_array,
+        signal_array=signal_array,
         n_sds_above_mean_thresh=1.0,
         voxel_sizes=voxel_sizes,
         n_free_cpus=no_free_cpus,
@@ -313,7 +317,7 @@ def test_detection_cell_too_large(synthetic_spot_clusters, no_free_cpus):
     signal_array[6 : 6 + 6, 40 : 40 + 26, 40 : 40 + 26] = 1000
 
     detected = detect_main(
-        signal_array,
+        signal_array=signal_array,
         n_sds_above_mean_thresh=1.0,
         voxel_sizes=(5, 2, 2),
         soma_diameter=20,
@@ -331,7 +335,7 @@ def test_detection_plane_too_small(synthetic_spot_clusters, y, x):
     # plane smaller than ball filter kernel should cause error
     with pytest.raises(InvalidVolume):
         detect_main(
-            np.zeros((5, y, x)),
+            signal_array=np.zeros((5, y, x)),
             n_sds_above_mean_thresh=1.0,
             voxel_sizes=(1, 1, 1),
             ball_xy_size=50,

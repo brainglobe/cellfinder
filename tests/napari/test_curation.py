@@ -248,3 +248,30 @@ def test_show_info_called_on_empty_training_layer(
     )
     assert valid_curation_widget.check_training_data_exists()
     mock_info_notification.assert_called_once()
+
+
+def test_async_save_done_only_after_cubes_written(
+    valid_curation_widget, tmp_path, qtbot
+):
+    """
+    Regression test for the async save path: the "Done" notification and the
+    training.yaml file must only appear after the cubes have been written, not
+    immediately when the export worker is launched.
+    """
+    widget = valid_curation_widget
+    widget.output_directory = tmp_path
+
+    with patch("cellfinder.napari.curation.show_info") as show_info:
+        widget.save_training_data(prompt_for_directory=False, block=False)
+
+        # Worker has only just been launched: nothing should be saved yet.
+        assert show_info.call_args_list == []
+        assert not (tmp_path / "training.yaml").exists()
+
+        qtbot.waitUntil(
+            lambda: (tmp_path / "training.yaml").exists(), timeout=20000
+        )
+
+        show_info.assert_called_once_with("Done")
+        assert len(list((tmp_path / "cells").glob("*.tif"))) == 2
+        assert len(list((tmp_path / "non_cells").glob("*.tif"))) == 2
