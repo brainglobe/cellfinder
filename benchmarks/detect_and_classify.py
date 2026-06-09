@@ -21,4 +21,9 @@ logger.debug(f"Signal array size = {array_size_MB:.02f} MB")
 
 if __name__ == "__main__":
     # Run detection & classification
-    main(signal_array, background_array, voxel_sizes, n_free_cpus=0)
+    main(
+        signal_array=signal_array,
+        background_array=background_array,
+        voxel_sizes=voxel_sizes,
+        n_free_cpus=0,
+    )
