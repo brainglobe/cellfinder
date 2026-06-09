@@ -37,3 +37,38 @@ def test_classify_channel_mismatch_raises(synthetic_single_spot, mocker):
             None,
             "50",
         )
+
+
+def test_classify_keras_weights_loaded_as_model(synthetic_single_spot, mocker):
+    """A ``.keras`` path passed as weights is loaded as a full model."""
+    signal_array, _background, c_xyz = synthetic_single_spot
+    signal_array = signal_array.astype(np.uint16)
+    points = [Cell(tuple(int(c) for c in c_xyz), Cell.UNKNOWN)]
+
+    fake_model = MagicMock()
+    fake_model.inputs = [MagicMock(shape=(None, 50, 50, 20, 2))]
+    get_model = mocker.patch(
+        "cellfinder.core.classify.classify.get_model",
+        return_value=fake_model,
+    )
+
+    with pytest.raises(ValueError, match="expects 2-channel input but 1"):
+        classify.main(
+            points,
+            signal_array,
+            None,
+            0,
+            (5, 1, 1),
+            (5, 1, 1),
+            1,
+            50,
+            50,
+            20,
+            None,
+            "model.keras",
+            "50",
+        )
+
+    _, kwargs = get_model.call_args
+    assert kwargs["existing_model"] == "model.keras"
+    assert kwargs["model_weights"] is None
