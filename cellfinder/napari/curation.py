@@ -663,9 +663,11 @@ class CurationWidget(QWidget):
         self.non_cells_to_extract = list(set(self.non_cells_to_extract))
 
     def _calculate_channel_stats(self):
+        self.update_status_label("Estimating signal mean/std...")
         signal_stat = dataset_mean_std(
             self.signal_layer.data, self.normalization_n_sampling_planes
         )
+        self.update_status_label("Estimating background mean/std...")
         bg_stat = dataset_mean_std(
             self.background_layer.data, self.normalization_n_sampling_planes
         )
