@@ -16,8 +16,8 @@ from cellfinder.core.classify.cube_generator import (
     CuboidBatchSampler,
 )
 from cellfinder.core.classify.tools import get_model
-from cellfinder.core.tools.tools import deprecate_positional_args
 from cellfinder.core.tools.image_processing import dataset_mean_std
+from cellfinder.core.tools.tools import deprecate_positional_args
 from cellfinder.core.train.train_yaml import depth_type, models
 
 
@@ -41,7 +41,7 @@ def main(
     pin_memory: bool = False,
     callback: Optional[Callable[[int], None]] = None,
     normalize_channels: bool = False,
-    normalization_down_sampling: int = 32,
+    normalization_n_sampling_planes: int = 50,
 ) -> List[Cell]:
     """
     Parameters
@@ -97,11 +97,12 @@ def main(
     normalize_channels : bool
         If True, the signal and background data will be each normalized
         to a mean of zero and standard deviation of 1. Defaults to False.
-    normalization_down_sampling : int
+    normalization_n_sampling_planes : int
         If `normalize_channels` is True, the data arrays will be down-sampled
-        in the first axis by this value before calculating their statistics.
-        E.g. a value of 2 means every second plane will be used. Defaults to
-        32.
+        in the first axis to use approximately this many planes -- equally
+        spaced, before calculating their mean/std. E.g. a value of 50 for a
+        dataset of 200 planes means every fourth plane will be used. Defaults
+        to 50.
     """
     if signal_array.ndim != 3:
         raise IOError("Signal data must be 3D")
@@ -120,10 +121,10 @@ def main(
     if normalize_channels:
         logger.debug("Calculating channels norms")
         signal_normalization = dataset_mean_std(
-            signal_array, normalization_down_sampling
+            signal_array, normalization_n_sampling_planes
         )
         background_normalization = dataset_mean_std(
-            background_array, normalization_down_sampling
+            background_array, normalization_n_sampling_planes
         )
         logger.debug(
             f"Signal channel norm is: {signal_normalization}. "

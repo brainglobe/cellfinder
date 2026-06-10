@@ -53,7 +53,7 @@ def main(
     detect_finished_callback: Optional[Callable[[list], None]] = None,
     classification_max_workers: int = 3,
     normalize_channels: bool = False,
-    normalization_down_sampling: int = 32,
+    normalization_n_sampling_planes: int = 50,
 ) -> List[Cell]:
     """
     Parameters
@@ -192,11 +192,12 @@ def main(
         If True, the signal and background data will be each normalized
         to a mean of zero and standard deviation of 1 before classification.
         Defaults to False.
-    normalization_down_sampling : int
+    normalization_n_sampling_planes : int
         If `normalize_channels` is True, the data arrays will be down-sampled
-        in the first axis by this value before calculating their statistics
-        before classification. E.g. a value of 2 means every second plane will
-        be used. Defaults to 32.
+        in the first axis to use approximately this many planes -- equally
+        spaced, before calculating their mean/std. E.g. a value of 50 for a
+        dataset of 200 planes means every fourth plane will be used. Defaults
+        to 50.
     """
     from cellfinder.core.classify import classify
     from cellfinder.core.detect import detect
@@ -267,7 +268,7 @@ def main(
                 callback=classify_callback,
                 max_workers=classification_max_workers,
                 normalize_channels=normalize_channels,
-                normalization_down_sampling=normalization_down_sampling,
+                normalization_n_sampling_planes=normalization_n_sampling_planes,
             )
         else:
             logger.info("No candidates, skipping classification")

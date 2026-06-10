@@ -264,7 +264,7 @@ def detect_widget() -> FunctionGui:
         trained_model: Optional[Path],
         classification_batch_size: int,
         normalize_channels: bool,
-        normalization_down_sampling: int,
+        normalization_n_sampling_planes: int,
         misc_options,
         start_plane: int,
         end_plane: int,
@@ -354,10 +354,11 @@ def detect_widget() -> FunctionGui:
             mean/std of the image channels before classification. If the model
             used for classification was trained on normalized data, this should
             be enabled.
-        normalization_down_sampling : int
+        normalization_n_sampling_planes : int
             If normalizing the cubes is enabled, the input channels will be
-            down-sampled in z by this value before calculating their mean/std.
-            E.g. a value of 2 means every second z plane will be used.
+            down-sampled in z to use approximately this many planes -- equally
+            spaced, before calculating their mean/std. E.g. a value of 50 for a
+            dataset of 200 planes means every fourth plane will be used.
         start_plane : int
             First plane to process (to process a subset of the data)
         end_plane : int
@@ -442,7 +443,7 @@ def detect_widget() -> FunctionGui:
             trained_model,
             classification_batch_size,
             normalize_channels,
-            normalization_down_sampling,
+            normalization_n_sampling_planes,
         )
 
         if analyse_local:

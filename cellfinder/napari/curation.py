@@ -70,7 +70,7 @@ class CurationWidget(QWidget):
         self.save_empty_cubes = save_empty_cubes
         self.max_ram = max_ram
         self.voxel_sizes = [5, 2, 2]
-        self.normalization_down_sampling = 32
+        self.normalization_n_sampling_planes = 50
         self.batch_size = 64
         self.viewer = viewer
 
@@ -179,8 +179,8 @@ class CurationWidget(QWidget):
     def _set_voxel_size(self, value: float, index: int) -> None:
         self.voxel_sizes[index] = value
 
-    def _set_normalization_down_sampling(self, value: int) -> None:
-        self.normalization_down_sampling = value
+    def _set_normalization_n_sampling_planes(self, value: int) -> None:
+        self.normalization_n_sampling_planes = value
 
     def add_loading_panel(self, row: int, column: int = 0):
         self.load_data_panel = QGroupBox("Load data")
@@ -242,16 +242,18 @@ class CurationWidget(QWidget):
 
         box_norm = add_int_box(
             self.load_data_layout,
-            self.normalization_down_sampling,
+            self.normalization_n_sampling_planes,
             1,
-            1000,
-            "Normalization down-sampling",
+            10000,
+            "Normalization sampling planes",
             6,
-            tooltip="Down-sampling factor of the z-dimension used to calculate"
-            " the mean and std of the dataset. Used to normalize the "
-            "channels during training.",
+            tooltip="Number of z-planes, equally spaced in the z-axis, used to"
+            " estimate the mean and std of the dataset. Used to normalize the "
+            "extracted cubes during training, if enabled there.",
         )
-        box_norm.valueChanged.connect(self._set_normalization_down_sampling)
+        box_norm.valueChanged.connect(
+            self._set_normalization_n_sampling_planes
+        )
         self.norm_sampling_box = box_norm
         self.training_data_cell_choice, _ = add_combobox(
             self.load_data_layout,
@@ -662,10 +664,10 @@ class CurationWidget(QWidget):
 
     def _calculate_channel_stats(self):
         signal_stat = dataset_mean_std(
-            self.signal_layer.data, self.normalization_down_sampling
+            self.signal_layer.data, self.normalization_n_sampling_planes
         )
         bg_stat = dataset_mean_std(
-            self.background_layer.data, self.normalization_down_sampling
+            self.background_layer.data, self.normalization_n_sampling_planes
         )
         return signal_stat, bg_stat
 

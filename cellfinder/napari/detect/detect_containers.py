@@ -130,7 +130,7 @@ class ClassificationInputs(InputContainer):
     trained_model: Optional[Path] = Path.home()
     classification_batch_size: int = 64
     normalize_channels: bool = False
-    normalization_down_sampling: int = 32
+    normalization_n_sampling_planes: int = 50
 
     def as_core_arguments(self) -> dict:
         args = super().as_core_arguments()
@@ -156,9 +156,9 @@ class ClassificationInputs(InputContainer):
                 value=cls.defaults()["normalize_channels"],
                 label="Normalize data",
             ),
-            normalization_down_sampling=dict(
-                value=cls.defaults()["normalization_down_sampling"],
-                label="Normalization down-sampling",
+            normalization_n_sampling_planes=dict(
+                value=cls.defaults()["normalization_n_sampling_planes"],
+                label="Normalization sampling planes",
             ),
         )
 

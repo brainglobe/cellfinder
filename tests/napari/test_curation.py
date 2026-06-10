@@ -47,10 +47,12 @@ def test_update_voxel_size(curation_widget: CurationWidget):
     assert curation_widget.voxel_sizes == [3, 4, 5]
 
 
-def test_update_normalization_down_sampling(curation_widget: CurationWidget):
-    assert curation_widget.normalization_down_sampling == 32
+def test_update_normalization_n_sampling_planes(
+    curation_widget: CurationWidget,
+):
+    assert curation_widget.normalization_n_sampling_planes == 50
     curation_widget.norm_sampling_box.setValue(8)
-    assert curation_widget.normalization_down_sampling == 8
+    assert curation_widget.normalization_n_sampling_planes == 8
 
 
 def test_cell_marking(curation_widget, tmp_path):

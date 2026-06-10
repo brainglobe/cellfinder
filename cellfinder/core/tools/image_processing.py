@@ -93,7 +93,7 @@ def pad_center_2d(img, x_size=None, y_size=None, pad_mode="edge"):
 
 def dataset_mean_std(
     dataset: types.array,
-    sampling_factor: int,
+    n_sampling_planes: int,
     show_progress: bool = True,
     progress_desc="Estimating channel mean/std",
 ) -> tuple[float, float]:
@@ -102,10 +102,10 @@ def dataset_mean_std(
     Welford's online algorithm, sampling it along its first dimension.
 
     :param dataset: A 3d dataset, such as a numpy or dask array.
-    :param sampling_factor: The sampling factor to sample along the first
-        dimension. E.g. if the dataset is 10 x 100 x 100 and `sampling_factor`
-        is 3, then we'll use planes 0, 3, 6, 9 for the calculation (40_000
-        data points).
+    :param n_sampling_planes: The minimum number of planes to use to sample
+        along the first dimension. E.g. if the dataset is 10 x 100 x 100 and
+        `n_sampling_planes` is 4, then we round the sampling step to use
+        planes 0, 2, 4, 6, and 8 (or similar slicing) for the calculation.
     :param show_progress: Whether to show a progress bar during the
         calculation.
     :param progress_desc: If showing a progress bar, the description to use in
@@ -123,8 +123,15 @@ def dataset_mean_std(
     mean = np.array(0, dtype=np.float64)
     sq_dist = np.array(0, dtype=np.float64)
 
+    # always err to sampling more planes. E.g. if dataset is 125 planes and
+    # n_sampling_planes is 50, step is 2 to get 62 planes
+    if len(dataset) <= n_sampling_planes:
+        step = 1
+    else:
+        step = int(len(dataset) / n_sampling_planes)
+
     # make it a list so tqdm will know its full size
-    samples = list(range(0, len(dataset), sampling_factor))
+    samples = list(range(0, len(dataset), step))
     if show_progress:
         it = tqdm.tqdm(samples, desc=progress_desc, unit="planes")
     else:
