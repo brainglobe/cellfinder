@@ -44,7 +44,7 @@ def test_dataset_mean_std(progress):
     data = np.random.normal(100, 10, (10, 10, 10))
 
     mean, std = img_tools.dataset_mean_std(
-        data, sampling_factor=2, show_progress=progress
+        data, n_sampling_planes=5, show_progress=progress
     )
     # give it enough room for estimation error
     assert 90 < mean < 110
