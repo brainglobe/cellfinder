@@ -283,6 +283,13 @@ def training_parse():
         help="The multiplier by which to multiply the previous learning rate "
         "at the epochs listed in lr_schedule.",
     )
+    training_parser.add_argument(
+        "--normalize-channels",
+        dest="normalize_channels",
+        action="store_true",
+        help="Normalize the training data to the mean/std of the datasets "
+        "from which the cubes came from",
+    )
 
     training_parser = misc_parse(training_parser)
     training_parser = download_parser(training_parser)
@@ -309,8 +316,25 @@ def get_tiff_files(yaml_contents: list[dict]) -> list[list[TiffFile]]:
     for d in yaml_contents:
         if d["bg_channel"] < 0:
             channels = [d["signal_channel"]]
+            channels_metadata = [
+                {},
+            ]
         else:
             channels = [d["signal_channel"], d["bg_channel"]]
+            channels_metadata = [{}, {}]
+
+        if "signal_mean" in d:
+            channels_metadata[0] = {
+                "mean": float(d["signal_mean"]),
+                "std": float(d["signal_std"]),
+            }
+        # if we have norm for signal we must have for background
+        if "signal_mean" in d and d["bg_channel"] >= 0:
+            channels_metadata[1] = {
+                "mean": float(d["bg_mean"]),
+                "std": float(d["bg_std"]),
+            }
+
         if "cell_def" in d and d["cell_def"]:
             ch1_tiffs = [
                 os.path.join(d["cube_dir"], f)
@@ -321,11 +345,14 @@ def get_tiff_files(yaml_contents: list[dict]) -> list[list[TiffFile]]:
                 TiffList(
                     find_relevant_tiffs(ch1_tiffs, d["cell_def"]),
                     channels,
+                    channels_metadata,
                     d["type"],
                 )
             )
         else:
-            tiff_lists.append(TiffDir(d["cube_dir"], channels, d["type"]))
+            tiff_lists.append(
+                TiffDir(d["cube_dir"], channels, channels_metadata, d["type"])
+            )
 
     tiff_files = [tiff_dir.make_tifffile_list() for tiff_dir in tiff_lists]
     return tiff_files
@@ -333,14 +360,14 @@ def get_tiff_files(yaml_contents: list[dict]) -> list[list[TiffFile]]:
 
 def make_tiff_lists(
     tiff_files: list[list[TiffFile]],
-) -> tuple[list[list[str]], list[Cell]]:
+) -> tuple[list[tuple[list[str], list[dict]]], list[Cell]]:
 
     cells = []
     filenames = []
 
     for group in tiff_files:
         for image in group:
-            filenames.append(image.img_files)
+            filenames.append((image.img_files, image.channels_metadata))
             cells.append(image.as_cell())
 
     return filenames, cells
@@ -381,22 +408,39 @@ def cli():
         epochs=args.epochs,
         lr_schedule=args.lr_schedule,
         lr_multiplier=args.lr_multiplier,
+        normalize_channels=args.normalize_channels,
     )
 
 
 def get_dataloader(
     cells: list[Cell],
-    filenames: list[list[str]],
+    filenames: list[tuple[list[str], list[dict]]],
     batch_size: int,
     n_processes: int,
     pin_memory: bool,
     auto_shuffle: bool,
     augment: bool,
     augment_likelihood: float,
+    normalize_channels: bool,
 ) -> tuple[DataLoader, CuboidTiffDataset]:
+    points_filenames = [f[0] for f in filenames]
+
+    points_norm = None
+    if normalize_channels:
+        points_norm = []
+        for names, channels_norm in filenames:
+            # check the first channel for metadata. We expect all or none
+            # of the channels to have metadata
+            if not channels_norm[0]:
+                raise ValueError(f"Data mean and std not found for {names}")
+
+            norms = [(ch["mean"], ch["std"]) for ch in channels_norm]
+            points_norm.append(norms)
+
     dataset = CuboidTiffDataset(
         points=cells,
-        points_filenames=filenames,
+        points_filenames=points_filenames,
+        points_normalization=points_norm,
         data_voxel_sizes=(1, 1, 1),
         network_voxel_sizes=(1, 1, 1),
         network_cuboid_voxels=(CUBE_DEPTH, CUBE_HEIGHT, CUBE_WIDTH),
@@ -445,6 +489,7 @@ def run(
     lr_schedule: Sequence[int] = (),
     lr_multiplier: float = 0.1,
     augment_likelihood: float = 0.9,
+    normalize_channels: bool = False,
 ):
     start_time = datetime.now()
 
@@ -502,6 +547,7 @@ def run(
             auto_shuffle=False,
             augment=False,
             augment_likelihood=augment_likelihood,
+            normalize_channels=normalize_channels,
         )
 
         # for saving checkpoints
@@ -522,6 +568,7 @@ def run(
         auto_shuffle=True,
         augment=not no_augment,
         augment_likelihood=augment_likelihood,
+        normalize_channels=normalize_channels,
     )
     callbacks = []
 

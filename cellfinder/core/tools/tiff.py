@@ -26,11 +26,13 @@ class TiffList:
         self,
         ch1_list: list[str],
         channels: list[int],
+        channels_metadata: list[dict],
         label: str | None = None,
     ):
         self.ch1_list = natsort.natsorted(ch1_list)
         self.label = label
         self.channels = channels
+        self.channels_metadata = channels_metadata
 
     def make_tifffile_list(self) -> list["TiffFile"]:
         """
@@ -46,7 +48,10 @@ class TiffList:
         ]
 
         tiff_files = [
-            TiffFile(tiffFile, self.channels, self.label) for tiffFile in files
+            TiffFile(
+                tiffFile, self.channels, self.channels_metadata, self.label
+            )
+            for tiffFile in files
         ]
         return tiff_files
 
@@ -60,6 +65,7 @@ class TiffDir(TiffList):
         self,
         tiff_dir: str,
         channels: list[int],
+        channels_metadata: list[dict],
         label: str | None = None,
     ):
         super(TiffDir, self).__init__(
@@ -69,6 +75,7 @@ class TiffDir(TiffList):
                 if f.lower().endswith("ch" + str(channels[0]) + ".tif")
             ],
             channels,
+            channels_metadata,
             label,
         )
 
@@ -88,10 +95,12 @@ class TiffFile:
         self,
         path: str,
         channels: list[int],
+        channels_metadata: list[dict],
         label: str | None = None,
     ):
         self.path = path
         self.channels = channels
+        self.channels_metadata = channels_metadata
         self.label = label
 
     def files_exist(self):
