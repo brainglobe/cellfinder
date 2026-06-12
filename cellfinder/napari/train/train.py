@@ -59,6 +59,7 @@ def training_widget() -> FunctionGui:
         training_options: dict,
         continue_training: bool,
         augment: bool,
+        normalize_channels: bool,
         tensorboard: bool,
         save_checkpoints: bool,
         save_progress: bool,
@@ -95,6 +96,10 @@ def training_widget() -> FunctionGui:
             this will continue from the pretrained model
         augment : bool
             Augment the training data to improve generalisation
+        normalize_channels : bool
+            Whether to normalize the cubes by the mean/std of their origin
+            dataset. If True, the yaml files must include the mean/std of
+            the origin dataset.
         tensorboard : bool
             Log to output_directory/tensorboard
         save_checkpoints : bool
@@ -148,6 +153,7 @@ def training_widget() -> FunctionGui:
             test_fraction,
             lr_schedule,
             lr_multiplier,
+            normalize_channels,
         )
 
         misc_training_inputs = MiscTrainingInputs(number_of_free_cpus)
