@@ -15,6 +15,7 @@ from cellfinder.core.download.download import (
     DEFAULT_DOWNLOAD_DIRECTORY,
     amend_user_configuration,
     download_models,
+    model_filenames,
     model_type,
 )
 from cellfinder.core.tools.source_files import user_specific_configuration_path
@@ -49,8 +50,11 @@ def prep_models(
             amend_user_configuration(new_model_path=model_path)
 
         model_weights = get_model_weights(config_file)
-        if not model_weights.exists():
-            logger.debug("Model weights do not exist, downloading")
+        if (
+            not model_weights.exists()
+            or model_weights.name != model_filenames[model_name]
+        ):
+            logger.debug(f"Downloading model weights for {model_name}")
             model_path = download_models(model_name, install_path)
             amend_user_configuration(new_model_path=model_path)
             model_weights = get_model_weights(config_file)
