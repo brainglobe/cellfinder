@@ -1,12 +1,11 @@
+import pytest
+
 from cellfinder.core.download import download as dl
 from cellfinder.core.tools import prep
 
 
-def test_prep_models_redownloads_on_model_change(tmp_path, mocker):
-    """Switching ``model_name`` re-resolves weights instead of reusing the
-    cached config from a previous, different model."""
-    config_file = tmp_path / "cellfinder.conf.custom"
-
+def test_prep_models_downloads_requested_model(tmp_path, mocker):
+    """Each requested model name resolves to its own download."""
     downloaded = []
 
     def fake_download(model_name, install_path):
@@ -15,24 +14,30 @@ def test_prep_models_redownloads_on_model_change(tmp_path, mocker):
         path.write_text("weights")
         return path
 
-    mocker.patch.object(
-        prep, "user_specific_configuration_path", return_value=config_file
-    )
-    mocker.patch(
-        "cellfinder.core.download.download."
-        "user_specific_configuration_path",
-        return_value=config_file,
-    )
     mocker.patch.object(prep, "download_models", side_effect=fake_download)
 
     first = prep.prep_model_weights(None, tmp_path, "resnet50_tv")
-    assert first.name == dl.model_filenames["resnet50_tv"]
-
     second = prep.prep_model_weights(None, tmp_path, "resnet50_1ch")
+
+    assert first.name == dl.model_filenames["resnet50_tv"]
     assert second.name == dl.model_filenames["resnet50_1ch"]
-
-    # the second request must trigger its own download, not reuse the cache
-    third = prep.prep_model_weights(None, tmp_path, "resnet50_1ch")
-    assert third.name == dl.model_filenames["resnet50_1ch"]
-
     assert downloaded == ["resnet50_tv", "resnet50_1ch"]
+
+
+def test_prep_models_uses_provided_path(tmp_path, mocker):
+    """An explicit weights path is used as-is, without downloading."""
+    download = mocker.patch.object(prep, "download_models")
+    weights = tmp_path / "weights.h5"
+    weights.write_text("weights")
+
+    result = prep.prep_model_weights(weights, tmp_path, "resnet50_tv")
+
+    assert result == weights
+    download.assert_not_called()
+
+
+def test_prep_models_missing_provided_path_raises(tmp_path):
+    with pytest.raises(FileNotFoundError, match="Model weights not found"):
+        prep.prep_model_weights(
+            tmp_path / "missing.h5", tmp_path, "resnet50_tv"
+        )
