@@ -510,7 +510,7 @@ def run(
     )
 
     filenames_train, cells_train = make_tiff_lists(tiff_files)
-    num_channels = len(filenames_train[0])
+    num_channels = len(filenames_train[0][0])
 
     model = get_model(
         existing_model=trained_model,
