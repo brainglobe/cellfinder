@@ -54,10 +54,10 @@ def test_structure_splitting(signal_array, background_array, no_free_cpus):
     Smoke test to ensure structure splitting code doesn't break.
     """
     main(
-        signal_array,
-        background_array,
-        voxel_sizes,
-        n_free_cpus=no_free_cpus,
+        signal_array=signal_array,
+        background_array=background_array,
+        voxel_sizes=voxel_sizes,
+        n_free_cpus=0,
     )
 
 

@@ -341,3 +341,53 @@ def get_axis_reordering(
     for value in out_order:
         indices.append(in_order.index(value))
     return indices
+
+
+def deprecate_positional_args(func):
+    """
+    Decorator to deprecate positional arguments and map them to
+    keyword arguments. Raises a DeprecationWarning if any positional
+    arguments are used.
+    """
+    import inspect
+    import warnings
+
+    sig = inspect.signature(func)
+    param_names = [
+        name
+        for name, param in sig.parameters.items()
+        if param.kind
+        not in (
+            inspect.Parameter.VAR_POSITIONAL,
+            inspect.Parameter.VAR_KEYWORD,
+        )
+    ]
+
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        if args:
+            warnings.warn(
+                f"Calling {func.__name__} with positional arguments "
+                "is deprecated and will be removed in early 2027. "
+                "Please use keyword arguments.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+            for i, arg in enumerate(args):
+                if i < len(param_names):
+                    if param_names[i] in kwargs:
+                        raise TypeError(
+                            f"{func.__name__} got multiple values "
+                            f"for argument '{param_names[i]}'"
+                        )
+                    kwargs[param_names[i]] = arg
+                else:
+                    raise TypeError(
+                        f"{func.__name__} takes {len(param_names)} "
+                        f"positional arguments but {len(args)} were given"
+                    )
+
+            return func(**kwargs)
+        return func(**kwargs)
+
+    return wrapper

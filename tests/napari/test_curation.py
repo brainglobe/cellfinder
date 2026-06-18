@@ -4,6 +4,7 @@ from unittest.mock import patch
 import napari
 import numpy as np
 import pytest
+import yaml
 from napari.layers import Image, Points
 
 from cellfinder.napari import sample_data
@@ -44,6 +45,14 @@ def test_update_voxel_size(curation_widget: CurationWidget):
     curation_widget.voxel_sizes_boxes[1].setValue(4)
     curation_widget.voxel_sizes_boxes[2].setValue(5)
     assert curation_widget.voxel_sizes == [3, 4, 5]
+
+
+def test_update_normalization_n_sampling_planes(
+    curation_widget: CurationWidget,
+):
+    assert curation_widget.normalization_n_sampling_planes == 50
+    curation_widget.norm_sampling_box.setValue(8)
+    assert curation_widget.normalization_n_sampling_planes == 8
 
 
 def test_cell_marking(curation_widget, tmp_path):
@@ -95,6 +104,19 @@ def test_cell_marking(curation_widget, tmp_path):
     # Check that two .tif files are saved for both cells and non_cells
     assert len(list((tmp_path / "non_cells").glob("*.tif"))) == 2
     assert len(list((tmp_path / "cells").glob("*.tif"))) == 2
+
+    with open(tmp_path / "training.yaml", "r") as fh:
+        yaml_data = yaml.safe_load(fh)
+
+    for item in yaml_data["data"]:
+        assert "cube_dir" in item
+        assert "signal_channel" in item
+        assert "bg_channel" in item
+        assert "type" in item
+        assert "signal_mean" in item
+        assert "signal_std" in item
+        assert "bg_mean" in item
+        assert "bg_std" in item
 
 
 @pytest.fixture
@@ -248,3 +270,30 @@ def test_show_info_called_on_empty_training_layer(
     )
     assert valid_curation_widget.check_training_data_exists()
     mock_info_notification.assert_called_once()
+
+
+def test_async_save_done_only_after_cubes_written(
+    valid_curation_widget, tmp_path, qtbot
+):
+    """
+    Regression test for the async save path: the "Done" notification and the
+    training.yaml file must only appear after the cubes have been written, not
+    immediately when the export worker is launched.
+    """
+    widget = valid_curation_widget
+    widget.output_directory = tmp_path
+
+    with patch("cellfinder.napari.curation.show_info") as show_info:
+        widget.save_training_data(prompt_for_directory=False, block=False)
+
+        # Worker has only just been launched: nothing should be saved yet.
+        assert show_info.call_args_list == []
+        assert not (tmp_path / "training.yaml").exists()
+
+        qtbot.waitUntil(
+            lambda: (tmp_path / "training.yaml").exists(), timeout=20000
+        )
+
+        show_info.assert_called_once_with("Done")
+        assert len(list((tmp_path / "cells").glob("*.tif"))) == 2
+        assert len(list((tmp_path / "non_cells").glob("*.tif"))) == 2

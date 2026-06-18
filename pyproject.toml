@@ -25,12 +25,16 @@ dependencies = [
     "brainglobe-napari-io>=0.3.4",
     "dask[array]",
     "fancylog>=0.6.0",
+    "magicgui",
+    "napari-ndtiffs",
     "natsort",
     "numba",
     "numpy",
     "scikit-image",
     "scikit-learn",
     "keras>=3.7.0",
+    "pooch >= 1",
+    "qtpy",
     "torch>=2.4.1",
     "tifffile",
     "tqdm",
@@ -43,8 +47,12 @@ dynamic = ["version"]
 cellfinder = "cellfinder.napari:napari.yaml"
 
 [project.optional-dependencies]
+napari = [
+    "napari[all]>=0.6.5",
+]
 dev = [
     "black",
+    "cellfinder[napari]",
     "pre-commit",
     "pyinstrument",
     "pytest-cov",
@@ -52,17 +60,9 @@ dev = [
     "pytest-qt",
     "pytest-timeout",
     "pytest",
+    "PyYAML",
     "tox",
     "pooch >= 1",
-]
-napari = [
-    "brainglobe-napari-io",
-    "magicgui",
-    "napari-ndtiffs",
-    "napari-plugin-engine >= 0.1.4",
-    "napari[pyqt5]>=0.6.5",
-    "pooch >= 1",
-    "qtpy",
 ]
 
 [project.scripts]
