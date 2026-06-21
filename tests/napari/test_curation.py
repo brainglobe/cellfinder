@@ -297,3 +297,71 @@ def test_async_save_done_only_after_cubes_written(
         show_info.assert_called_once_with("Done")
         assert len(list((tmp_path / "cells").glob("*.tif"))) == 2
         assert len(list((tmp_path / "non_cells").glob("*.tif"))) == 2
+
+
+def test_curated_counts(curation_widget):
+    """
+    Checks that the current cell count is shown in the curation cell layer
+    label.
+    """
+    widget = curation_widget
+    widget.add_training_data()
+    viewer = widget.viewer
+
+    cell_layer = widget.training_data_cell_layer
+    cell_label = widget.training_data_cell_label
+    non_cell_layer = widget.training_data_non_cell_layer
+    non_cell_label = widget.training_data_non_cell_label
+
+    # nothing marked yet
+    assert cell_label.text() == "Training data (cells, empty)"
+    assert non_cell_label.text() == "Training data (non-cells, empty)"
+
+    # Add a points layer to select points from
+    points = Points(
+        np.array([[16, 17, 18], [13, 14, 15], [12, 33, 15]]),
+        name="selection_points",
+    )
+    # Adding the layer automatically selects it in the layer list
+    viewer.add_layer(points)
+
+    # Select the first point, and add as a cell
+    points.selected_data = [0]
+    curation_widget.mark_as_cell()
+    assert cell_label.text() == "Training data (cells, 1)"
+    assert non_cell_label.text() == "Training data (non-cells, empty)"
+
+    # Select the second point, and add as a non-cell
+    points.selected_data = [1]
+    curation_widget.mark_as_non_cell()
+    assert cell_label.text() == "Training data (cells, 1)"
+    assert non_cell_label.text() == "Training data (non-cells, 1)"
+
+    # Select the third point, and add as a cell
+    points.selected_data = [2]
+    curation_widget.mark_as_cell()
+    assert cell_label.text() == "Training data (cells, 2)"
+    assert non_cell_label.text() == "Training data (non-cells, 1)"
+
+    # change up the layers, both point to non-cells
+    widget.training_data_cell_choice.setCurrentText(non_cell_layer.name)
+    assert cell_label.text() == "Training data (cells, 1)"
+    assert non_cell_label.text() == "Training data (non-cells, 1)"
+
+    # now non-cells points to cells, they are flipped
+    widget.training_data_non_cell_choice.setCurrentText(cell_layer.name)
+    assert cell_label.text() == "Training data (cells, 1)"
+    assert non_cell_label.text() == "Training data (non-cells, 2)"
+
+    # now check deleting points reverts to empty
+    non_cell_layer.remove([0])
+    assert cell_label.text() == "Training data (cells, empty)"
+    assert non_cell_label.text() == "Training data (non-cells, 2)"
+
+    cell_layer.remove([0])
+    assert cell_label.text() == "Training data (cells, empty)"
+    assert non_cell_label.text() == "Training data (non-cells, 1)"
+
+    cell_layer.remove([0])
+    assert cell_label.text() == "Training data (cells, empty)"
+    assert non_cell_label.text() == "Training data (non-cells, empty)"
