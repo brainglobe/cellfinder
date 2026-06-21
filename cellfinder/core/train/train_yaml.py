@@ -461,6 +461,7 @@ def get_dataloader(
         batch_size=None,
         num_workers=n_processes,
         pin_memory=pin_memory,
+        persistent_workers=True,
     )
     return data_loader, dataset
 
