@@ -206,6 +206,7 @@ def main(
     # in `predictions`) is the same order as the sampler returns the batches.
     # Use that to get the corresponding row in points_arr, which gives us the
     # `index` of the row in the original point in the input points list
+    is_cell = 0
     for arr in sampler:
         for i in arr:
             p_idx = int(dataset.points_arr[i, 4].item())
@@ -215,10 +216,13 @@ def main(
             points_list.append(cell)
             k += 1
 
+            if cell.type == Cell.CELL:
+                is_cell += 1
+
     time_elapsed = datetime.now() - start_time
     logger.info(
-        f"Classification complete - {len(points_list)} points "
-        f"done in : {time_elapsed}"
+        f"Classification complete - {is_cell} / {len(points_list)} points "
+        f"classified as cells in {time_elapsed} seconds"
     )
 
     return points_list
