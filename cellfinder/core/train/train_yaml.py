@@ -39,6 +39,12 @@ from torch.utils.data import DataLoader
 
 import cellfinder.core as package_for_log
 from cellfinder.core import logger
+from cellfinder.core.classify.augment import (
+    RandRange,
+    RandRangeSeq,
+    interval_to_rand_range,
+    interval_to_rand_range_3d,
+)
 from cellfinder.core.classify.cube_generator import (
     CuboidBatchSampler,
     CuboidTiffDataset,
@@ -235,9 +241,69 @@ def training_parse():
         dest="augment_likelihood",
         type=check_positive_float,
         default=0.9,
-        help="Value `[0, 1]` with the probability of a data item being "
-        "augmented. I.e. `0.9` means 90%% of the data will have been "
-        "augmented.",
+        help="A value in [0, 1] with the probability to augment with each "
+        "transformation. Each transformation of each data sample is "
+        "independently sampled with this probability.",
+    )
+    training_parser.add_argument(
+        "--flippable-axis",
+        dest="flippable_axis",
+        nargs="*",
+        default=(0, 1, 2),
+        type=int,
+        help="A list of axes to potentially mirror around its center during "
+        "augmentation. Values corresponds to the z, y, and x axes. "
+        "E.g. if [0, 2] and `augment_likelihood` is 0.3, then axes 0 (z) "
+        "and 2 (x) have each independently a 30%% chance of being flipped "
+        "around their centers.",
+    )
+    training_parser.add_argument(
+        "--rotate-range",
+        dest="rotate_range",
+        nargs=2,
+        default=(-1, 1),
+        type=float,
+        help="The interval we sample during augmentation for each data item to"
+        " get a rotation value to rotate around the center of the sample in "
+        "the x, y, and z axes (by the same value). If the range start and "
+        "end is the same, no rotation is performed. Valid interval is "
+        "`[-360, 360]` degrees.",
+    )
+    training_parser.add_argument(
+        "--translate-range",
+        dest="translate_range",
+        nargs=2,
+        default=(-0.05, 0.05),
+        type=float,
+        help="The interval we sample during augmentation for each data item to"
+        " get a translation value to translate the sample along the x, y, "
+        "and z axes (by the same value). If the range start and end is the "
+        "same, no translation is performed. Meaningful interval is "
+        "`[-1, 1]`, where `0` means none and `1` means translate by a full "
+        "sample size positively.",
+    )
+    training_parser.add_argument(
+        "--scale-range",
+        dest="scale_range",
+        nargs=2,
+        default=(1, 1),
+        type=float,
+        help="The interval we sample during augmentation for each data item to"
+        " get a scaling value to scale the sample from its center in "
+        "the x, y, and z axes (by the same value). If the scale start and "
+        "end is the same, no scaling is performed. Valid interval is "
+        "`(0, inf]`, where `1` is the original scale.",
+    )
+    training_parser.add_argument(
+        "--intensity-range",
+        dest="intensity_range",
+        nargs=2,
+        default=(1, 1),
+        type=float,
+        help="The interval we sample during augmentation for each data item to"
+        " get a multiplication factor to multiply the sample voxels. If the "
+        "range start and end is the same, no multiplication is performed. "
+        "Valid interval is `(0, inf]`, where `1` is the original intensity.",
     )
     training_parser.add_argument(
         "--save-weights",
@@ -386,8 +452,8 @@ def cli():
 
     output_dir = Path(args.output_dir)
     run(
-        output_dir,
-        args.yaml_file,
+        output_dir=output_dir,
+        yaml_file=args.yaml_file,
         n_free_cpus=args.n_free_cpus,
         trained_model=args.trained_model,
         model_weights=args.model_weights,
@@ -409,6 +475,17 @@ def cli():
         lr_schedule=args.lr_schedule,
         lr_multiplier=args.lr_multiplier,
         normalize_channels=args.normalize_channels,
+        flippable_axis=list(set(args.flippable_axis) & {0, 1, 2}),
+        rotate_range=interval_to_rand_range_3d(
+            *args.rotate_range, min_val=-360, max_val=360
+        ),
+        translate_range=interval_to_rand_range_3d(
+            *args.translate_range, min_val=-1, max_val=1
+        ),
+        scale_range=interval_to_rand_range_3d(*args.scale_range, min_val=0),
+        intensity_range=interval_to_rand_range(
+            *args.intensity_range, min_val=0
+        ),
     )
 
 
@@ -422,6 +499,11 @@ def get_dataloader(
     augment: bool,
     augment_likelihood: float,
     normalize_channels: bool,
+    flippable_axis: Sequence[int] = (),
+    rotate_range: RandRangeSeq = None,
+    translate_range: RandRangeSeq = None,
+    scale_range: RandRangeSeq = None,
+    intensity_range: RandRange = None,
 ) -> tuple[DataLoader, CuboidTiffDataset]:
     points_filenames = [f[0] for f in filenames]
 
@@ -448,6 +530,11 @@ def get_dataloader(
         target_output="label",
         augment=augment,
         augment_likelihood=augment_likelihood,
+        flippable_axis=flippable_axis,
+        rotate_range=rotate_range,
+        translate_range=translate_range,
+        scale_range=scale_range,
+        intensity_range=intensity_range,
     )
     # we use our own sampler so we can control the ordering
     sampler = CuboidBatchSampler(
@@ -490,6 +577,11 @@ def run(
     lr_multiplier: float = 0.1,
     augment_likelihood: float = 0.9,
     normalize_channels: bool = False,
+    flippable_axis: Sequence[int] = (0, 1, 2),
+    rotate_range: RandRangeSeq = ((-1, 1),) * 3,
+    translate_range: RandRangeSeq = (-0.05, 0.05),
+    scale_range: RandRangeSeq = None,
+    intensity_range: RandRange = None,
 ):
     start_time = datetime.now()
 
@@ -559,6 +651,12 @@ def run(
         validation_dataset = None
         base_checkpoint_file_name = "-epoch.{epoch:02d}"
 
+    logger.info(
+        f"Augmenting = {not no_augment}. Probability = {augment_likelihood}. "
+        f"Flippable axes = {flippable_axis}. Rotation range = {rotate_range}. "
+        f"Translation range = {translate_range}. Scale range = {scale_range}. "
+        f"Intensity range = {intensity_range}."
+    )
     training_data_loader, training_dataset = get_dataloader(
         cells_train,
         filenames_train,
@@ -569,6 +667,11 @@ def run(
         augment=not no_augment,
         augment_likelihood=augment_likelihood,
         normalize_channels=normalize_channels,
+        flippable_axis=flippable_axis,
+        rotate_range=rotate_range,
+        translate_range=translate_range,
+        scale_range=scale_range,
+        intensity_range=intensity_range,
     )
     callbacks = []
 

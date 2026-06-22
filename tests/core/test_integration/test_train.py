@@ -1,4 +1,5 @@
 import os
+from unittest.mock import patch
 
 import pytest
 from pytest_mock.plugin import MockerFixture
@@ -12,6 +13,96 @@ cell_cubes = os.path.join(data_dir, "cells")
 non_cell_cubes = os.path.join(data_dir, "non_cells")
 training_yaml_file = os.path.join(data_dir, "training.yaml")
 training_yaml_file_stats = os.path.join(data_dir, "training_with_stats.yaml")
+
+
+def test_cmd_args(mocker: MockerFixture, tmpdir):
+    """
+    Checks that training is run with expected set of parameters.
+    """
+    with patch("cellfinder.core.train.train_yaml.run") as train_yaml:
+        yaml_files = "a_file_1.yaml", "a_file_2.yaml"
+
+        train_args = [
+            "cellfinder_train",
+            "-y",
+            yaml_files[0],
+            yaml_files[1],
+            "-o",
+            str(tmpdir),
+            "--epochs",
+            "77",
+            "--batch-size",
+            "27",
+            "--test-fraction",
+            "0.21",
+            "--learning-rate",
+            "0.0023",
+            "--lr-schedule",
+            "12",
+            "37",
+            "57",
+            "--lr-multiplier",
+            "0.61",
+            "--augment-likelihood",
+            "0.83",
+            "--flippable-axis",
+            "0",
+            "2",
+            "--rotate-range",
+            "33",
+            "157",
+            "--translate-range",
+            "-0.33",
+            "0.47",
+            "--scale-range",
+            "0.67",
+            "1.37",
+            "--intensity-range",
+            "0.49",
+            "1.83",
+            "--n-free-cpus",
+            "7",
+        ]
+
+        mocker.patch("sys.argv", train_args)
+        train_run()
+
+        train_yaml.assert_called_once()
+        called_kwargs = train_yaml.call_args.kwargs
+
+        assert str(called_kwargs["output_dir"]) == str(tmpdir)
+        assert list(called_kwargs["yaml_file"]) == list(yaml_files)
+        assert called_kwargs["epochs"] == 77
+        assert called_kwargs["batch_size"] == 27
+        assert called_kwargs["test_fraction"] == 0.21
+        assert called_kwargs["learning_rate"] == 0.0023
+        assert list(called_kwargs["lr_schedule"]) == [12, 37, 57]
+        assert called_kwargs["lr_multiplier"] == 0.61
+        assert called_kwargs["augment_likelihood"] == 0.83
+        assert set(called_kwargs["flippable_axis"]) == {0, 2}
+        assert (
+            list(called_kwargs["rotate_range"])
+            == [
+                (33, 157),
+            ]
+            * 3
+        )
+        assert (
+            list(called_kwargs["translate_range"])
+            == [
+                (-0.33, 0.47),
+            ]
+            * 3
+        )
+        assert (
+            list(called_kwargs["scale_range"])
+            == [
+                (0.67, 1.37),
+            ]
+            * 3
+        )
+        assert list(called_kwargs["intensity_range"]) == [0.49, 1.83]
+        assert called_kwargs["n_free_cpus"] == 7
 
 
 EPOCHS = "2"

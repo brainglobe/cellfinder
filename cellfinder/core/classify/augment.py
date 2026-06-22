@@ -1,3 +1,4 @@
+import math
 from typing import Literal, Sequence
 
 import torch
@@ -8,7 +9,49 @@ from cellfinder.core.tools.tools import get_axis_reordering, random_bool
 
 DIM = Literal["x", "y", "z", "c"]
 AXIS = Literal["x", "y", "z"]
-RandRange = Sequence[float] | Sequence[tuple[float, float]] | None
+RandRangeSeq = Sequence[tuple[float, float]] | None
+RandRange = tuple[float, float] | None
+
+
+def interval_to_rand_range_3d(
+    a: float,
+    b: float,
+    min_val: float = float("-inf"),
+    max_val: float = float("inf"),
+) -> RandRangeSeq:
+    """
+    Converts an interval to a 3d interval accepted by `DataAugmentation`.
+    The interval is replicated 3 times so all 3 axes have the same interval.
+
+    The interval extent is forced to the specified min/max. If the interval
+    ends are misordered or they are the same, it returns None.
+    """
+    a = max(min_val, min(max_val, a))
+    b = max(min_val, min(max_val, b))
+    if math.isclose(a, b) or b < a:
+        return None
+    return [
+        (a, b),
+    ] * 3
+
+
+def interval_to_rand_range(
+    a: float,
+    b: float,
+    min_val: float = float("-inf"),
+    max_val: float = float("inf"),
+) -> RandRange:
+    """
+    Converts an interval to an interval accepted by `DataAugmentation`.
+
+    The interval extent is forced to the specified min/max. If the interval
+    ends are misordered or they are the same, it returns None.
+    """
+    a = max(min_val, min(max_val, a))
+    b = max(min_val, min(max_val, b))
+    if math.isclose(a, b) or b < a:
+        return None
+    return a, b
 
 
 class DataAugmentation:
@@ -63,33 +106,33 @@ class DataAugmentation:
     :param translate_range: The per-axis translation factor. If None there's no
         translation. Otherwise, it's a sequence of size 3 corresponding to the
         data axis in ``data_dim_order`` (channel axis is excluded). Each
-        element is either a float or a 2-tuple of floats indicating the
+        element is a 2-tuple of floats indicating the
         translation for that axis. Floats are in the ``[-1, 1]`` interval,
         where ``-1`` means negative translation by a full ``volume_size`` of
-        that axis and zero means no translation. A single float means there's
-        a ``augment_likelihood`` of the given axis to be translated by that
-        value. A 2-tuple of floats means there's a ``augment_likelihood`` of
-        the given axis to be translated to a random value in that interval.
+        that axis and zero means no translation. There's an
+        ``augment_likelihood`` of the given axis to be translated to a random
+        value in that interval.
     :param scale_range: The per-axis scaling factor. If None there's no
         scaling. Otherwise, it's a sequence of size 3 corresponding to the data
         axis in ``data_dim_order`` (channel axis is excluded). Each element is
-        either a float or a 2-tuple of floats indicating the scaling for
-        that axis. Floats are in the ``(0, inf)`` interval, where ``1`` means
-        unscaled. A single float means there's a ``augment_likelihood`` of the
-        given axis to be scaled by that value. A 2-tuple of floats means
-        there's a ``augment_likelihood`` of the given axis to be scaled to a
-        random value in that interval.
+        a 2-tuple of floats indicating the scaling for that axis. Floats are in
+        the ``(0, inf)`` interval, where ``1`` means unscaled. There's a
+        ``augment_likelihood`` of the given axis to be scaled to a random value
+        in that interval.
     :param rotate_range: The per-axis rotation factor in radians. If None
         there's no rotation. Otherwise, it's a sequence of size 3 corresponding
         to the data axis in ``data_dim_order`` (channel axis is excluded). Each
-        element is either a float or a 2-tuple of floats indicating the
-        rotation **around** that axis. Floats are in the ``[0, 2pi)`` interval,
-        where the value indicates a clockwise or counter-clockwise rotation
+        element is a 2-tuple of floats indicating the rotation **around** that
+        axis. Floats are in the ``[-360, 360]`` interval, where the value
+        indicates a clockwise or counter-clockwise rotation
         (depending on if it's x/y or z axis) in radians around that axis. And
-        where zero means no rotation. A single float means there's a
-        ``augment_likelihood`` of a rotation around the given axis by that
-        value. A 2-tuple of floats means there's an ``augment_likelihood`` of a
+        where zero means no rotation. There's an ``augment_likelihood`` of a
         rotation around the given axis by a random value in that interval.
+    :param intensity_range: The voxels multiplication factor. If None
+        it's the raw volume. Otherwise, it's a 2-tuple with the range of
+        floats to use to multiply the volume's voxels. Floats are
+        in the ``[0, inf)`` interval. There's an ``augment_likelihood``
+        of multiplying by a random value in that interval.
     """
 
     DIM_ORDER = "c", "y", "x", "z"
@@ -135,25 +178,20 @@ class DataAugmentation:
     dimensions of the input data (excluding the channel dimension)..
     """
 
-    _asked_affine: bool
-    """If the any of the affine transformations were requested."""
-
     _is_isotropic: bool
     """
     Whether the input data is isotropic (excluding the channel dimension).
     """
 
-    _do_affine: bool
-    """
-    After randomization, if we should do affine transformation on the next
-    augmentation call based on the random value.
-    """
+    augment_likelihood: float = 0
+    """The likelihood to use for each augmentation randomization. See above."""
 
-    _affine: RandAffine
+    _rotate_trans: RandAffine = None
     """The RandAffine used to do the affine transformations."""
 
-    augment_likelihood: float
-    """The likelihood to use for each augmentation randomization. See above."""
+    _translate_trans: RandAffine = None
+
+    _scale_trans: RandAffine = None
 
     _flippable_axis: Sequence[int]
     """
@@ -161,11 +199,9 @@ class DataAugmentation:
     randomly flipped.
     """
 
-    _axes_to_flip: Sequence[int]
-    """
-    After randomization, which of the axes to actually flip in the next
-    augmentation call.
-    """
+    _intensity_range: RandRange = None
+
+    _augmentations_to_do: set[str]
 
     def __init__(
         self,
@@ -173,14 +209,12 @@ class DataAugmentation:
         data_dim_order: tuple[DIM, DIM, DIM, DIM],
         augment_likelihood: float,
         flippable_axis: Sequence[int] = (),
-        translate_range: RandRange = None,
-        scale_range: RandRange = None,
-        rotate_range: RandRange = None,
+        translate_range: RandRangeSeq = None,
+        scale_range: RandRangeSeq = None,
+        rotate_range: RandRangeSeq = None,
+        intensity_range: RandRange = None,
     ):
         volume_values = list(volume_size.values())
-        self._asked_affine = bool(
-            translate_range or scale_range or rotate_range
-        )
         self._is_isotropic = max(volume_values) == min(volume_values)
         self._isotropic_volume_size = (max(volume_values),) * 3
 
@@ -192,22 +226,36 @@ class DataAugmentation:
         self._compute_data_reordering(data_dim_order)
 
         # do prob = 1 because we decide when to apply the affine later
-        self._affine = RandAffine(
-            prob=1,
-            rotate_range=self._fix_rotate_range(rotate_range),
-            shear_range=None,
-            translate_range=self._fix_translate_range(translate_range),
-            scale_range=self._fix_scale_range(scale_range),
-            cache_grid=True,
-            spatial_size=self._isotropic_volume_size,
-            lazy=False,
-        )
+        if rotate_range is not None:
+            self._rotate_trans = RandAffine(
+                prob=1,
+                rotate_range=self._fix_rotate_range(rotate_range),
+                cache_grid=True,
+                spatial_size=self._isotropic_volume_size,
+                lazy=False,
+            )
+        if translate_range is not None:
+            self._translate_trans = RandAffine(
+                prob=1,
+                translate_range=self._fix_translate_range(translate_range),
+                cache_grid=True,
+                spatial_size=self._isotropic_volume_size,
+                lazy=False,
+            )
+        if scale_range is not None:
+            self._scale_trans = RandAffine(
+                prob=1,
+                scale_range=self._fix_scale_range(scale_range),
+                cache_grid=True,
+                spatial_size=self._isotropic_volume_size,
+                lazy=False,
+            )
 
         self._flippable_axis = self._fix_flippable_axis(flippable_axis)
+        self._intensity_range = intensity_range
         self.augment_likelihood = augment_likelihood
 
-        self._axes_to_flip = []
-        self._do_affine = False
+        self._augmentations_to_do = set()
 
     def _compute_data_reordering(
         self, data_dim_order: tuple[DIM, DIM, DIM, DIM]
@@ -235,9 +283,9 @@ class DataAugmentation:
     ) -> Sequence[int]:
         """
         Users provide the axis in ``data_dim_order``, but during augmentation
-        we expect the data to have been re-ordered to ``DIM_ORDER``. So we
+        we expect the data to have been re-ordered to ``AXIS_ORDER``. So we
         transform and return the input ``flippable_axis`` from
-        ``data_dim_order`` to ``DIM_ORDER`` so it can be directly used.
+        ``data_dim_order`` to ``AXIS_ORDER`` so it can be directly used.
         """
         if not flippable_axis:
             return flippable_axis
@@ -250,27 +298,26 @@ class DataAugmentation:
             fixed_axis.append(self.AXIS_ORDER.index(ax))
         return fixed_axis
 
-    def _fix_rotate_range(self, rotate_range: RandRange) -> RandRange:
+    def _fix_rotate_range(self, rotate_range: RandRangeSeq) -> RandRangeSeq:
         """
         Users provide the axis in ``data_dim_order``, but during augmentation
         we expect the data to have been re-ordered to ``DIM_ORDER``. So we
         re-order and return the input ``rotate_range`` from
         ``data_dim_order`` to ``DIM_ORDER`` so it can be directly used.
 
+        Similarly, we convert the input from degrees to radians.
+
         ``test_monai_rotate_input`` verifies the monai input as doing
         rotations. However, clockwise or anti-clockwise rotations occur in
         MONAI depending on whether we rotate around x/y or z axis, which won't
         matter for augmentation.
         """
-        if rotate_range is None:
-            return None
         if len(rotate_range) != 3:
             raise ValueError("Must specify rotate value for each dimension")
 
         rotate_range = list(rotate_range)
-        for i, val in enumerate(rotate_range):
-            if not isinstance(val, Sequence):
-                rotate_range[i] = val, val
+        for i, (s, e) in enumerate(rotate_range):
+            rotate_range[i] = s / 180 * math.pi, e / 180 * math.pi
 
         if self._input_axis_order == self.AXIS_ORDER:
             return rotate_range
@@ -281,7 +328,9 @@ class DataAugmentation:
             fixed_range[new_i] = rotate_range[i]
         return fixed_range
 
-    def _fix_translate_range(self, translate_range: RandRange) -> RandRange:
+    def _fix_translate_range(
+        self, translate_range: RandRangeSeq
+    ) -> RandRangeSeq:
         """
         Users provide the axis in ``data_dim_order``, but during augmentation
         we expect the data to have been re-ordered to ``DIM_ORDER``. So we
@@ -291,8 +340,6 @@ class DataAugmentation:
         We also transform the range from fraction to (negative) pixels as
         expected by monai. This is verified by ``test_monai_translate_input``.
         """
-        if translate_range is None:
-            return None
         if len(translate_range) != 3:
             raise ValueError("Must specify translate value for each dimension")
 
@@ -302,12 +349,9 @@ class DataAugmentation:
         ):
             # we expect the values as fraction of the size of the volume in
             # the given dim. monai expects it as pixel offsets so we need
-            # to multiply by dim size. Also, monai does negative translation
-            if isinstance(val, Sequence):
-                # interval order seems irrelevant in monai
-                translate_range[i] = -val[0] * size, -val[1] * size
-            else:
-                translate_range[i] = -val * size, -val * size
+            # to multiply by dim size. Also, monai does negative translation.
+            # interval order seems irrelevant in monai
+            translate_range[i] = -val[0] * size, -val[1] * size
 
         if self._input_axis_order == self.AXIS_ORDER:
             return translate_range
@@ -318,7 +362,7 @@ class DataAugmentation:
             fixed_range[new_i] = translate_range[i]
         return fixed_range
 
-    def _fix_scale_range(self, scale_range: RandRange) -> RandRange:
+    def _fix_scale_range(self, scale_range: RandRangeSeq) -> RandRangeSeq:
         """
         Users provide the axis in ``data_dim_order``, but during augmentation
         we expect the data to have been re-ordered to ``DIM_ORDER``. So we
@@ -330,21 +374,16 @@ class DataAugmentation:
         by monai. Yes the interval is nonsensical and yes, this is what monai
         expects. We verify this in ``test_monai_scale_input``.
         """
-        if scale_range is None:
-            return None
         if len(scale_range) != 3:
             raise ValueError("Must specify scale value for each dimension")
 
         scale_range = list(scale_range)
         for i, val in enumerate(scale_range):
             # we get scale values where 1 means original size. monai
-            # expects values around 0, where 0 means original size
-            if isinstance(val, Sequence):
-                # interval order seems irrelevant so (inf, -1) would become
-                # (-1, inf) in monai
-                scale_range[i] = 1 / val[0] - 1, 1 / val[1] - 1
-            else:
-                scale_range[i] = 1 / val - 1, 1 / val - 1
+            # expects values around 0, where 0 means original size.
+            # interval order seems irrelevant so (inf, -1) would become
+            # (-1, inf) in monai
+            scale_range[i] = 1 / val[0] - 1, 1 / val[1] - 1
 
         if self._input_axis_order == self.AXIS_ORDER:
             return scale_range
@@ -363,27 +402,23 @@ class DataAugmentation:
         be called with data, which will be augmented. Otherwise, it's False
         and if the augmentor is called it will return the original data.
         """
-        self._do_affine = False
-        if self._asked_affine:
-            self._do_affine = random_bool(likelihood=self.augment_likelihood)
-        self._update_flip_parameters()
+        prob = self.augment_likelihood
+        augmentations = self._augmentations_to_do = set()
 
-        return bool(self._do_affine or self._axes_to_flip)
+        for aug in ["rotate", "translate", "scale"]:
+            if getattr(self, f"_{aug}_trans") is not None and random_bool(
+                likelihood=prob
+            ):
+                augmentations.add(aug)
 
-    def _update_flip_parameters(self) -> None:
-        """
-        Evaluates random variables to decide which of the requested axes to
-        flip in the next augmentation call, if any.
-        """
-        flippable_axis = self._flippable_axis
-        if not flippable_axis:
-            return
+        for ax in self._flippable_axis:
+            if random_bool(likelihood=prob):
+                augmentations.add(f"flip_{ax}")
 
-        axes_to_flip = self._axes_to_flip = []
-        for axis in flippable_axis:
-            if random_bool(likelihood=self.augment_likelihood):
-                # add 1 because of initial channel dim
-                axes_to_flip.append(axis + 1)
+        if self._intensity_range is not None and random_bool(likelihood=prob):
+            augmentations.add("intensity")
+
+        return bool(augmentations)
 
     def rescale_to_isotropic(self, data: torch.Tensor) -> torch.Tensor:
         """
@@ -425,31 +460,71 @@ class DataAugmentation:
         data = data.squeeze(0)
         return data
 
-    def apply_affine(self, data: torch.Tensor) -> torch.Tensor:
-        """
-        Applies and returns the affine transformed data if it was requested and
-        if the randomization via ``update_parameters`` requires it. Otherwise,
-        it returns the data unchanged.
+    @property
+    def needs_isotropic(self) -> bool:
+        return bool(
+            {"rotate", "translate", "scale"} & self._augmentations_to_do
+        )
 
-        Data must be isotropic and in ``DIM_ORDER``.
+    def apply_rotate(self, data: torch.Tensor) -> torch.Tensor:
         """
-        if not self._do_affine:
+        Returns input data, rotated, if ``update_parameters`` required it.
+        Otherwise, it returns the data unchanged. Data must be isotropic in
+        ``DIM_ORDER``.
+        """
+        if "rotate" not in self._augmentations_to_do:
             return data
 
-        return self._affine(data, padding_mode="border")
+        return self._rotate_trans(data, padding_mode="border")
 
-    def flip_axis(self, data: torch.Tensor) -> torch.Tensor:
+    def apply_translate(self, data: torch.Tensor) -> torch.Tensor:
         """
-        Applies and returns axes flipped data if it was requested and
-        if the randomization via ``update_parameters`` requires it. Otherwise,
-        it returns the data unchanged.
-
-        Data must be in ``DIM_ORDER``.
+        Returns input data, translated, if ``update_parameters`` required it.
+        Otherwise, it returns the data unchanged. Data must be isotropic in
+        ``DIM_ORDER``.
         """
-        if not self._axes_to_flip:
+        if "translate" not in self._augmentations_to_do:
             return data
 
-        return torch.flip(data, self._axes_to_flip)
+        return self._translate_trans(data, padding_mode="border")
+
+    def apply_scale(self, data: torch.Tensor) -> torch.Tensor:
+        """
+        Returns input data, scaled, if ``update_parameters`` required it.
+        Otherwise, it returns the data unchanged. Data must be isotropic in
+        ``DIM_ORDER``.
+        """
+        if "scale" not in self._augmentations_to_do:
+            return data
+
+        return self._scale_trans(data, padding_mode="border")
+
+    def flip_axis(self, data: torch.Tensor, axis: int) -> torch.Tensor:
+        """
+        Returns input data, flipped along ``axis``, if ``update_parameters``
+        required it. Otherwise, it returns the data unchanged. Data must be
+        in ``DIM_ORDER``.
+        """
+        if f"flip_{axis}" not in self._augmentations_to_do:
+            return data
+
+        # add one to account for channel dim, which is first axis
+        return torch.flip(data, (axis + 1,))
+
+    def apply_intensity(self, data: torch.Tensor) -> torch.Tensor:
+        """
+        Returns input data, multiplied by an intensity, if
+        ``update_parameters`` required it. Otherwise, it returns the data
+        unchanged. Data must be in ``DIM_ORDER``.
+        """
+        if "intensity" not in self._augmentations_to_do:
+            return data
+
+        s, e = self._intensity_range
+        val = torch.rand(1)[0].item()
+        factor = (e - s) * val + s
+
+        return data * factor
 
     def __call__(self, data: torch.Tensor) -> torch.Tensor:
         if len(data.shape) != 4:
@@ -468,15 +543,19 @@ class DataAugmentation:
             )
 
         # if we do affine, it must be isotropic
-        if self._do_affine:
+        if self.needs_isotropic:
             data = self.rescale_to_isotropic(data)
 
-        # apply affine and axes flipping based on last update_parameters
-        data = self.apply_affine(data)
-        data = self.flip_axis(data)
+        # these only do the augmentation if update_parameters set it
+        data = self.apply_rotate(data)
+        data = self.apply_translate(data)
+        data = self.apply_scale(data)
+        data = self.apply_intensity(data)
+        for i in range(3):
+            data = self.flip_axis(data, i)
 
         # undo isotropism
-        if self._do_affine:
+        if self.needs_isotropic:
             data = self.rescale_to_original(data)
 
         # make sure it's in data_dim_order
