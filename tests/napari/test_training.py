@@ -1,5 +1,6 @@
+import sys
 from pathlib import Path
-from unittest.mock import ThreadingMock, patch
+from unittest.mock import patch
 
 import pytest
 
@@ -94,10 +95,16 @@ def test_run_with_virtual_yaml_files(get_training_widget):
         )
 
 
+@pytest.mark.skipif(
+    sys.version_info < (3, 13),
+    reason="requires ThreadingMock, only available in Python 3.13+",
+)
 def test_args_properly_set(get_training_widget):
     """
     Checks that training is run with parameters from GUI.
     """
+    from unittest.mock import ThreadingMock
+
     with patch(
         "cellfinder.napari.train.train.train_yaml", new_callable=ThreadingMock
     ) as train_yaml:
