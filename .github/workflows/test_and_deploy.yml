@@ -212,11 +212,12 @@ jobs:
           repository: 'brainglobe/brainglobe-workflows'
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39
         with:
           enable-cache: true
           python-version: "3.12"
           cache-dependency-glob: "**/pyproject.toml"
+          activate-environment: true
 
       - name: Install cellfinder from this SHA and brainglobe-workflows
         shell: bash
