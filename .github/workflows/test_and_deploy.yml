@@ -92,7 +92,7 @@ jobs:
 
       # dev,napari replaces tox's "extras = dev\n        napari"
       - name: Run tests
-        uses: neuroinformatics-unit/actions/test-uv@test-uv-prototype
+        uses: neuroinformatics-unit/actions/test-uv@main
         with:
           python-version: ${{ matrix.python-version }}
           secret-codecov-token: ${{ secrets.CODECOV_TOKEN }}
@@ -162,7 +162,7 @@ jobs:
       - uses: pyvista/setup-headless-display-action@v3
 
       - name: Run tests with numba disabled
-        uses: neuroinformatics-unit/actions/test-uv@test-uv-prototype
+        uses: neuroinformatics-unit/actions/test-uv@main
         with:
           python-version: "3.12"
           secret-codecov-token: ${{ secrets.CODECOV_TOKEN }}
