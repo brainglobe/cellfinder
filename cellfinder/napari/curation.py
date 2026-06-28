@@ -672,9 +672,23 @@ class CurationWidget(QWidget):
 
     def __save_yaml_file(self):
         signal_stat, bg_stat = self._calculate_channel_stats()
+
+        cells_dir = self.cell_cube_dir.relative_to(self.yaml_filename.parent)
+        non_cells_dir = self.no_cell_cube_dir.relative_to(
+            self.yaml_filename.parent
+        )
+
+        # napari includes the filename if the image layer came from a file
+        sig_source = ""
+        if self.signal_layer.source and self.signal_layer.source.path:
+            sig_source = str(Path(self.signal_layer.source.path.resolve()))
+        bg_source = ""
+        if self.background_layer.source and self.background_layer.source.path:
+            bg_source = str(Path(self.background_layer.source.path.resolve()))
+
         yaml_section = [
             {
-                "cube_dir": str(self.cell_cube_dir),
+                "cube_dir": str(cells_dir),
                 "cell_def": "",
                 "type": "cell",
                 "signal_channel": 0,
@@ -683,9 +697,11 @@ class CurationWidget(QWidget):
                 "signal_std": signal_stat[1],
                 "bg_mean": bg_stat[0],
                 "bg_std": bg_stat[1],
+                "signal_source": sig_source,
+                "background_source": bg_source,
             },
             {
-                "cube_dir": str(self.no_cell_cube_dir),
+                "cube_dir": str(non_cells_dir),
                 "cell_def": "",
                 "type": "no_cell",
                 "signal_channel": 0,
@@ -694,6 +710,8 @@ class CurationWidget(QWidget):
                 "signal_std": signal_stat[1],
                 "bg_mean": bg_stat[0],
                 "bg_std": bg_stat[1],
+                "signal_source": sig_source,
+                "background_source": bg_source,
             },
         ]
 
