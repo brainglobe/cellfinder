@@ -71,14 +71,14 @@ jobs:
 
       - uses: actions/checkout@v4
       - name: Cache pooch data
-        uses: actions/cache@v4
+        uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 #v4.2.0
         with:
           path: "~/.pooch_cache"
           # hash on conftest in case url changes
           key: ${{ runner.os }}-${{ matrix.python-version }}-${{ hashFiles('**/pooch_registry.txt') }}
       # Cache the tensorflow model so we don't have to remake it every time
       - name: Cache brainglobe directory
-        uses: actions/cache@v4
+        uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 #v4.2.0
         with:
           path: | # ensure we don't cache any interrupted atlas download and extraction, if e.g. we cancel the workflow manually
             ~/.brainglobe
@@ -90,7 +90,6 @@ jobs:
       # Setup VTK with headless display
       - uses: pyvista/setup-headless-display-action@v3
 
-      # dev,napari replaces tox's "extras = dev\n        napari"
       - name: Run tests
         uses: neuroinformatics-unit/actions/test-uv@main
         with:
@@ -108,7 +107,7 @@ jobs:
       - name: Run tests against napari main
         if: github.event_name == 'schedule'
         shell: bash
-        run: pytest
+        run: pytest -vv
 
       - name: Notify slack on scheduled failure
         if: failure() && github.event_name == 'schedule'
@@ -142,7 +141,7 @@ jobs:
 
       - uses: actions/checkout@v4
       - name: Cache brainglobe directory
-        uses: actions/cache@v4
+        uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 #v4.2.0
         with:
           path: | # ensure we don't cache any interrupted atlas download and extraction, if e.g. we cancel the workflow manually
             ~/.brainglobe
@@ -150,7 +149,7 @@ jobs:
           key: brainglobe
 
       - name: Cache pooch data
-        uses: actions/cache@v4
+        uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 #v4.2.0
         with:
           path: "~/.pooch_cache"
           key: ${{ runner.os }}-3.10-${{ hashFiles('**/pooch_registry.txt') }}
@@ -200,7 +199,7 @@ jobs:
           rmz_version: '3.1.1'
 
       - name: Cache brainglobe directory
-        uses: actions/cache@v4
+        uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 #v4.2.0
         with:
           path: | # ensure we don't cache any interrupted atlas download and extraction, if e.g. we cancel the workflow manually
             ~/.brainglobe
@@ -212,7 +211,7 @@ jobs:
           repository: 'brainglobe/brainglobe-workflows'
 
       - name: Install uv
-        uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39
+        uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # v8.2.0
         with:
           enable-cache: true
           python-version: "3.12"
