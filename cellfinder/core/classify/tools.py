@@ -60,6 +60,7 @@ def get_model(
                     "or continued training."
                 )
             try:
+                model.optimizer.build(model.trainable_variables)
                 model.load_weights(model_weights)
             except (OSError, ValueError) as e:
                 raise ValueError(
