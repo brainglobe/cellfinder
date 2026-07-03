@@ -125,9 +125,10 @@ def main(
         signal_normalization = dataset_mean_std(
             signal_array, normalization_n_sampling_planes
         )
-        background_normalization = dataset_mean_std(
-            background_array, normalization_n_sampling_planes
-        )
+        if background_array is not None:
+            background_normalization = dataset_mean_std(
+                background_array, normalization_n_sampling_planes
+            )
         logger.debug(
             f"Signal channel norm is: {signal_normalization}. "
             f"Background channel norm is: {background_normalization}"
