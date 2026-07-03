@@ -15,7 +15,7 @@ from cellfinder.core.classify.cube_generator import (
     CuboidArrayDataset,
     CuboidBatchSampler,
 )
-from cellfinder.core.classify.tools import get_model
+from cellfinder.core.classify.tools import get_model, model_input_channels
 from cellfinder.core.tools.image_processing import dataset_mean_std
 from cellfinder.core.tools.tools import deprecate_positional_args
 from cellfinder.core.train.train_yaml import depth_type, models
@@ -26,7 +26,7 @@ def main(
     *,
     points: List[Cell],
     signal_array: types.array,
-    background_array: types.array,
+    background_array: Optional[types.array],
     n_free_cpus: int,
     voxel_sizes: Tuple[float, float, float],
     network_voxel_sizes: Tuple[float, float, float],
@@ -51,8 +51,10 @@ def main(
         The potential cells to classify.
     signal_array : numpy.ndarray or dask array
         3D array representing the signal data in z, y, x order.
-    background_array : numpy.ndarray or dask array
-        3D array representing the signal data in z, y, x order.
+    background_array : numpy.ndarray or dask array, optional
+        3D array representing the background data in z, y, x order. If
+        ``None``, a single-channel (signal-only) cube is built and a
+        single-channel model must be used.
     n_free_cpus : int
         How many CPU cores to leave free.
     voxel_sizes : 3-tuple of floats
@@ -106,7 +108,7 @@ def main(
     """
     if signal_array.ndim != 3:
         raise IOError("Signal data must be 3D")
-    if background_array.ndim != 3:
+    if background_array is not None and background_array.ndim != 3:
         raise IOError("Background data must be 3D")
 
     # Too many workers doesn't increase speed, and uses huge amounts of RAM
@@ -172,7 +174,18 @@ def main(
         model_weights=model_weights,
         network_depth=models[network_depth],
         inference=True,
+        num_channels=dataset.num_channels,
     )
+
+    model_channels = model_input_channels(model)
+    if model_channels != dataset.num_channels:
+        raise ValueError(
+            f"The classification model expects {model_channels}-channel "
+            f"input but {dataset.num_channels} channel(s) were provided. "
+            f"Use a `trained_model` whose channel count matches the data, "
+            f"or provide data matching the model (signal only for 1, "
+            f"signal + background for 2)."
+        )
 
     logger.info("Running inference")
     if workers:

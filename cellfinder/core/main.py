@@ -14,7 +14,7 @@ from cellfinder.core.train.train_yaml import depth_type
 def main(
     *,
     signal_array: types.array,
-    background_array: types.array,
+    background_array: Optional[types.array],
     voxel_sizes: Tuple[float, float, float],
     start_plane: int = 0,
     end_plane: int = -1,
@@ -60,8 +60,12 @@ def main(
     ----------
     signal_array : numpy.ndarray or dask array
         3D array representing the signal data in z, y, x order.
-    background_array : numpy.ndarray or dask array
-        3D array representing the signal data in z, y, x order.
+    background_array : numpy.ndarray or dask array, optional
+        3D array representing the background (autofluorescence) data in
+        z, y, x order. If ``None``, classification runs on the signal
+        channel alone (single-channel mode). A single-channel
+        ``trained_model`` must then be supplied, since the default pretrained
+        weights are two-channel.
     voxel_sizes : 3-tuple of floats
         Size of your voxels in the z, y, and x dimensions (microns).
     start_plane : int
