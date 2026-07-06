@@ -2,7 +2,7 @@
 [![Get in Touch](https://img.shields.io/badge/Get%20in%20Touch-BrainGlobe-blue)](https://brainglobe.info/contact.html)
 [![DOI](https://img.shields.io/badge/DOI-10.1371%2Fjournal.pcbi.1009074-green)](https://doi.org/10.1371/journal.pcbi.1009074)
 [![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
-[![Tests](https://img.shields.io/github/actions/workflow/status/brainglobe/cellfinder/test_and_deploy.yml?branch=main)](https://github.com/brainglobe/cellfinder/actions)
+[![Tests](https://github.com/brainglobe/brainglobe-utils/actions/workflows/test_and_deploy.yml/badge.svg)](https://github.com/brainglobe/brainglobe-utils/actions/workflows/test_and_deploy.yml)
 [![Codecov](https://codecov.io/gh/brainglobe/cellfinder/graph/badge.svg?token=nx1lhNI7ox)](https://codecov.io/gh/brainglobe/cellfinder)
 [![Python Version](https://img.shields.io/pypi/pyversions/cellfinder.svg)](https://pypi.org/project/cellfinder)
 [![PyPI](https://img.shields.io/pypi/v/cellfinder.svg)](https://pypi.org/project/cellfinder)
