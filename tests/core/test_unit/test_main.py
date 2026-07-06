@@ -79,3 +79,36 @@ def test_optional_background_allows_detection(
     )
 
     mock_detect.assert_called_once()
+
+
+@patch("cellfinder.core.detect.detect.main", return_value=[])
+@patch("cellfinder.core.tools.prep.prep_model_weights")
+def test_missing_background_selects_single_channel_model(
+    mock_prep_weights, mock_detect, signal_array
+):
+    mock_prep_weights.return_value = "/some/weights.keras"
+
+    main(
+        signal_array=signal_array,
+        background_array=None,
+        voxel_sizes=(5, 2, 2),
+    )
+
+    assert mock_prep_weights.call_args.args[2] == "resnet50_1ch"
+
+
+@patch("cellfinder.core.detect.detect.main", return_value=[])
+@patch("cellfinder.core.tools.prep.prep_model_weights")
+def test_explicit_model_is_kept_without_background(
+    mock_prep_weights, mock_detect, signal_array
+):
+    mock_prep_weights.return_value = "/some/weights.h5"
+
+    main(
+        signal_array=signal_array,
+        background_array=None,
+        voxel_sizes=(5, 2, 2),
+        model="resnet50_all",
+    )
+
+    assert mock_prep_weights.call_args.args[2] == "resnet50_all"
