@@ -73,3 +73,24 @@ def test_get_model_loads_keras_weights(tmp_path, num_channels):
     assert np.allclose(
         source.predict(x, verbose=0), model.predict(x, verbose=0)
     )
+
+
+def test_get_model_builds_2d():
+    model = tools.get_model(
+        network_depth="18-layer",
+        dimensions=2,
+        shape=(50, 50, 2),
+    )
+    # batch + y + x + channels
+    assert len(model.input_shape) == 4
+    assert model.input_shape == (None, 50, 50, 2)
+
+
+def test_get_model_dimension_mismatch_on_load(tmp_path):
+    model_path = tmp_path / "model_3d.keras"
+    build_model(shape=(50, 50, 20, 2), network_depth="18-layer").save(
+        model_path
+    )
+
+    with pytest.raises(ValueError, match="expects 3D input"):
+        tools.get_model(existing_model=model_path, dimensions=2)

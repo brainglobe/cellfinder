@@ -336,3 +336,15 @@ def test_deprecate_positional_args():
         match="sample_func takes 2 positional arguments but 3 were given",
     ):
         sample_func(1, 2, 3)
+
+
+@pytest.mark.parametrize("dimensions", [2, 3])
+def test_validate_dimensions_ok(dimensions):
+    # should not raise
+    tools.validate_dimensions(dimensions)
+
+
+@pytest.mark.parametrize("dimensions", [0, 1, 4, "2"])
+def test_validate_dimensions_bad(dimensions):
+    with pytest.raises(ValueError):
+        tools.validate_dimensions(dimensions)

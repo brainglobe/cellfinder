@@ -1169,6 +1169,50 @@ def test_dataset_cuboid_bad_arg(tmp_path):
         )
 
 
+def test_depth1_cube_squeezes_to_2d():
+    """
+    A depth-1 cube (used for 2D classification) squeezes its singleton z
+    axis to give a 2D (y, x, c) image.
+    """
+    volume = np.zeros((10, 40, 40, 2), dtype=np.uint16)
+    dataset = CuboidArrayDataset(
+        points=[Cell((20, 20, 5), Cell.UNKNOWN)],
+        data_voxel_sizes=(5, 1, 1),
+        network_voxel_sizes=(5, 1, 1),
+        network_cuboid_voxels=(1, 8, 8),
+        axis_order=("z", "y", "x"),
+        augment=False,
+        signal_array=volume[..., 0],
+        background_array=volume[..., 1],
+    )
+    item = dataset[0]
+    z_axis = dataset.output_axis_order.index("z")
+    assert item.shape[z_axis] == 1
+    assert item.squeeze(z_axis).shape == (8, 8, 2)
+
+
+def test_depth1_cube_interpolates_xy():
+    """
+    A depth-1 cube still rescales the in-plane (y, x) dimensions via the
+    interpolation path, with the z axis held at size 1.
+    """
+    volume = np.zeros((10, 60, 60, 2), dtype=np.uint16)
+    dataset = CuboidArrayDataset(
+        points=[Cell((30, 30, 5), Cell.UNKNOWN)],
+        data_voxel_sizes=(5, 2, 2),
+        network_voxel_sizes=(5, 1, 1),
+        network_cuboid_voxels=(1, 8, 8),
+        axis_order=("z", "y", "x"),
+        augment=False,
+        signal_array=volume[..., 0],
+        background_array=volume[..., 1],
+    )
+    item = dataset[0]
+    z_axis = dataset.output_axis_order.index("z")
+    assert item.shape[z_axis] == 1
+    assert item.squeeze(z_axis).shape == (8, 8, 2)
+
+
 def test_point_has_full_cuboid_unscaled():
     """
     Tests that only cuboids that have full cubes around the point's center
