@@ -376,3 +376,29 @@ def test_async_save_done_only_after_cubes_written(
         show_info.assert_called_once_with("Done")
         assert len(list((tmp_path / "cells").glob("*.tif"))) == 2
         assert len(list((tmp_path / "non_cells").glob("*.tif"))) == 2
+
+
+def test_set_dimensions_toggles_mode(curation_widget):
+    """The 2D/3D selector updates the widget's processing mode."""
+    assert curation_widget.dimensions == 3
+    curation_widget.dimensions_choice.setCurrentText("2D")
+    curation_widget.set_dimensions()
+    assert curation_widget.dimensions == 2
+    curation_widget.dimensions_choice.setCurrentText("3D")
+    curation_widget.set_dimensions()
+    assert curation_widget.dimensions == 3
+
+
+def test_2d_save_extracts_depth_one_cubes(valid_curation_widget, tmp_path):
+    """With the 2D selector, curated cubes are still written (depth-1 path)."""
+    widget = valid_curation_widget
+    widget.dimensions_choice.setCurrentText("2D")
+    widget.set_dimensions()
+    assert widget.dimensions == 2
+
+    widget.output_directory = tmp_path
+    widget.save_training_data(prompt_for_directory=False, block=True)
+
+    assert (tmp_path / "training.yaml").exists()
+    assert len(list((tmp_path / "cells").glob("*.tif"))) == 2
+    assert len(list((tmp_path / "non_cells").glob("*.tif"))) == 2

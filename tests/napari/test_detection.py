@@ -1,8 +1,10 @@
+from inspect import signature
 from unittest.mock import patch
 
 import napari
 import pytest
 
+from cellfinder.core.main import main as cellfinder_run
 from cellfinder.napari.detect import detect_widget
 from cellfinder.napari.detect.detect_containers import (
     ClassificationInputs,
@@ -13,6 +15,15 @@ from cellfinder.napari.detect.detect_containers import (
 )
 from cellfinder.napari.detect.thread_worker import Worker
 from cellfinder.napari.sample_data import load_sample
+
+
+def test_data_inputs_dimensions_passed():
+    """The 2D/3D selector defaults to 3D and reaches the core entry point."""
+    args = DataInputs(
+        signal_array=None, background_array=None
+    ).as_core_arguments()
+    assert args["dimensions"] == 3
+    assert set(args) <= set(signature(cellfinder_run).parameters)
 
 
 @pytest.fixture
