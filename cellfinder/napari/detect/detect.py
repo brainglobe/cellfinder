@@ -401,12 +401,13 @@ def detect_widget() -> FunctionGui:
         if (
             options["background_image"] is None
             and not skip_classification
-            and use_pre_trained_weights
+            and not use_pre_trained_weights
         ):
             show_info(
                 "Running without a background image needs a single-channel "
-                "model. Enable 'Skip classification', or uncheck 'Use "
-                "pre-trained weights' and select a single-channel model."
+                "model. Enable 'Use pre-trained weights' to use the default "
+                "single-channel model, enable 'Skip classification', or "
+                "select a single-channel trained model."
             )
             return
 

@@ -95,13 +95,12 @@ def test_run_detect_without_inputs():
         assert show_info.called
 
 
-def test_run_detect_without_background_needs_single_channel_model(
+def test_run_detect_without_background_uses_pretrained_weights(
     get_detect_widget,
 ):
     """
     Classifying without a background and with the default pretrained
-    (two-channel) weights is rejected with a helpful message, and the
-    worker never starts.
+    weights is allowed; core selects the single-channel model.
     """
     widget = get_detect_widget
     with (
@@ -111,6 +110,28 @@ def test_run_detect_without_background_needs_single_channel_model(
         widget.background_image_opt.background_image.value = None
         widget.skip_classification.value = False
         widget.use_pre_trained_weights.value = True
+        widget.call_button.clicked()
+
+        assert not show_info.called
+        assert worker.called
+
+
+def test_run_detect_without_background_needs_single_channel_model(
+    get_detect_widget,
+):
+    """
+    Classifying without a background, without pretrained weights, and
+    without a chosen single-channel model is rejected with a helpful
+    message, and the worker never starts.
+    """
+    widget = get_detect_widget
+    with (
+        patch("cellfinder.napari.detect.detect.show_info") as show_info,
+        patch("cellfinder.napari.detect.detect.Worker") as worker,
+    ):
+        widget.background_image_opt.background_image.value = None
+        widget.skip_classification.value = False
+        widget.use_pre_trained_weights.value = False
         widget.call_button.clicked()
 
         show_info.assert_called_once()
