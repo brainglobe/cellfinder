@@ -27,6 +27,7 @@ from .detect_containers import (
     DataInputs,
     DetectionInputs,
     MiscInputs,
+    ModelSource,
 )
 from .thread_worker import Worker
 
@@ -260,8 +261,7 @@ def detect_widget() -> FunctionGui:
         soma_spread_factor: float,
         max_cluster_size: float,
         classification_options,
-        skip_classification: bool,
-        use_pre_trained_weights: bool,
+        model_source: ModelSource,
         trained_model: Optional[Path],
         classification_batch_size: int,
         normalize_channels: bool,
@@ -336,14 +336,12 @@ def detect_widget() -> FunctionGui:
             Largest detected cell cluster (in cubic um) where splitting
             should be attempted. Clusters above this size will be labeled
             as artifacts
-        skip_classification : bool
-            If selected, the classification step is skipped and all cells from
-            the detection stage are added
-        use_pre_trained_weights : bool
-            Select to use pre-trained model weights
+        model_source : ModelSource
+            Which classification model to run: the pretrained default, a
+            custom model file, or skip classification entirely
         trained_model : Optional[Path]
-            Trained model file path (home directory (default) -> pretrained
-            weights)
+            Trained model file path, used only when model_source is a custom
+            model
         classification_batch_size : int
             How many potential cells to classify at one time. The GPU/CPU
             memory must be able to contain at once this many data cubes for
@@ -398,16 +396,13 @@ def detect_widget() -> FunctionGui:
             show_info("Signal image must be specified.")
             return
 
-        if (
-            options["background_image"] is None
-            and not skip_classification
-            and not use_pre_trained_weights
+        skip_classification = model_source is ModelSource.SKIP
+        if model_source is ModelSource.CUSTOM and not (
+            trained_model and Path(trained_model).is_file()
         ):
             show_info(
-                "Running without a background image needs a single-channel "
-                "model. Enable 'Use pre-trained weights' to use the default "
-                "single-channel model, enable 'Skip classification', or "
-                "select a single-channel trained model."
+                "Select a trained model file, or choose "
+                "'Pretrained default' to use the default model."
             )
             return
 
@@ -454,11 +449,8 @@ def detect_widget() -> FunctionGui:
             detection_batch_size,
         )
 
-        if use_pre_trained_weights:
-            trained_model = None
         classification_inputs = ClassificationInputs(
-            skip_classification,
-            use_pre_trained_weights,
+            model_source,
             trained_model,
             classification_batch_size,
             normalize_channels,

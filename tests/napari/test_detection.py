@@ -9,6 +9,7 @@ from cellfinder.napari.detect.detect_containers import (
     DataInputs,
     DetectionInputs,
     MiscInputs,
+    ModelSource,
 )
 from cellfinder.napari.detect.thread_worker import Worker
 from cellfinder.napari.sample_data import load_sample
@@ -80,7 +81,7 @@ def test_run_detect(get_detect_widget, analyse_local):
     """
     with patch("cellfinder.napari.detect.detect.Worker") as worker:
         get_detect_widget.analyse_local.value = analyse_local
-        get_detect_widget.skip_classification.value = True
+        get_detect_widget.model_source.value = ModelSource.SKIP
         get_detect_widget.call_button.clicked()
         assert worker.called
 
@@ -108,21 +109,19 @@ def test_run_detect_without_background_uses_pretrained_weights(
         patch("cellfinder.napari.detect.detect.Worker") as worker,
     ):
         widget.background_image_opt.background_image.value = None
-        widget.skip_classification.value = False
-        widget.use_pre_trained_weights.value = True
+        widget.model_source.value = ModelSource.PRETRAINED
         widget.call_button.clicked()
 
         assert not show_info.called
         assert worker.called
 
 
-def test_run_detect_without_background_needs_single_channel_model(
+def test_run_detect_custom_model_without_file_is_rejected(
     get_detect_widget,
 ):
     """
-    Classifying without a background, without pretrained weights, and
-    without a chosen single-channel model is rejected with a helpful
-    message, and the worker never starts.
+    Choosing a custom model without pointing at a model file is rejected
+    with a helpful message, and the worker never starts.
     """
     widget = get_detect_widget
     with (
@@ -130,13 +129,35 @@ def test_run_detect_without_background_needs_single_channel_model(
         patch("cellfinder.napari.detect.detect.Worker") as worker,
     ):
         widget.background_image_opt.background_image.value = None
-        widget.skip_classification.value = False
-        widget.use_pre_trained_weights.value = False
+        widget.model_source.value = ModelSource.CUSTOM
         widget.call_button.clicked()
 
         show_info.assert_called_once()
-        assert "single-channel model" in show_info.call_args.args[0]
+        assert "trained model file" in show_info.call_args.args[0]
         assert not worker.called
+
+
+def test_run_detect_without_background_custom_model_proceeds(
+    get_detect_widget, tmp_path
+):
+    """
+    A custom model without a background is allowed to proceed; the core
+    validates the channel count downstream.
+    """
+    widget = get_detect_widget
+    model_file = tmp_path / "model.pt"
+    model_file.write_bytes(b"")
+    with (
+        patch("cellfinder.napari.detect.detect.show_info") as show_info,
+        patch("cellfinder.napari.detect.detect.Worker") as worker,
+    ):
+        widget.background_image_opt.background_image.value = None
+        widget.model_source.value = ModelSource.CUSTOM
+        widget.trained_model.value = model_file
+        widget.call_button.clicked()
+
+        assert not show_info.called
+        assert worker.called
 
 
 def test_reset_defaults(get_detect_widget):

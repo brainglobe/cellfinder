@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+from enum import Enum
 from pathlib import Path
 from typing import List, Optional
 
@@ -121,33 +122,40 @@ class DetectionInputs(InputContainer):
         )
 
 
+class ModelSource(Enum):
+    PRETRAINED = "Pretrained default"
+    CUSTOM = "Custom model"
+    SKIP = "Skip classification"
+
+
 @dataclass
 class ClassificationInputs(InputContainer):
     """Container for classification inputs."""
 
-    skip_classification: bool = False
-    use_pre_trained_weights: bool = True
+    model_source: ModelSource = ModelSource.PRETRAINED
     trained_model: Optional[Path] = Path.home()
     classification_batch_size: int = 64
     normalize_channels: bool = False
     normalization_n_sampling_planes: int = 50
 
+    @property
+    def skip_classification(self) -> bool:
+        return self.model_source is ModelSource.SKIP
+
     def as_core_arguments(self) -> dict:
         args = super().as_core_arguments()
-        del args["use_pre_trained_weights"]
+        args["skip_classification"] = self.skip_classification
+        if self.model_source is not ModelSource.CUSTOM:
+            args["trained_model"] = None
+        del args["model_source"]
         return args
 
     @classmethod
     def widget_representation(cls) -> dict:
         return dict(
             classification_options=html_label_widget("Classification:"),
-            use_pre_trained_weights=dict(
-                value=cls.defaults()["use_pre_trained_weights"]
-            ),
+            model_source=dict(value=cls.defaults()["model_source"]),
             trained_model=dict(value=cls.defaults()["trained_model"]),
-            skip_classification=dict(
-                value=cls.defaults()["skip_classification"]
-            ),
             classification_batch_size=dict(
                 value=cls.defaults()["classification_batch_size"],
                 label="Batch size (classification)",
