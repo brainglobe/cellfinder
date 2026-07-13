@@ -255,20 +255,27 @@ class CurationWidget(QWidget):
             self._set_normalization_n_sampling_planes
         )
         self.norm_sampling_box = box_norm
-        self.training_data_cell_choice, _ = add_combobox(
-            self.load_data_layout,
-            "Training data (cells)",
-            self.point_layer_names,
-            7,
-            callback=self.set_training_data_cell,
+        self.training_data_cell_choice, self.training_data_cell_label = (
+            add_combobox(
+                self.load_data_layout,
+                "Training data (cells, 0)",
+                self.point_layer_names,
+                7,
+                callback=self.set_training_data_cell,
+            )
         )
-        self.training_data_non_cell_choice, _ = add_combobox(
+        self._cell_label_update()
+        (
+            self.training_data_non_cell_choice,
+            self.training_data_non_cell_label,
+        ) = add_combobox(
             self.load_data_layout,
-            "Training_data (non_cells)",
+            "Training data (non-cells, 0)",
             self.point_layer_names,
             row=8,
             callback=self.set_training_data_non_cell,
         )
+        self._non_cell_label_update()
         self.mark_as_cell_button = add_button(
             "Mark as cell(s)",
             self.load_data_layout,
@@ -324,30 +331,66 @@ class CurationWidget(QWidget):
                 self.background_image_choice.currentText()
             ]
 
+    def _cell_label_update(self, *args, **kwargs) -> None:
+        layer = self.training_data_cell_layer
+        label = self.training_data_cell_label
+
+        count = "empty"
+        if layer and len(layer.data):
+            count = len(layer.data)
+        label.setText(f"Training data (cells, {count})")
+
+    def _non_cell_label_update(self, *args, **kwargs) -> None:
+        layer = self.training_data_non_cell_layer
+        label = self.training_data_non_cell_label
+
+        count = "empty"
+        if layer and len(layer.data):
+            count = len(layer.data)
+        label.setText(f"Training data (non-cells, {count})")
+
     def set_training_data_cell(self):
         """
         Set cell training data from current training data text box selection.
         """
-        if self.training_data_cell_choice.currentText() != "":
-            self.training_data_cell_layer = self.viewer.layers[
-                self.training_data_cell_choice.currentText()
-            ]
-            self.training_data_cell_layer.metadata["point_type"] = Cell.CELL
-            self.training_data_cell_layer.metadata["training_data"] = True
+        old_layer = self.training_data_cell_layer
+        if old_layer is not None:
+            old_layer.events.data.disconnect(self._cell_label_update)
+
+        name = self.training_data_cell_choice.currentText()
+        if name:
+            layer = self.viewer.layers[name]
+            self.training_data_cell_layer = layer
+            layer.metadata["point_type"] = Cell.CELL
+            layer.metadata["training_data"] = True
+
+            layer.events.data.connect(self._cell_label_update)
+        else:
+            self.training_data_cell_layer = None
+
+        self._cell_label_update()
 
     def set_training_data_non_cell(self):
         """
         Set non-cell training data from current training data text box
         selection.
         """
-        if self.training_data_non_cell_choice.currentText() != "":
-            self.training_data_non_cell_layer = self.viewer.layers[
-                self.training_data_non_cell_choice.currentText()
-            ]
-            self.training_data_non_cell_layer.metadata["point_type"] = (
-                Cell.UNKNOWN
-            )
-            self.training_data_non_cell_layer.metadata["training_data"] = True
+        old_layer = self.training_data_non_cell_layer
+        if old_layer is not None:
+            old_layer.events.data.disconnect(self._non_cell_label_update)
+
+        name = self.training_data_non_cell_choice.currentText()
+        if name:
+            layer = self.viewer.layers[name]
+            self.training_data_non_cell_layer = layer
+            layer.metadata["point_type"] = Cell.UNKNOWN
+            layer.metadata["training_data"] = True
+
+            layer.events.data.connect(self._non_cell_label_update)
+        else:
+            self.training_data_non_cell_layer = None
+
+        self._non_cell_label_update()
 
     def add_training_data(self):
         cell_name = "Training data (cells)"
@@ -367,11 +410,12 @@ class CurationWidget(QWidget):
             self._add_training_data_layers(cell_name, non_cell_name)
 
         if overwrite:
-            try:
-                self.viewer.layers.remove(cell_name)
-                self.viewer.layers.remove(non_cell_name)
-            except ValueError:
-                pass
+            if self.training_data_cell_layer:
+                self.viewer.layers.remove(self.training_data_cell_layer.name)
+            if self.training_data_non_cell_layer:
+                self.viewer.layers.remove(
+                    self.training_data_non_cell_layer.name
+                )
 
             self._add_training_data_layers(cell_name, non_cell_name)
 
@@ -387,7 +431,9 @@ class CurationWidget(QWidget):
             name=cell_name,
             metadata=dict(point_type=Cell.CELL, training_data=True),
         )
-        self.training_data_cell_choice.setCurrentText(cell_name)
+        self.training_data_cell_choice.setCurrentText(
+            self.training_data_cell_layer.name
+        )
 
         self.training_data_non_cell_layer = self.viewer.add_points(
             None,
@@ -400,7 +446,9 @@ class CurationWidget(QWidget):
             name=non_cell_name,
             metadata=dict(point_type=Cell.UNKNOWN, training_data=True),
         )
-        self.training_data_non_cell_choice.setCurrentText(non_cell_name)
+        self.training_data_non_cell_choice.setCurrentText(
+            self.training_data_non_cell_layer.name
+        )
 
     def mark_as_cell(self, viewer=None):
         self.mark_point_as_type("cell")
