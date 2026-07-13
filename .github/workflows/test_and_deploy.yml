@@ -100,7 +100,7 @@ jobs:
 
       # On schedule: just overwrite napari and rerun — no full reinstall
       - name: Install napari from main
-        if: github.event_name == 'schedule'
+        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
         shell: bash
         run: uv pip install git+https://github.com/napari/napari
 
