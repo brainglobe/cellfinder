@@ -106,8 +106,9 @@ jobs:
 
       - name: Run tests against napari main
         if: github.event_name == 'schedule'
-        shell: bash
-        run: pytest -vv
+        uses: aganders3/headless-gui@f85dd6316993505dfc5f21839d520ae440c84816 # v2.2
+        with:
+          run: pytest -vv
 
       - name: Notify slack on scheduled failure
         if: failure() && github.event_name == 'schedule'
