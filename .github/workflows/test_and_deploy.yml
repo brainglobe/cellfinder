@@ -100,14 +100,15 @@ jobs:
 
       # On schedule: just overwrite napari and rerun — no full reinstall
       - name: Install napari from main
-        if: github.event_name == 'schedule'
+        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
         shell: bash
         run: uv pip install git+https://github.com/napari/napari
 
       - name: Run tests against napari main
-        if: github.event_name == 'schedule'
-        shell: bash
-        run: pytest -vv
+        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+        uses: aganders3/headless-gui@f85dd6316993505dfc5f21839d520ae440c84816 # v2.2
+        with:
+          run: pytest -vv
 
       - name: Notify slack on scheduled failure
         if: failure() && github.event_name == 'schedule'
