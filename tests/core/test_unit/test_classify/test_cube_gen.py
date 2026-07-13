@@ -1257,8 +1257,18 @@ def _get_volume_with_stats(normalize):
         back_norm = back_mean, back_std
 
     volume = np.empty((20, 20, 30, 2), dtype=np.float32)
-    volume[..., 0] = np.random.normal(sig_mean, sig_std, (20, 20, 30))
-    volume[..., 1] = np.random.normal(back_mean, back_std, (20, 20, 30))
+
+    # alternate volume with +/- std so that whichever sub-cuboid we take from
+    # the volume, it'll always have the prescribed mean/std
+    ch0 = np.empty(20 * 20 * 30, dtype=np.float32)
+    ch0[0::2] = sig_mean - sig_std
+    ch0[1::2] = sig_mean + sig_std
+    ch1 = np.empty(20 * 20 * 30, dtype=np.float32)
+    ch1[0::2] = back_mean - back_std
+    ch1[1::2] = back_mean + back_std
+
+    volume[..., 0] = ch0.reshape((20, 20, 30))
+    volume[..., 1] = ch1.reshape((20, 20, 30))
 
     return (
         volume,
@@ -1288,8 +1298,8 @@ def _check_cube_normalization(
             # if normalized, it should be standard normal
             if normalize:
                 ex_mean, ex_std = 0, 1
-                lower_mean = -0.2
-                upper_mean = 0.2
+                lower_mean = -0.01
+                upper_mean = 0.01
 
             assert lower_mean <= mean.item() < upper_mean
             assert ex_std * 0.8 <= std.item() < ex_std * 1.2
