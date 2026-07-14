@@ -508,6 +508,21 @@ def detect_widget() -> FunctionGui:
         partial(restore_options_defaults, widget)
     )
 
+    def update_trained_model_visibility() -> None:
+        widget.trained_model.visible = (
+            ModelSource.from_options(
+                widget.skip_classification.value,
+                widget.use_pre_trained_weights.value,
+            )
+            is ModelSource.CUSTOM
+        )
+
+    widget.skip_classification.changed.connect(update_trained_model_visibility)
+    widget.use_pre_trained_weights.changed.connect(
+        update_trained_model_visibility
+    )
+    update_trained_model_visibility()
+
     # Insert progress bar before the run and reset buttons
     widget.insert(widget.index("debug") + 1, progress_bar)
 

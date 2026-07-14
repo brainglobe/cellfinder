@@ -177,6 +177,21 @@ def test_model_source_from_options(skip, use_pre_trained, expected):
     assert ModelSource.from_options(skip, use_pre_trained) is expected
 
 
+def test_trained_model_only_visible_for_a_custom_model(get_detect_widget):
+    """The model file field is only shown when a custom model is chosen."""
+    widget = get_detect_widget
+
+    widget.skip_classification.value = False
+    widget.use_pre_trained_weights.value = True
+    assert widget.trained_model._explicitly_hidden
+
+    widget.use_pre_trained_weights.value = False
+    assert not widget.trained_model._explicitly_hidden
+
+    widget.skip_classification.value = True
+    assert widget.trained_model._explicitly_hidden
+
+
 def test_reset_defaults(get_detect_widget):
     """Smoke test that restore defaults doesn't error."""
     get_detect_widget.reset_button.clicked()
