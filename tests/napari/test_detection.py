@@ -81,7 +81,7 @@ def test_run_detect(get_detect_widget, analyse_local):
     """
     with patch("cellfinder.napari.detect.detect.Worker") as worker:
         get_detect_widget.analyse_local.value = analyse_local
-        get_detect_widget.model_source.value = ModelSource.SKIP
+        get_detect_widget.skip_classification.value = True
         get_detect_widget.call_button.clicked()
         assert worker.called
 
@@ -109,7 +109,8 @@ def test_run_detect_without_background_uses_pretrained_weights(
         patch("cellfinder.napari.detect.detect.Worker") as worker,
     ):
         widget.background_image_opt.background_image.value = None
-        widget.model_source.value = ModelSource.PRETRAINED
+        widget.skip_classification.value = False
+        widget.use_pre_trained_weights.value = True
         widget.call_button.clicked()
 
         assert not show_info.called
@@ -129,7 +130,8 @@ def test_run_detect_custom_model_without_file_is_rejected(
         patch("cellfinder.napari.detect.detect.Worker") as worker,
     ):
         widget.background_image_opt.background_image.value = None
-        widget.model_source.value = ModelSource.CUSTOM
+        widget.skip_classification.value = False
+        widget.use_pre_trained_weights.value = False
         widget.call_button.clicked()
 
         show_info.assert_called_once()
@@ -152,12 +154,27 @@ def test_run_detect_without_background_custom_model_proceeds(
         patch("cellfinder.napari.detect.detect.Worker") as worker,
     ):
         widget.background_image_opt.background_image.value = None
-        widget.model_source.value = ModelSource.CUSTOM
+        widget.skip_classification.value = False
+        widget.use_pre_trained_weights.value = False
         widget.trained_model.value = model_file
         widget.call_button.clicked()
 
         assert not show_info.called
         assert worker.called
+
+
+@pytest.mark.parametrize(
+    argnames=("skip", "use_pre_trained", "expected"),
+    argvalues=[
+        (False, True, ModelSource.PRETRAINED),
+        (False, False, ModelSource.CUSTOM),
+        (True, False, ModelSource.SKIP),
+        (True, True, ModelSource.SKIP),
+    ],
+)
+def test_model_source_from_options(skip, use_pre_trained, expected):
+    """Skipping classification wins over the pre-trained weights choice."""
+    assert ModelSource.from_options(skip, use_pre_trained) is expected
 
 
 def test_reset_defaults(get_detect_widget):

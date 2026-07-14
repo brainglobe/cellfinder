@@ -5,7 +5,6 @@ from cellfinder.napari.detect.detect_containers import (
     DataInputs,
     DetectionInputs,
     MiscInputs,
-    ModelSource,
 )
 from cellfinder.napari.detect.thread_worker import Worker
 from cellfinder.napari.sample_data import load_sample
@@ -29,11 +28,7 @@ def run_worker_test(
         DataInputs(signal_array=signal, background_array=background),
         DetectionInputs(skip_detection=skip_detection),
         ClassificationInputs(
-            model_source=(
-                ModelSource.SKIP
-                if skip_classification
-                else ModelSource.PRETRAINED
-            ),
+            skip_classification=skip_classification,
             trained_model=None,
         ),
         MiscInputs(start_plane=0, end_plane=-1),

@@ -261,7 +261,8 @@ def detect_widget() -> FunctionGui:
         soma_spread_factor: float,
         max_cluster_size: float,
         classification_options,
-        model_source: ModelSource,
+        skip_classification: bool,
+        use_pre_trained_weights: bool,
         trained_model: Optional[Path],
         classification_batch_size: int,
         normalize_channels: bool,
@@ -336,12 +337,14 @@ def detect_widget() -> FunctionGui:
             Largest detected cell cluster (in cubic um) where splitting
             should be attempted. Clusters above this size will be labeled
             as artifacts
-        model_source : ModelSource
-            Which classification model to run: the pretrained default, a
-            custom model file, or skip classification entirely
+        skip_classification : bool
+            If selected, the classification step is skipped and all cells from
+            the detection stage are added
+        use_pre_trained_weights : bool
+            Select to use pre-trained model weights
         trained_model : Optional[Path]
-            Trained model file path, used only when model_source is a custom
-            model
+            Trained model file path, used only when pre-trained weights are
+            not selected
         classification_batch_size : int
             How many potential cells to classify at one time. The GPU/CPU
             memory must be able to contain at once this many data cubes for
@@ -396,13 +399,15 @@ def detect_widget() -> FunctionGui:
             show_info("Signal image must be specified.")
             return
 
-        skip_classification = model_source is ModelSource.SKIP
+        model_source = ModelSource.from_options(
+            skip_classification, use_pre_trained_weights
+        )
         if model_source is ModelSource.CUSTOM and not (
             trained_model and Path(trained_model).is_file()
         ):
             show_info(
-                "Select a trained model file, or choose "
-                "'Pretrained default' to use the default model."
+                "Select a trained model file, or check "
+                "'Use pre-trained weights' to use the default model."
             )
             return
 
@@ -450,7 +455,8 @@ def detect_widget() -> FunctionGui:
         )
 
         classification_inputs = ClassificationInputs(
-            model_source,
+            skip_classification,
+            use_pre_trained_weights,
             trained_model,
             classification_batch_size,
             normalize_channels,
