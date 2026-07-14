@@ -1,3 +1,4 @@
+from brainglobe_utils.cells.cells import Cell
 from magicgui.widgets import ProgressBar
 from napari.qt.threading import WorkerBase, WorkerBaseSignals
 from qtpy.QtCore import Signal
@@ -19,6 +20,8 @@ class MyWorkerSignals(WorkerBaseSignals):
 
     # Emits (label, max, value) for the progress bar
     update_progress_bar = Signal(str, int, int)
+    # Emits a short status string for the label below the progress bar
+    update_status_label = Signal(str)
 
 
 class Worker(WorkerBase):
@@ -55,7 +58,18 @@ class Worker(WorkerBase):
 
         self.update_progress_bar.connect(update_progress_bar)
 
+    def connect_status_label_callback(self, set_status_fn):
+        """
+        Connects the status label updater so that key pipeline events
+        (cell counts, skipped steps, etc.) are displayed below the
+        progress bar.
+        """
+        self.update_status_label.connect(set_status_fn)
+
     def work(self) -> list:
+        # Clear any status message from a previous run
+        self.update_status_label.emit("")
+
         if not self.detection_inputs.skip_detection:
             self.update_progress_bar.emit("Setting up detection...", 1, 0)
 
@@ -69,7 +83,12 @@ class Worker(WorkerBase):
 
         def detect_finished_callback(points: list) -> None:
             self.npoints_detected = len(points)
-            if not self.classification_inputs.skip_classification:
+            if self.npoints_detected == 0:
+                # Warn the user immediately, classification will be skipped
+                self.update_status_label.emit(
+                    "\u26a0 No cell candidates found, classification skipped"
+                )
+            elif not self.classification_inputs.skip_classification:
                 self.update_progress_bar.emit(
                     "Setting up classification...", 1, 0
                 )
@@ -95,8 +114,27 @@ class Worker(WorkerBase):
             classify_callback=classify_callback,
             detect_finished_callback=detect_finished_callback,
         )
-        if not self.classification_inputs.skip_classification:
-            self.update_progress_bar.emit("Finished classification", 1, 1)
-        else:
+
+        if self.classification_inputs.skip_classification:
+            # Detection-only run
+            n = len(result)
             self.update_progress_bar.emit("Finished detection", 1, 1)
+            self.update_status_label.emit(
+                f"\u2713 Detection complete, "
+                f"{n} candidate{'s' if n != 1 else ''} found"
+            )
+        elif self.npoints_detected == 0:
+            # Classification was skipped (no candidates), label already set
+            self.update_progress_bar.emit("Finished", 1, 1)
+        else:
+            # Full detection + classification run
+            n_cells = sum(1 for c in result if c.type == Cell.CELL)
+            n_rejected = len(result) - n_cells
+            self.update_progress_bar.emit("Finished classification", 1, 1)
+            self.update_status_label.emit(
+                f"\u2713 Done, {n_cells} "
+                f"cell{'s' if n_cells != 1 else ''} detected, "
+                f"{n_rejected} rejected"
+            )
+
         return result
