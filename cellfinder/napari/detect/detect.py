@@ -27,6 +27,7 @@ from .detect_containers import (
     DataInputs,
     DetectionInputs,
     MiscInputs,
+    ModelSource,
 )
 from .thread_worker import Worker
 
@@ -80,15 +81,16 @@ def get_heavy_widgets(
         auto_call=True,
     )
     def background_image_opt(
-        background_image: napari.layers.Image,
+        background_image: Optional[napari.layers.Image],
     ):
         """
         magicgui widget for setting the background image parameter.
 
         Parameters
         ----------
-        background_image : napari.layers.Image
-             Image layer without labelled cells
+        background_image : napari.layers.Image, optional
+             Image layer without labelled cells. Leave empty to run
+             single-channel detection and classification.
         """
         options["background_image"] = background_image
 
@@ -341,8 +343,8 @@ def detect_widget() -> FunctionGui:
         use_pre_trained_weights : bool
             Select to use pre-trained model weights
         trained_model : Optional[Path]
-            Trained model file path (home directory (default) -> pretrained
-            weights)
+            Trained model file path, used only when pre-trained weights are
+            not selected
         classification_batch_size : int
             How many potential cells to classify at one time. The GPU/CPU
             memory must be able to contain at once this many data cubes for
@@ -393,8 +395,20 @@ def detect_widget() -> FunctionGui:
 
         signal_image = options["signal_image"]
 
-        if signal_image is None or options["background_image"] is None:
-            show_info("Both signal and background images must be specified.")
+        if signal_image is None:
+            show_info("Signal image must be specified.")
+            return
+
+        model_source = ModelSource.from_options(
+            skip_classification, use_pre_trained_weights
+        )
+        if model_source is ModelSource.CUSTOM and not (
+            trained_model and Path(trained_model).is_file()
+        ):
+            show_info(
+                "Select a trained model file, or check "
+                "'Use pre-trained weights' to use the default model."
+            )
             return
 
         detected_cells = []
@@ -411,9 +425,14 @@ def detect_widget() -> FunctionGui:
                 options["cell_layer"], Cell.UNKNOWN
             )
 
+        background_image = options["background_image"]
+        background_array = (
+            background_image.data if background_image is not None else None
+        )
+
         data_inputs = DataInputs(
             signal_image.data,
-            options["background_image"].data,
+            background_array,
             voxel_size_z,
             voxel_size_y,
             voxel_size_x,
@@ -435,8 +454,6 @@ def detect_widget() -> FunctionGui:
             detection_batch_size,
         )
 
-        if use_pre_trained_weights:
-            trained_model = None
         classification_inputs = ClassificationInputs(
             skip_classification,
             use_pre_trained_weights,
@@ -490,6 +507,21 @@ def detect_widget() -> FunctionGui:
     widget.reset_button.changed.connect(
         partial(restore_options_defaults, widget)
     )
+
+    def update_trained_model_visibility() -> None:
+        widget.trained_model.visible = (
+            ModelSource.from_options(
+                widget.skip_classification.value,
+                widget.use_pre_trained_weights.value,
+            )
+            is ModelSource.CUSTOM
+        )
+
+    widget.skip_classification.changed.connect(update_trained_model_visibility)
+    widget.use_pre_trained_weights.changed.connect(
+        update_trained_model_visibility
+    )
+    update_trained_model_visibility()
 
     # Insert progress bar before the run and reset buttons
     widget.insert(widget.index("debug") + 1, progress_bar)

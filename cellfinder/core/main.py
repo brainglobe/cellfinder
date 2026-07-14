@@ -212,6 +212,8 @@ def main(
             raise FileNotFoundError(
                 f"Trained model not found: {trained_model}"
             )
+        if background_array is None and model == "resnet50_tv":
+            model = "resnet50_1ch"
         install_path = None
         model_weights = prep.prep_model_weights(
             model_weights, install_path, model
