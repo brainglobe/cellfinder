@@ -1169,37 +1169,25 @@ def test_dataset_cuboid_bad_arg(tmp_path):
         )
 
 
-def test_depth1_cube_squeezes_to_2d():
+@pytest.mark.parametrize(
+    "plane_size,center,data_voxel_sizes",
+    [
+        ((40, 40), (20, 20, 5), (5, 1, 1)),
+        ((60, 60), (30, 30, 5), (5, 2, 2)),
+    ],
+    ids=["unscaled", "rescaled_xy"],
+)
+def test_depth1_cube_squeezes_to_2d(plane_size, center, data_voxel_sizes):
     """
     A depth-1 cube (used for 2D classification) squeezes its singleton z
-    axis to give a 2D (y, x, c) image.
+    axis to give a 2D (y, x, c) image. The in-plane (y, x) dimensions are
+    rescaled via the interpolation path when the data and network voxel
+    sizes differ, with the z axis held at size 1 either way.
     """
-    volume = np.zeros((10, 40, 40, 2), dtype=np.uint16)
+    volume = np.zeros((10, *plane_size, 2), dtype=np.uint16)
     dataset = CuboidArrayDataset(
-        points=[Cell((20, 20, 5), Cell.UNKNOWN)],
-        data_voxel_sizes=(5, 1, 1),
-        network_voxel_sizes=(5, 1, 1),
-        network_cuboid_voxels=(1, 8, 8),
-        axis_order=("z", "y", "x"),
-        augment=False,
-        signal_array=volume[..., 0],
-        background_array=volume[..., 1],
-    )
-    item = dataset[0]
-    z_axis = dataset.output_axis_order.index("z")
-    assert item.shape[z_axis] == 1
-    assert item.squeeze(z_axis).shape == (8, 8, 2)
-
-
-def test_depth1_cube_interpolates_xy():
-    """
-    A depth-1 cube still rescales the in-plane (y, x) dimensions via the
-    interpolation path, with the z axis held at size 1.
-    """
-    volume = np.zeros((10, 60, 60, 2), dtype=np.uint16)
-    dataset = CuboidArrayDataset(
-        points=[Cell((30, 30, 5), Cell.UNKNOWN)],
-        data_voxel_sizes=(5, 2, 2),
+        points=[Cell(center, Cell.UNKNOWN)],
+        data_voxel_sizes=data_voxel_sizes,
         network_voxel_sizes=(5, 1, 1),
         network_cuboid_voxels=(1, 8, 8),
         axis_order=("z", "y", "x"),
