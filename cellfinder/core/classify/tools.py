@@ -13,6 +13,53 @@ def model_input_channels(model: Model) -> int:
     return tuple(model.inputs[0].shape)[-1]
 
 
+def _load_existing_model(
+    existing_model: Optional[os.PathLike], dimensions: int
+) -> Model:
+    """
+    Load a saved model, checking its input rank matches `dimensions`.
+    """
+    logger.debug(f"Loading model: {existing_model}")
+    model = keras.models.load_model(existing_model)
+    if len(model.input_shape) != dimensions + 2:
+        raise ValueError(
+            f"Loaded model expects {len(model.input_shape) - 2}D input, "
+            f"but dimensions={dimensions} was requested."
+        )
+    return model
+
+
+def _default_shape(dimensions: int, num_channels: int) -> Tuple[int, ...]:
+    """
+    The input shape used for a new model when none is given.
+    """
+    if dimensions == 2:
+        return (50, 50, num_channels)
+    return (50, 50, 20, num_channels)
+
+
+def _set_model_weights(
+    model: Model, model_weights: Optional[os.PathLike]
+) -> None:
+    """
+    Set a new model's weights from `model_weights`, which must be provided.
+    """
+    logger.debug(f"Setting model weights according to: {model_weights}")
+    if model_weights is None:
+        raise OSError(
+            "`model_weights` must be provided for inference "
+            "or continued training."
+        )
+    try:
+        model.optimizer.build(model.trainable_variables)
+        model.load_weights(model_weights)
+    except (OSError, ValueError) as e:
+        raise ValueError(
+            f"Error loading weights: {model_weights}.\n"
+            "Provided weights don't match the model architecture.\n"
+        ) from e
+
+
 def get_model(
     existing_model: Optional[os.PathLike] = None,
     model_weights: Optional[os.PathLike] = None,
@@ -49,45 +96,21 @@ def get_model(
 
     """
     if existing_model is not None or network_depth is None:
-        logger.debug(f"Loading model: {existing_model}")
-        model = keras.models.load_model(existing_model)
-        expected_rank = dimensions + 2
-        if len(model.input_shape) != expected_rank:
-            raise ValueError(
-                f"Loaded model expects {len(model.input_shape) - 2}D input, "
-                f"but dimensions={dimensions} was requested."
-            )
+        model = _load_existing_model(existing_model, dimensions)
     else:
         logger.debug(f"Creating a new instance of model: {network_depth}")
-        if shape is None:
-            shape = (
-                (50, 50, num_channels)
-                if dimensions == 2
-                else (50, 50, 20, num_channels)
-            )
         model = build_model(
             network_depth=network_depth,
             learning_rate=learning_rate,
             dimensions=dimensions,
-            shape=shape,
+            shape=(
+                _default_shape(dimensions, num_channels)
+                if shape is None
+                else shape
+            ),
         )
         if inference or continue_training:
-            logger.debug(
-                f"Setting model weights according to: {model_weights}",
-            )
-            if model_weights is None:
-                raise OSError(
-                    "`model_weights` must be provided for inference "
-                    "or continued training."
-                )
-            try:
-                model.optimizer.build(model.trainable_variables)
-                model.load_weights(model_weights)
-            except (OSError, ValueError) as e:
-                raise ValueError(
-                    f"Error loading weights: {model_weights}.\n"
-                    "Provided weights don't match the model architecture.\n"
-                ) from e
+            _set_model_weights(model, model_weights)
 
     if inference:
         model.trainable = False

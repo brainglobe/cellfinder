@@ -24,6 +24,111 @@ from cellfinder.core.tools.tools import (
 from cellfinder.core.train.train_yaml import depth_type, models
 
 
+def _validate_3d_arrays(
+    signal_array: types.array,
+    background_array: Optional[types.array],
+) -> None:
+    """
+    Raise `IOError` unless the signal and background arrays are both 3D.
+    """
+    if signal_array.ndim != 3:
+        raise IOError("Signal data must be 3D")
+    if background_array is not None and background_array.ndim != 3:
+        raise IOError("Background data must be 3D")
+
+
+def _promote_2d_arrays(
+    signal_array: types.array,
+    background_array: Optional[types.array],
+    voxel_sizes: Tuple[float, ...],
+    network_voxel_sizes: Tuple[float, ...],
+) -> Tuple[
+    types.array,
+    Optional[types.array],
+    Tuple[float, ...],
+    Tuple[float, ...],
+]:
+    """
+    Promote 2D inputs to the depth-1 3D form the cube generator expects.
+
+    Accepts 2D or already-3D signal/background arrays, adding a singleton z
+    axis to the 2D ones, and pads 2-element voxel sizes with a z entry.
+
+    Returns the promoted signal array, background array, voxel sizes and
+    network voxel sizes.
+    """
+    if signal_array.ndim not in (2, 3):
+        raise IOError("2D classification needs 2D or 3D signal data")
+    if background_array is not None and background_array.ndim not in (2, 3):
+        raise IOError("2D classification needs 2D or 3D background data")
+
+    if signal_array.ndim == 2:
+        signal_array = signal_array[np.newaxis, ...]
+    if background_array is not None and background_array.ndim == 2:
+        background_array = background_array[np.newaxis, ...]
+    if len(voxel_sizes) == 2:
+        voxel_sizes = (1.0, *voxel_sizes)
+    if len(network_voxel_sizes) == 2:
+        network_voxel_sizes = (1.0, *network_voxel_sizes)
+    # the depth-1 cube must not be rescaled in z, so match the z voxel
+    # size to the data and pull a single plane
+    network_voxel_sizes = (voxel_sizes[0], *network_voxel_sizes[1:])
+
+    return signal_array, background_array, voxel_sizes, network_voxel_sizes
+
+
+def _squeeze_depth1_batch(data, z_axis: int):
+    """
+    Drop the singleton z axis from a depth-1 batch, giving 2D network input.
+    """
+    if data.shape[z_axis] != 1:
+        raise ValueError(
+            "2D classification expects a depth-1 cube, but got "
+            f"depth {data.shape[z_axis]}"
+        )
+    return data.squeeze(z_axis)
+
+
+def _run_inference(
+    model,
+    data_loader: DataLoader,
+    sampler: CuboidBatchSampler,
+    dataset: CuboidArrayDataset,
+    workers: int,
+    dimensions: int,
+    z_axis: int,
+    callback: Optional[Callable[[int], None]],
+) -> np.ndarray:
+    """
+    Run the model over every batch, returning the concatenated outputs.
+    """
+    if workers:
+        dataset.start_dataset_thread(workers)
+    try:
+        outputs = []
+        for step, data in tqdm.tqdm(
+            enumerate(data_loader),
+            total=len(sampler),
+            desc="Classifying",
+            unit="batches",
+            smoothing=1 / (25 * max(1, workers)),
+            mininterval=0.5,
+        ):
+            if dimensions == 2:
+                data = _squeeze_depth1_batch(data, z_axis)
+            output = model(data)
+            # in original keras, it seemed to held on to the output until the
+            # end (possibly on GPU). This causes resources issues for very
+            # heavy loads. So instead immediately move it to cpu/numpy
+            outputs.append(output.cpu().numpy())
+            if callback is not None:
+                callback(step)
+    finally:
+        dataset.stop_dataset_thread()
+
+    return np.concatenate(outputs, axis=0)
+
+
 @deprecate_positional_args
 def main(
     *,
@@ -117,29 +222,16 @@ def main(
     validate_dimensions(dimensions)
 
     if dimensions == 3:
-        if signal_array.ndim != 3:
-            raise IOError("Signal data must be 3D")
-        if background_array is not None and background_array.ndim != 3:
-            raise IOError("Background data must be 3D")
+        _validate_3d_arrays(signal_array, background_array)
     else:
-        if signal_array.ndim not in (2, 3):
-            raise IOError("2D classification needs 2D or 3D signal data")
-        if background_array is not None and background_array.ndim not in (
-            2,
-            3,
-        ):
-            raise IOError("2D classification needs 2D or 3D background data")
-        if signal_array.ndim == 2:
-            signal_array = signal_array[np.newaxis, ...]
-        if background_array is not None and background_array.ndim == 2:
-            background_array = background_array[np.newaxis, ...]
-        if len(voxel_sizes) == 2:
-            voxel_sizes = (1.0, *voxel_sizes)
-        if len(network_voxel_sizes) == 2:
-            network_voxel_sizes = (1.0, *network_voxel_sizes)
-        # the depth-1 cube must not be rescaled in z, so match the z voxel
-        # size to the data and pull a single plane
-        network_voxel_sizes = (voxel_sizes[0], *network_voxel_sizes[1:])
+        (
+            signal_array,
+            background_array,
+            voxel_sizes,
+            network_voxel_sizes,
+        ) = _promote_2d_arrays(
+            signal_array, background_array, voxel_sizes, network_voxel_sizes
+        )
         cube_depth = 1
 
     # Too many workers doesn't increase speed, and uses huge amounts of RAM
@@ -224,37 +316,18 @@ def main(
         )
 
     logger.info("Running inference")
-    z_axis = dataset.output_axis_order.index("z") + 1
-    if workers:
-        dataset.start_dataset_thread(workers)
-    try:
-        outputs = []
-        for step, data in tqdm.tqdm(
-            enumerate(data_loader),
-            total=len(sampler),
-            desc="Classifying",
-            unit="batches",
-            smoothing=1 / (25 * max(1, workers)),
-            mininterval=0.5,
-        ):
-            if dimensions == 2:
-                if data.shape[z_axis] != 1:
-                    raise ValueError(
-                        "2D classification expects a depth-1 cube, but got "
-                        f"depth {data.shape[z_axis]}"
-                    )
-                data = data.squeeze(z_axis)
-            output = model(data)
-            # in original keras, it seemed to held on to the output until the
-            # end (possibly on GPU). This causes resources issues for very
-            # heavy loads. So instead immediately move it to cpu/numpy
-            outputs.append(output.cpu().numpy())
-            if callback is not None:
-                callback(step)
-    finally:
-        dataset.stop_dataset_thread()
+    outputs = _run_inference(
+        model=model,
+        data_loader=data_loader,
+        sampler=sampler,
+        dataset=dataset,
+        workers=workers,
+        dimensions=dimensions,
+        z_axis=dataset.output_axis_order.index("z") + 1,
+        callback=callback,
+    )
 
-    predictions = np.argmax(np.concatenate(outputs, axis=0), axis=1)
+    predictions = np.argmax(outputs, axis=1)
     points_list = []
 
     # only go through the "extractable" points
