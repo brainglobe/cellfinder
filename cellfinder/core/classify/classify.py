@@ -92,15 +92,16 @@ def _squeeze_depth1_batch(data, z_axis: int):
 def _run_inference(
     model,
     data_loader: DataLoader,
-    sampler: CuboidBatchSampler,
     dataset: CuboidArrayDataset,
     workers: int,
-    dimensions: int,
-    z_axis: int,
+    squeeze_z_axis: Optional[int],
     callback: Optional[Callable[[int], None]],
 ) -> np.ndarray:
     """
     Run the model over every batch, returning the concatenated outputs.
+
+    If `squeeze_z_axis` is not None, each batch has that axis dropped to give
+    2D network input.
     """
     if workers:
         dataset.start_dataset_thread(workers)
@@ -108,14 +109,14 @@ def _run_inference(
         outputs = []
         for step, data in tqdm.tqdm(
             enumerate(data_loader),
-            total=len(sampler),
+            total=len(data_loader.sampler),
             desc="Classifying",
             unit="batches",
             smoothing=1 / (25 * max(1, workers)),
             mininterval=0.5,
         ):
-            if dimensions == 2:
-                data = _squeeze_depth1_batch(data, z_axis)
+            if squeeze_z_axis is not None:
+                data = _squeeze_depth1_batch(data, squeeze_z_axis)
             output = model(data)
             # in original keras, it seemed to held on to the output until the
             # end (possibly on GPU). This causes resources issues for very
@@ -319,11 +320,13 @@ def main(
     outputs = _run_inference(
         model=model,
         data_loader=data_loader,
-        sampler=sampler,
         dataset=dataset,
         workers=workers,
-        dimensions=dimensions,
-        z_axis=dataset.output_axis_order.index("z") + 1,
+        squeeze_z_axis=(
+            dataset.output_axis_order.index("z") + 1
+            if dimensions == 2
+            else None
+        ),
         callback=callback,
     )
 
