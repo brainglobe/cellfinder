@@ -64,10 +64,8 @@ def build_model(
     axis: Optional[int] = None,
     starting_features: int = 64,
     classification_activation: str = "softmax",
-    dimensions: Optional[int] = None,
 ) -> Model:
-    if dimensions is None:
-        dimensions = len(shape) - 1
+    dimensions = len(shape) - 1
     if dimensions not in dimension_layers:
         raise ValueError(
             f"Unsupported spatial dimensionality {dimensions}; "
@@ -80,7 +78,9 @@ def build_model(
     blocks, bottleneck = get_resnet_blocks_and_bottleneck(network_depth)
 
     inputs = Input(shape)
-    x = non_residual_block(inputs, starting_features, axis=axis, layers=layers)
+    x = non_residual_block(
+        inputs, starting_features, axis=axis, dimensions=dimensions
+    )
 
     features = starting_features
     for resnet_unit_id, iterations in enumerate(blocks):
@@ -91,7 +91,7 @@ def build_model(
                 block_id,
                 bottleneck=bottleneck,
                 axis=axis,
-                layers=layers,
+                dimensions=dimensions,
             )(x)
 
         features *= 2
@@ -140,14 +140,13 @@ def non_residual_block(
     bn_epsilon: float = 1e-5,
     pooling_padding: str = "valid",
     axis: int = 3,
-    layers: Optional[Dict[str, type]] = None,
+    dimensions: int = 3,
 ) -> Tensor:
     """
     Non-residual unit from He et al. (2015). Corresponds to "conv1" and the
     max pool.
     """
-    layers = layers or dimension_layers[3]
-    dimensions = _dimensions(layers)
+    layers = dimension_layers[dimensions]
     conv_kernel = conv_kernel[:dimensions]
     strides = strides[:dimensions]
     max_pool_size = max_pool_size[:dimensions]
@@ -185,7 +184,7 @@ def residual_block(
     kernel_initializer: str = "he_normal",
     bn_epsilon: float = 1e-5,
     axis: int = 3,
-    layers: Optional[Dict[str, type]] = None,
+    dimensions: int = 3,
 ) -> Callable[[Tensor], Tensor]:
     """
     Residual unit from He et al. (2015)
@@ -207,8 +206,7 @@ def residual_block(
     :param axis:
     :return:
     """
-    layers = layers or dimension_layers[3]
-    dimensions = _dimensions(layers)
+    layers = dimension_layers[dimensions]
     conv_kernel = conv_kernel[:dimensions]
     bottleneck_conv_kernel = bottleneck_conv_kernel[:dimensions]
 
@@ -297,7 +295,7 @@ def residual_block(
                 output_features * 4,
                 stride,
                 axis=axis,
-                layers=layers,
+                dimensions=dimensions,
             )
         else:
             identity_shortcut = get_shortcut(
@@ -307,7 +305,7 @@ def residual_block(
                 output_features,
                 stride,
                 axis=axis,
-                layers=layers,
+                dimensions=dimensions,
             )
 
         y = Add(name=f"resunit{resnet_unit_label}_block{block_id}_add")(
@@ -334,7 +332,7 @@ def get_shortcut(
     kernel_initializer: Union[str, Initializer] = "he_normal",
     bn_epsilon: float = 1e-5,
     axis: int = 3,
-    layers: Optional[Dict[str, type]] = None,
+    dimensions: int = 3,
 ) -> Tensor:
     """
     Create shortcut. For none-bottleneck residual units, this is just the
@@ -353,8 +351,7 @@ def get_shortcut(
     :param axis:
     :return: Shortcut tensor, to add to the output of the residual unit
     """
-    layers = layers or dimension_layers[3]
-    dimensions = _dimensions(layers)
+    layers = dimension_layers[dimensions]
 
     if block_id == 0:
         shortcut = layers["Conv"](
@@ -390,7 +387,3 @@ def get_stride(resnet_unit_id: int, block_id: int) -> int:
         return 1
     else:
         return 2
-
-
-def _dimensions(layers: Dict[str, type]) -> int:
-    return 2 if layers["Conv"] is dimension_layers[2]["Conv"] else 3

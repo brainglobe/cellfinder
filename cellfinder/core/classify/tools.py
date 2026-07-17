@@ -33,9 +33,8 @@ def _default_shape(dimensions: int, num_channels: int) -> Tuple[int, ...]:
     """
     The input shape used for a new model when none is given.
     """
-    if dimensions == 2:
-        return (50, 50, num_channels)
-    return (50, 50, 20, num_channels)
+    spatial = (50, 50) if dimensions == 2 else (50, 50, 20)
+    return (*spatial, num_channels)
 
 
 def _set_model_weights(
@@ -87,8 +86,9 @@ def get_model(
     ``2`` for the standard signal+background model, ``1`` for a single-channel
     (signal-only) model. Ignored when ``existing_model`` is loaded or when
     ``shape`` is given.
-    :param dimensions: Whether to build a 3D or 2D network when creating a new
-    model.
+    :param dimensions: Whether a 3D or 2D network is expected. Checked against
+    the rank of a loaded ``existing_model``, and used to pick the default shape
+    when ``shape`` is None. A new model's rank otherwise follows ``shape``.
     :param shape: The input shape (excluding the batch dimension) to use when
     creating a new model. If None, a default for `dimensions` with
     `num_channels` channels is used.
@@ -102,7 +102,6 @@ def get_model(
         model = build_model(
             network_depth=network_depth,
             learning_rate=learning_rate,
-            dimensions=dimensions,
             shape=(
                 _default_shape(dimensions, num_channels)
                 if shape is None
