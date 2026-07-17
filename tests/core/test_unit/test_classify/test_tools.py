@@ -75,11 +75,12 @@ def test_get_model_loads_keras_weights(tmp_path, num_channels):
     )
 
 
-def test_get_model_builds_2d():
+@pytest.mark.parametrize("shape", [None, (50, 50, 2)])
+def test_get_model_builds_2d(shape):
     model = tools.get_model(
         network_depth="18-layer",
         dimensions=2,
-        shape=(50, 50, 2),
+        shape=shape,
     )
     # batch + y + x + channels
     assert len(model.input_shape) == 4
