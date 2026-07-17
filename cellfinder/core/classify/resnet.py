@@ -4,17 +4,14 @@ from keras import (
     KerasTensor as Tensor,
 )
 from keras import Model
+from keras import layers as keras_layers
 from keras.initializers import Initializer
 from keras.layers import (
     Activation,
     Add,
     BatchNormalization,
-    Conv3D,
     Dense,
-    GlobalAveragePooling3D,
     Input,
-    MaxPooling3D,
-    ZeroPadding3D,
 )
 from keras.optimizers import Adam, Optimizer
 
@@ -40,25 +37,50 @@ network_residual_bottleneck: Dict[layer_type, bool] = {
     "101-layer": True,
     "152-layer": True,
 }
+
+# Per-dimensionality keras layer classes. The network is otherwise identical;
+# only the spatial rank of the convolutions/pooling changes, so we resolve the
+# rank-specific layer (e.g. Conv2D vs Conv3D) by name from keras.layers.
+_layer_kinds = ("Conv", "MaxPooling", "GlobalAveragePooling", "ZeroPadding")
+
+dimension_layers: Dict[int, Dict[str, type]] = {
+    dimensions: {
+        kind: getattr(keras_layers, f"{kind}{dimensions}D")
+        for kind in _layer_kinds
+    }
+    for dimensions in (2, 3)
+}
 #####################################################################
 
 
 def build_model(
-    shape: Tuple[int, int, int, int] = (50, 50, 20, 2),
+    shape: Tuple[int, ...] = (50, 50, 20, 2),
     network_depth: layer_type = "18-layer",
     optimizer: Optional[Optimizer] = None,
     learning_rate: float = 0.0005,  # higher rates don't always converge
     loss: str = "categorical_crossentropy",
     metrics: List[str] = ["accuracy"],
     number_classes: int = 2,
-    axis: int = 3,
+    axis: Optional[int] = None,
     starting_features: int = 64,
     classification_activation: str = "softmax",
 ) -> Model:
+    dimensions = len(shape) - 1
+    if dimensions not in dimension_layers:
+        raise ValueError(
+            f"Unsupported spatial dimensionality {dimensions}; "
+            f"expected one of {sorted(dimension_layers)}"
+        )
+    if axis is None:
+        axis = dimensions
+
+    layers = dimension_layers[dimensions]
     blocks, bottleneck = get_resnet_blocks_and_bottleneck(network_depth)
 
     inputs = Input(shape)
-    x = non_residual_block(inputs, starting_features, axis=axis)
+    x = non_residual_block(
+        inputs, starting_features, axis=axis, dimensions=dimensions
+    )
 
     features = starting_features
     for resnet_unit_id, iterations in enumerate(blocks):
@@ -69,11 +91,12 @@ def build_model(
                 block_id,
                 bottleneck=bottleneck,
                 axis=axis,
+                dimensions=dimensions,
             )(x)
 
         features *= 2
 
-    x = GlobalAveragePooling3D(name="final_average_pool")(x)
+    x = layers["GlobalAveragePooling"](name="final_average_pool")(x)
     x = Dense(
         number_classes,
         activation=classification_activation,
@@ -108,23 +131,28 @@ def get_resnet_blocks_and_bottleneck(
 def non_residual_block(
     inputs: Tensor,
     starting_features: int,
-    conv_kernel: Tuple[int, int, int] = (7, 7, 3),
-    strides: Tuple[int, int, int] = (2, 2, 2),
+    conv_kernel: Tuple[int, ...] = (7, 7, 3),
+    strides: Tuple[int, ...] = (2, 2, 2),
     padding: int = 3,
-    max_pool_size: Tuple[int, int, int] = (3, 3, 2),
+    max_pool_size: Tuple[int, ...] = (3, 3, 2),
     activation: str = "relu",
     use_bias: bool = False,
     bn_epsilon: float = 1e-5,
     pooling_padding: str = "valid",
     axis: int = 3,
+    dimensions: int = 3,
 ) -> Tensor:
     """
     Non-residual unit from He et al. (2015). Corresponds to "conv1" and the
     max pool.
     """
+    layers = dimension_layers[dimensions]
+    conv_kernel = conv_kernel[:dimensions]
+    strides = strides[:dimensions]
+    max_pool_size = max_pool_size[:dimensions]
 
-    x = ZeroPadding3D(padding=padding, name="conv1_padding")(inputs)
-    x = Conv3D(
+    x = layers["ZeroPadding"](padding=padding, name="conv1_padding")(inputs)
+    x = layers["Conv"](
         starting_features,
         conv_kernel,
         strides=strides,
@@ -134,7 +162,7 @@ def non_residual_block(
     x = BatchNormalization(axis=axis, epsilon=bn_epsilon, name="conv1_bn")(x)
     x = Activation(activation, name="conv1_activation")(x)
 
-    x = MaxPooling3D(
+    x = layers["MaxPooling"](
         max_pool_size,
         strides=strides,
         padding=pooling_padding,
@@ -148,14 +176,15 @@ def residual_block(
     output_features: Tensor,
     resnet_unit_id: int,
     block_id: int,
-    conv_kernel: Tuple[int, int, int] = (3, 3, 3),
-    bottleneck_conv_kernel: Tuple[int, int, int] = (1, 1, 1),
+    conv_kernel: Tuple[int, ...] = (3, 3, 3),
+    bottleneck_conv_kernel: Tuple[int, ...] = (1, 1, 1),
     bottleneck: int = False,
     activation: str = "relu",
     use_bias: bool = False,
     kernel_initializer: str = "he_normal",
     bn_epsilon: float = 1e-5,
     axis: int = 3,
+    dimensions: int = 3,
 ) -> Callable[[Tensor], Tensor]:
     """
     Residual unit from He et al. (2015)
@@ -177,13 +206,16 @@ def residual_block(
     :param axis:
     :return:
     """
+    layers = dimension_layers[dimensions]
+    conv_kernel = conv_kernel[:dimensions]
+    bottleneck_conv_kernel = bottleneck_conv_kernel[:dimensions]
 
     stride = get_stride(resnet_unit_id, block_id)
     resnet_unit_label = resnet_unit_id + 2
 
     def f(x: Tensor) -> Tensor:
         if bottleneck:
-            y = Conv3D(
+            y = layers["Conv"](
                 output_features,
                 bottleneck_conv_kernel,
                 strides=stride,
@@ -192,12 +224,12 @@ def residual_block(
                 kernel_initializer=kernel_initializer,
             )(x)
         else:
-            y = ZeroPadding3D(
+            y = layers["ZeroPadding"](
                 padding=1,
                 name=f"resunit{resnet_unit_label}_block{block_id}_pad_a",
             )(x)
 
-            y = Conv3D(
+            y = layers["Conv"](
                 output_features,
                 conv_kernel,
                 strides=stride,
@@ -217,11 +249,11 @@ def residual_block(
             name=f"resunit{resnet_unit_label}_block{block_id}_activation_a",
         )(y)
 
-        y = ZeroPadding3D(
+        y = layers["ZeroPadding"](
             padding=1, name=f"resunit{resnet_unit_label}_block{block_id}_pad_b"
         )(y)
 
-        y = Conv3D(
+        y = layers["Conv"](
             output_features,
             conv_kernel,
             use_bias=use_bias,
@@ -242,7 +274,7 @@ def residual_block(
                 f"{block_id}_activation_b",
             )(y)
 
-            y = Conv3D(
+            y = layers["Conv"](
                 output_features * 4,
                 bottleneck_conv_kernel,
                 use_bias=use_bias,
@@ -263,6 +295,7 @@ def residual_block(
                 output_features * 4,
                 stride,
                 axis=axis,
+                dimensions=dimensions,
             )
         else:
             identity_shortcut = get_shortcut(
@@ -272,6 +305,7 @@ def residual_block(
                 output_features,
                 stride,
                 axis=axis,
+                dimensions=dimensions,
             )
 
         y = Add(name=f"resunit{resnet_unit_label}_block{block_id}_add")(
@@ -298,6 +332,7 @@ def get_shortcut(
     kernel_initializer: Union[str, Initializer] = "he_normal",
     bn_epsilon: float = 1e-5,
     axis: int = 3,
+    dimensions: int = 3,
 ) -> Tensor:
     """
     Create shortcut. For none-bottleneck residual units, this is just the
@@ -316,11 +351,12 @@ def get_shortcut(
     :param axis:
     :return: Shortcut tensor, to add to the output of the residual unit
     """
+    layers = dimension_layers[dimensions]
 
     if block_id == 0:
-        shortcut = Conv3D(
+        shortcut = layers["Conv"](
             features,
-            (1, 1, 1),
+            (1,) * dimensions,
             strides=stride,
             use_bias=use_bias,
             name=f"resunit{resnet_unit_label}_block{block_id}_shortcut_conv",

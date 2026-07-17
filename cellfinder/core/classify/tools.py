@@ -1,5 +1,5 @@
 import os
-from typing import Optional
+from typing import Optional, Tuple
 
 import keras
 from keras import Model
@@ -13,6 +13,52 @@ def model_input_channels(model: Model) -> int:
     return tuple(model.inputs[0].shape)[-1]
 
 
+def _load_existing_model(
+    existing_model: Optional[os.PathLike], dimensions: int
+) -> Model:
+    """
+    Load a saved model, checking its input rank matches `dimensions`.
+    """
+    logger.debug(f"Loading model: {existing_model}")
+    model = keras.models.load_model(existing_model)
+    if len(model.input_shape) != dimensions + 2:
+        raise ValueError(
+            f"Loaded model expects {len(model.input_shape) - 2}D input, "
+            f"but dimensions={dimensions} was requested."
+        )
+    return model
+
+
+def _default_shape(dimensions: int, num_channels: int) -> Tuple[int, ...]:
+    """
+    The input shape used for a new model when none is given.
+    """
+    spatial = (50, 50) if dimensions == 2 else (50, 50, 20)
+    return (*spatial, num_channels)
+
+
+def _set_model_weights(
+    model: Model, model_weights: Optional[os.PathLike]
+) -> None:
+    """
+    Set a new model's weights from `model_weights`, which must be provided.
+    """
+    logger.debug(f"Setting model weights according to: {model_weights}")
+    if model_weights is None:
+        raise OSError(
+            "`model_weights` must be provided for inference "
+            "or continued training."
+        )
+    try:
+        model.optimizer.build(model.trainable_variables)
+        model.load_weights(model_weights)
+    except (OSError, ValueError) as e:
+        raise ValueError(
+            f"Error loading weights: {model_weights}.\n"
+            "Provided weights don't match the model architecture.\n"
+        ) from e
+
+
 def get_model(
     existing_model: Optional[os.PathLike] = None,
     model_weights: Optional[os.PathLike] = None,
@@ -21,6 +67,8 @@ def get_model(
     inference: bool = False,
     continue_training: bool = False,
     num_channels: int = 2,
+    dimensions: int = 3,
+    shape: Optional[Tuple[int, ...]] = None,
 ) -> Model:
     """Returns the correct model based on the arguments passed
     :param existing_model: An existing, trained model. This is returned if it
@@ -36,37 +84,32 @@ def get_model(
     exists. E.g. by using the default one
     :param num_channels: Number of input channels for a freshly built model.
     ``2`` for the standard signal+background model, ``1`` for a single-channel
-    (signal-only) model. Ignored when ``existing_model`` is loaded.
+    (signal-only) model. Ignored when ``existing_model`` is loaded or when
+    ``shape`` is given.
+    :param dimensions: Whether a 3D or 2D network is expected. Checked against
+    the rank of a loaded ``existing_model``, and used to pick the default shape
+    when ``shape`` is None. A new model's rank otherwise follows ``shape``.
+    :param shape: The input shape (excluding the batch dimension) to use when
+    creating a new model. If None, a default for `dimensions` with
+    `num_channels` channels is used.
     :return: A keras model
 
     """
     if existing_model is not None or network_depth is None:
-        logger.debug(f"Loading model: {existing_model}")
-        model = keras.models.load_model(existing_model)
+        model = _load_existing_model(existing_model, dimensions)
     else:
         logger.debug(f"Creating a new instance of model: {network_depth}")
         model = build_model(
-            shape=(50, 50, 20, num_channels),
             network_depth=network_depth,
             learning_rate=learning_rate,
+            shape=(
+                _default_shape(dimensions, num_channels)
+                if shape is None
+                else shape
+            ),
         )
         if inference or continue_training:
-            logger.debug(
-                f"Setting model weights according to: {model_weights}",
-            )
-            if model_weights is None:
-                raise OSError(
-                    "`model_weights` must be provided for inference "
-                    "or continued training."
-                )
-            try:
-                model.optimizer.build(model.trainable_variables)
-                model.load_weights(model_weights)
-            except (OSError, ValueError) as e:
-                raise ValueError(
-                    f"Error loading weights: {model_weights}.\n"
-                    "Provided weights don't match the model architecture.\n"
-                ) from e
+            _set_model_weights(model, model_weights)
 
     if inference:
         model.trainable = False
