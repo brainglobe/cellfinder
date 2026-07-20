@@ -1,3 +1,4 @@
+import sys
 from pathlib import Path
 from unittest.mock import patch
 
@@ -92,3 +93,76 @@ def test_run_with_virtual_yaml_files(get_training_widget):
             expected_optional_training_args,
             expected_misc_args,
         )
+
+
+@pytest.mark.skipif(
+    sys.version_info < (3, 13),
+    reason="requires ThreadingMock, only available in Python 3.13+",
+)
+def test_args_properly_set(get_training_widget):
+    """
+    Checks that training is run with parameters from GUI.
+    """
+    from unittest.mock import ThreadingMock
+
+    with patch(
+        "cellfinder.napari.train.train.train_yaml", new_callable=ThreadingMock
+    ) as train_yaml:
+        # make default input valid - need yaml files (they don't technically
+        # have to exist)
+        virtual_yaml_files = (
+            Path.home() / "file_1.yaml",
+            Path.home() / "file_2.yaml",
+        )
+        get_training_widget.yaml_files.value = virtual_yaml_files
+        get_training_widget.epochs.value = 77
+        get_training_widget.batch_size.value = 27
+        get_training_widget.test_fraction.value = 0.21
+        get_training_widget.learning_rate.value = 0.0023
+        get_training_widget.lr_schedule.value = [12, 37, 57]
+        get_training_widget.lr_multiplier.value = 0.61
+        get_training_widget.augment_likelihood.value = 0.83
+        get_training_widget.flippable_axis.value = [0, 2]
+        get_training_widget.rotate_range.value = 33, 145
+        get_training_widget.translate_range.value = -0.33, 0.47
+        get_training_widget.scale_range.value = 0.67, 1.37
+        get_training_widget.intensity_range.value = 0.49, 1.83
+        get_training_widget.number_of_free_cpus.value = 7
+        get_training_widget.call_button.clicked()
+
+        train_yaml.wait_until_called(timeout=60)
+        train_yaml.assert_called_once()
+        called_kwargs = train_yaml.call_args.kwargs
+
+        assert list(called_kwargs["yaml_file"]) == list(virtual_yaml_files)
+        assert called_kwargs["epochs"] == 77
+        assert called_kwargs["batch_size"] == 27
+        assert called_kwargs["test_fraction"] == 0.21
+        assert called_kwargs["learning_rate"] == 0.0023
+        assert list(called_kwargs["lr_schedule"]) == [12, 37, 57]
+        assert called_kwargs["lr_multiplier"] == 0.61
+        assert called_kwargs["augment_likelihood"] == 0.83
+        assert set(called_kwargs["flippable_axis"]) == {0, 2}
+        assert (
+            list(called_kwargs["rotate_range"])
+            == [
+                (33, 145),
+            ]
+            * 3
+        )
+        assert (
+            list(called_kwargs["translate_range"])
+            == [
+                (-0.33, 0.47),
+            ]
+            * 3
+        )
+        assert (
+            list(called_kwargs["scale_range"])
+            == [
+                (0.67, 1.37),
+            ]
+            * 3
+        )
+        assert list(called_kwargs["intensity_range"]) == [0.49, 1.83]
+        assert called_kwargs["n_free_cpus"] == 7

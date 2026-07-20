@@ -1,9 +1,13 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional
 
 from magicgui.types import FileDialogMode
 
+from cellfinder.core.classify.augment import (
+    interval_to_rand_range,
+    interval_to_rand_range_3d,
+)
 from cellfinder.core.download.download import model_filenames
 from cellfinder.core.train.train_yaml import models
 from cellfinder.napari.input_container import InputContainer
@@ -84,6 +88,12 @@ class OptionalTrainingInputs(InputContainer):
     lr_schedule: list[int] | tuple[int, ...] = ()
     lr_multiplier: float = 0.1
     normalize_channels: bool = False
+    augment_likelihood: float = 0.9
+    flippable_axis: list[int] = field(default_factory=lambda: [0, 1, 2])
+    rotate_range: tuple[float, float] = -1, 1
+    translate_range: tuple[float, float] = -0.05, 0.05
+    scale_range: tuple[float, float] = 1, 1
+    intensity_range: tuple[float, float] = 1, 1
 
     def as_core_arguments(self) -> dict:
         arguments = super().as_core_arguments()
@@ -91,12 +101,19 @@ class OptionalTrainingInputs(InputContainer):
         arguments["no_save_checkpoints"] = not arguments.pop(
             "save_checkpoints"
         )
+        arguments["flippable_axis"] = list(set(arguments["flippable_axis"]))
+        for arg in ("rotate_range", "translate_range", "scale_range"):
+            arguments[arg] = interval_to_rand_range_3d(*arguments[arg])
+        arguments["intensity_range"] = interval_to_rand_range(
+            *arguments["intensity_range"]
+        )
+
         return arguments
 
     @classmethod
     def widget_representation(cls) -> dict:
         return dict(
-            training_options=html_label_widget("Training (optional)"),
+            training_options=html_label_widget("Training options"),
             continue_training=cls._custom_widget("continue_training"),
             augment=cls._custom_widget("augment"),
             tensorboard=cls._custom_widget("tensorboard"),
@@ -115,6 +132,26 @@ class OptionalTrainingInputs(InputContainer):
                 "lr_multiplier", custom_label="LR multiplier"
             ),
             normalize_channels=cls._custom_widget("normalize_channels"),
+            augment_likelihood=cls._custom_widget(
+                "augment_likelihood", step=0.01, min=0.00, max=1
+            ),
+            flippable_axis=cls._custom_widget("flippable_axis"),
+            rotate_range=cls._custom_widget(
+                "rotate_range",
+                options={"step": 1, "min": -360, "max": 360},
+            ),
+            translate_range=cls._custom_widget(
+                "translate_range",
+                options={"step": 0.01, "min": -1, "max": 1},
+            ),
+            scale_range=cls._custom_widget(
+                "scale_range",
+                options={"step": 0.01, "min": 0.00, "max": 100},
+            ),
+            intensity_range=cls._custom_widget(
+                "intensity_range",
+                options={"step": 0.01, "min": 0.00, "max": 1000},
+            ),
         )
 
 

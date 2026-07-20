@@ -14,7 +14,11 @@ from torch.multiprocessing import Queue
 from torch.utils.data import Dataset, Sampler, get_worker_info
 
 from cellfinder.core import types
-from cellfinder.core.classify.augment import DataAugmentation
+from cellfinder.core.classify.augment import (
+    DataAugmentation,
+    RandRange,
+    RandRangeSeq,
+)
 from cellfinder.core.tools.threading import (
     EOFSignal,
     ExecutionFailure,
@@ -28,7 +32,6 @@ from cellfinder.core.tools.tools import (
 
 AXIS = Literal["x", "y", "z"]
 DIM = Literal[AXIS, "c"]
-RandRange = Sequence[float] | Sequence[tuple[float, float]] | None
 
 
 _point_ax_map = {"x": 0, "y": 1, "z": 2}
@@ -592,21 +595,26 @@ class CuboidDatasetBase(Dataset):
         potentially flip around its center during augmentation, if any, with
         probability ``augment_likelihood``. See ``DataAugmentation`` class for
         full details.
-    :param rotate_range: A sequence of floats or sequence of 2-tuples with the
-        radian angle or range of angles to rotate the data in the corresponding
+    :param rotate_range: A sequence of 2-tuples with the
+        range of degree angles to rotate the data in the corresponding
         ``axis_order`` axis during augmentation with probability
         ``augment_likelihood``. Where zero means no rotation. Or ``None`` if
         there's no rotation to any axis. See ``DataAugmentation`` class for
         full details.
-    :param translate_range: A sequence of floats or sequence of 2-tuples with
-        the fractional distance or range of distance to translate the data
+    :param translate_range: A sequence of 2-tuples with
+        the fractional range of distance to translate the data
         during augmentation with probability ``augment_likelihood``. Where zero
         means no translation.  Or `None` if there's no translation to any axis.
         See ``DataAugmentation`` class for full details.
-    :param scale_range: A sequence of floats or sequence of 2-tuples with
-        the amount or range of amount to scale the data during augmentation
+    :param scale_range: A sequence of 2-tuples with
+        the range of amount to scale the data during augmentation
         with probability ``augment_likelihood``. Where ``1`` means no scaling.
         Or `None` if there's no scaling to any axis. See ``DataAugmentation``
+        class for full details.
+    :param intensity_range: A 2-tuple with the range of the voxels
+        multiplication factor by which to multiply the data during augmentation
+        with probability ``augment_likelihood``. Where ``1`` means raw data.
+        Or `None` if there's no multiplication. See ``DataAugmentation``
         class for full details.
     """
 
@@ -663,9 +671,10 @@ class CuboidDatasetBase(Dataset):
         augment: bool = False,
         augment_likelihood: float = 0.9,
         flippable_axis: Sequence[int] = (0, 1, 2),
-        rotate_range: RandRange = (math.pi / 4,) * 3,
-        translate_range: RandRange = (0.05,) * 3,
-        scale_range: RandRange = ((0.6, 1.4),) * 3,
+        rotate_range: RandRangeSeq = ((-1, 1),) * 3,
+        translate_range: RandRangeSeq = ((-0.05, 0.05),) * 3,
+        scale_range: RandRangeSeq = None,
+        intensity_range: RandRange = None,
         **kwargs,
     ):
         super().__init__(**kwargs)
@@ -735,6 +744,7 @@ class CuboidDatasetBase(Dataset):
                 translate_range,
                 scale_range,
                 rotate_range,
+                intensity_range,
             )
 
         if src_image_data is not None:
