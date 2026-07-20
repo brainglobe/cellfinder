@@ -52,6 +52,7 @@ def main(
     classify_callback: Optional[Callable[[int], None]] = None,
     detect_finished_callback: Optional[Callable[[list], None]] = None,
     classification_max_workers: int = 3,
+    detect_centre_of_intensity: bool = False,
     normalize_channels: bool = False,
     normalization_n_sampling_planes: int = 50,
 ) -> List[Cell]:
@@ -192,6 +193,13 @@ def main(
     classification_max_workers : int
         The max number of sub-processes to use for data loading / processing
         during classification. Defaults to 3.
+    detect_centre_of_intensity : bool
+        If False, a candidate cell's center is just the mean of the positions
+        of all voxels marked as above background, or bright, in that candidate.
+        The voxel intensity is not taken into account. If True, the center is
+        calculated similar to the center of mass, but using the intensity. So
+        the center gets pulled towards the brighter voxels in the volume.
+        Defaults to False.
     normalize_channels : bool
         If True, the signal and background data will be each normalized
         to a mean of zero and standard deviation of 1 before classification.
@@ -244,6 +252,7 @@ def main(
             split_ball_xy_size=split_ball_xy_size,
             split_ball_overlap_fraction=split_ball_overlap_fraction,
             n_splitting_iter=n_splitting_iter,
+            detect_centre_of_intensity=detect_centre_of_intensity,
         )
 
         if detect_finished_callback is not None:
