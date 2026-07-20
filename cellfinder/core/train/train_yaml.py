@@ -298,14 +298,29 @@ def training_parse():
     return args
 
 
-def parse_yaml(yaml_files, section="data"):
+def parse_yaml(
+    yaml_files: list[str | Path], section="data"
+) -> list[tuple[Path, dict]]:
     data = []
     for yaml_file in yaml_files:
-        data.extend(read_yaml_section(yaml_file, section))
+        for group in read_yaml_section(yaml_file, section):
+            data.append((Path(yaml_file), group))
     return data
 
 
-def get_tiff_files(yaml_contents: list[dict]) -> list[list[TiffFile]]:
+def _abs_or_rel_path_to_abs(path: Path, root_file: Path) -> Path:
+    """
+    Return the `path` if it's an absolute path, otherwise, the `path` is
+    relative to the `root_file`.
+    """
+    if path.is_absolute():
+        return path
+    return (root_file.parent / path).resolve()
+
+
+def get_tiff_files(
+    yaml_contents: list[tuple[Path, dict]],
+) -> list[list[TiffFile]]:
     """
     Takes a yaml file representing multiple folders each containing many
     extracted cube tiff files. It returns a corresponding list of lists of
@@ -313,7 +328,7 @@ def get_tiff_files(yaml_contents: list[dict]) -> list[list[TiffFile]]:
     the given directory.
     """
     tiff_lists = []
-    for d in yaml_contents:
+    for yaml_f, d in yaml_contents:
         if d["bg_channel"] < 0:
             channels = [d["signal_channel"]]
             channels_metadata = [
@@ -335,12 +350,13 @@ def get_tiff_files(yaml_contents: list[dict]) -> list[list[TiffFile]]:
                 "std": float(d["bg_std"]),
             }
 
+        cube_dir = _abs_or_rel_path_to_abs(Path(d["cube_dir"]), yaml_f)
         if "cell_def" in d and d["cell_def"]:
-            ch1_tiffs = [
-                os.path.join(d["cube_dir"], f)
-                for f in os.listdir(d["cube_dir"])
-                if f.endswith("Ch" + str(channels[0]) + ".tif")
-            ]
+            ch1_tiffs = []
+            for f in os.listdir(cube_dir):
+                if f.endswith("Ch" + str(channels[0]) + ".tif"):
+                    ch1_tiffs.append(str(cube_dir / f))
+
             tiff_lists.append(
                 TiffList(
                     find_relevant_tiffs(ch1_tiffs, d["cell_def"]),
@@ -351,7 +367,7 @@ def get_tiff_files(yaml_contents: list[dict]) -> list[list[TiffFile]]:
             )
         else:
             tiff_lists.append(
-                TiffDir(d["cube_dir"], channels, channels_metadata, d["type"])
+                TiffDir(str(cube_dir), channels, channels_metadata, d["type"])
             )
 
     tiff_files = [tiff_dir.make_tifffile_list() for tiff_dir in tiff_lists]

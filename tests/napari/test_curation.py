@@ -1,3 +1,5 @@
+import os
+import shutil
 from pathlib import Path
 from unittest.mock import patch
 
@@ -7,6 +9,7 @@ import pytest
 import yaml
 from napari.layers import Image, Points
 
+from cellfinder.core.train.train_yaml import get_tiff_files, parse_yaml
 from cellfinder.napari import sample_data
 from cellfinder.napari.curation import CurationWidget
 from cellfinder.napari.sample_data import load_sample
@@ -109,7 +112,8 @@ def test_cell_marking(curation_widget, tmp_path):
         yaml_data = yaml.safe_load(fh)
 
     for item in yaml_data["data"]:
-        assert "cube_dir" in item
+        # the cube dir should be relative to yaml file not an abs path
+        assert not Path(item["cube_dir"]).is_absolute()
         assert "signal_channel" in item
         assert "bg_channel" in item
         assert "type" in item
@@ -117,6 +121,8 @@ def test_cell_marking(curation_widget, tmp_path):
         assert "signal_std" in item
         assert "bg_mean" in item
         assert "bg_std" in item
+        assert "signal_source" in item
+        assert "background_source" in item
 
 
 @pytest.fixture
@@ -290,10 +296,68 @@ def test_async_save_done_only_after_cubes_written(
         assert show_info.call_args_list == []
         assert not (tmp_path / "training.yaml").exists()
 
-        qtbot.waitUntil(
-            lambda: (tmp_path / "training.yaml").exists(), timeout=20000
-        )
+        qtbot.waitUntil(lambda: show_info.call_count, timeout=20000)
 
         show_info.assert_called_once_with("Done")
-        assert len(list((tmp_path / "cells").glob("*.tif"))) == 2
-        assert len(list((tmp_path / "non_cells").glob("*.tif"))) == 2
+
+    assert (tmp_path / "training.yaml").exists()
+    assert len(list((tmp_path / "cells").glob("*.tif"))) == 2
+    assert len(list((tmp_path / "non_cells").glob("*.tif"))) == 2
+
+
+def test_curated_data_can_be_loaded(valid_curation_widget, tmp_path, qtbot):
+    """
+    Tests that the curated data can be loaded by training code. Both in its
+    original exported location and after it has been moved elsewhere.
+    """
+    widget = valid_curation_widget
+    widget.output_directory = tmp_path
+
+    with patch("cellfinder.napari.curation.show_info") as show_info:
+        widget.save_training_data(prompt_for_directory=False, block=False)
+
+        assert not (tmp_path / "training.yaml").exists()
+
+        qtbot.waitUntil(lambda: show_info.call_count, timeout=20000)
+
+    # check that we can load the training data where it currently exists
+    training_yaml = tmp_path / "training.yaml"
+    src_tiffs = {f.resolve() for f in tmp_path.glob("**/*.tif")}
+
+    assert training_yaml.exists()
+    assert len(src_tiffs) == 4
+
+    # check read tiffs are same
+    yaml_contents = parse_yaml([str(training_yaml)])
+    tiff_lists = get_tiff_files(yaml_contents)
+    loaded_tiffs = {
+        f for group in tiff_lists for im in group for f in im.img_files
+    }
+    for f in loaded_tiffs:
+        assert Path(f).exists()
+
+    assert {Path(f).resolve() for f in loaded_tiffs} == src_tiffs
+
+    # now move the data and check that we can still load it
+    items = os.listdir(tmp_path)
+    new_place = tmp_path / "new_place"
+    new_place.mkdir()
+    for item in items:
+        shutil.move(tmp_path / item, new_place)
+
+    training_yaml = new_place / "training.yaml"
+    moved_tiffs = {f.resolve() for f in new_place.glob("**/*.tif")}
+
+    assert training_yaml.exists()
+    assert {f.name for f in moved_tiffs} == {f.name for f in src_tiffs}
+
+    # check read tiffs are same
+    yaml_contents = parse_yaml([str(training_yaml)])
+    tiff_lists = get_tiff_files(yaml_contents)
+    loaded_tiffs = {
+        f for group in tiff_lists for im in group for f in im.img_files
+    }
+    for f in loaded_tiffs:
+        assert Path(f).exists()
+
+    assert {Path(f).resolve() for f in loaded_tiffs} == moved_tiffs
