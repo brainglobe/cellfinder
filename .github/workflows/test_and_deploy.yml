@@ -111,7 +111,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
           secret-codecov-token: ${{ secrets.CODECOV_TOKEN }}
           install-extras: 'dev,napari'
-          install-main-branch: 'napari/napari'
+          install-main-branch: 'napari/napari, brainglobe/brainglobe-utils'
           use-headless: 'true'
 
       - name: Notify slack on scheduled failure
