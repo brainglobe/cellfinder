@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+from enum import Enum, auto
 from pathlib import Path
 from typing import List, Optional
 
@@ -15,7 +16,7 @@ class DataInputs(InputContainer):
     """Container for image-related ("Data") inputs."""
 
     signal_array: numpy.ndarray = None
-    background_array: numpy.ndarray = None
+    background_array: Optional[numpy.ndarray] = None
     voxel_size_z: float = 5
     voxel_size_y: float = 2
     voxel_size_x: float = 2
@@ -121,6 +122,20 @@ class DetectionInputs(InputContainer):
         )
 
 
+class ModelSource(Enum):
+    PRETRAINED = auto()
+    CUSTOM = auto()
+    SKIP = auto()
+
+    @classmethod
+    def from_options(
+        cls, skip_classification: bool, use_pre_trained_weights: bool
+    ) -> "ModelSource":
+        if skip_classification:
+            return cls.SKIP
+        return cls.PRETRAINED if use_pre_trained_weights else cls.CUSTOM
+
+
 @dataclass
 class ClassificationInputs(InputContainer):
     """Container for classification inputs."""
@@ -132,22 +147,30 @@ class ClassificationInputs(InputContainer):
     normalize_channels: bool = False
     normalization_n_sampling_planes: int = 50
 
+    @property
+    def model_source(self) -> ModelSource:
+        return ModelSource.from_options(
+            self.skip_classification, self.use_pre_trained_weights
+        )
+
     def as_core_arguments(self) -> dict:
         args = super().as_core_arguments()
         del args["use_pre_trained_weights"]
+        if self.model_source is not ModelSource.CUSTOM:
+            args["trained_model"] = None
         return args
 
     @classmethod
     def widget_representation(cls) -> dict:
         return dict(
             classification_options=html_label_widget("Classification:"),
+            skip_classification=dict(
+                value=cls.defaults()["skip_classification"]
+            ),
             use_pre_trained_weights=dict(
                 value=cls.defaults()["use_pre_trained_weights"]
             ),
             trained_model=dict(value=cls.defaults()["trained_model"]),
-            skip_classification=dict(
-                value=cls.defaults()["skip_classification"]
-            ),
             classification_batch_size=dict(
                 value=cls.defaults()["classification_batch_size"],
                 label="Batch size (classification)",
