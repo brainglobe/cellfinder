@@ -12,6 +12,12 @@ from cellfinder.napari.train.train_containers import (
 )
 
 
+def make_yaml_file(directory: Path, index: int) -> Path:
+    yaml_file = directory / f"file_{index}.yaml"
+    yaml_file.write_text("[]\n")
+    return yaml_file
+
+
 @pytest.fixture
 def get_training_widget(make_napari_viewer):
     viewer = make_napari_viewer()
@@ -38,8 +44,10 @@ def test_reset_to_defaults(get_training_widget):
     get_training_widget.reset_button.clicked()
 
     # check values have been reset
-    assert len(get_training_widget.yaml_files.value) == 1
-    assert get_training_widget.yaml_files.value[0] == Path.home()
+    assert get_training_widget.yaml_files.value is None
+    assert get_training_widget.output_directory.value is None
+    assert get_training_widget.trained_model.value is None
+    assert get_training_widget.model_weights.value is None
     assert not get_training_widget.continue_training.value
     assert get_training_widget.epochs.value == 100
     assert get_training_widget.test_fraction.value == 0.10
@@ -57,18 +65,61 @@ def test_run_with_no_yaml_files(get_training_widget):
         )
 
 
-def test_run_with_virtual_yaml_files(get_training_widget):
+def test_run_with_no_output_directory(get_training_widget, tmp_path):
+    """
+    Checks the user is told to pick an output directory rather than the
+    training silently writing to whatever the default happens to be.
+    """
+    get_training_widget.yaml_files.value = (make_yaml_file(tmp_path, 1),)
+
+    with (
+        patch("cellfinder.napari.train.train.show_info") as show_info,
+        patch("cellfinder.napari.train.train.run_training") as run_training,
+    ):
+        get_training_widget.call_button.clicked()
+
+    show_info.assert_called_once_with("Please select an output directory")
+    run_training.assert_not_called()
+
+
+@pytest.mark.parametrize(
+    "filename, expected_message",
+    [
+        ("not_yaml.txt", "Not a YAML file: not_yaml.txt"),
+        ("missing.yaml", "YAML file does not exist: {path}"),
+    ],
+)
+def test_run_with_invalid_yaml_files(
+    get_training_widget, tmp_path, filename, expected_message
+):
+    """
+    Checks YAML files are rejected if they are the wrong format or absent.
+    """
+    yaml_file = tmp_path / filename
+    get_training_widget.yaml_files.value = (yaml_file,)
+    get_training_widget.output_directory.value = tmp_path
+
+    with (
+        patch("cellfinder.napari.train.train.show_info") as show_info,
+        patch("cellfinder.napari.train.train.run_training") as run_training,
+    ):
+        get_training_widget.call_button.clicked()
+
+    show_info.assert_called_once_with(expected_message.format(path=yaml_file))
+    run_training.assert_not_called()
+
+
+def test_run_with_yaml_files(get_training_widget, tmp_path):
     """
     Checks that training is run with expected set of parameters.
     """
+    output_directory = tmp_path / "output"
+    output_directory.mkdir()
+    yaml_files = tuple(make_yaml_file(tmp_path, index) for index in (1, 2))
+
     with patch("cellfinder.napari.train.train.run_training") as run_training:
-        # make default input valid - need yaml files (they don't technically
-        # have to exist)
-        virtual_yaml_files = (
-            Path.home() / "file_1.yaml",
-            Path.home() / "file_2.yaml",
-        )
-        get_training_widget.yaml_files.value = virtual_yaml_files
+        get_training_widget.yaml_files.value = yaml_files
+        get_training_widget.output_directory.value = output_directory
         get_training_widget.call_button.clicked()
 
         # create expected arguments for run
@@ -80,11 +131,8 @@ def test_run_with_virtual_yaml_files(get_training_widget):
         # so to do equality comparison, we need to set default to list also
         expected_optional_training_args.lr_schedule = []
 
-        # we expect the widget to make some changes to the defaults
-        # displayed before calling the training backend
-        expected_training_args.yaml_files = virtual_yaml_files
-        expected_network_args.trained_model = None
-        expected_network_args.model_weights = None
+        expected_training_args.yaml_files = yaml_files
+        expected_training_args.output_directory = output_directory
 
         run_training.assert_called_once_with(
             expected_training_args,

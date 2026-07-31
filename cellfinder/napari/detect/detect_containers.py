@@ -142,7 +142,7 @@ class ClassificationInputs(InputContainer):
 
     skip_classification: bool = False
     use_pre_trained_weights: bool = True
-    trained_model: Optional[Path] = Path.home()
+    trained_model: Optional[Path] = None
     classification_batch_size: int = 64
     normalize_channels: bool = False
     normalization_n_sampling_planes: int = 50
