@@ -240,18 +240,6 @@ def get_number_of_bins_nd(array_size, binning):
     return tuple(bins)
 
 
-def swap_elements_list(list_in, swap_a, swap_b):
-    """
-    Swap two elements in a list
-    :param list_in: A list
-    :param swap_a: Index of first element to swap
-    :param swap_b: Index of second element to swap
-    :return: List with swap_a and swap_b exchanged
-    """
-    list_in[swap_a], list_in[swap_b] = list_in[swap_b], list_in[swap_a]
-    return list_in
-
-
 def is_any_list_overlap(list_a, list_b):
     """
     Is there any overlap between two lists
