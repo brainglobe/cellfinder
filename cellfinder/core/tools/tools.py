@@ -240,18 +240,6 @@ def get_number_of_bins_nd(array_size, binning):
     return tuple(bins)
 
 
-def interchange_np_fiji_coordinates(tuple_in):
-    """
-    Swaps the first and second element of a tuple to swap between the numpy
-    convention (vertical is first) and FIJI convention (horizontal is first)
-    :param tuple_in: A 2+ element tuple
-    :return: Same tuple with element 0 and 1 interchanged
-    """
-    tmp_list = list(tuple_in)
-    tmp_list = swap_elements_list(tmp_list, 0, 1)
-    return tuple(tmp_list)
-
-
 def swap_elements_list(list_in, swap_a, swap_b):
     """
     Swap two elements in a list

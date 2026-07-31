@@ -248,11 +248,6 @@ def test_get_number_of_bins_nd():
         tools.get_number_of_bins_nd([200, 300, 400], 10)
 
 
-def test_interchange_np_fiji_coordinates():
-    tuple_in = (100, 200, 300)
-    assert tools.interchange_np_fiji_coordinates(tuple_in) == (200, 100, 300)
-
-
 def test_swap_elements_list():
     list_in = [1, 2, 3, 4]
     assert tools.swap_elements_list(list_in, 1, 2) == [1, 3, 2, 4]
