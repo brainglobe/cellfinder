@@ -489,19 +489,19 @@ class CurationWidget(QWidget):
                     if not choice:
                         return
             if self.output_directory is not None:
-                self.__prep_directories_for_save()
-                self.__extract_cubes(block=block)
+                self._prep_directories_for_save()
+                self._extract_cubes(block=block)
                 if block:
-                    self.__finish_save()
+                    self._finish_save()
 
-    def __prep_directories_for_save(self):
+    def _prep_directories_for_save(self):
         self.yaml_filename = self.output_directory / "training.yaml"
         self.cell_cube_dir = self.output_directory / "cells"
         self.no_cell_cube_dir = self.output_directory / "non_cells"
 
-        self.__delete_existing_saved_training_data()
+        self._delete_existing_saved_training_data()
 
-    def __delete_existing_saved_training_data(self):
+    def _delete_existing_saved_training_data(self):
         self.yaml_filename.unlink(missing_ok=True)
         for directory in (
             self.cell_cube_dir,
@@ -512,7 +512,7 @@ class CurationWidget(QWidget):
             else:
                 directory.mkdir(exist_ok=True, parents=True)
 
-    def __extract_cubes(self, *, block=False):
+    def _extract_cubes(self, *, block=False):
         """
         Parameters
         ----------
@@ -534,7 +534,7 @@ class CurationWidget(QWidget):
             @thread_worker(
                 connect={
                     "yielded": self.update_progress,
-                    "returned": lambda _: self.__finish_save(),
+                    "returned": lambda _: self._finish_save(),
                 }
             )
             def extract_cubes():
@@ -542,8 +542,8 @@ class CurationWidget(QWidget):
 
             extract_cubes()
 
-    def __finish_save(self):
-        self.__save_yaml_file()
+    def _finish_save(self):
+        self._save_yaml_file()
         show_info("Done")
         self.update_status_label("Ready")
 
@@ -681,7 +681,7 @@ class CurationWidget(QWidget):
         )
         return signal_stat, bg_stat
 
-    def __save_yaml_file(self):
+    def _save_yaml_file(self):
         signal_stat, bg_stat = self._calculate_channel_stats()
         bg_channel = 1 if self.has_background else NO_BACKGROUND_CHANNEL
 
