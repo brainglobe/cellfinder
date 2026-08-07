@@ -21,6 +21,14 @@ def inference_wrapper(func):
     return inner_function
 
 
+def validate_dimensions(dimensions: int) -> None:
+    """
+    Raise `ValueError` unless `dimensions` is 2 or 3.
+    """
+    if dimensions not in (2, 3):
+        raise ValueError(f"dimensions must be 2 or 3, got {dimensions!r}")
+
+
 def get_max_possible_int_value(dtype: Type[np.number]) -> int:
     """
     Returns the maximum allowed integer for a numpy array of given type.
