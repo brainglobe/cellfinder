@@ -14,7 +14,7 @@ def model_input_channels(model: Model) -> int:
 
 
 def _load_existing_model(
-    existing_model: Optional[os.PathLike], dimensions: int
+    existing_model: os.PathLike, dimensions: int
 ) -> Model:
     """
     Load a saved model, checking its input rank matches `dimensions`.
@@ -71,6 +71,10 @@ def get_model(
     shape: Optional[Tuple[int, ...]] = None,
 ) -> Model:
     """Returns the correct model based on the arguments passed
+
+    One of `existing_model` or `network_depth` must be given; `existing_model`
+    takes precedence when both are.
+
     :param existing_model: An existing, trained model. This is returned if it
     exists
     :param model_weights: This file is used to set the model weights if it
@@ -95,8 +99,12 @@ def get_model(
     :return: A keras model
 
     """
-    if existing_model is not None or network_depth is None:
+    if existing_model is not None:
         model = _load_existing_model(existing_model, dimensions)
+    elif network_depth is None:
+        raise ValueError(
+            "Either `existing_model` or `network_depth` must be provided."
+        )
     else:
         logger.debug(f"Creating a new instance of model: {network_depth}")
         model = build_model(

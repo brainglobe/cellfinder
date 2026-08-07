@@ -87,6 +87,14 @@ def test_get_model_builds_2d(shape):
     assert model.input_shape == (None, 50, 50, 2)
 
 
+def test_get_model_without_model_or_depth():
+    with pytest.raises(
+        ValueError,
+        match="Either `existing_model` or `network_depth` must be provided.",
+    ):
+        tools.get_model(existing_model=None, network_depth=None)
+
+
 def test_get_model_dimension_mismatch_on_load(tmp_path):
     model_path = tmp_path / "model_3d.keras"
     build_model(shape=(50, 50, 20, 2), network_depth="18-layer").save(
