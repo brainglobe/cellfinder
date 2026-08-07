@@ -12,10 +12,16 @@ from cellfinder.napari.train.train_containers import (
 )
 
 
-def make_yaml_file(directory: Path, index: int) -> Path:
-    yaml_file = directory / f"file_{index}.yaml"
-    yaml_file.write_text("[]\n")
-    return yaml_file
+@pytest.fixture
+def make_dummy_yaml(tmp_path):
+    """Returns a factory for empty YAML files in a temporary directory."""
+
+    def _make_dummy_yaml(index: int) -> Path:
+        yaml_file = tmp_path / f"file_{index}.yaml"
+        yaml_file.write_text("[]\n")
+        return yaml_file
+
+    return _make_dummy_yaml
 
 
 @pytest.fixture
@@ -65,12 +71,12 @@ def test_run_with_no_yaml_files(get_training_widget):
         )
 
 
-def test_run_with_no_output_directory(get_training_widget, tmp_path):
+def test_run_with_no_output_directory(get_training_widget, make_dummy_yaml):
     """
     Checks the user is told to pick an output directory rather than the
     training silently writing to whatever the default happens to be.
     """
-    get_training_widget.yaml_files.value = (make_yaml_file(tmp_path, 1),)
+    get_training_widget.yaml_files.value = (make_dummy_yaml(1),)
 
     with (
         patch("cellfinder.napari.train.train.show_info") as show_info,
@@ -109,13 +115,13 @@ def test_run_with_invalid_yaml_files(
     run_training.assert_not_called()
 
 
-def test_run_with_yaml_files(get_training_widget, tmp_path):
+def test_run_with_yaml_files(get_training_widget, tmp_path, make_dummy_yaml):
     """
     Checks that training is run with expected set of parameters.
     """
     output_directory = tmp_path / "output"
     output_directory.mkdir()
-    yaml_files = tuple(make_yaml_file(tmp_path, index) for index in (1, 2))
+    yaml_files = tuple(make_dummy_yaml(index) for index in (1, 2))
 
     with patch("cellfinder.napari.train.train.run_training") as run_training:
         get_training_widget.yaml_files.value = yaml_files
