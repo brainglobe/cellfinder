@@ -4,7 +4,11 @@ import pytest
 import torch
 from monai.transforms import RandAffine
 
-from cellfinder.core.classify.augment import DataAugmentation
+from cellfinder.core.classify.augment import (
+    DataAugmentation,
+    interval_to_rand_range,
+    interval_to_rand_range_3d,
+)
 
 
 @pytest.fixture
@@ -23,7 +27,7 @@ def cube_with_side_dot() -> torch.Tensor:
 def cube_with_center_dot() -> torch.Tensor:
     # DataAugmentation.DIM_ORDER of (c, y, x, z)
     data = torch.zeros((2, 11, 11, 7))
-    data[:, 5, 5, 3] = 1
+    data[:, 4:7, 4:7, 2:5] = 1
     return data
 
 
@@ -183,7 +187,7 @@ def test_isotropy_round_trip(cube_with_side_dot):
             "translate_range",
             [(1 / 11, 1 / 11), (2 / 11, 2 / 11), (1 / 7, 1 / 7)],
         ),
-        ("rotate_range", [(0, 0), (0, 0), (math.pi / 2, math.pi / 2)]),
+        ("rotate_range", [(0, 0), (0, 0), (90, 90)]),
         ("scale_range", ((3, 3),) * 3),
         ("flippable_axis", (0, 1)),
     ],
@@ -200,16 +204,16 @@ def test_no_augment(cube_with_side_dot, name, value):
     assert (
         not augmenter.update_parameters()
     ), "Parameters should not be randomized"
-    assert not augmenter._do_affine
-    assert not augmenter._axes_to_flip
     augmented = augmenter(cube_with_side_dot)
 
     assert augmented.shape == cube_with_side_dot.shape
     assert torch.equal(cube_with_side_dot, augmented)
 
 
-@pytest.mark.parametrize("reorder", [False, True])
-def test_augment_translate(cube_with_side_dot, reorder):
+@pytest.mark.parametrize(
+    "reorder,translate_sign", [(False, 1), (True, 1), (False, -1)]
+)
+def test_augment_translate(cube_with_side_dot, reorder, translate_sign):
     """
     Test that translate augmentation works, with likelihood of 1.
 
@@ -217,6 +221,9 @@ def test_augment_translate(cube_with_side_dot, reorder):
     """
     c, y, x, z = cube_with_side_dot.shape
     translate_range = [(1 / 11, 1 / 11), (2 / 11, 2 / 11), (1 / 7, 1 / 7)]
+    translate_range = [
+        (translate_sign * s, translate_sign * e) for s, e in translate_range
+    ]
     data_dim_order = "c", "y", "x", "z"
     if reorder:
         data_dim_order = "c", "y", "z", "x"
@@ -230,23 +237,28 @@ def test_augment_translate(cube_with_side_dot, reorder):
     )
     assert augmenter.update_parameters(), "Parameters should be randomized"
     # affine is needed for translate/rotate/scale
-    assert augmenter._asked_affine
-    assert augmenter._do_affine
+    assert augmenter.needs_isotropic
+    assert augmenter._translate_trans is not None
     # the cube is not cube but cuboid, so need to make iso before transforming
     assert not augmenter._is_isotropic
-    assert not augmenter._axes_to_flip
     augmented = augmenter(cube_with_side_dot)
 
     assert augmented.shape == cube_with_side_dot.shape
     # check it was translated correctly converting percent to voxels offset
     assert augmented[0, 8, 8, 5] < 0.1
     assert augmented[1, 8, 2, 5] < 0.1
-    assert augmented[0, 8 + 1, 8 + 2, 5 + 1] > 0.1
-    assert augmented[1, 8 + 1, 2 + 2, 5 + 1] > 0.1
+    if translate_sign > 0:
+        assert augmented[0, 8 + 1, 8 + 2, 5 + 1] > 0.1
+        assert augmented[1, 8 + 1, 2 + 2, 5 + 1] > 0.1
+    else:
+        assert augmented[0, 8 - 1, 8 - 2, 5 - 1] > 0.1
+        assert augmented[1, 8 - 1, 2 - 2, 5 - 1] > 0.1
 
 
-@pytest.mark.parametrize("reorder", [False, True])
-def test_augment_rotate(cube_with_side_dot, reorder):
+@pytest.mark.parametrize(
+    "reorder,angle", [(False, 90), (True, 90), (False, -90)]
+)
+def test_augment_rotate(cube_with_side_dot, reorder, angle):
     """
     Test that rotation augmentation works, with likelihood of 1.
 
@@ -261,16 +273,15 @@ def test_augment_rotate(cube_with_side_dot, reorder):
     augmenter = DataAugmentation(
         volume_size={"x": x, "y": y, "z": z},
         augment_likelihood=1,
-        rotate_range=[(0, 0), (0, 0), (math.pi / 2, math.pi / 2)],
+        rotate_range=[(0, 0), (0, 0), (angle, angle)],
         data_dim_order=data_dim_order,
     )
     assert augmenter.update_parameters(), "Parameters should be randomized"
     # afine is needed for translate/rotate/scale
-    assert augmenter._asked_affine
-    assert augmenter._do_affine
+    assert augmenter.needs_isotropic
+    assert augmenter._rotate_trans is not None
     # the cube is not cube but cuboid, so need to make iso before transforming
     assert not augmenter._is_isotropic
-    assert not augmenter._axes_to_flip
     augmented = augmenter(cube_with_side_dot)
 
     assert augmented.shape == cube_with_side_dot.shape
@@ -293,8 +304,10 @@ def test_augment_rotate(cube_with_side_dot, reorder):
     )
 
 
-@pytest.mark.parametrize("reorder", [False, True])
-def test_augment_scale(cube_with_center_dot, reorder):
+@pytest.mark.parametrize(
+    "reorder,scale", [(False, 3), (True, 3), (False, 0.2)]
+)
+def test_augment_scale(cube_with_center_dot, reorder, scale):
     """
     Test that scaling augmentation works, with likelihood of 1.
 
@@ -309,61 +322,64 @@ def test_augment_scale(cube_with_center_dot, reorder):
     augmenter = DataAugmentation(
         volume_size={"x": x, "y": y, "z": z},
         augment_likelihood=1,
-        scale_range=((3, 3),) * 3,
+        scale_range=((scale, scale),) * 3,
         data_dim_order=data_dim_order,
     )
     assert augmenter.update_parameters(), "Parameters should be randomized"
     # affine is needed for translate/rotate/scale
-    assert augmenter._asked_affine
-    assert augmenter._do_affine
+    assert augmenter.needs_isotropic
+    assert augmenter._scale_trans is not None
     # the cube is not cube but cuboid, so need to make iso before transforming
     assert not augmenter._is_isotropic
-    assert not augmenter._axes_to_flip
     augmented = augmenter(cube_with_center_dot)
 
     assert augmented.shape == cube_with_center_dot.shape
-    assert augmented[0, 5, 5, 3] > 0.1
-    assert augmented[0, 5 + 1, 5, 3] > 0.1
-    assert augmented[0, 5, 5 + 1, 3] > 0.1
-    assert augmented[0, 5, 5, 3 + 1] > 0.1
+    for i in range(2):
+        if scale > 1:
+            assert augmented[i, 5, 5, 3] > 0.1
+            assert augmented[i, 5 + 3, 5, 3] > 0.1
+            assert augmented[i, 5, 5 + 3, 3] > 0.1
+            assert augmented[i, 5, 5, 3 + 3] > 0.1
+        else:
+            assert augmented[i, 5 + 1, 5, 3] < 0.1
+            assert augmented[i, 5, 5 + 1, 3] < 0.1
+            assert augmented[i, 5, 5, 3 + 1] < 0.1
 
-    assert augmented[1, 5, 5, 3] > 0.1
-    assert augmented[1, 5 + 1, 5, 3] > 0.1
-    assert augmented[1, 5, 5 + 1, 3] > 0.1
-    assert augmented[1, 5, 5, 3 + 1] > 0.1
 
-
-def test_affine_2_interval_same_as_single_value(cube_with_side_dot):
+@pytest.mark.parametrize(
+    "reorder,intensity_range",
+    [(False, (1.2, 1.2)), (True, (1.2, 1.2)), (False, (0.8, 0.8))],
+)
+def test_augment_intensity_multiply(
+    cube_with_center_dot, reorder, intensity_range
+):
     """
-    Checks that for all the affine transformations, using a 2-tuple interval
-    with the same value is the same as providing a single value.
-    """
-    c, y, x, z = cube_with_side_dot.shape
+    Test that intensity augmentation works, with likelihood of 1.
 
-    augmenter_1 = DataAugmentation(
+    With re-order we check that input data of different axes order works.
+    """
+    c, y, x, z = cube_with_center_dot.shape
+    data_dim_order = "c", "y", "x", "z"
+    if reorder:
+        data_dim_order = "c", "y", "z", "x"
+        z, x = x, z
+
+    augmenter = DataAugmentation(
         volume_size={"x": x, "y": y, "z": z},
         augment_likelihood=1,
-        translate_range=[1 / 11, 2 / 11, 1 / 7],
-        rotate_range=[0, 0, math.pi / 2],
-        scale_range=(3, 3, 3),
-        data_dim_order=DataAugmentation.DIM_ORDER,
+        intensity_range=intensity_range,
+        data_dim_order=data_dim_order,
     )
-    augmenter_2 = DataAugmentation(
-        volume_size={"x": x, "y": y, "z": z},
-        augment_likelihood=1,
-        translate_range=[(1 / 11, 1 / 11), (2 / 11, 2 / 11), (1 / 7, 1 / 7)],
-        rotate_range=[(0, 0), (0, 0), (math.pi / 2, math.pi / 2)],
-        scale_range=((3, 3),) * 3,
-        data_dim_order=DataAugmentation.DIM_ORDER,
-    )
-    assert augmenter_1.update_parameters()
-    assert augmenter_2.update_parameters()
+    assert augmenter.update_parameters(), "Parameters should be randomized"
+    # affine is needed for translate/rotate/scale
+    assert not augmenter.needs_isotropic
+    assert augmenter._intensity_range is not None
+    # the cube is not cube but cuboid
+    assert not augmenter._is_isotropic
+    augmented = augmenter(cube_with_center_dot)
 
-    augmented_1 = augmenter_1(cube_with_side_dot)
-    augmented_2 = augmenter_2(cube_with_side_dot)
-
-    assert not torch.allclose(cube_with_side_dot, augmented_1)
-    assert torch.allclose(augmented_1, augmented_2)
+    assert augmented.shape == cube_with_center_dot.shape
+    assert torch.allclose(cube_with_center_dot * intensity_range[0], augmented)
 
 
 @pytest.mark.parametrize("reorder", [False, True])
@@ -382,10 +398,7 @@ def test_augment_axis_flip(cube_with_side_dot, reorder):
     )
     assert augmenter.update_parameters(), "Parameters should be randomized"
     # afine is not needed when only flipping axes
-    assert not augmenter._asked_affine
-    assert not augmenter._do_affine
-    assert not augmenter._is_isotropic
-    assert augmenter._axes_to_flip
+    assert not augmenter.needs_isotropic
     augmented = augmenter(cube_with_side_dot)
 
     assert augmented.shape == cube_with_side_dot.shape
@@ -421,10 +434,8 @@ def test_channels_are_identically_augmented(reorder):
         data_dim_order=data_dim_order,
     )
     assert augmenter.update_parameters(), "Parameters should be randomized"
-    assert augmenter._asked_affine
-    assert augmenter._do_affine
+    assert augmenter.needs_isotropic
     assert not augmenter._is_isotropic
-    assert augmenter._axes_to_flip
 
     augmented = augmenter(data)
 
@@ -486,3 +497,49 @@ def test_augment_call_bad_input(cube_with_side_dot):
         augmenter(
             torch.empty((c, y + 1, x, z), dtype=cube_with_side_dot.dtype)
         )
+
+
+def test_interval_to_rand_range_3d():
+    assert (
+        interval_to_rand_range_3d(0, 1)
+        == [
+            (0, 1),
+        ]
+        * 3
+    )
+
+    assert interval_to_rand_range_3d(0.5, 0.5) is None
+    assert interval_to_rand_range_3d(1, 0.5) is None
+
+    assert (
+        interval_to_rand_range_3d(-5, 1, min_val=0)
+        == [
+            (0, 1),
+        ]
+        * 3
+    )
+    assert (
+        interval_to_rand_range_3d(0, 5, max_val=1)
+        == [
+            (0, 1),
+        ]
+        * 3
+    )
+    assert (
+        interval_to_rand_range_3d(-5, 5, min_val=0, max_val=1)
+        == [
+            (0, 1),
+        ]
+        * 3
+    )
+
+
+def test_interval_to_rand_range():
+    assert interval_to_rand_range(0, 1) == (0, 1)
+
+    assert interval_to_rand_range(0.5, 0.5) is None
+    assert interval_to_rand_range(1, 0.5) is None
+
+    assert interval_to_rand_range(-5, 1, min_val=0) == (0, 1)
+    assert interval_to_rand_range(0, 5, max_val=1) == (0, 1)
+    assert interval_to_rand_range(-5, 5, min_val=0, max_val=1) == (0, 1)
