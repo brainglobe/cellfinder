@@ -222,9 +222,7 @@ def main(
     """
     validate_dimensions(dimensions)
 
-    if dimensions == 3:
-        _validate_3d_arrays(signal_array, background_array)
-    else:
+    if dimensions == 2:
         (
             signal_array,
             background_array,
@@ -234,6 +232,8 @@ def main(
             signal_array, background_array, voxel_sizes, network_voxel_sizes
         )
         cube_depth = 1
+
+    _validate_3d_arrays(signal_array, background_array)
 
     # Too many workers doesn't increase speed, and uses huge amounts of RAM
     workers = get_num_processes(min_free_cpu_cores=n_free_cpus)
