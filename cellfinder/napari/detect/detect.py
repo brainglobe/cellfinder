@@ -141,14 +141,13 @@ def restore_options_defaults(widget: FunctionGui) -> None:
     Restore default widget values.
     """
     defaults = {
-        **DataInputs.defaults(),
-        **DetectionInputs.defaults(),
-        **ClassificationInputs.defaults(),
-        **MiscInputs.defaults(),
+        **DataInputs.widget_defaults(),
+        **DetectionInputs.widget_defaults(),
+        **ClassificationInputs.widget_defaults(),
+        **MiscInputs.widget_defaults(),
     }
     for name, value in defaults.items():
-        if value is not None:  # ignore fields with no default
-            getattr(widget, name).value = value
+        getattr(widget, name).value = value
 
 
 def get_results_callback(
