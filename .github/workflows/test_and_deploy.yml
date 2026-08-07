@@ -27,13 +27,13 @@ jobs:
     runs-on: ubuntu-latest
     name: Check Linting
     steps:
-      - uses: neuroinformatics-unit/actions/lint@v2
+      - uses: neuroinformatics-unit/actions/lint@34bedfdfd70c6010be02182c9ca37fae8a1fd99d # v3.0.0
 
   manifest:
     name: Check Manifest
     runs-on: ubuntu-latest
     steps:
-      - uses: neuroinformatics-unit/actions/check_manifest@v2
+      - uses: neuroinformatics-unit/actions/check_manifest@34bedfdfd70c6010be02182c9ca37fae8a1fd99d # v3.0.0
 
   test:
     needs: [linting, manifest]
@@ -69,50 +69,45 @@ jobs:
           rm_cmd: 'rmz'
           rmz_version: '3.1.1'
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
       - name: Cache pooch data
-        uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 #v4.2.0
+        uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
         with:
           path: "~/.pooch_cache"
           # hash on conftest in case url changes
           key: ${{ runner.os }}-${{ matrix.python-version }}-${{ hashFiles('**/pooch_registry.txt') }}
       # Cache the tensorflow model so we don't have to remake it every time
       - name: Cache brainglobe directory
-        uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 #v4.2.0
+        uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
         with:
           path: | # ensure we don't cache any interrupted atlas download and extraction, if e.g. we cancel the workflow manually
             ~/.brainglobe
             !~/.brainglobe/atlas.tar.gz
           key: brainglobe
-      # Setup pyqt libraries
-      - name: Setup qtpy libraries
-        uses: tlambert03/setup-qt-libs@v1
-      # Setup VTK with headless display
-      - uses: pyvista/setup-headless-display-action@v3
 
       - name: Run tests
-        uses: neuroinformatics-unit/actions/test-uv@main
+        uses: neuroinformatics-unit/actions/test-uv@34bedfdfd70c6010be02182c9ca37fae8a1fd99d # v3.0.0
         with:
           python-version: ${{ matrix.python-version }}
           secret-codecov-token: ${{ secrets.CODECOV_TOKEN }}
           install-extras: 'dev,napari'
-          use-xvfb: 'true'
+          use-headless: 'true'
 
-      # On schedule: just overwrite napari and rerun — no full reinstall
-      - name: Install napari from main
-        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
-        shell: bash
-        run: uv pip install git+https://github.com/napari/napari
 
       - name: Run tests against napari main
         if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
-        uses: aganders3/headless-gui@f85dd6316993505dfc5f21839d520ae440c84816 # v2.2
+        uses: neuroinformatics-unit/actions/test-uv@34bedfdfd70c6010be02182c9ca37fae8a1fd99d # v3.0.0
         with:
-          run: pytest -vv
+          python-version: ${{ matrix.python-version }}
+          secret-codecov-token: ${{ secrets.CODECOV_TOKEN }}
+          install-extras: 'dev,napari'
+          use-headless: 'true'
+          install-main-branch: 'napari/napari'
 
       - name: Notify slack on scheduled failure
         if: failure() && github.event_name == 'schedule'
-        uses: ravsamhq/notify-slack-action@v2
+        uses: ravsamhq/notify-slack-action@be814b201e233b2dc673608aa46e5447c8ab13f2 # v2.5.0
         with:
           status: ${{ job.status }} # required
           notify_when: 'failure'
@@ -140,9 +135,9 @@ jobs:
           rm_cmd: 'rmz'
           rmz_version: '3.1.1'
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Cache brainglobe directory
-        uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 #v4.2.0
+        uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
         with:
           path: | # ensure we don't cache any interrupted atlas download and extraction, if e.g. we cancel the workflow manually
             ~/.brainglobe
@@ -150,29 +145,23 @@ jobs:
           key: brainglobe
 
       - name: Cache pooch data
-        uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 #v4.2.0
+        uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
         with:
           path: "~/.pooch_cache"
           key: ${{ runner.os }}-3.10-${{ hashFiles('**/pooch_registry.txt') }}
 
-      # Setup pyqt libraries
-      - name: Setup qtpy libraries
-        uses: tlambert03/setup-qt-libs@v1
-      # Setup VTK with headless display
-      - uses: pyvista/setup-headless-display-action@v3
-
       - name: Run tests with numba disabled
-        uses: neuroinformatics-unit/actions/test-uv@main
+        uses: neuroinformatics-unit/actions/test-uv@34bedfdfd70c6010be02182c9ca37fae8a1fd99d # v3.0.0
         with:
           python-version: "3.12"
           secret-codecov-token: ${{ secrets.CODECOV_TOKEN }}
           install-extras: 'dev,napari'
           codecov-flags: "numba"
-          use-xvfb: 'true'
+          use-headless: 'true'
 
       - name: Notify slack on scheduled failure
         if: failure() && github.event_name == 'schedule'
-        uses: ravsamhq/notify-slack-action@v2
+        uses: ravsamhq/notify-slack-action@be814b201e233b2dc673608aa46e5447c8ab13f2 # v2.5.0
         with:
           status: ${{ job.status }} # required
           notify_when: 'failure'
@@ -207,7 +196,7 @@ jobs:
             !~/.brainglobe/atlas.tar.gz
           key: brainglobe
       - name: Checkout brainglobe-workflows
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: 'brainglobe/brainglobe-workflows'
 
@@ -235,7 +224,7 @@ jobs:
     if: github.event_name == 'push' && github.ref_type == 'tag'
     runs-on: ubuntu-latest
     steps:
-    - uses:  neuroinformatics-unit/actions/build_sdist_wheels@v2
+    - uses:  neuroinformatics-unit/actions/build_sdist_wheels@34bedfdfd70c6010be02182c9ca37fae8a1fd99d # v3.0.0
 
   upload_all:
     name: Publish build distributions
