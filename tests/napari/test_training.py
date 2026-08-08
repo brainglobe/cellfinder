@@ -146,3 +146,32 @@ def test_run_with_yaml_files(get_training_widget, tmp_path, make_dummy_yaml):
             expected_optional_training_args,
             expected_misc_args,
         )
+
+
+def test_pretrained_model_choices_default_to_3d(get_training_widget):
+    widget = get_training_widget
+    choices = list(widget.pretrained_model.choices)
+
+    assert "resnet50_tv" in choices
+    assert "resnet50_2d" not in choices
+    assert widget.pretrained_model.value == "resnet50_tv"
+
+
+def test_pretrained_model_choices_follow_dimensions(get_training_widget):
+    widget = get_training_widget
+
+    widget.dimensions.value = 2
+
+    choices = list(widget.pretrained_model.choices)
+    assert set(choices) == {"resnet50_2d", "resnet50_2d_1ch"}
+    assert widget.pretrained_model.value in choices
+
+
+def test_pretrained_model_restored_when_switching_back(get_training_widget):
+    widget = get_training_widget
+
+    widget.dimensions.value = 2
+    widget.dimensions.value = 3
+
+    assert "resnet50_tv" in list(widget.pretrained_model.choices)
+    assert widget.pretrained_model.value == "resnet50_tv"

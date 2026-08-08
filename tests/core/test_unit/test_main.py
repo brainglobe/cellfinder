@@ -146,3 +146,44 @@ def test_main_bad_dimensions(signal_array, background_array):
             dimensions=4,
             skip_classification=True,
         )
+
+
+@pytest.mark.parametrize(
+    "background,expected",
+    [(True, "resnet50_2d"), (False, "resnet50_2d_1ch")],
+)
+@patch("cellfinder.core.detect.detect.main", return_value=[])
+@patch("cellfinder.core.tools.prep.prep_model_weights")
+def test_2d_mode_selects_2d_model(
+    mock_prep_weights,
+    mock_detect,
+    background,
+    expected,
+    signal_array,
+    background_array,
+):
+    mock_prep_weights.return_value = "/some/weights.keras"
+
+    main(
+        signal_array=signal_array,
+        background_array=background_array if background else None,
+        voxel_sizes=(5, 2, 2),
+        dimensions=2,
+    )
+
+    assert mock_prep_weights.call_args.args[2] == expected
+
+
+@patch("cellfinder.core.detect.detect.main", return_value=[])
+@patch("cellfinder.core.tools.prep.prep_model_weights")
+def test_explicit_3d_model_rejected_in_2d_mode(
+    mock_prep_weights, mock_detect, signal_array, background_array
+):
+    with pytest.raises(ValueError, match="is 3D, but dimensions=2"):
+        main(
+            signal_array=signal_array,
+            background_array=background_array,
+            voxel_sizes=(5, 2, 2),
+            dimensions=2,
+            model="resnet50_1ch",
+        )
