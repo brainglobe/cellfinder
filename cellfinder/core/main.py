@@ -5,7 +5,12 @@ from typing import Callable, List, Optional, Tuple
 from brainglobe_utils.cells.cells import Cell
 
 from cellfinder.core import logger, types
-from cellfinder.core.download.download import model_type
+from cellfinder.core.download.download import (
+    DEFAULT_MODEL,
+    default_model,
+    model_type,
+    validate_model_dimensions,
+)
 from cellfinder.core.tools.tools import deprecate_positional_args
 from cellfinder.core.train.train_yaml import depth_type
 
@@ -221,8 +226,9 @@ def main(
             raise FileNotFoundError(
                 f"Trained model not found: {trained_model}"
             )
-        if background_array is None and model == "resnet50_tv":
-            model = "resnet50_1ch"
+        if model == DEFAULT_MODEL:
+            model = default_model(dimensions, background_array is not None)
+        validate_model_dimensions(model, dimensions)
         install_path = None
         model_weights = prep.prep_model_weights(
             model_weights, install_path, model
