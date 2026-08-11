@@ -84,7 +84,10 @@ jobs:
           path: | # ensure we don't cache any interrupted atlas download and extraction, if e.g. we cancel the workflow manually
             ~/.brainglobe
             !~/.brainglobe/atlas.tar.gz
-          key: brainglobe
+          key: brainglobe-${{ hashFiles('cellfinder/core/download/download.py') }}
+          restore-keys: |
+            brainglobe-
+            brainglobe
 
       - name: Run tests
         uses: neuroinformatics-unit/actions/test-uv@34bedfdfd70c6010be02182c9ca37fae8a1fd99d # v3.0.0
@@ -142,7 +145,10 @@ jobs:
           path: | # ensure we don't cache any interrupted atlas download and extraction, if e.g. we cancel the workflow manually
             ~/.brainglobe
             !~/.brainglobe/atlas.tar.gz
-          key: brainglobe
+          key: brainglobe-${{ hashFiles('cellfinder/core/download/download.py') }}
+          restore-keys: |
+            brainglobe-
+            brainglobe
 
       - name: Cache pooch data
         uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
@@ -188,17 +194,29 @@ jobs:
           rm_cmd: 'rmz'
           rmz_version: '3.1.1'
 
+      - name: Checkout brainglobe-workflows
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: 'brainglobe/brainglobe-workflows'
+
+      # only needed so the cache key below can hash the model registry
+      - name: Checkout the model registry
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: cellfinder-src
+          sparse-checkout: cellfinder/core/download/download.py
+          sparse-checkout-cone-mode: false
+
       - name: Cache brainglobe directory
         uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 #v4.2.0
         with:
           path: | # ensure we don't cache any interrupted atlas download and extraction, if e.g. we cancel the workflow manually
             ~/.brainglobe
             !~/.brainglobe/atlas.tar.gz
-          key: brainglobe
-      - name: Checkout brainglobe-workflows
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          repository: 'brainglobe/brainglobe-workflows'
+          key: brainglobe-${{ hashFiles('cellfinder-src/cellfinder/core/download/download.py') }}
+          restore-keys: |
+            brainglobe-
+            brainglobe
 
       - name: Install uv
         uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # v8.2.0
