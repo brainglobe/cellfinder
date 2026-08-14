@@ -132,6 +132,15 @@ def test_main_2d_thin_stack_accepted(mocked_main):
     assert vol_filter.settings.ball_z_size == 1
 
 
+def test_main_2d_bad_rank_rejected(mocked_main):
+    with pytest.raises(ValueError):
+        main(
+            signal_array=np.empty((1, 1, 50, 50), dtype=np.uint16),
+            voxel_sizes=(1.0, 1.0),
+            dimensions=2,
+        )
+
+
 def test_main_splitting_cpu_cuda(mocker: MockerFixture):
     # checks that even if main filtering runs on cuda, the structure splitting
     # only runs on cpu
