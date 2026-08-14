@@ -101,6 +101,46 @@ def test_main_planes_size(mocked_main):
     assert settings.n_planes == 3
 
 
+def test_main_2d_signal_accepted(mocked_main):
+    process, get_results = mocked_main
+    main(
+        signal_array=np.empty((50, 50), dtype=np.uint16),
+        voxel_sizes=(1.0, 1.0),
+        dimensions=2,
+    )
+    process.assert_called()
+
+    vol_filter, _, signal_array = process.call_args.args
+    settings = vol_filter.settings
+    # the 2D plane is promoted to a depth-1 stack
+    assert signal_array.ndim == 3
+    assert signal_array.shape == (1, 50, 50)
+    assert settings.plane_shape == (50, 50)
+    assert settings.n_planes == 1
+    assert settings.dimensions == 2
+    assert settings.ball_z_size == 1
+
+
+def test_main_2d_thin_stack_accepted(mocked_main):
+    process, _ = mocked_main
+    main(
+        signal_array=np.empty((4, 50, 50), dtype=np.uint16),
+        voxel_sizes=(50.0, 1.0, 1.0),
+        dimensions=2,
+    )
+    vol_filter, _, _ = process.call_args.args
+    assert vol_filter.settings.ball_z_size == 1
+
+
+def test_main_2d_bad_rank_rejected(mocked_main):
+    with pytest.raises(ValueError):
+        main(
+            signal_array=np.empty((1, 1, 50, 50), dtype=np.uint16),
+            voxel_sizes=(1.0, 1.0),
+            dimensions=2,
+        )
+
+
 def test_main_splitting_cpu_cuda(mocker: MockerFixture):
     # checks that even if main filtering runs on cuda, the structure splitting
     # only runs on cpu
