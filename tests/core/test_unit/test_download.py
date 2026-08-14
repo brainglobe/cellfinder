@@ -53,6 +53,11 @@ def test_default_model_matches_mode(dimensions, has_background, expected):
     assert download.default_model(dimensions, has_background) == expected
 
 
+def test_default_model_without_a_registered_match():
+    with pytest.raises(ValueError, match="No pretrained model"):
+        download.default_model(4, True)
+
+
 def test_validate_model_dimensions_rejects_mismatch():
     with pytest.raises(ValueError, match="is 2D, but dimensions=3"):
         download.validate_model_dimensions("resnet50_2d", 3)
