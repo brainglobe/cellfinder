@@ -179,10 +179,7 @@ def training_widget() -> FunctionGui:
 
     @widget.dimensions.changed.connect
     def update_pretrained_model_choices(dimensions: int):
-        choices = models_for_dimensions(dimensions)
-        widget.pretrained_model.choices = choices
-        if widget.pretrained_model.value not in choices:
-            widget.pretrained_model.value = choices[0]
+        widget.pretrained_model.choices = models_for_dimensions(dimensions)
 
     @widget.reset_button.changed.connect
     def restore_defaults():
