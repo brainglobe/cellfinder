@@ -402,3 +402,49 @@ def test_2d_save_extracts_depth_one_cubes(valid_curation_widget, tmp_path):
     assert (tmp_path / "training.yaml").exists()
     assert len(list((tmp_path / "cells").glob("*.tif"))) == 2
     assert len(list((tmp_path / "non_cells").glob("*.tif"))) == 2
+
+
+@pytest.fixture
+def curation_widget_2d(make_napari_viewer) -> CurationWidget:
+    """A curation widget whose image layers are single planes."""
+    viewer = make_napari_viewer()
+    rng = np.random.default_rng(42)
+    for name in ("Signal", "Background"):
+        viewer.add_layer(
+            Image(rng.random((200, 200)).astype(np.float32), name=name)
+        )
+
+    _, widget = viewer.window.add_plugin_dock_widget(
+        plugin_name="cellfinder", widget_name="Curation"
+    )
+    widget.add_training_data()
+
+    points = Points(np.array([[100, 100], [50, 50]]), name="selection_points")
+    viewer.add_layer(points)
+
+    points.selected_data = [0]
+    widget.mark_as_cell()
+    points.selected_data = [1]
+    widget.mark_as_non_cell()
+
+    widget.signal_image_choice.setCurrentText("Signal")
+    widget.background_image_choice.setCurrentText("Background")
+    widget.set_signal_image()
+    widget.set_background_image()
+
+    widget.dimensions_choice.setCurrentText("2D")
+    widget.set_dimensions()
+    return widget
+
+
+def test_2d_save_promotes_plane_layers(curation_widget_2d, tmp_path):
+    """Single plane layers are promoted before cubes are extracted."""
+    widget = curation_widget_2d
+    assert widget.signal_layer.data.ndim == 2
+
+    widget.output_directory = tmp_path
+    widget.save_training_data(prompt_for_directory=False, block=True)
+
+    assert (tmp_path / "training.yaml").exists()
+    assert len(list((tmp_path / "cells").glob("*.tif"))) == 2
+    assert len(list((tmp_path / "non_cells").glob("*.tif"))) == 2
