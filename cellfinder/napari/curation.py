@@ -457,6 +457,13 @@ class CurationWidget(QWidget):
                     )
 
                     selected_points = layer.data[list(layer.selected_data)]
+                    if selected_points.shape[1] == 2:
+                        selected_points = np.column_stack(
+                            (
+                                np.zeros(len(selected_points)),
+                                selected_points,
+                            )
+                        )
                     destination_layer.data = np.vstack(
                         (destination_layer.data, selected_points)
                     )
@@ -690,16 +697,27 @@ class CurationWidget(QWidget):
         self.cells_to_extract = list(set(self.cells_to_extract))
         self.non_cells_to_extract = list(set(self.non_cells_to_extract))
 
+    def _plane_promoted(self, array):
+        """
+        Give a single plane a singleton z axis, so that 2D data flows through
+        the 3D code paths unchanged.
+        """
+        if array is not None and self.dimensions == 2 and array.ndim == 2:
+            return array[np.newaxis, ...]
+        return array
+
     def _calculate_channel_stats(self):
         self.update_status_label("Estimating signal mean/std...")
         signal_stat = dataset_mean_std(
-            self.signal_layer.data, self.normalization_n_sampling_planes
+            self._plane_promoted(self.signal_layer.data),
+            self.normalization_n_sampling_planes,
         )
         if not self.has_background:
             return signal_stat, None
         self.update_status_label("Estimating background mean/std...")
         bg_stat = dataset_mean_std(
-            self.background_layer.data, self.normalization_n_sampling_planes
+            self._plane_promoted(self.background_layer.data),
+            self.normalization_n_sampling_planes,
         )
         return signal_stat, bg_stat
 
@@ -766,13 +784,8 @@ class CurationWidget(QWidget):
             self.update_status_label(f"Saving {cell_type}...")
 
             cube_depth = 1 if self.dimensions == 2 else self.cube_depth
-            signal = self.signal_layer.data
-            background = self.background_data
-            if self.dimensions == 2:
-                if signal.ndim == 2:
-                    signal = signal[np.newaxis, ...]
-                if background is not None and background.ndim == 2:
-                    background = background[np.newaxis, ...]
+            signal = self._plane_promoted(self.signal_layer.data)
+            background = self._plane_promoted(self.background_data)
             cube_generator = CuboidArrayDataset(
                 signal_array=signal,
                 background_array=background,
