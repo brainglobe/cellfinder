@@ -2,6 +2,7 @@ from inspect import signature
 from unittest.mock import patch
 
 import napari
+import numpy as np
 import pytest
 
 from cellfinder.core.main import main as cellfinder_run
@@ -24,6 +25,12 @@ def test_data_inputs_dimensions_passed():
     ).as_core_arguments()
     assert args["dimensions"] == 3
     assert set(args) <= set(signature(cellfinder_run).parameters)
+
+
+@pytest.mark.parametrize("shape,expected", [((50, 50), 1), ((7, 50, 50), 7)])
+def test_nplanes_counts_a_single_plane(shape, expected):
+    inputs = DataInputs(signal_array=np.empty(shape), background_array=None)
+    assert inputs.nplanes == expected
 
 
 @pytest.fixture
