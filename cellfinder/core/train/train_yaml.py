@@ -48,6 +48,7 @@ from cellfinder.core.classify.tools import get_model
 from cellfinder.core.download.download import DEFAULT_DOWNLOAD_DIRECTORY
 from cellfinder.core.tools.prep import prep_model_weights
 from cellfinder.core.tools.tiff import TiffDir, TiffFile, TiffList
+from cellfinder.core.tools.tools import validate_dimensions
 
 depth_type = Literal["18", "34", "50", "101", "152"]
 
@@ -188,6 +189,15 @@ def training_parse():
         type=valid_model_depth,
         default="50",
         help="Resnet depth (based on He et al. (2015)",
+    )
+    training_parser.add_argument(
+        "--dimensions",
+        dest="dimensions",
+        type=int,
+        choices=(2, 3),
+        default=3,
+        help="Whether to train a 3D network (a z-stack cube, the default) or "
+        "a 2D network (a single plane).",
     )
     training_parser.add_argument(
         "--batch-size",
@@ -394,6 +404,7 @@ def cli():
         install_path=args.install_path,
         model=args.model,
         network_depth=args.network_depth,
+        dimensions=args.dimensions,
         learning_rate=args.learning_rate,
         continue_training=args.continue_training,
         test_fraction=args.test_fraction,
@@ -412,6 +423,18 @@ def cli():
     )
 
 
+def _squeeze_z_collate(sample, z_axis):
+    """Drop the singleton z axis from a (data, label) sample for 2D training.
+
+    The dataset yields cubes in `(batch, *output_axis_order)` order; for 2D
+    the z axis has size 1 and is removed so the cube becomes a 2D `(y, x, c)`
+    image, matching the Conv2D network input. Used as the loader's collate_fn
+    (defined at module level so it stays picklable for worker processes).
+    """
+    data, label = sample
+    return data.squeeze(z_axis), label
+
+
 def get_dataloader(
     cells: list[Cell],
     filenames: list[tuple[list[str], list[dict]]],
@@ -422,6 +445,7 @@ def get_dataloader(
     augment: bool,
     augment_likelihood: float,
     normalize_channels: bool,
+    dimensions: int = 3,
 ) -> tuple[DataLoader, CuboidTiffDataset]:
     points_filenames = [f[0] for f in filenames]
 
@@ -437,13 +461,14 @@ def get_dataloader(
             norms = [(ch["mean"], ch["std"]) for ch in channels_norm]
             points_norm.append(norms)
 
+    cube_depth = 1 if dimensions == 2 else CUBE_DEPTH
     dataset = CuboidTiffDataset(
         points=cells,
         points_filenames=points_filenames,
         points_normalization=points_norm,
         data_voxel_sizes=(1, 1, 1),
         network_voxel_sizes=(1, 1, 1),
-        network_cuboid_voxels=(CUBE_DEPTH, CUBE_HEIGHT, CUBE_WIDTH),
+        network_cuboid_voxels=(cube_depth, CUBE_HEIGHT, CUBE_WIDTH),
         axis_order=("z", "y", "x"),
         target_output="label",
         augment=augment,
@@ -455,12 +480,17 @@ def get_dataloader(
         batch_size=batch_size,
         auto_shuffle=auto_shuffle,
     )
+    collate_fn = None
+    if dimensions == 2:
+        z_axis = dataset.output_axis_order.index("z") + 1
+        collate_fn = partial(_squeeze_z_collate, z_axis=z_axis)
     data_loader = DataLoader(
         dataset=dataset,
         sampler=sampler,
         batch_size=None,
         num_workers=n_processes,
         pin_memory=pin_memory,
+        collate_fn=collate_fn,
     )
     return data_loader, dataset
 
@@ -474,6 +504,7 @@ def run(
     install_path=DEFAULT_DOWNLOAD_DIRECTORY,
     model="resnet50_tv",
     network_depth="50",
+    dimensions=3,
     learning_rate=0.0001,
     continue_training=False,
     test_fraction=0.1,
@@ -492,6 +523,8 @@ def run(
     normalize_channels: bool = False,
 ):
     start_time = datetime.now()
+
+    validate_dimensions(dimensions)
 
     ensure_directory_exists(output_dir)
     model_weights = prep_model_weights(
@@ -512,6 +545,10 @@ def run(
     filenames_train, cells_train = make_tiff_lists(tiff_files)
     num_channels = len(filenames_train[0][0])
 
+    model_shape = None
+    if dimensions == 2:
+        model_shape = (CUBE_HEIGHT, CUBE_WIDTH, num_channels)
+
     model = get_model(
         existing_model=trained_model,
         model_weights=model_weights,
@@ -519,6 +556,8 @@ def run(
         learning_rate=learning_rate,
         continue_training=continue_training,
         num_channels=num_channels,
+        dimensions=dimensions,
+        shape=model_shape,
     )
 
     n_processes = get_num_processes(min_free_cpu_cores=n_free_cpus)
@@ -550,6 +589,7 @@ def run(
             augment=False,
             augment_likelihood=augment_likelihood,
             normalize_channels=normalize_channels,
+            dimensions=dimensions,
         )
 
         # for saving checkpoints
@@ -571,6 +611,7 @@ def run(
         augment=not no_augment,
         augment_likelihood=augment_likelihood,
         normalize_channels=normalize_channels,
+        dimensions=dimensions,
     )
     callbacks = []
 
