@@ -3,6 +3,7 @@ from brainglobe_utils.cells.cells import Cell
 
 from cellfinder.napari.utils import (
     add_classified_layers,
+    add_single_layer,
     cells_to_array,
     html_label_widget,
     napari_array_to_cells,
@@ -15,8 +16,8 @@ def test_add_classified_layers(make_napari_viewer):
     cell_pos = [1, 2, 3]
     unknown_pos = [4, 5, 6]
     points = [
-        Cell(pos=cell_pos, cell_type=Cell.CELL),
-        Cell(pos=unknown_pos, cell_type=Cell.UNKNOWN),
+        Cell(pos=cell_pos, cell_type=Cell.CELL, metadata={"size": 12}),
+        Cell(pos=unknown_pos, cell_type=Cell.UNKNOWN, metadata={"radius": 3}),
     ]
     viewer = make_napari_viewer()
     n_layers = len(viewer.layers)
@@ -37,6 +38,8 @@ def test_add_classified_layers(make_napari_viewer):
     assert rej_layer is not None
     assert cell_layer.data is not None
     assert rej_layer.data is not None
+    assert cell_layer.features is not None
+    assert rej_layer.features is not None
 
     # check data added in correct column order
     # CELL types
@@ -58,9 +61,9 @@ def test_add_classified_layers(make_napari_viewer):
     assert np.all(rej_layer.data == rej_data)
 
     # get cells back from napari points
-    cells_again = napari_array_to_cells(cell_layer.data, cell_type=Cell.CELL)
+    cells_again = napari_array_to_cells(cell_layer, cell_type=Cell.CELL)
     cells_again.extend(
-        napari_array_to_cells(rej_layer.data, cell_type=Cell.UNKNOWN)
+        napari_array_to_cells(rej_layer, cell_type=Cell.UNKNOWN)
     )
     assert cells_again == points
 
@@ -89,6 +92,49 @@ def test_add_classified_layers_propagates_scale(make_napari_viewer):
 
     assert np.allclose(accepted.scale, scale)
     assert np.allclose(rejected.scale, scale)
+
+
+def test_add_single_layer(make_napari_viewer):
+    """Smoke test for add_single_layer utility"""
+    cell_pos = [1, 2, 3], [4, 5, 6]
+    # make sure that even if the metadata is different across points, it all
+    # comes back correct
+    points = [
+        Cell(pos=cell_pos[0], cell_type=Cell.CELL, metadata={"size": 12}),
+        Cell(pos=cell_pos[1], cell_type=Cell.CELL, metadata={"radius": 3}),
+    ]
+    viewer = make_napari_viewer()
+    n_layers = len(viewer.layers)
+    # adds a "detected" and a "rejected layer"
+    add_single_layer(
+        points,
+        viewer,
+        name="my_points",
+        cell_type=Cell.CELL,
+    )
+    assert len(viewer.layers) == n_layers + 1
+
+    # check name match
+    cell_layer = None
+    for layer in reversed(viewer.layers):
+        if layer.name == "my_points" and cell_layer is None:
+            cell_layer = layer
+    assert cell_layer is not None
+    assert cell_layer.data is not None
+    assert cell_layer.features is not None
+
+    # check data added in correct column order
+    cell_data = np.array(cell_pos)
+    assert np.all(
+        cells_to_array(points, Cell.CELL, napari_order=False) == cell_data
+    )
+    # convert to napari order and check it is in napari
+    cell_data = cell_data[:, napari_points_axis_order]
+    assert np.all(cell_layer.data == cell_data)
+
+    # get cells back from napari points
+    cells_again = napari_array_to_cells(cell_layer, cell_type=Cell.CELL)
+    assert cells_again == points
 
 
 def test_html_label_widget():
