@@ -42,7 +42,7 @@ def setup_filter(
         ball_z_size_um=15,
     )
     filtered = filtered.astype(settings.filtering_dtype)
-    filtered = torch.from_numpy(filtered).to(torch_device)
+    filtered_torch = torch.from_numpy(filtered).to(torch_device)
     tiles = tiles.astype(np.bool_)
     tiles = torch.from_numpy(tiles).to(torch_device)
 
@@ -62,17 +62,20 @@ def setup_filter(
         use_mask=True,
     )
 
-    return ball_filter, filtered, tiles, batch_size
+    return ball_filter, filtered, filtered_torch, tiles, batch_size
 
 
-def run_filter(ball_filter, filtered, tiles, batch_size):
+def run_filter(ball_filter, filtered, filtered_torch, tiles, batch_size):
     for i in range(0, len(filtered), batch_size):
         ball_filter.append(
-            filtered[i : i + batch_size], tiles[i : i + batch_size]
+            filtered_torch[i : i + batch_size],
+            tiles[i : i + batch_size],
+            filtered[i : i + batch_size],
         )
         if ball_filter.ready:
             ball_filter.walk()
             ball_filter.get_processed_planes()
+            ball_filter.get_raw_planes()
 
 
 if __name__ == "__main__":

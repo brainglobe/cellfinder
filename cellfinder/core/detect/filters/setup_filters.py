@@ -158,6 +158,18 @@ class DetectionSettings:
     done with 50% overlap when striding.
     """
 
+    detect_centre_of_intensity: bool = False
+    """
+    How to calculate the centre of a candidate cell, given a collection of
+    pixels marked as bright or above background.
+
+    If False, a candidate cell's center is just the mean of the positions
+    of all voxels marked as above background, or bright, in that candidate.
+    The voxel intensity is not taken into account. If True, the center is
+    calculated similar to the center of mass, but using the intensity. So
+    the center gets pulled towards the brighter voxels in the volume.
+    """
+
     outlier_keep: bool = False
     """Whether to keep outlier structures during detection."""
 

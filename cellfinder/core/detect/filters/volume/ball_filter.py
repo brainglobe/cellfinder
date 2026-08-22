@@ -78,10 +78,10 @@ class BallFilter:
     ----------
     plane_height, plane_width : int
         Height/width of the planes.
-    ball_xy_size : float
-        Diameter of the spherical kernel (in microns) in the x/y dimensions.
-    ball_z_size : float
-        Diameter of the spherical kernel in the z dimension in microns.
+    ball_xy_size : int
+        Diameter of the spherical kernel (in voxels) in the x/y dimensions.
+    ball_z_size : int
+        Diameter of the spherical kernel in the z dimension in voxels.
         Determines the number of planes stacked to filter
         the central plane of the stack.
     overlap_fraction : float
@@ -185,6 +185,8 @@ class BallFilter:
         )
         # Index of the middle plane in the volume
         self.middle_z_idx = int(np.floor(self.ball_z_size / 2))
+        # the raw input planes, we track along with the filtered planes
+        self.raw_planes: list[np.ndarray] = []
 
         if not use_mask:
             return
@@ -213,6 +215,47 @@ class BallFilter:
         """
         return int(math.floor(self.ball_z_size / 2))
 
+    @classmethod
+    def min_xy_padding(cls, ball_xy_size: int) -> tuple[int, int]:
+        """
+        For a given ball x/y kernel size, it returns the padding needed for the
+        plane so the full input data is filtered. Otherwise, data on the
+        edges of the plane will be zeros because the center of the ball will
+        never be over it. Adding padding will ensure the ball center will be
+        over all input data.
+
+        Parameters
+        ----------
+        ball_xy_size: int
+            The x/y kernel (ball) size in voxels.
+
+        return
+        ----------
+        padding: 2-tuple of ints
+            The padding to add to the start and end of the data to have all
+            input data considered.
+        """
+        n = ball_xy_size
+        # e.g. if starting with just 1 voxel: if kernel is even, say 4, then
+        # left padding will be 1 and right 2. This gives a single voxel output.
+        # If odd, say 5, it'll be 2 on each side
+        left = (n - 1) // 2
+        right = n - 1 - left
+        return left, right
+
+    @classmethod
+    def min_z_padding(cls, ball_z_size: int) -> tuple[int, int]:
+        """
+        Same as for `min_xy_padding`, except in the z-dimension.
+        """
+        n = ball_z_size
+        # e.g. if starting with just 1 voxel: if kernel is even, say 4, then
+        # left padding will be 1 and right 2. This gives a single voxel output.
+        # If odd, say 5, it'll be 2 on each side
+        bottom = (n - 1) // 2
+        top = n - 1 - bottom
+        return bottom, top
+
     @property
     def remaining_planes(self) -> int:
         """
@@ -236,25 +279,30 @@ class BallFilter:
         return self.volume.shape[0] >= self.kernel_z_size
 
     def append(
-        self, planes: torch.Tensor, masks: Optional[torch.Tensor] = None
+        self,
+        planes: torch.Tensor,
+        masks: Optional[torch.Tensor] = None,
+        raw_planes: Optional[np.ndarray] = None,
     ) -> None:
         """
         Add a new z-stack to the filter.
 
         Previous stacks passed to `append` are removed, except enough planes
         at the top of the previous z-stack to provide padding so we can filter
-        starting from the first plane in `planes`. The first time we call
-        `append`, `first_valid_plane` is the first plane to actually be
-        filtered in the z-stack due to lack of padding.
+        starting from the first plane in `planes` (or continue filtering planes
+        at the end of the last stack). The first time we call `append`,
+        `first_valid_plane` is the first plane to actually be filtered in the
+        z-stack due to lack of padding before the zeroth plane.
 
-        So make sure to call `walk`/`get_processed_planes` before calling
-        `append` again.
+        So make sure to call `walk` and
+        `get_processed_planes`/`get_raw_planes` to get the results before
+        calling `append` again.
 
         Parameters
         ----------
         planes : torch.Tensor
-            The z-stack. There can be one or more planes in the stack, but it
-            must have 3 dimensions. Input data is not modified.
+            The 2d filtered z-stack. There can be one or more planes in the
+            stack, but it must have 3 dimensions. Input data is not modified.
         masks : torch.Tensor
             A z-stack tile mask, indicating for each tile whether it's in or
             outside the brain. If the latter it's excluded.
@@ -263,6 +311,12 @@ class BallFilter:
             parameter will be ignored.
 
             Input data is not modified.
+        raw_planes : np.ndarray or None
+            The original input data z-stack. There can be one or more planes in
+            the stack, but it must have 3 dimensions. Input data is not
+            modified.
+
+            If provided, the planes can be gotten via `get_raw_planes`.
         """
         if self.volume.shape[0]:
             if self.volume.shape[0] < self.kernel_z_size:
@@ -277,6 +331,11 @@ class BallFilter:
                 dim=0,
             )
 
+            if raw_planes is not None:
+                self.raw_planes = self.raw_planes[remaining_start:] + list(
+                    raw_planes
+                )
+
             if self.inside_brain_tiles is not None:
                 self.inside_brain_tiles = torch.cat(
                     [
@@ -287,13 +346,15 @@ class BallFilter:
                 )
         else:
             self.volume = planes.clone()
+            if raw_planes is not None:
+                self.raw_planes = list(raw_planes)
             if self.inside_brain_tiles is not None:
                 self.inside_brain_tiles = masks.clone()
 
     def get_processed_planes(self) -> np.ndarray:
         """
         After passing enough planes to `append`, and after `walk`, this returns
-        a copy of the processed planes as a numpy z-stack.
+        a copy of the processed planes as a single numpy z-stack.
 
         It only starts returning planes corresponding to plane
         `first_valid_plane` relative to the first planes passed to `append`.
@@ -315,7 +376,29 @@ class BallFilter:
             .numpy()
             .copy()
         )
+
         return planes
+
+    def get_raw_planes(self) -> list[np.ndarray]:
+        """
+        Same as `get_processed_planes`, except that it returns the raw input
+        planes, corresponding to the planes in the z-stack of
+        `get_processed_planes` for the same batch.
+
+        The planes are returned as a list of 2d numpy arrays, one per plane.
+
+        This will only return valid results if the raw planes were provided
+        in *all* calls to `append`.
+        """
+        if not self.ready:
+            raise TypeError("Not enough planes were appended")
+
+        num_processed = self.volume.shape[0] - self.kernel_z_size + 1
+        assert num_processed
+        middle = self.middle_z_idx
+
+        raw_planes = self.raw_planes[middle : middle + num_processed]
+        return raw_planes
 
     def walk(self) -> None:
         """
