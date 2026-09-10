@@ -6,7 +6,7 @@ from brainglobe_utils.IO.image.load import read_with_dask
 from pytest_mock.plugin import MockerFixture
 
 from cellfinder.core.detect.detect import main
-from cellfinder.core.tools.IO import fetch_pooch_directory
+from cellfinder.core.tools.IO import fetch_from_registry, fetch_pooch_directory
 from cellfinder.core.tools.threading import ExecutionFailure
 from cellfinder.core.tools.tools import get_max_possible_int_value
 
@@ -226,7 +226,7 @@ def test_3d_filtering(
     # check input data size/type is as expected
     data = np.asarray(load_pooch_dir(test_data_registry, signal))
     filtered = np.asarray(load_pooch_dir(test_data_registry, filtered))
-    cells = get_cells_xml(test_data_registry.fetch(cells))
+    cells = get_cells_xml(fetch_from_registry(test_data_registry, cells))
     assert data.dtype == np.uint16
     assert filtered.dtype == np.uint32
     assert data.shape == (filtered.shape[0] + 2, *filtered.shape[1:])
