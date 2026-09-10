@@ -9,7 +9,7 @@ from cellfinder import DEFAULT_CELLFINDER_DIRECTORY
 DEFAULT_DOWNLOAD_DIRECTORY = DEFAULT_CELLFINDER_DIRECTORY / "models"
 
 
-MODEL_URL = "https://gin.g-node.org/cellfinder/models/raw/master"
+MODEL_URL = "https://gin.swc.ucl.ac.uk/brainglobe/cellfinder/raw/main/models"
 HF_1CH_URL = "https://huggingface.co/brainglobe/cellfinder_single_channel_default/resolve/main"  # noqa: E501
 
 model_filenames = {
@@ -57,12 +57,23 @@ def download_models(
 
     download_path = Path(download_path)
     filename = model_filenames[model_name]
-    model_path = pooch.retrieve(
-        url=model_urls[model_name],
+    url = model_urls[model_name]
+    retrieve_kwargs = dict(
         known_hash=model_hashes[model_name],
         path=download_path,
         fname=filename,
         progressbar=True,
     )
+    try:
+        # Try the secure endpoint first; fall back to http for internal
+        # networks that can only reach GIN over plain http.
+        model_path = pooch.retrieve(url=url, **retrieve_kwargs)
+    except OSError as e:
+        if "gin" in url:
+            model_path = pooch.retrieve(
+                url=url.replace("https://", "http://"), **retrieve_kwargs
+            )
+        else:
+            raise e
 
     return Path(model_path)
