@@ -82,6 +82,16 @@ class InputContainer:
         return dict(value=value, label=label, **kwargs)
 
     @classmethod
+    def _dimensions_widget(cls) -> dict:
+        """A 2D/3D selector for the container's `dimensions` field."""
+        return dict(
+            widget_type="ComboBox",
+            label="Data dimensionality",
+            choices=[("3D", 3), ("2D", 2)],
+            value=cls.defaults()["dimensions"],
+        )
+
+    @classmethod
     @abstractmethod
     def widget_representation(cls) -> dict:
         """What the class will look like as a napari widget"""
