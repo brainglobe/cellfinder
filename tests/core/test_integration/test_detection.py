@@ -46,6 +46,27 @@ def background_array():
     return read_with_dask(background_data_path)
 
 
+def test_2d_detection_end_to_end(synthetic_single_spot, no_free_cpus):
+    """
+    Detect a single spot in 2D by feeding the central plane of the 3D
+    synthetic spot. The detected cell sits in that plane (z == 0).
+    """
+    signal_array, _, center = synthetic_single_spot
+    center_x, center_y, center_z = center
+    plane = signal_array[center_z].astype(np.float32)
+
+    detected = detect_main(
+        signal_array=plane,
+        n_sds_above_mean_thresh=1.0,
+        voxel_sizes=(voxel_sizes[1], voxel_sizes[2]),
+        n_free_cpus=no_free_cpus,
+        dimensions=2,
+    )
+
+    assert len(detected) == 1
+    assert detected[0] == Cell((center_x, center_y, 0), Cell.UNKNOWN)
+
+
 def count_matched_cells(cell_test, cell_validation, tolerance=0):
     """
     This function is used to check whether the cell's location
