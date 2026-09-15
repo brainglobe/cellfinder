@@ -179,33 +179,6 @@ def iterative_ball_filter(
     return ns, centres
 
 
-def check_centre_in_cuboid(centre: np.ndarray, max_coords: np.ndarray) -> bool:
-    """
-    Checks whether a coordinate is in a cuboid.
-
-    Parameters
-    ----------
-
-    centre : np.ndarray
-        x, y, z coordinate.
-    max_coords : np.ndarray
-        Far corner of cuboid.
-
-    Returns
-    -------
-    True if within cuboid, otherwise False.
-    """
-    relative_coords = centre
-    if (relative_coords > max_coords).all():
-        logger.info(
-            'Relative coordinates "{}" exceed maximum volume '
-            'dimension of "{}"'.format(relative_coords, max_coords)
-        )
-        return False
-    else:
-        return True
-
-
 def split_cells(
     cell_points: np.ndarray, settings: DetectionSettings
 ) -> np.ndarray:
@@ -235,13 +208,7 @@ def split_cells(
     # corner coordinates in absolute pixels
     orig_corner = np.array([xs.min(), ys.min(), zs.min()])
     # volume center relative to corner
-    relative_orig_centre = np.array(
-        [
-            orig_centre[0] - orig_corner[0],
-            orig_centre[1] - orig_corner[1],
-            orig_centre[2] - orig_corner[2],
-        ]
-    )
+    relative_orig_centre = orig_centre - orig_corner
 
     # total volume enclosing all points
     original_bounding_cuboid_shape = get_shape(xs, ys, zs)
@@ -290,18 +257,18 @@ def split_cells(
     if not settings.outlier_keep:
         # TODO: change to checking whether in original cluster shape
         original_max_coords = np.array(original_bounding_cuboid_shape)
-        relative_centres = np.array(
-            [
-                x
-                for x in relative_centres
-                if check_centre_in_cuboid(x, original_max_coords)
-            ]
-        )
+        # keep centres where not all coordinates exceed max
+        mask = ~np.all(relative_centres > original_max_coords, axis=1)
+        if not mask.all():
+            outliers = relative_centres[~mask]
+            for outlier in outliers:
+                logger.info(
+                    'Relative coordinates "{}" exceed maximum volume '
+                    'dimension of "{}"'.format(outlier, original_max_coords)
+                )
+        relative_centres = relative_centres[mask]
 
-    absolute_centres = np.empty((len(relative_centres), 3))
     # convert centers to absolute pixels
-    absolute_centres[:, 0] = orig_corner[0] + relative_centres[:, 0]
-    absolute_centres[:, 1] = orig_corner[1] + relative_centres[:, 1]
-    absolute_centres[:, 2] = orig_corner[2] + relative_centres[:, 2]
+    absolute_centres = relative_centres + orig_corner
 
     return absolute_centres
