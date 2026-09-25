@@ -1,7 +1,11 @@
+import numpy as np
 import pytest
 import torch
 
-from cellfinder.core.detect.filters.volume.ball_filter import BallFilter
+from cellfinder.core.detect.filters.volume.ball_filter import (
+    BallFilter,
+    get_kernel,
+)
 
 bf_kwargs = {
     "plane_height": 50,
@@ -16,6 +20,19 @@ bf_kwargs = {
     "dtype": "float32",
     "torch_device": "cpu",
 }
+
+
+@pytest.mark.parametrize("xy_size", list(range(1, 7)))
+@pytest.mark.parametrize("z_size", list(range(1, 7)))
+def test_kernel_symetry(xy_size, z_size):
+    kernel = get_kernel(xy_size, z_size)
+    for axis in range(3):
+        flipped = np.flip(kernel, axis=axis)
+        assert np.allclose(flipped, kernel)
+
+    assert kernel.shape[0] == xy_size
+    assert kernel.shape[1] == xy_size
+    assert kernel.shape[2] == z_size
 
 
 def test_filter_not_ready():
