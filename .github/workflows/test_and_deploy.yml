@@ -50,13 +50,13 @@ jobs:
       matrix:
         # Run all supported Python versions on linux
         os: [ubuntu-latest]
-        python-version: ["3.11", "3.12", "3.13"]
+        python-version: ["3.12", "3.13", "3.14"]
         # Include one windows and one macOS (arm based) run
         include:
           - os: macos-latest
-            python-version: "3.13"
+            python-version: "3.14"
           - os: windows-latest
-            python-version: "3.13"
+            python-version: "3.14"
 
     steps:
       # Free up disk space on ubuntu runners
