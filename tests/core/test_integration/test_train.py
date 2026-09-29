@@ -1,4 +1,5 @@
 import os
+import sys
 
 import keras
 import pytest
@@ -67,6 +68,69 @@ def test_train_single_channel(mocker, tmpdir):
 
     model = keras.models.load_model(model_file)
     assert model_input_channels(model) == 1
+
+
+@pytest.mark.slow
+def test_train_2d(tmp_path):
+    import tifffile
+    from brainglobe_utils.IO.yaml import save_yaml
+
+    # 2D training consumes depth-1 cubes (as produced by 2D curation), so
+    # build them from the central plane of the existing 3D test cubes.
+    cubes_2d = tmp_path / "cells"
+    cubes_2d.mkdir()
+    for fname in os.listdir(cell_cubes):
+        if fname.endswith(".tif"):
+            cube = tifffile.imread(os.path.join(cell_cubes, fname))
+            tifffile.imwrite(cubes_2d / fname, cube[10:11])
+
+    yaml_file = tmp_path / "training_2d.yaml"
+    save_yaml(
+        {
+            "data": [
+                {
+                    "bg_channel": 1,
+                    "cell_def": "",
+                    "cube_dir": str(cubes_2d),
+                    "signal_channel": 0,
+                    "type": "cell",
+                },
+                {
+                    "bg_channel": 1,
+                    "cell_def": "",
+                    "cube_dir": str(cubes_2d),
+                    "signal_channel": 0,
+                    "type": "no_cell",
+                },
+            ]
+        },
+        yaml_file,
+    )
+
+    out_dir = str(tmp_path / "out")
+    train_args = [
+        "cellfinder_train",
+        "-y",
+        str(yaml_file),
+        "-o",
+        out_dir,
+        "--epochs",
+        "1",
+        "--dimensions",
+        "2",
+        "--no-augment",
+    ]
+    sys.argv = train_args
+    train_run()
+
+    model_file = os.path.join(out_dir, "model.keras")
+    assert os.path.exists(model_file)
+
+    import keras
+
+    model = keras.models.load_model(model_file)
+    # a 2D model takes batch + y + x + channels
+    assert len(model.input_shape) == 4
 
 
 @pytest.mark.parametrize("lr_schedule", [True, False])
