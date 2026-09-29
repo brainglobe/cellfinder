@@ -20,6 +20,7 @@ class DataInputs(InputContainer):
     voxel_size_z: float = 5
     voxel_size_y: float = 2
     voxel_size_x: float = 2
+    dimensions: int = 3
 
     def as_core_arguments(self) -> dict:
         """
@@ -40,6 +41,8 @@ class DataInputs(InputContainer):
 
     @property
     def nplanes(self):
+        if self.signal_array.ndim == 2:
+            return 1
         return len(self.signal_array)
 
     @classmethod
@@ -55,6 +58,7 @@ class DataInputs(InputContainer):
             voxel_size_x=cls._custom_widget(
                 "voxel_size_x", custom_label="Voxel size (x)"
             ),
+            dimensions=cls._dimensions_widget(),
         )
 
 

@@ -66,6 +66,7 @@ class OptionalNetworkInputs(InputContainer):
     model_weights: Optional[Path] = None
     model_depth: str = list(models.keys())[2]
     pretrained_model: str = str(list(model_filenames.keys())[0])
+    dimensions: int = 3
 
     def as_core_arguments(self) -> dict:
         arguments = super().as_core_arguments()
@@ -86,6 +87,7 @@ class OptionalNetworkInputs(InputContainer):
                 "pretrained_model",
                 choices=list(model_filenames.keys()),
             ),
+            dimensions=cls._dimensions_widget(),
         )
 
 
