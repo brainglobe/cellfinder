@@ -129,3 +129,14 @@ def test_bad_ball_z_size():
     with pytest.raises(ValueError):
         # do something with value to quiet linter
         assert settings.ball_z_size
+
+
+def test_2d_ball_z_size_is_one():
+    # In 2D the ball filter collapses to a single plane regardless of the
+    # axial spacing, bypassing the usual zero-size guard.
+    settings = DetectionSettings(
+        dimensions=2,
+        ball_z_size_um=0,
+        voxel_sizes=(1000.0, 1.0, 1.0),
+    )
+    assert settings.ball_z_size == 1
