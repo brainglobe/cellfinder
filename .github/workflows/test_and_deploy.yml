@@ -1,177 +1,115 @@
-name: Test (and Deploy to PyPI on tag)
-
-on:
-  # Only run on pushes to main, or when version tags are pushed
-  push:
-    branches:
-      - "main"
-    tags:
-      - "v**"
-  # Run on all pull-requests
-  pull_request:
-  schedule:
-  # Runs at 6:10am UTC on Monday
-    - cron: '10 6 * * 1'
-  # Allow workflow dispatch from GitHub
-  workflow_dispatch:
-
+name: Allen 3.1 clean atlas audit
 concurrency:
-  # Cancel this workflow if it is running,
-  # and then changes are applied on top of the HEAD of the branch,
-  # triggering another run of the workflow
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
-
 jobs:
   linting:
     runs-on: ubuntu-latest
     name: Check Linting
     steps:
-      - uses: neuroinformatics-unit/actions/lint@34bedfdfd70c6010be02182c9ca37fae8a1fd99d # v3.0.0
-
+    - uses: neuroinformatics-unit/actions/lint@34bedfdfd70c6010be02182c9ca37fae8a1fd99d
   manifest:
     name: Check Manifest
     runs-on: ubuntu-latest
     steps:
-      - uses: neuroinformatics-unit/actions/check_manifest@34bedfdfd70c6010be02182c9ca37fae8a1fd99d # v3.0.0
-
+    - uses: neuroinformatics-unit/actions/check_manifest@34bedfdfd70c6010be02182c9ca37fae8a1fd99d
   test:
-    needs: [linting, manifest]
+    needs:
+    - linting
+    - manifest
     name: Run package tests
     timeout-minutes: 120
     runs-on: ${{ matrix.os }}
     env:
       KERAS_BACKEND: torch
       CELLFINDER_TEST_DEVICE: cpu
-      # pooch cache dir
-      BRAINGLOBE_TEST_DATA_DIR: "~/.pooch_cache"
-
+      BRAINGLOBE_TEST_DATA_DIR: ~/.pooch_cache
     strategy:
       matrix:
-        # Run all supported Python versions on linux
-        os: [ubuntu-latest]
-        python-version: ["3.12", "3.13", "3.14"]
-        # Include one windows and one macOS (arm based) run
+        os:
+        - ubuntu-latest
+        python-version:
+        - '3.12'
+        - '3.13'
+        - '3.14'
         include:
-          - os: macos-latest
-            python-version: "3.14"
-          - os: windows-latest
-            python-version: "3.14"
-
+        - os: macos-latest
+          python-version: '3.14'
+        - os: windows-latest
+          python-version: '3.14'
     steps:
-      # Free up disk space on ubuntu runners
-      - name: Free Disk Space
-        if: matrix.os == 'ubuntu-latest'
-        uses: endersonmenezes/free-disk-space@6c4664f43348c8c7011b53488d5ca65e9fc5cd1a # v3
-        with:
-          remove_android: true
-          remove_dotnet: true
-          rm_cmd: 'rmz'
-          rmz_version: '3.1.1'
-
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-
-      - name: Cache pooch data
-        uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
-        with:
-          path: "~/.pooch_cache"
-          # hash on conftest in case url changes
-          key: ${{ runner.os }}-${{ matrix.python-version }}-${{ hashFiles('**/pooch_registry.txt') }}
-      # Cache the tensorflow model so we don't have to remake it every time
-      - name: Cache brainglobe directory
-        uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
-        with:
-          path: | # ensure we don't cache any interrupted atlas download and extraction, if e.g. we cancel the workflow manually
-            ~/.brainglobe
-            !~/.brainglobe/atlas.tar.gz
-          key: brainglobe
-
-      - name: Run tests
-        uses: neuroinformatics-unit/actions/test-uv@34bedfdfd70c6010be02182c9ca37fae8a1fd99d # v3.0.0
-        with:
-          python-version: ${{ matrix.python-version }}
-          secret-codecov-token: ${{ secrets.CODECOV_TOKEN }}
-          install-extras: 'dev,napari'
-          use-headless: 'true'
-
-
-      - name: Run tests against napari main
-        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
-        uses: neuroinformatics-unit/actions/test-uv@34bedfdfd70c6010be02182c9ca37fae8a1fd99d # v3.0.0
-        with:
-          python-version: ${{ matrix.python-version }}
-          secret-codecov-token: ${{ secrets.CODECOV_TOKEN }}
-          install-extras: 'dev,napari'
-          use-headless: 'true'
-          install-main-branch: 'napari/napari'
-
-      - name: Notify slack on scheduled failure
-        if: failure() && github.event_name == 'schedule'
-        uses: ravsamhq/notify-slack-action@be814b201e233b2dc673608aa46e5447c8ab13f2 # v2.5.0
-        with:
-          status: ${{ job.status }} # required
-          notify_when: 'failure'
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_NOTIFYBOT_WEBHOOK_URL }} # required
-
+    - name: 'Audit: start with empty atlas storage'
+      shell: python {0}
+      run: "from pathlib import Path\nimport shutil\nfor name in (\".brainglobe\", \".brainglobe-tests\"):\n    root = Path.home() / name\n    if root.exists():\n        shutil.rmtree(root)\n    assert not root.exists(), root\n    print(f\"EMPTY_ATLAS_STORAGE {root}\", flush=True)\n"
+    - name: Free Disk Space
+      if: matrix.os == 'ubuntu-latest'
+      uses: endersonmenezes/free-disk-space@6c4664f43348c8c7011b53488d5ca65e9fc5cd1a
+      with:
+        remove_android: true
+        remove_dotnet: true
+        rm_cmd: rmz
+        rmz_version: 3.1.1
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+    - name: Cache pooch data
+      uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57
+      with:
+        path: ~/.pooch_cache
+        key: ${{ runner.os }}-${{ matrix.python-version }}-${{ hashFiles('**/pooch_registry.txt') }}
+    - name: Run tests
+      uses: neuroinformatics-unit/actions/test-uv@34bedfdfd70c6010be02182c9ca37fae8a1fd99d
+      with:
+        python-version: ${{ matrix.python-version }}
+        secret-codecov-token: ${{ secrets.CODECOV_TOKEN }}
+        install-extras: dev,napari
+        use-headless: 'true'
+    - name: 'Audit: verify downloaded Allen atlas is 3.1'
+      if: always()
+      shell: python {0}
+      run: "from pathlib import Path\nimport json\nimport re\nfound = []\nfor name in (\".brainglobe\", \".brainglobe-tests\"):\n    for manifest in (Path.home() / name).rglob(\"manifest.json\"):\n        atlas_name = manifest.parent.parent.name\n        if re.fullmatch(r\"allen_mouse_\\d+um\", atlas_name):\n            record = {\"atlas\": atlas_name, \"version\": manifest.parent.name.replace(\"_\", \".\"), \"manifest\": str(manifest)}\n            print(\"ALLEN_ATLAS_AUDIT \" + json.dumps(record), flush=True)\n            found.append(record)\nassert all(item[\"version\"] == \"3.1\" for item in found), found\nif not found:\n    print(\"ALLEN_ATLAS_AUDIT no Allen manifest found; this job does not establish Allen coverage\", flush=True)\n"
   test_numba_disabled:
-    needs: [linting, manifest]
+    needs:
+    - linting
+    - manifest
     name: Run tests with numba disabled
     timeout-minutes: 120
     runs-on: ubuntu-latest
     env:
-      NUMBA_DISABLE_JIT: "1"
-      PYTORCH_JIT: "0"
-      # pooch cache dir
-      BRAINGLOBE_TEST_DATA_DIR: "~/.pooch_cache"
-
+      NUMBA_DISABLE_JIT: '1'
+      PYTORCH_JIT: '0'
+      BRAINGLOBE_TEST_DATA_DIR: ~/.pooch_cache
     steps:
-      # Free up disk space on ubuntu runners
-      - name: Free Disk Space
-        uses: endersonmenezes/free-disk-space@6c4664f43348c8c7011b53488d5ca65e9fc5cd1a # v3
-        with:
-          remove_android: true
-          remove_dotnet: true
-          rm_cmd: 'rmz'
-          rmz_version: '3.1.1'
-
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Cache brainglobe directory
-        uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
-        with:
-          path: | # ensure we don't cache any interrupted atlas download and extraction, if e.g. we cancel the workflow manually
-            ~/.brainglobe
-            !~/.brainglobe/atlas.tar.gz
-          key: brainglobe
-
-      - name: Cache pooch data
-        uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
-        with:
-          path: "~/.pooch_cache"
-          key: ${{ runner.os }}-3.14-${{ hashFiles('**/pooch_registry.txt') }}
-
-      - name: Run tests with numba disabled
-        uses: neuroinformatics-unit/actions/test-uv@34bedfdfd70c6010be02182c9ca37fae8a1fd99d # v3.0.0
-        with:
-          python-version: "3.14"
-          secret-codecov-token: ${{ secrets.CODECOV_TOKEN }}
-          install-extras: 'dev,napari'
-          codecov-flags: "numba"
-          use-headless: 'true'
-
-      - name: Notify slack on scheduled failure
-        if: failure() && github.event_name == 'schedule'
-        uses: ravsamhq/notify-slack-action@be814b201e233b2dc673608aa46e5447c8ab13f2 # v2.5.0
-        with:
-          status: ${{ job.status }} # required
-          notify_when: 'failure'
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_NOTIFYBOT_WEBHOOK_URL }} # required
-
-  # This job can't use the composite action because it checks out a
-  # diff repo (brainglobe-workflows)
+    - name: 'Audit: start with empty atlas storage'
+      shell: python {0}
+      run: "from pathlib import Path\nimport shutil\nfor name in (\".brainglobe\", \".brainglobe-tests\"):\n    root = Path.home() / name\n    if root.exists():\n        shutil.rmtree(root)\n    assert not root.exists(), root\n    print(f\"EMPTY_ATLAS_STORAGE {root}\", flush=True)\n"
+    - name: Free Disk Space
+      uses: endersonmenezes/free-disk-space@6c4664f43348c8c7011b53488d5ca65e9fc5cd1a
+      with:
+        remove_android: true
+        remove_dotnet: true
+        rm_cmd: rmz
+        rmz_version: 3.1.1
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+    - name: Cache pooch data
+      uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57
+      with:
+        path: ~/.pooch_cache
+        key: ${{ runner.os }}-3.14-${{ hashFiles('**/pooch_registry.txt') }}
+    - name: Run tests with numba disabled
+      uses: neuroinformatics-unit/actions/test-uv@34bedfdfd70c6010be02182c9ca37fae8a1fd99d
+      with:
+        python-version: '3.14'
+        secret-codecov-token: ${{ secrets.CODECOV_TOKEN }}
+        install-extras: dev,napari
+        codecov-flags: numba
+        use-headless: 'true'
+    - name: 'Audit: verify downloaded Allen atlas is 3.1'
+      if: always()
+      shell: python {0}
+      run: "from pathlib import Path\nimport json\nimport re\nfound = []\nfor name in (\".brainglobe\", \".brainglobe-tests\"):\n    for manifest in (Path.home() / name).rglob(\"manifest.json\"):\n        atlas_name = manifest.parent.parent.name\n        if re.fullmatch(r\"allen_mouse_\\d+um\", atlas_name):\n            record = {\"atlas\": atlas_name, \"version\": manifest.parent.name.replace(\"_\", \".\"), \"manifest\": str(manifest)}\n            print(\"ALLEN_ATLAS_AUDIT \" + json.dumps(record), flush=True)\n            found.append(record)\nassert all(item[\"version\"] == \"3.1\" for item in found), found\nif not found:\n    print(\"ALLEN_ATLAS_AUDIT no Allen manifest found; this job does not establish Allen coverage\", flush=True)\n"
   test_brainmapper_cli:
-    needs: [linting, manifest]
+    needs:
+    - linting
+    - manifest
     name: Run brainmapper tests to check for breakages
     timeout-minutes: 120
     runs-on: ubuntu-latest
@@ -179,64 +117,40 @@ jobs:
       KERAS_BACKEND: torch
       CELLFINDER_TEST_DEVICE: cpu
     steps:
-      # Free up disk space on ubuntu runners
-      - name: Free Disk Space
-        uses: endersonmenezes/free-disk-space@6c4664f43348c8c7011b53488d5ca65e9fc5cd1a # v3
-        with:
-          remove_android: true
-          remove_dotnet: true
-          rm_cmd: 'rmz'
-          rmz_version: '3.1.1'
-
-      - name: Cache brainglobe directory
-        uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 #v4.2.0
-        with:
-          path: | # ensure we don't cache any interrupted atlas download and extraction, if e.g. we cancel the workflow manually
-            ~/.brainglobe
-            !~/.brainglobe/atlas.tar.gz
-          key: brainglobe
-      - name: Checkout brainglobe-workflows
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          repository: 'brainglobe/brainglobe-workflows'
-
-      - name: Install uv
-        uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # v8.2.0
-        with:
-          enable-cache: true
-          python-version: "3.14"
-          cache-dependency-glob: "**/pyproject.toml"
-          activate-environment: true
-
-      - name: Install cellfinder from this SHA and brainglobe-workflows
-        shell: bash
-        run: |
-          uv pip install "cellfinder @ git+$GITHUB_SERVER_URL/$GITHUB_REPOSITORY@$GITHUB_SHA"
-          uv pip install ".[dev]"
-
-      - name: Run brainmapper tests
-        shell: bash
-        run: pytest --color=yes -v tests/brainmapper
-
-  build_sdist_wheel:
-    name: Build source distribution
-    needs: [test, test_numba_disabled]
-    if: github.event_name == 'push' && github.ref_type == 'tag'
-    runs-on: ubuntu-latest
-    steps:
-    - uses:  neuroinformatics-unit/actions/build_sdist_wheels@34bedfdfd70c6010be02182c9ca37fae8a1fd99d # v3.0.0
-
-  upload_all:
-    name: Publish build distributions
-    needs: [build_sdist_wheel]
-    if: github.event_name == 'push' && github.ref_type == 'tag'
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/download-artifact@v4
+    - name: 'Audit: start with empty atlas storage'
+      shell: python {0}
+      run: "from pathlib import Path\nimport shutil\nfor name in (\".brainglobe\", \".brainglobe-tests\"):\n    root = Path.home() / name\n    if root.exists():\n        shutil.rmtree(root)\n    assert not root.exists(), root\n    print(f\"EMPTY_ATLAS_STORAGE {root}\", flush=True)\n"
+    - name: Free Disk Space
+      uses: endersonmenezes/free-disk-space@6c4664f43348c8c7011b53488d5ca65e9fc5cd1a
       with:
-        name: artifact
-        path: dist
-    - uses: pypa/gh-action-pypi-publish@release/v1
+        remove_android: true
+        remove_dotnet: true
+        rm_cmd: rmz
+        rmz_version: 3.1.1
+    - name: Checkout brainglobe-workflows
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
       with:
-        user: __token__
-        password: ${{ secrets.TWINE_API_KEY }}
+        repository: brainglobe/brainglobe-workflows
+    - name: Install uv
+      uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39
+      with:
+        enable-cache: true
+        python-version: '3.14'
+        cache-dependency-glob: '**/pyproject.toml'
+        activate-environment: true
+    - name: Install cellfinder from this SHA and brainglobe-workflows
+      shell: bash
+      run: 'uv pip install "cellfinder @ git+$GITHUB_SERVER_URL/$GITHUB_REPOSITORY@$GITHUB_SHA"
+
+        uv pip install ".[dev]"
+
+        '
+    - name: Run brainmapper tests
+      shell: bash
+      run: pytest --color=yes -v tests/brainmapper
+    - name: 'Audit: verify downloaded Allen atlas is 3.1'
+      if: always()
+      shell: python {0}
+      run: "from pathlib import Path\nimport json\nimport re\nfound = []\nfor name in (\".brainglobe\", \".brainglobe-tests\"):\n    for manifest in (Path.home() / name).rglob(\"manifest.json\"):\n        atlas_name = manifest.parent.parent.name\n        if re.fullmatch(r\"allen_mouse_\\d+um\", atlas_name):\n            record = {\"atlas\": atlas_name, \"version\": manifest.parent.name.replace(\"_\", \".\"), \"manifest\": str(manifest)}\n            print(\"ALLEN_ATLAS_AUDIT \" + json.dumps(record), flush=True)\n            found.append(record)\nassert all(item[\"version\"] == \"3.1\" for item in found), found\nif not found:\n    print(\"ALLEN_ATLAS_AUDIT no Allen manifest found; this job does not establish Allen coverage\", flush=True)\n"
+'on':
+  workflow_dispatch: null
