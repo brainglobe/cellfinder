@@ -36,6 +36,7 @@ def main(
     cube_height: int = 50,
     cube_depth: int = 20,
     network_depth: depth_type = "50",
+    dimensions: int = 3,
     skip_detection: bool = False,
     skip_classification: bool = False,
     detected_cells: List[Cell] = None,
@@ -59,13 +60,15 @@ def main(
     Parameters
     ----------
     signal_array : numpy.ndarray or dask array
-        3D array representing the signal data in z, y, x order.
+        3D array representing the signal data in z, y, x order. When
+        `dimensions` is 2, a 2D (y, x) array is also accepted.
     background_array : numpy.ndarray or dask array, optional
         3D array representing the background (autofluorescence) data in
-        z, y, x order. If ``None``, classification runs on the signal
-        channel alone (single-channel mode). A single-channel
-        ``trained_model`` must then be supplied, since the default pretrained
-        weights are two-channel.
+        z, y, x order. When `dimensions` is 2, a 2D (y, x) array is also
+        accepted. If ``None``, classification runs on the signal channel
+        alone (single-channel mode). A single-channel ``trained_model`` must
+        then be supplied, since the default pretrained weights are
+        two-channel.
     voxel_sizes : 3-tuple of floats
         Size of your voxels in the z, y, and x dimensions (microns).
     start_plane : int
@@ -129,6 +132,9 @@ def main(
         classification. Defaults to `20`.
     network_depth: str
         The network depth to use during classification. Defaults to `"50"`.
+    dimensions : int
+        Whether to run detection and classification in 3D (a z-stack, the
+        default) or 2D (a single plane). Defaults to `3`.
     skip_detection : bool
         If selected, the detection step is skipped and instead we get the
         detected cells from the cell layer below (from a previous
@@ -206,6 +212,9 @@ def main(
     from cellfinder.core.classify import classify
     from cellfinder.core.detect import detect
     from cellfinder.core.tools import prep
+    from cellfinder.core.tools.tools import validate_dimensions
+
+    validate_dimensions(dimensions)
 
     if not skip_classification:
         if trained_model is not None and not Path(trained_model).exists():
@@ -246,6 +255,7 @@ def main(
             split_ball_xy_size=split_ball_xy_size,
             split_ball_overlap_fraction=split_ball_overlap_fraction,
             n_splitting_iter=n_splitting_iter,
+            dimensions=dimensions,
         )
 
         if detect_finished_callback is not None:
@@ -275,6 +285,7 @@ def main(
                 max_workers=classification_max_workers,
                 normalize_channels=normalize_channels,
                 normalization_n_sampling_planes=normalization_n_sampling_planes,
+                dimensions=dimensions,
             )
         else:
             logger.info("No candidates, skipping classification")

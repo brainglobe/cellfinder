@@ -28,6 +28,7 @@ from cellfinder.core.detect.filters.volume.volume_filter import VolumeFilter
 from cellfinder.core.tools.tools import (
     deprecate_positional_args,
     inference_wrapper,
+    validate_dimensions,
 )
 
 
@@ -61,6 +62,7 @@ def main(
     n_splitting_iter: int = 10,
     n_sds_above_mean_tiled_thresh: float = 10,
     tiled_thresh_tile_size: float | None = None,
+    dimensions: int = 3,
     callback: Optional[Callable[[int], None]] = None,
 ) -> List[Cell]:
     """
@@ -156,6 +158,10 @@ def main(
         by soma diameter (i.e. 1 means one soma diameter). If zero or None, the
         tiled threshold is disabled and only the per-plane threshold is used.
         Tiling is done with 50% overlap when striding.
+    dimensions : int
+        Whether to run detection in 3D (a z-stack, the default) or 2D (a single
+        plane). When 2, a 2D `signal_array` is accepted (and processed as a
+        depth-1 stack), and the 3D ball filter is collapsed to a 2D disk.
     callback : Callable[int], optional
         A callback function that is called every time a plane has finished
         being processed. Called with the plane number that has finished.
@@ -174,14 +180,24 @@ def main(
         else:
             batch_size = 1
 
+    validate_dimensions(dimensions)
+
     if not np.issubdtype(signal_array.dtype, np.number):
         raise TypeError(
             "signal_array must be a numpy datatype, but has datatype "
             f"{signal_array.dtype}"
         )
 
-    if signal_array.ndim != 3:
-        raise ValueError("Input data must be 3D")
+    if dimensions == 3:
+        if signal_array.ndim != 3:
+            raise ValueError("Input data must be 3D")
+    else:
+        if signal_array.ndim not in (2, 3):
+            raise ValueError("2D detection needs 2D or 3D input data")
+        if signal_array.ndim == 2:
+            signal_array = signal_array[np.newaxis, ...]
+        if len(voxel_sizes) == 2:
+            voxel_sizes = (1.0, *voxel_sizes)
 
     if end_plane < 0:
         end_plane = len(signal_array)
@@ -223,6 +239,7 @@ def main(
         torch_device=torch_device,
         pin_memory=pin_memory,
         n_splitting_iter=n_splitting_iter,
+        dimensions=dimensions,
     )
 
     # replicate the settings specific to splitting, before we access anything
