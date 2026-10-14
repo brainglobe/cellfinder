@@ -7,6 +7,7 @@ from napari.qt.threading import thread_worker
 from napari.utils.notifications import show_info
 from qtpy.QtWidgets import QScrollArea
 
+from cellfinder.core.download.download import models_for_dimensions
 from cellfinder.core.train.train_yaml import run as train_yaml
 from cellfinder.napari.utils import cellfinder_header, html_label_widget
 
@@ -176,6 +177,10 @@ def training_widget() -> FunctionGui:
 
     widget.native.layout().insertWidget(0, cellfinder_header())
 
+    @widget.dimensions.changed.connect
+    def update_pretrained_model_choices(dimensions: int):
+        widget.pretrained_model.choices = models_for_dimensions(dimensions)
+
     @widget.reset_button.changed.connect
     def restore_defaults():
         defaults = {
@@ -184,6 +189,7 @@ def training_widget() -> FunctionGui:
             **OptionalTrainingInputs.widget_defaults(),
             **MiscTrainingInputs.widget_defaults(),
         }
+        widget.dimensions.value = defaults.pop("dimensions")
         for name, value in defaults.items():
             getattr(widget, name).value = value
 
