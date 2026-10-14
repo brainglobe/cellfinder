@@ -24,3 +24,13 @@ def test_cli_help(entry_point):
         f"stdout: {result.stdout}\n"
         f"stderr: {result.stderr}"
     )
+
+
+def test_train_cli_exposes_dimensions():
+    result = subprocess.run(
+        ["cellfinder_train", "--help"],
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0
+    assert "--dimensions" in result.stdout
