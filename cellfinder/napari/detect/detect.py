@@ -246,6 +246,7 @@ def detect_widget() -> FunctionGui:
         voxel_size_z: float,
         voxel_size_y: float,
         voxel_size_x: float,
+        dimensions: int,
         detection_options,
         skip_detection: bool,
         soma_diameter: float,
@@ -287,6 +288,10 @@ def detect_widget() -> FunctionGui:
             Size of your voxels in the y direction (top to bottom) (microns)
         voxel_size_x : float
             Size of your voxels in the x direction (left to right) (microns)
+        dimensions : int
+            Whether to run in 3D (a z-stack, the default) or 2D (a single
+            plane). In 2D the z voxel size, ball filter (z), start/end plane
+            and local analysis options are ignored.
         skip_detection : bool
             If selected, the detection step is skipped and instead we get the
             detected cells from the cell layer below (from a previous
@@ -435,6 +440,7 @@ def detect_widget() -> FunctionGui:
             voxel_size_z,
             voxel_size_y,
             voxel_size_x,
+            dimensions,
         )
 
         detection_inputs = DetectionInputs(

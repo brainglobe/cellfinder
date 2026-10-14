@@ -56,6 +56,7 @@ def training_widget() -> FunctionGui:
         model_weights: Optional[Path],
         model_depth: str,
         pretrained_model: str,
+        dimensions: int,
         training_options: dict,
         continue_training: bool,
         augment: bool,
@@ -90,6 +91,9 @@ def training_widget() -> FunctionGui:
         pretrained_model : str
             Which pre-trained model to use
             (Supplied with cellfinder)
+        dimensions : int
+            Whether to train a 3D network (a z-stack cube, the default) or a
+            2D network (a single plane).
         continue_training : bool
             Continue training from an existing trained model
             If no trained model or model weights are specified,
@@ -141,6 +145,7 @@ def training_widget() -> FunctionGui:
             model_weights,
             model_depth,
             pretrained_model,
+            dimensions,
         )
 
         optional_training_inputs = OptionalTrainingInputs(
