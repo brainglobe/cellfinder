@@ -17,6 +17,7 @@ from qt_niu.interaction import (
     add_button,
     add_combobox,
     add_float_box,
+    add_int_box,
 )
 from qtpy import QtCore
 from qtpy.QtWidgets import (
@@ -32,11 +33,14 @@ from cellfinder.core.classify.cube_generator import (
     CuboidArrayDataset,
     CuboidBatchSampler,
 )
+from cellfinder.core.tools.image_processing import dataset_mean_std
 
 # Constants used throughout
 WINDOW_HEIGHT = 750
 WINDOW_WIDTH = 1500
 COLUMN_WIDTH = 150
+
+NO_BACKGROUND_CHANNEL = -1
 
 
 class CurationWidget(QWidget):
@@ -68,6 +72,7 @@ class CurationWidget(QWidget):
         self.save_empty_cubes = save_empty_cubes
         self.max_ram = max_ram
         self.voxel_sizes = [5, 2, 2]
+        self.normalization_n_sampling_planes = 50
         self.batch_size = 64
         self.viewer = viewer
 
@@ -112,14 +117,11 @@ class CurationWidget(QWidget):
         @self.viewer.layers.events.removed.connect
         def _remove_selection_layers(event: QtCore.QEvent):
             """
-            Set internal background, signal, training data cell,
-            and training data non-cell layers to None when they
-            are removed from the napari viewer GUI.
+            Set the internal training data cell and non-cell layers to
+            None when they are removed from the napari viewer GUI. The
+            signal and background layers are reset through their combobox
+            callbacks (`set_signal_image` / `set_background_image`).
             """
-            if event.value == self.signal_layer:
-                self.signal_layer = None
-            if event.value == self.background_layer:
-                self.background_layer = None
             if event.value == self.training_data_cell_layer:
                 self.training_data_cell_layer = None
             if event.value == self.training_data_non_cell_layer:
@@ -175,6 +177,9 @@ class CurationWidget(QWidget):
 
     def _set_voxel_size(self, value: float, index: int) -> None:
         self.voxel_sizes[index] = value
+
+    def _set_normalization_n_sampling_planes(self, value: int) -> None:
+        self.normalization_n_sampling_planes = value
 
     def add_loading_panel(self, row: int, column: int = 0):
         self.load_data_panel = QGroupBox("Load data")
@@ -233,32 +238,48 @@ class CurationWidget(QWidget):
         )
         box_x.valueChanged.connect(partial(self._set_voxel_size, index=2))
         self.voxel_sizes_boxes = box_z, box_y, box_x
+
+        box_norm = add_int_box(
+            self.load_data_layout,
+            self.normalization_n_sampling_planes,
+            1,
+            10000,
+            "Normalization sampling planes",
+            6,
+            tooltip="Number of z-planes, equally spaced in the z-axis, used to"
+            " estimate the mean and std of the dataset. Used to normalize the "
+            "extracted cubes during training, if enabled there.",
+        )
+        box_norm.valueChanged.connect(
+            self._set_normalization_n_sampling_planes
+        )
+        self.norm_sampling_box = box_norm
         self.training_data_cell_choice, _ = add_combobox(
             self.load_data_layout,
             "Training data (cells)",
             self.point_layer_names,
-            6,
+            7,
             callback=self.set_training_data_cell,
         )
         self.training_data_non_cell_choice, _ = add_combobox(
             self.load_data_layout,
             "Training_data (non_cells)",
             self.point_layer_names,
-            row=7,
+            row=8,
             callback=self.set_training_data_non_cell,
         )
         self.mark_as_cell_button = add_button(
             "Mark as cell(s)",
             self.load_data_layout,
             self.mark_as_cell,
-            row=8,
+            row=9,
             tooltip="Mark all selected points as non cell. Shortcut: 'c'",
         )
         self.mark_as_non_cell_button = add_button(
             "Mark as non cell(s)",
             self.load_data_layout,
             self.mark_as_non_cell,
-            row=8,
+            row=9,
             column=1,
             tooltip="Mark all selected points as non cell. Shortcut: 'x'",
         )
@@ -266,13 +287,13 @@ class CurationWidget(QWidget):
             "Add training data layers",
             self.load_data_layout,
             self.add_training_data,
-            row=9,
+            row=10,
         )
         self.save_training_data_button = add_button(
             "Save training data",
             self.load_data_layout,
             self.save_training_data,
-            row=9,
+            row=10,
             column=1,
         )
         self.load_data_layout.setColumnMinimumWidth(0, COLUMN_WIDTH)
@@ -292,6 +313,8 @@ class CurationWidget(QWidget):
             self.signal_layer = self.viewer.layers[
                 self.signal_image_choice.currentText()
             ]
+        else:
+            self.signal_layer = None
 
     def set_background_image(self):
         """
@@ -301,6 +324,8 @@ class CurationWidget(QWidget):
             self.background_layer = self.viewer.layers[
                 self.background_image_choice.currentText()
             ]
+        else:
+            self.background_layer = None
 
     def set_training_data_cell(self):
         """
@@ -409,13 +434,10 @@ class CurationWidget(QWidget):
                         f"points to layer: {destination_layer.name}"
                     )
 
-                    for selected_point in layer.selected_data:
-                        destination_layer.data = np.vstack(
-                            (
-                                destination_layer.data,
-                                layer.data[selected_point],
-                            )
-                        )
+                    selected_points = layer.data[list(layer.selected_data)]
+                    destination_layer.data = np.vstack(
+                        (destination_layer.data, selected_points)
+                    )
 
                 else:
                     show_info(
@@ -467,21 +489,19 @@ class CurationWidget(QWidget):
                     if not choice:
                         return
             if self.output_directory is not None:
-                self.__prep_directories_for_save()
-                self.__extract_cubes(block=block)
-                self.__save_yaml_file()
-                show_info("Done")
+                self._prep_directories_for_save()
+                self._extract_cubes(block=block)
+                if block:
+                    self._finish_save()
 
-            self.update_status_label("Ready")
-
-    def __prep_directories_for_save(self):
+    def _prep_directories_for_save(self):
         self.yaml_filename = self.output_directory / "training.yaml"
         self.cell_cube_dir = self.output_directory / "cells"
         self.no_cell_cube_dir = self.output_directory / "non_cells"
 
-        self.__delete_existing_saved_training_data()
+        self._delete_existing_saved_training_data()
 
-    def __delete_existing_saved_training_data(self):
+    def _delete_existing_saved_training_data(self):
         self.yaml_filename.unlink(missing_ok=True)
         for directory in (
             self.cell_cube_dir,
@@ -492,7 +512,7 @@ class CurationWidget(QWidget):
             else:
                 directory.mkdir(exist_ok=True, parents=True)
 
-    def __extract_cubes(self, *, block=False):
+    def _extract_cubes(self, *, block=False):
         """
         Parameters
         ----------
@@ -511,11 +531,29 @@ class CurationWidget(QWidget):
                     break
         else:
 
-            @thread_worker(connect={"yielded": self.update_progress})
+            @thread_worker(
+                connect={
+                    "yielded": self.update_progress,
+                    "returned": lambda _: self._finish_save(),
+                }
+            )
             def extract_cubes():
                 yield from self.extract_cubes()
 
             extract_cubes()
+
+    def _finish_save(self):
+        self._save_yaml_file()
+        show_info("Done")
+        self.update_status_label("Ready")
+
+    @property
+    def has_background(self) -> bool:
+        return self.background_layer is not None
+
+    @property
+    def background_data(self):
+        return self.background_layer.data if self.has_background else None
 
     def is_data_extractable(self) -> bool:
         if (
@@ -527,25 +565,23 @@ class CurationWidget(QWidget):
             return False
 
     def check_image_data_for_extraction(self) -> bool:
-        if self.signal_layer and self.background_layer:
-            if (
-                self.signal_layer.data.shape
-                == self.background_layer.data.shape
-            ):
-                return True
-            else:
-                show_info(
-                    "Please ensure both signal and background images are the "
-                    "same size and shape.",
-                )
-                return False
-
-        else:
+        if not self.signal_layer:
             show_info(
-                "Please ensure both signal and background images are loaded "
-                "into napari, and selected in the sidebar. ",
+                "Please ensure a signal image is loaded into napari, and "
+                "selected in the sidebar. ",
             )
             return False
+
+        if self.has_background and (
+            self.signal_layer.data.shape != self.background_layer.data.shape
+        ):
+            show_info(
+                "Please ensure both signal and background images are the "
+                "same size and shape.",
+            )
+            return False
+
+        return True
 
     def check_training_data_exists(self) -> bool:
         """
@@ -632,22 +668,41 @@ class CurationWidget(QWidget):
         self.cells_to_extract = list(set(self.cells_to_extract))
         self.non_cells_to_extract = list(set(self.non_cells_to_extract))
 
-    def __save_yaml_file(self):
+    def _calculate_channel_stats(self):
+        self.update_status_label("Estimating signal mean/std...")
+        signal_stat = dataset_mean_std(
+            self.signal_layer.data, self.normalization_n_sampling_planes
+        )
+        if not self.has_background:
+            return signal_stat, None
+        self.update_status_label("Estimating background mean/std...")
+        bg_stat = dataset_mean_std(
+            self.background_layer.data, self.normalization_n_sampling_planes
+        )
+        return signal_stat, bg_stat
+
+    def _save_yaml_file(self):
+        signal_stat, bg_stat = self._calculate_channel_stats()
+        bg_channel = 1 if self.has_background else NO_BACKGROUND_CHANNEL
+
+        def cube_section(cube_dir, cube_type):
+            section = {
+                "cube_dir": str(cube_dir),
+                "cell_def": "",
+                "type": cube_type,
+                "signal_channel": 0,
+                "bg_channel": bg_channel,
+                "signal_mean": signal_stat[0],
+                "signal_std": signal_stat[1],
+            }
+            if bg_stat is not None:
+                section["bg_mean"] = bg_stat[0]
+                section["bg_std"] = bg_stat[1]
+            return section
+
         yaml_section = [
-            {
-                "cube_dir": str(self.cell_cube_dir),
-                "cell_def": "",
-                "type": "cell",
-                "signal_channel": 0,
-                "bg_channel": 1,
-            },
-            {
-                "cube_dir": str(self.no_cell_cube_dir),
-                "cell_def": "",
-                "type": "no_cell",
-                "signal_channel": 0,
-                "bg_channel": 1,
-            },
+            cube_section(self.cell_cube_dir, "cell"),
+            cube_section(self.no_cell_cube_dir, "no_cell"),
         ]
 
         yaml_contents = {"data": yaml_section}
@@ -682,6 +737,8 @@ class CurationWidget(QWidget):
             "non_cells": self.no_cell_cube_dir,
         }
 
+        background_array = self.background_data
+
         for cell_type in ["cells", "non_cells"]:
             cell_type_output_directory = directories[cell_type]
             cell_list = to_extract[cell_type]
@@ -690,7 +747,7 @@ class CurationWidget(QWidget):
 
             cube_generator = CuboidArrayDataset(
                 signal_array=self.signal_layer.data,
-                background_array=self.background_layer.data,
+                background_array=background_array,
                 points=cell_list,
                 data_voxel_sizes=self.voxel_sizes,
                 network_voxel_sizes=self.network_voxel_sizes,

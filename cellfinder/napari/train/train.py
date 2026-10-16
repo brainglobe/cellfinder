@@ -49,8 +49,8 @@ def training_widget() -> FunctionGui:
     def widget(
         training_label: dict,
         data_options: dict,
-        yaml_files: Path,
-        output_directory: Path,
+        yaml_files: Optional[Path],
+        output_directory: Optional[Path],
         network_options: dict,
         trained_model: Optional[Path],
         model_weights: Optional[Path],
@@ -59,11 +59,14 @@ def training_widget() -> FunctionGui:
         training_options: dict,
         continue_training: bool,
         augment: bool,
+        normalize_channels: bool,
         tensorboard: bool,
         save_checkpoints: bool,
         save_progress: bool,
         epochs: int,
         learning_rate: float,
+        lr_schedule: list[int],
+        lr_multiplier: float,
         batch_size: int,
         test_fraction: float,
         misc_options: dict,
@@ -73,9 +76,9 @@ def training_widget() -> FunctionGui:
         """
         Parameters
         ----------
-        yaml_files : Path
+        yaml_files : Optional[Path]
             YAML files containing paths to training data
-        output_directory : Path
+        output_directory : Optional[Path]
             Directory to save the output trained model
         trained_model : Optional[Path]
             Existing pre-trained model
@@ -93,6 +96,10 @@ def training_widget() -> FunctionGui:
             this will continue from the pretrained model
         augment : bool
             Augment the training data to improve generalisation
+        normalize_channels : bool
+            Whether to normalize the cubes by the mean/std of their origin
+            dataset. If True, the yaml files must include the mean/std of
+            the origin dataset.
         tensorboard : bool
             Log to output_directory/tensorboard
         save_checkpoints : bool
@@ -104,6 +111,15 @@ def training_widget() -> FunctionGui:
             (How many times to use each training data point)
         learning_rate : float
             Learning rate for training the model
+        lr_schedule : list of ints
+            If not empty, the list of epochs when to multiply the current
+            learning rate by the lr_multiplier. E.g. if it's [10, 25], we start
+            with a learning rate of 0.001, and `lr_multiplier` is 0.1, then the
+            LR will be 0.001 for epochs 0-9, 0.0001 for 10-24, and 00001
+            for epoch 25 and beyond.
+        lr_multiplier : float
+            The multiplier by which to multiply the previous learning rate
+            at the epochs listed in `lr_schedule`.
         batch_size : int
             Training batch size
         test_fraction : float
@@ -113,10 +129,12 @@ def training_widget() -> FunctionGui:
         reset_button : PushButton
             Reset parameters to default
         """
-        trained_model = None if trained_model == Path.home() else trained_model
-        model_weights = None if model_weights == Path.home() else model_weights
-
         training_data_inputs = TrainingDataInputs(yaml_files, output_directory)
+
+        validation_error = training_data_inputs.validation_error()
+        if validation_error is not None:
+            show_info(validation_error)
+            return
 
         optional_network_inputs = OptionalNetworkInputs(
             trained_model,
@@ -135,36 +153,34 @@ def training_widget() -> FunctionGui:
             learning_rate,
             batch_size,
             test_fraction,
+            lr_schedule,
+            lr_multiplier,
+            normalize_channels,
         )
 
         misc_training_inputs = MiscTrainingInputs(number_of_free_cpus)
 
-        if yaml_files[0] == Path.home():  # type: ignore
-            show_info("Please select a YAML file for training")
-        else:
-            show_info("Starting training process...")
-            worker = run_training(
-                training_data_inputs,
-                optional_network_inputs,
-                optional_training_inputs,
-                misc_training_inputs,
-            )
-            worker.start()
+        show_info("Starting training process...")
+        worker = run_training(
+            training_data_inputs,
+            optional_network_inputs,
+            optional_training_inputs,
+            misc_training_inputs,
+        )
+        worker.start()
 
     widget.native.layout().insertWidget(0, cellfinder_header())
 
     @widget.reset_button.changed.connect
     def restore_defaults():
         defaults = {
-            **TrainingDataInputs.defaults(),
-            **OptionalNetworkInputs.defaults(),
-            **OptionalTrainingInputs.defaults(),
-            **MiscTrainingInputs.defaults(),
+            **TrainingDataInputs.widget_defaults(),
+            **OptionalNetworkInputs.widget_defaults(),
+            **OptionalTrainingInputs.widget_defaults(),
+            **MiscTrainingInputs.widget_defaults(),
         }
         for name, value in defaults.items():
-            # ignore fields with no default
-            if value is not None:
-                getattr(widget, name).value = value
+            getattr(widget, name).value = value
 
     scroll = QScrollArea()
     scroll.setWidget(widget._widget._qwidget)

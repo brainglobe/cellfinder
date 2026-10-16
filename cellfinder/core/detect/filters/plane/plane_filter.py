@@ -126,11 +126,13 @@ class TileProcessor:
         Parameters
         ----------
         planes : torch.Tensor
-            Input planes (z-stack). Note, the input data is modified.
+            Input planes (z-stack). Note, the input data is modified by being
+                clipped between zero and `clipping_value`. Otherwise, it is
+                unchanged.
 
         Returns
         -------
-        planes : torch.Tensor
+        filtered_planes : torch.Tensor
             Filtered and thresholded planes (z-stack).
         inside_brain_tiles : torch.Tensor
             Boolean mask indicating which tiles are inside (1) or
@@ -144,7 +146,7 @@ class TileProcessor:
         # Threshold the image
         enhanced_planes = self.peak_enhancer.enhance_peaks(planes)
 
-        _threshold_planes(
+        filtered_planes = _threshold_planes(
             planes,
             enhanced_planes,
             self.n_sds_above_mean_thresh,
@@ -154,7 +156,7 @@ class TileProcessor:
             self.torch_device,
         )
 
-        return planes, inside_brain_tiles
+        return filtered_planes, inside_brain_tiles
 
     def get_tiled_buffer(self, depth: int, device: str):
         return self.tile_walker.get_tiled_buffer(depth, device)
@@ -169,11 +171,11 @@ def _threshold_planes(
     local_threshold_tile_size_px: int,
     threshold_value: int,
     torch_device: str,
-) -> None:
+) -> torch.Tensor:
     """
-    Sets each plane (in-place) to threshold_value, where the corresponding
-    enhanced_plane > mean + n_sds_above_mean_thresh*std. Each plane will be
-    set to zero elsewhere.
+    Sets each pixel in the returned planes to threshold_value, where the
+    corresponding enhanced_plane > mean + n_sds_above_mean_thresh*std.
+    Each pixel will be set to zero elsewhere. Original `planes` is unchanged.
     """
     z, y, x = enhanced_planes.shape
 
@@ -257,10 +259,12 @@ def _threshold_planes(
     else:
         above = above_global
 
-    planes[above] = threshold_value
     # subsequent steps only care about the values that are set to threshold or
     # above in planes. We set values in *planes* to threshold based on the
     # value in *enhanced_planes*. So, there could be values in planes that are
     # at threshold already, but in enhanced_planes they are not. So it's best
     # to zero all other values, so voxels previously at threshold don't count
-    planes[torch.logical_not(above)] = 0
+    filtered_planes = torch.zeros_like(planes)
+    filtered_planes[above] = threshold_value
+
+    return filtered_planes

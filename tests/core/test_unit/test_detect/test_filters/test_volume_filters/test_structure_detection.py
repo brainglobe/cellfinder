@@ -57,8 +57,17 @@ def structure(three_d_cross: np.ndarray) -> np.ndarray:
     return coords
 
 
-def test_get_structure_centre(structure: np.ndarray) -> None:
-    result_point = get_structure_centre(structure)
+@pytest.mark.parametrize("use_intensity", [True, False])
+def test_get_structure_centre(structure: np.ndarray, use_intensity) -> None:
+    """
+    Check that get_structure_centre works and that it works the same if we
+    provide it a zeroed intensity array.
+    """
+    intensity = None
+    if use_intensity:
+        intensity = np.zeros(len(structure))
+
+    result_point = get_structure_centre(structure, intensity)
     assert (result_point[0], result_point[1], result_point[2]) == (
         1,
         1,
@@ -224,15 +233,35 @@ def test_add_point():
     detector.add_point(1, (7, 5, 5))
 
 
-def test_add_points():
+@pytest.mark.parametrize("use_intensity", [True, False])
+def test_add_points(use_intensity):
     detector = CellDetector(50, 50, 0, 0)
 
     points = np.array([(5, 5, 5), (6, 6, 6)], dtype=np.uint32)
     points2 = np.array([(7, 5, 5), (8, 6, 6)], dtype=np.uint32)
     points3 = np.array([(8, 5, 5), (8, 6, 6)], dtype=np.uint32)
-    detector.add_points(0, points)
-    detector.add_points(0, points2)
-    detector.add_points(1, points3)
+
+    intensity = intensity2 = intensity3 = None
+    if use_intensity:
+        intensity = np.ones(2)
+        intensity2 = np.ones(2) * 2
+        intensity3 = np.ones(2) * 3
+
+    detector.add_points(0, points, intensity)
+    detector.add_points(0, points2, intensity2)
+    detector.add_points(1, points3, intensity3)
+
+    structures = detector.get_structures()
+    assert np.all(np.concatenate([points, points2], axis=0) == structures[0])
+    assert np.all(points3 == structures[1])
+
+    intensities = detector.get_structures_intensities()
+    if use_intensity:
+        assert np.all(np.array([1, 1, 2, 2]) == intensities[0])
+        assert np.all(3 == intensities[1])
+    else:
+        assert np.all(0 == intensities[0])
+        assert np.all(0 == intensities[1])
 
 
 def test_change_plane_size():

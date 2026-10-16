@@ -248,16 +248,6 @@ def test_get_number_of_bins_nd():
         tools.get_number_of_bins_nd([200, 300, 400], 10)
 
 
-def test_interchange_np_fiji_coordinates():
-    tuple_in = (100, 200, 300)
-    assert tools.interchange_np_fiji_coordinates(tuple_in) == (200, 100, 300)
-
-
-def test_swap_elements_list():
-    list_in = [1, 2, 3, 4]
-    assert tools.swap_elements_list(list_in, 1, 2) == [1, 3, 2, 4]
-
-
 def test_is_any_list_overlap():
     assert tools.is_any_list_overlap(a, b)
     assert not tools.is_any_list_overlap(a, [2, "b", (1, 2, 3)])
@@ -302,3 +292,49 @@ def test_get_axis_reordering():
     assert torch.allclose(reordered, manual_reordered)
     # check data is not already symmetric in x, y
     assert data[0, 1, 5] != data[1, 0, 5]
+
+
+def test_deprecate_positional_args():
+    import warnings
+
+    @tools.deprecate_positional_args
+    def sample_func(*, a, b=2):
+        return a + b
+
+    # 1. Keyword arguments only (No warning)
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always")
+        assert sample_func(a=5) == 7
+        assert len(w) == 0
+
+    # 2. Positional arguments (Warning)
+    with pytest.warns(
+        DeprecationWarning,
+        match="Calling sample_func with positional arguments is deprecated",
+    ):
+        assert sample_func(5, 3) == 8
+
+    # 3. Both positional and keyword for same argument (TypeError)
+    with pytest.raises(
+        TypeError, match="sample_func got multiple values for argument 'a'"
+    ):
+        sample_func(5, a=10)
+
+    # 4. Too many positional arguments (TypeError)
+    with pytest.raises(
+        TypeError,
+        match="sample_func takes 2 positional arguments but 3 were given",
+    ):
+        sample_func(1, 2, 3)
+
+
+@pytest.mark.parametrize("dimensions", [2, 3])
+def test_validate_dimensions_ok(dimensions):
+    # should not raise
+    tools.validate_dimensions(dimensions)
+
+
+@pytest.mark.parametrize("dimensions", [0, 1, 4, "2"])
+def test_validate_dimensions_bad(dimensions):
+    with pytest.raises(ValueError):
+        tools.validate_dimensions(dimensions)

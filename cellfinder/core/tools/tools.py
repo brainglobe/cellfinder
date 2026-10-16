@@ -21,6 +21,14 @@ def inference_wrapper(func):
     return inner_function
 
 
+def validate_dimensions(dimensions: int) -> None:
+    """
+    Raise `ValueError` unless `dimensions` is 2 or 3.
+    """
+    if dimensions not in (2, 3):
+        raise ValueError(f"dimensions must be 2 or 3, got {dimensions!r}")
+
+
 def get_max_possible_int_value(dtype: Type[np.number]) -> int:
     """
     Returns the maximum allowed integer for a numpy array of given type.
@@ -240,30 +248,6 @@ def get_number_of_bins_nd(array_size, binning):
     return tuple(bins)
 
 
-def interchange_np_fiji_coordinates(tuple_in):
-    """
-    Swaps the first and second element of a tuple to swap between the numpy
-    convention (vertical is first) and FIJI convention (horizontal is first)
-    :param tuple_in: A 2+ element tuple
-    :return: Same tuple with element 0 and 1 interchanged
-    """
-    tmp_list = list(tuple_in)
-    tmp_list = swap_elements_list(tmp_list, 0, 1)
-    return tuple(tmp_list)
-
-
-def swap_elements_list(list_in, swap_a, swap_b):
-    """
-    Swap two elements in a list
-    :param list_in: A list
-    :param swap_a: Index of first element to swap
-    :param swap_b: Index of second element to swap
-    :return: List with swap_a and swap_b exchanged
-    """
-    list_in[swap_a], list_in[swap_b] = list_in[swap_b], list_in[swap_a]
-    return list_in
-
-
 def is_any_list_overlap(list_a, list_b):
     """
     Is there any overlap between two lists
@@ -341,3 +325,53 @@ def get_axis_reordering(
     for value in out_order:
         indices.append(in_order.index(value))
     return indices
+
+
+def deprecate_positional_args(func):
+    """
+    Decorator to deprecate positional arguments and map them to
+    keyword arguments. Raises a DeprecationWarning if any positional
+    arguments are used.
+    """
+    import inspect
+    import warnings
+
+    sig = inspect.signature(func)
+    param_names = [
+        name
+        for name, param in sig.parameters.items()
+        if param.kind
+        not in (
+            inspect.Parameter.VAR_POSITIONAL,
+            inspect.Parameter.VAR_KEYWORD,
+        )
+    ]
+
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        if args:
+            warnings.warn(
+                f"Calling {func.__name__} with positional arguments "
+                "is deprecated and will be removed in early 2027. "
+                "Please use keyword arguments.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+            for i, arg in enumerate(args):
+                if i < len(param_names):
+                    if param_names[i] in kwargs:
+                        raise TypeError(
+                            f"{func.__name__} got multiple values "
+                            f"for argument '{param_names[i]}'"
+                        )
+                    kwargs[param_names[i]] = arg
+                else:
+                    raise TypeError(
+                        f"{func.__name__} takes {len(param_names)} "
+                        f"positional arguments but {len(args)} were given"
+                    )
+
+            return func(**kwargs)
+        return func(**kwargs)
+
+    return wrapper

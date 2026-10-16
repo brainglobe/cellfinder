@@ -4,8 +4,14 @@ from unittest.mock import patch
 import napari
 import numpy as np
 import pytest
+import yaml
 from napari.layers import Image, Points
 
+from cellfinder.core.train.train_yaml import (
+    get_tiff_files,
+    make_tiff_lists,
+    parse_yaml,
+)
 from cellfinder.napari import sample_data
 from cellfinder.napari.curation import CurationWidget
 from cellfinder.napari.sample_data import load_sample
@@ -44,6 +50,14 @@ def test_update_voxel_size(curation_widget: CurationWidget):
     curation_widget.voxel_sizes_boxes[1].setValue(4)
     curation_widget.voxel_sizes_boxes[2].setValue(5)
     assert curation_widget.voxel_sizes == [3, 4, 5]
+
+
+def test_update_normalization_n_sampling_planes(
+    curation_widget: CurationWidget,
+):
+    assert curation_widget.normalization_n_sampling_planes == 50
+    curation_widget.norm_sampling_box.setValue(8)
+    assert curation_widget.normalization_n_sampling_planes == 8
 
 
 def test_cell_marking(curation_widget, tmp_path):
@@ -95,6 +109,60 @@ def test_cell_marking(curation_widget, tmp_path):
     # Check that two .tif files are saved for both cells and non_cells
     assert len(list((tmp_path / "non_cells").glob("*.tif"))) == 2
     assert len(list((tmp_path / "cells").glob("*.tif"))) == 2
+
+    with open(tmp_path / "training.yaml", "r") as fh:
+        yaml_data = yaml.safe_load(fh)
+
+    for item in yaml_data["data"]:
+        assert "cube_dir" in item
+        assert "signal_channel" in item
+        assert "bg_channel" in item
+        assert "type" in item
+        assert "signal_mean" in item
+        assert "signal_std" in item
+        assert "bg_mean" in item
+        assert "bg_std" in item
+
+
+def test_save_training_data_without_background(curation_widget, tmp_path):
+    """
+    Saving without a background writes single-channel cubes and a YAML
+    that marks the background channel as absent.
+    """
+    widget = curation_widget
+    widget.add_training_data()
+    viewer = widget.viewer
+
+    points = Points(
+        np.array([[16, 17, 18], [13, 14, 15]]), name="selection_points"
+    )
+    viewer.add_layer(points)
+
+    points.selected_data = [0]
+    widget.mark_as_cell()
+    points.selected_data = [1]
+    widget.mark_as_non_cell()
+
+    layer_data = sample_data.load_sample()
+    widget.signal_layer = Image(layer_data[0][0], **layer_data[0][1])
+    widget.background_layer = None
+
+    widget.output_directory = tmp_path
+    widget.save_training_data(prompt_for_directory=False, block=True)
+
+    assert (tmp_path / "training.yaml").exists()
+    # Only the signal channel is saved for both cells and non_cells.
+    assert len(list((tmp_path / "non_cells").glob("*.tif"))) == 1
+    assert len(list((tmp_path / "cells").glob("*.tif"))) == 1
+
+    with open(tmp_path / "training.yaml") as yaml_file:
+        contents = yaml.safe_load(yaml_file)
+    assert all(section["bg_channel"] == -1 for section in contents["data"])
+
+    # The training data is consumed by core training as single-channel.
+    tiff_files = get_tiff_files(parse_yaml([tmp_path / "training.yaml"]))
+    filenames, _ = make_tiff_lists(tiff_files)
+    assert all(len(img_files) == 1 for img_files, _ in filenames)
 
 
 @pytest.fixture
@@ -173,9 +241,42 @@ def test_check_image_data_missing_signal(valid_curation_widget):
         valid_curation_widget.signal_layer = None
         valid_curation_widget.check_image_data_for_extraction()
         show_info.assert_called_once_with(
-            "Please ensure both signal and background images are loaded "
-            "into napari, and selected in the sidebar. "
+            "Please ensure a signal image is loaded into napari, and "
+            "selected in the sidebar. "
         )
+
+
+def test_check_image_data_without_background(valid_curation_widget):
+    """
+    A signal image without a background is extractable.
+    """
+    valid_curation_widget.background_layer = None
+    assert valid_curation_widget.check_image_data_for_extraction()
+
+
+def test_deselect_background_resets_layer(valid_curation_widget):
+    """
+    Clearing the background selection drops the stale layer, so a
+    single-channel run stays reachable from the sidebar.
+    """
+    widget = valid_curation_widget
+    assert widget.background_layer is not None
+    widget.background_image_choice.setCurrentText("")
+    widget.set_background_image()
+    assert widget.background_layer is None
+
+
+def test_deselect_signal_resets_layer(valid_curation_widget):
+    """
+    Clearing the signal selection drops the stale layer.
+    """
+    widget = valid_curation_widget
+    widget.signal_image_choice.setCurrentText("Signal")
+    widget.set_signal_image()
+    assert widget.signal_layer is not None
+    widget.signal_image_choice.setCurrentText("")
+    widget.set_signal_image()
+    assert widget.signal_layer is None
 
 
 def test_valid_widget_has_extractable_data(valid_curation_widget):
@@ -248,3 +349,30 @@ def test_show_info_called_on_empty_training_layer(
     )
     assert valid_curation_widget.check_training_data_exists()
     mock_info_notification.assert_called_once()
+
+
+def test_async_save_done_only_after_cubes_written(
+    valid_curation_widget, tmp_path, qtbot
+):
+    """
+    Regression test for the async save path: the "Done" notification and the
+    training.yaml file must only appear after the cubes have been written, not
+    immediately when the export worker is launched.
+    """
+    widget = valid_curation_widget
+    widget.output_directory = tmp_path
+
+    with patch("cellfinder.napari.curation.show_info") as show_info:
+        widget.save_training_data(prompt_for_directory=False, block=False)
+
+        # Worker has only just been launched: nothing should be saved yet.
+        assert show_info.call_args_list == []
+        assert not (tmp_path / "training.yaml").exists()
+
+        qtbot.waitUntil(
+            lambda: (tmp_path / "training.yaml").exists(), timeout=20000
+        )
+
+        show_info.assert_called_once_with("Done")
+        assert len(list((tmp_path / "cells").glob("*.tif"))) == 2
+        assert len(list((tmp_path / "non_cells").glob("*.tif"))) == 2

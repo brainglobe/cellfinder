@@ -3,7 +3,6 @@ from pathlib import Path
 
 from cellfinder.core.download.download import (
     DEFAULT_DOWNLOAD_DIRECTORY,
-    amend_user_configuration,
     download_models,
 )
 
@@ -32,12 +31,6 @@ def download_parser(parser: ArgumentParser) -> ArgumentParser:
         help="The path to install files to.",
     )
     parser.add_argument(
-        "--no-amend-config",
-        dest="no_amend_config",
-        action="store_true",
-        help="Don't amend the config file",
-    )
-    parser.add_argument(
         "--model",
         dest="model",
         type=str,
@@ -64,15 +57,11 @@ def get_parser() -> ArgumentParser:
 
 def main() -> None:
     """
-    Run the main download function, and optionally amend the user
-    configuration.
+    Run the main download function.
 
     """
     args = get_parser().parse_args()
-    model_path = download_models(args.model, args.install_path)
-
-    if not args.no_amend_config:
-        amend_user_configuration(new_model_path=model_path)
+    download_models(args.model, args.install_path)
 
 
 if __name__ == "__main__":

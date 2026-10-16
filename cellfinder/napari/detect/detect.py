@@ -27,6 +27,7 @@ from .detect_containers import (
     DataInputs,
     DetectionInputs,
     MiscInputs,
+    ModelSource,
 )
 from .thread_worker import Worker
 
@@ -80,15 +81,16 @@ def get_heavy_widgets(
         auto_call=True,
     )
     def background_image_opt(
-        background_image: napari.layers.Image,
+        background_image: Optional[napari.layers.Image],
     ):
         """
         magicgui widget for setting the background image parameter.
 
         Parameters
         ----------
-        background_image : napari.layers.Image
-             Image layer without labelled cells
+        background_image : napari.layers.Image, optional
+             Image layer without labelled cells. Leave empty to run
+             single-channel detection and classification.
         """
         options["background_image"] = background_image
 
@@ -139,14 +141,13 @@ def restore_options_defaults(widget: FunctionGui) -> None:
     Restore default widget values.
     """
     defaults = {
-        **DataInputs.defaults(),
-        **DetectionInputs.defaults(),
-        **ClassificationInputs.defaults(),
-        **MiscInputs.defaults(),
+        **DataInputs.widget_defaults(),
+        **DetectionInputs.widget_defaults(),
+        **ClassificationInputs.widget_defaults(),
+        **MiscInputs.widget_defaults(),
     }
     for name, value in defaults.items():
-        if value is not None:  # ignore fields with no default
-            getattr(widget, name).value = value
+        getattr(widget, name).value = value
 
 
 def get_results_callback(
@@ -256,6 +257,7 @@ def detect_widget() -> FunctionGui:
         ball_z_size: float,
         ball_overlap_fraction: float,
         detection_batch_size: int,
+        detect_centre_of_intensity: bool,
         soma_spread_factor: float,
         max_cluster_size: float,
         classification_options,
@@ -263,6 +265,8 @@ def detect_widget() -> FunctionGui:
         use_pre_trained_weights: bool,
         trained_model: Optional[Path],
         classification_batch_size: int,
+        normalize_channels: bool,
+        normalization_n_sampling_planes: int,
         misc_options,
         start_plane: int,
         end_plane: int,
@@ -324,6 +328,13 @@ def detect_widget() -> FunctionGui:
             for all the filters. For performance-critical applications, tune
             to maximize memory usage without
             running out. Check your GPU/CPU memory to verify it's not full
+        detect_centre_of_intensity : bool
+            If False, a candidate cell's center is just the mean of the
+            positions of all voxels marked as above background, or bright, in
+            that candidate. The voxel intensity is not taken into account. If
+            True, the center is calculated similar to the center of mass, but
+            using the intensity. So the center gets pulled towards the brighter
+            voxels in the volume.
         soma_spread_factor : float
             Cell spread factor for determining the largest cell volume before
             splitting up cell clusters. Structures with spherical volume of
@@ -339,14 +350,24 @@ def detect_widget() -> FunctionGui:
         use_pre_trained_weights : bool
             Select to use pre-trained model weights
         trained_model : Optional[Path]
-            Trained model file path (home directory (default) -> pretrained
-            weights)
+            Trained model file path, used only when pre-trained weights are
+            not selected
         classification_batch_size : int
             How many potential cells to classify at one time. The GPU/CPU
             memory must be able to contain at once this many data cubes for
             the models. For performance-critical applications, tune to
             maximize memory usage without running
             out. Check your GPU/CPU memory to verify it's not full
+        normalize_channels : bool
+            For classification only - whether to normalize the cubes to the
+            mean/std of the image channels before classification. If the model
+            used for classification was trained on normalized data, this should
+            be enabled.
+        normalization_n_sampling_planes : int
+            If normalizing the cubes is enabled, the input channels will be
+            down-sampled in z to use approximately this many planes -- equally
+            spaced, before calculating their mean/std. E.g. a value of 50 for a
+            dataset of 200 planes means every fourth plane will be used.
         start_plane : int
             First plane to process (to process a subset of the data)
         end_plane : int
@@ -381,8 +402,20 @@ def detect_widget() -> FunctionGui:
 
         signal_image = options["signal_image"]
 
-        if signal_image is None or options["background_image"] is None:
-            show_info("Both signal and background images must be specified.")
+        if signal_image is None:
+            show_info("Signal image must be specified.")
+            return
+
+        model_source = ModelSource.from_options(
+            skip_classification, use_pre_trained_weights
+        )
+        if model_source is ModelSource.CUSTOM and not (
+            trained_model and Path(trained_model).is_file()
+        ):
+            show_info(
+                "Select a trained model file, or check "
+                "'Use pre-trained weights' to use the default model."
+            )
             return
 
         detected_cells = []
@@ -399,9 +432,14 @@ def detect_widget() -> FunctionGui:
                 options["cell_layer"], Cell.UNKNOWN
             )
 
+        background_image = options["background_image"]
+        background_array = (
+            background_image.data if background_image is not None else None
+        )
+
         data_inputs = DataInputs(
             signal_image.data,
-            options["background_image"].data,
+            background_array,
             voxel_size_z,
             voxel_size_y,
             voxel_size_x,
@@ -421,15 +459,16 @@ def detect_widget() -> FunctionGui:
             soma_spread_factor,
             max_cluster_size,
             detection_batch_size,
+            detect_centre_of_intensity,
         )
 
-        if use_pre_trained_weights:
-            trained_model = None
         classification_inputs = ClassificationInputs(
             skip_classification,
             use_pre_trained_weights,
             trained_model,
             classification_batch_size,
+            normalize_channels,
+            normalization_n_sampling_planes,
         )
 
         if analyse_local:
@@ -476,6 +515,21 @@ def detect_widget() -> FunctionGui:
     widget.reset_button.changed.connect(
         partial(restore_options_defaults, widget)
     )
+
+    def update_trained_model_visibility() -> None:
+        widget.trained_model.visible = (
+            ModelSource.from_options(
+                widget.skip_classification.value,
+                widget.use_pre_trained_weights.value,
+            )
+            is ModelSource.CUSTOM
+        )
+
+    widget.skip_classification.changed.connect(update_trained_model_visibility)
+    widget.use_pre_trained_weights.changed.connect(
+        update_trained_model_visibility
+    )
+    update_trained_model_visibility()
 
     # Insert progress bar before the run and reset buttons
     widget.insert(widget.index("debug") + 1, progress_bar)

@@ -1,3 +1,4 @@
+from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
@@ -14,14 +15,32 @@ from cellfinder.napari.utils import html_label_widget
 class TrainingDataInputs(InputContainer):
     """Container for Training Data input widgets"""
 
-    yaml_files: Path = Path.home()
-    output_directory: Path = Path.home()
+    yaml_files: Optional[Sequence[Path]] = None
+    output_directory: Optional[Path] = None
 
     def as_core_arguments(self) -> dict:
         arguments = super().as_core_arguments()
         arguments["output_dir"] = arguments.pop("output_directory")
         arguments["yaml_file"] = arguments.pop("yaml_files")
         return arguments
+
+    def validation_error(self) -> Optional[str]:
+        """Returns why these inputs can't be trained on, if they can't."""
+        if not self.yaml_files:
+            return "Please select a YAML file for training"
+
+        for yaml_file in map(Path, self.yaml_files):
+            if yaml_file.suffix != ".yaml":
+                return f"Not a YAML file: {yaml_file.name}"
+            if not yaml_file.is_file():
+                return f"YAML file does not exist: {yaml_file}"
+
+        if self.output_directory is None:
+            return "Please select an output directory"
+        if not Path(self.output_directory).is_dir():
+            return f"Output directory does not exist: {self.output_directory}"
+
+        return None
 
     @classmethod
     def widget_representation(cls) -> dict:
@@ -43,8 +62,8 @@ class TrainingDataInputs(InputContainer):
 class OptionalNetworkInputs(InputContainer):
     """Container for Optional Network input widgets"""
 
-    trained_model: Optional[Path] = Path.home()
-    model_weights: Optional[Path] = Path.home()
+    trained_model: Optional[Path] = None
+    model_weights: Optional[Path] = None
     model_depth: str = list(models.keys())[2]
     pretrained_model: str = str(list(model_filenames.keys())[0])
 
@@ -81,6 +100,9 @@ class OptionalTrainingInputs(InputContainer):
     learning_rate: float = 1e-4
     batch_size: int = 16
     test_fraction: float = 0.1
+    lr_schedule: list[int] | tuple[int, ...] = ()
+    lr_multiplier: float = 0.1
+    normalize_channels: bool = False
 
     def as_core_arguments(self) -> dict:
         arguments = super().as_core_arguments()
@@ -105,6 +127,13 @@ class OptionalTrainingInputs(InputContainer):
             test_fraction=cls._custom_widget(
                 "test_fraction", step=0.05, min=0.05, max=0.95
             ),
+            lr_schedule=cls._custom_widget(
+                "lr_schedule", custom_label="LR schedule"
+            ),
+            lr_multiplier=cls._custom_widget(
+                "lr_multiplier", custom_label="LR multiplier"
+            ),
+            normalize_channels=cls._custom_widget("normalize_channels"),
         )
 
 

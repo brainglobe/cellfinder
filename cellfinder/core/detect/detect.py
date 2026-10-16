@@ -25,11 +25,16 @@ from cellfinder.core import logger, types
 from cellfinder.core.detect.filters.plane import TileProcessor
 from cellfinder.core.detect.filters.setup_filters import DetectionSettings
 from cellfinder.core.detect.filters.volume.volume_filter import VolumeFilter
-from cellfinder.core.tools.tools import inference_wrapper
+from cellfinder.core.tools.tools import (
+    deprecate_positional_args,
+    inference_wrapper,
+)
 
 
+@deprecate_positional_args
 @inference_wrapper
 def main(
+    *,
     signal_array: types.array,
     start_plane: int = 0,
     end_plane: int = -1,
@@ -56,8 +61,8 @@ def main(
     n_splitting_iter: int = 10,
     n_sds_above_mean_tiled_thresh: float = 10,
     tiled_thresh_tile_size: float | None = None,
-    *,
     callback: Optional[Callable[[int], None]] = None,
+    detect_centre_of_intensity: bool = False,
 ) -> List[Cell]:
     """
     Perform cell candidate detection on a 3D signal array.
@@ -155,6 +160,12 @@ def main(
     callback : Callable[int], optional
         A callback function that is called every time a plane has finished
         being processed. Called with the plane number that has finished.
+    detect_centre_of_intensity : bool
+        If False, a candidate cell's center is just the mean of the positions
+        of all voxels marked as above background, or bright, in that candidate.
+        The voxel intensity is not taken into account. If True, the center is
+        calculated similar to the center of mass, but using the intensity. So
+        the center gets pulled towards the brighter voxels in the volume.
 
     Returns
     -------
@@ -219,6 +230,7 @@ def main(
         torch_device=torch_device,
         pin_memory=pin_memory,
         n_splitting_iter=n_splitting_iter,
+        detect_centre_of_intensity=detect_centre_of_intensity,
     )
 
     # replicate the settings specific to splitting, before we access anything

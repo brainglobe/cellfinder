@@ -1,5 +1,9 @@
 import numpy as np
+import tqdm
 from brainglobe_utils.general.numerical import is_even
+
+from cellfinder.core import types
+from cellfinder.core.tools.tools import get_data_converter
 
 
 def crop_center_2d(img, crop_x=None, crop_y=None):
@@ -85,3 +89,69 @@ def pad_center_2d(img, x_size=None, y_size=None, pad_mode="edge"):
         y_front = y_back = 0
 
     return np.pad(img, ((y_front, y_back), (x_front, x_back)), pad_mode)
+
+
+def dataset_mean_std(
+    dataset: types.array,
+    n_sampling_planes: int,
+    show_progress: bool = True,
+    progress_desc="Estimating channel mean/std",
+) -> tuple[float, float]:
+    """
+    Calculates the mean and sample standard deviation of a 3d dataset using
+    Welford's online algorithm, sampling it along its first dimension.
+
+    :param dataset: A 3d dataset, such as a numpy or dask array.
+    :param n_sampling_planes: The minimum number of planes to use to sample
+        along the first dimension. E.g. if the dataset is 10 x 100 x 100 and
+        `n_sampling_planes` is 4, then we round the sampling step to use
+        planes 0, 2, 4, 6, and 8 (or similar slicing) for the calculation.
+    :param show_progress: Whether to show a progress bar during the
+        calculation.
+    :param progress_desc: If showing a progress bar, the description to use in
+        it.
+    :return: A 2-tuple of `(mean, std)` estimate of the dataset.
+    """
+    # based on https://en.wikipedia.org/wiki/
+    # Algorithms_for_calculating_variance#Welford's_online_algorithm
+    # and https://stackoverflow.com/q/56402955
+    plane_n = dataset.shape[1] * dataset.shape[2]
+    # get data converter from dataset to float64
+    converter = get_data_converter(dataset.dtype, np.float64)
+
+    count = 0
+    mean = np.array(0, dtype=np.float64)
+    sq_dist = np.array(0, dtype=np.float64)
+
+    # always err to sampling more planes. E.g. if dataset is 125 planes and
+    # n_sampling_planes is 50, step is 2 to get 62 planes
+    if len(dataset) <= n_sampling_planes:
+        step = 1
+    else:
+        step = int(len(dataset) / n_sampling_planes)
+
+    # make it a list so tqdm will know its full size
+    samples = list(range(0, len(dataset), step))
+    if show_progress:
+        it = tqdm.tqdm(samples, desc=progress_desc, unit="planes")
+    else:
+        it = samples
+
+    for i in it:
+        plane = converter(dataset[i, ...])
+        # flatten it
+        new_value = plane.reshape((plane_n,))
+
+        count += plane_n
+        delta = new_value - mean
+        mean += np.sum(delta) / count
+        delta2 = new_value - mean
+        sq_dist += np.sum(np.multiply(delta, delta2))
+
+    if count <= 1:
+        raise ValueError("Not enough data to compute the variance")
+
+    var_sample = sq_dist / (count - 1)
+    std = np.sqrt(var_sample)
+
+    return mean.item(), std.item()

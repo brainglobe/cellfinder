@@ -77,9 +77,9 @@ def count_matched_cells(cell_test, cell_validation, tolerance=0):
 def test_detection_full(signal_array, background_array, free_cpus, request):
     n_free_cpus = request.getfixturevalue(free_cpus)
     cells_test = main(
-        signal_array,
-        background_array,
-        voxel_sizes,
+        signal_array=signal_array,
+        background_array=background_array,
+        voxel_sizes=voxel_sizes,
         n_free_cpus=n_free_cpus,
     )
     cells_validation = cell_io.get_cells(cells_validation_xml)
@@ -128,9 +128,9 @@ def test_detection_small_planes(
     )
 
     main(
-        signal_array[0:n_planes],
-        background_array[0:n_planes],
-        voxel_sizes,
+        signal_array=signal_array[0:n_planes],
+        background_array=background_array[0:n_planes],
+        voxel_sizes=voxel_sizes,
         ball_z_size=5,
         n_free_cpus=no_free_cpus,
     )
@@ -155,9 +155,9 @@ def test_callbacks(signal_array, background_array, no_free_cpus):
         points_found.append(points)
 
     main(
-        signal_array,
-        background_array,
-        voxel_sizes,
+        signal_array=signal_array,
+        background_array=background_array,
+        voxel_sizes=voxel_sizes,
         detect_callback=detect_callback,
         classify_callback=classify_callback,
         detect_finished_callback=detect_finished_callback,
@@ -178,13 +178,15 @@ def test_callbacks(signal_array, background_array, no_free_cpus):
     assert npoints == 120, f"Expected 120 points, found {npoints}"
 
 
-def test_synthetic_data(synthetic_bright_spots, no_free_cpus):
+@pytest.mark.parametrize("normalize", [True, False])
+def test_synthetic_data(synthetic_bright_spots, no_free_cpus, normalize):
     signal_array, background_array = synthetic_bright_spots
     detected = main(
-        signal_array,
-        background_array,
-        voxel_sizes,
+        signal_array=signal_array,
+        background_array=background_array,
+        voxel_sizes=voxel_sizes,
         n_free_cpus=no_free_cpus,
+        normalize_channels=normalize,
     )
     assert len(detected) == 8
 
@@ -201,7 +203,11 @@ def test_data_dimension_error(ndim):
     )
 
     with pytest.raises(ValueError, match="Input data must be 3D"):
-        main(signal_array, background_array, voxel_sizes)
+        main(
+            signal_array=signal_array,
+            background_array=background_array,
+            voxel_sizes=voxel_sizes,
+        )
 
 
 @pytest.mark.parametrize("device", ["cuda", "cpu"])
@@ -234,8 +240,8 @@ def test_signal_data_types(synthetic_single_spot, no_free_cpus, dtype, device):
 
     background_array = background_array.astype(dtype)
     detected = main(
-        signal_array,
-        background_array,
+        signal_array=signal_array,
+        background_array=background_array,
         n_sds_above_mean_thresh=1.0,
         voxel_sizes=voxel_sizes,
         n_free_cpus=no_free_cpus,
@@ -257,7 +263,7 @@ def test_detection_scipy_torch(synthetic_single_spot, no_free_cpus, device):
     signal_array = signal_array.astype(np.float32)
 
     detected = detect_main(
-        signal_array,
+        signal_array=signal_array,
         n_sds_above_mean_thresh=1.0,
         voxel_sizes=voxel_sizes,
         n_free_cpus=no_free_cpus,
@@ -286,7 +292,7 @@ def test_detection_cluster_splitting(
     signal_array = signal_array.astype(np.float32)
 
     detected = detect_main(
-        signal_array,
+        signal_array=signal_array,
         n_sds_above_mean_thresh=1.0,
         voxel_sizes=voxel_sizes,
         n_free_cpus=no_free_cpus,
@@ -313,7 +319,7 @@ def test_detection_cell_too_large(synthetic_spot_clusters, no_free_cpus):
     signal_array[6 : 6 + 6, 40 : 40 + 26, 40 : 40 + 26] = 1000
 
     detected = detect_main(
-        signal_array,
+        signal_array=signal_array,
         n_sds_above_mean_thresh=1.0,
         voxel_sizes=(5, 2, 2),
         soma_diameter=20,
@@ -331,8 +337,118 @@ def test_detection_plane_too_small(synthetic_spot_clusters, y, x):
     # plane smaller than ball filter kernel should cause error
     with pytest.raises(InvalidVolume):
         detect_main(
-            np.zeros((5, y, x)),
+            signal_array=np.zeros((5, y, x)),
             n_sds_above_mean_thresh=1.0,
             voxel_sizes=(1, 1, 1),
             ball_xy_size=50,
         )
+
+
+@pytest.mark.parametrize("use_coi", [True, False])
+def test_center_of_intensity_comet_spot(
+    synthetic_intensity_comet_spot, no_free_cpus, use_coi
+):
+    """Checks that using the sphere with dropoff, its center is properly found
+    when using the center of intensity calculation, but not otherwise - where
+    we just get the overall center of all non-zero values.
+    """
+    signal_array, background_array, c_xyz, c_overall_xyz, end_xyz = (
+        synthetic_intensity_comet_spot
+    )
+    signal_array = signal_array.astype(np.uint16)
+    background_array = background_array.astype(np.uint16)
+
+    detected = main(
+        signal_array,
+        background_array,
+        soma_diameter=8,
+        ball_xy_size=8,
+        ball_z_size=8,
+        ball_overlap_fraction=0.7,
+        log_sigma_size=0.8,
+        n_sds_above_mean_thresh=0,
+        # 10 ensures we don't split because it's under split limit
+        soma_spread_factor=10,
+        voxel_sizes=voxel_sizes,
+        n_free_cpus=no_free_cpus,
+        skip_classification=True,
+        detect_centre_of_intensity=use_coi,
+    )
+
+    if use_coi:
+        # using coi the cell should be close to sphere center
+        c = c_xyz
+    else:
+        # without coi, the cell is near the overall non-zero volume center
+        c = c_overall_xyz
+    x, y, z = c
+
+    assert len(detected) == 1
+    cell = detected[0]
+    assert abs(x - cell.x) <= 2
+    assert abs(y - cell.y) <= 1
+    assert abs(z - cell.z) <= 1
+
+
+@pytest.mark.parametrize("use_coi", [True, False])
+def synthetic_center_of_intensity_linear_intensity_comet_spot(
+    synthetic_intensity_comet_spot, no_free_cpus, use_coi, split
+):
+    """Checks that when splitting cell clusters, using the sphere with dropoff,
+    its center is properly found when using the center of intensity
+    calculation, but not otherwise - where we just get the overall center of
+    all non-zero values.
+
+    We have to use a more linear comet because otherwise the 2d/3d filtering
+    hollows out the original filtered volume creating multiple spots during
+    splitting, but we don't actually want to split. Using a linear comet keeps
+    the "detected" volume intact so splitting leaves it also as a single spot
+    so we can test where it puts the cell.
+    """
+    signal_array, background_array, c_xyz, c_overall_xyz, end_xyz = (
+        synthetic_intensity_comet_spot
+    )
+    signal_array = signal_array.astype(np.uint16)
+    background_array = background_array.astype(np.uint16)
+
+    detected = main(
+        signal_array,
+        background_array,
+        soma_diameter=8,
+        ball_xy_size=8,
+        ball_z_size=8,
+        ball_overlap_fraction=0.7,
+        log_sigma_size=0.8,
+        n_sds_above_mean_thresh=0,
+        # 0.5 ensures we split because cell volume is over the split limit
+        soma_spread_factor=0.5,
+        max_cluster_size=100000,
+        split_ball_xy_size=6,
+        split_ball_z_size=8,
+        split_ball_overlap_fraction=0.2,
+        n_splitting_iter=1,
+        voxel_sizes=voxel_sizes,
+        n_free_cpus=no_free_cpus,
+        skip_classification=True,
+        detect_centre_of_intensity=use_coi,
+    )
+
+    grace = 2
+    if use_coi:
+        # using coi the cell should be close to sphere center
+        c = c_xyz
+        # using the linear comet, the center needs more grace because the tail
+        # weighs more and pulls the cell towards it
+        grace = 4
+        # make sure we don't put the overall center within grace amount
+        assert c_xyz[0] + grace < c_overall_xyz[0]
+    else:
+        # without coi, the cell is near the overall non-zero volume center
+        c = c_overall_xyz
+    x, y, z = c
+
+    assert len(detected) == 1
+    cell = detected[0]
+    assert abs(x - cell.x) <= grace
+    assert abs(y - cell.y) <= 1
+    assert abs(z - cell.z) <= 1

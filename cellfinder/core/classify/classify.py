@@ -15,14 +15,127 @@ from cellfinder.core.classify.cube_generator import (
     CuboidArrayDataset,
     CuboidBatchSampler,
 )
-from cellfinder.core.classify.tools import get_model
+from cellfinder.core.classify.tools import get_model, model_input_channels
+from cellfinder.core.tools.image_processing import dataset_mean_std
+from cellfinder.core.tools.tools import (
+    deprecate_positional_args,
+    validate_dimensions,
+)
 from cellfinder.core.train.train_yaml import depth_type, models
 
 
+def _validate_3d_arrays(
+    signal_array: types.array,
+    background_array: Optional[types.array],
+) -> None:
+    """
+    Raise `IOError` unless the signal and background arrays are both 3D.
+    """
+    if signal_array.ndim != 3:
+        raise IOError("Signal data must be 3D")
+    if background_array is not None and background_array.ndim != 3:
+        raise IOError("Background data must be 3D")
+
+
+def _promote_2d_arrays(
+    signal_array: types.array,
+    background_array: Optional[types.array],
+    voxel_sizes: Tuple[float, ...],
+    network_voxel_sizes: Tuple[float, ...],
+) -> Tuple[
+    types.array,
+    Optional[types.array],
+    Tuple[float, ...],
+    Tuple[float, ...],
+]:
+    """
+    Promote 2D inputs to the depth-1 3D form the cube generator expects.
+
+    Accepts 2D or already-3D signal/background arrays, adding a singleton z
+    axis to the 2D ones, and pads 2-element voxel sizes with a z entry.
+
+    Returns the promoted signal array, background array, voxel sizes and
+    network voxel sizes.
+    """
+    if signal_array.ndim not in (2, 3):
+        raise IOError("2D classification needs 2D or 3D signal data")
+    if background_array is not None and background_array.ndim not in (2, 3):
+        raise IOError("2D classification needs 2D or 3D background data")
+
+    if signal_array.ndim == 2:
+        signal_array = signal_array[np.newaxis, ...]
+    if background_array is not None and background_array.ndim == 2:
+        background_array = background_array[np.newaxis, ...]
+    if len(voxel_sizes) == 2:
+        voxel_sizes = (1.0, *voxel_sizes)
+    if len(network_voxel_sizes) == 2:
+        network_voxel_sizes = (1.0, *network_voxel_sizes)
+    # the depth-1 cube must not be rescaled in z, so match the z voxel
+    # size to the data and pull a single plane
+    network_voxel_sizes = (voxel_sizes[0], *network_voxel_sizes[1:])
+
+    return signal_array, background_array, voxel_sizes, network_voxel_sizes
+
+
+def _squeeze_depth1_batch(data, z_axis: int):
+    """
+    Drop the singleton z axis from a depth-1 batch, giving 2D network input.
+    """
+    if data.shape[z_axis] != 1:
+        raise ValueError(
+            "2D classification expects a depth-1 cube, but got "
+            f"depth {data.shape[z_axis]}"
+        )
+    return data.squeeze(z_axis)
+
+
+def _run_inference(
+    model,
+    data_loader: DataLoader,
+    dataset: CuboidArrayDataset,
+    workers: int,
+    squeeze_z_axis: Optional[int],
+    callback: Optional[Callable[[int], None]],
+) -> np.ndarray:
+    """
+    Run the model over every batch, returning the concatenated outputs.
+
+    If `squeeze_z_axis` is not None, each batch has that axis dropped to give
+    2D network input.
+    """
+    if workers:
+        dataset.start_dataset_thread(workers)
+    try:
+        outputs = []
+        for step, data in tqdm.tqdm(
+            enumerate(data_loader),
+            total=len(data_loader.sampler),
+            desc="Classifying",
+            unit="batches",
+            smoothing=1 / (25 * max(1, workers)),
+            mininterval=0.5,
+        ):
+            if squeeze_z_axis is not None:
+                data = _squeeze_depth1_batch(data, squeeze_z_axis)
+            output = model(data)
+            # in original keras, it seemed to held on to the output until the
+            # end (possibly on GPU). This causes resources issues for very
+            # heavy loads. So instead immediately move it to cpu/numpy
+            outputs.append(output.cpu().numpy())
+            if callback is not None:
+                callback(step)
+    finally:
+        dataset.stop_dataset_thread()
+
+    return np.concatenate(outputs, axis=0)
+
+
+@deprecate_positional_args
 def main(
+    *,
     points: List[Cell],
     signal_array: types.array,
-    background_array: types.array,
+    background_array: Optional[types.array],
     n_free_cpus: int,
     voxel_sizes: Tuple[float, float, float],
     network_voxel_sizes: Tuple[float, float, float],
@@ -35,8 +148,10 @@ def main(
     network_depth: depth_type,
     max_workers: int = 3,
     pin_memory: bool = False,
-    *,
+    dimensions: int = 3,
     callback: Optional[Callable[[int], None]] = None,
+    normalize_channels: bool = False,
+    normalization_n_sampling_planes: int = 50,
 ) -> List[Cell]:
     """
     Parameters
@@ -46,8 +161,10 @@ def main(
         The potential cells to classify.
     signal_array : numpy.ndarray or dask array
         3D array representing the signal data in z, y, x order.
-    background_array : numpy.ndarray or dask array
-        3D array representing the signal data in z, y, x order.
+    background_array : numpy.ndarray or dask array, optional
+        3D array representing the background data in z, y, x order. If
+        ``None``, a single-channel (signal-only) cube is built and a
+        single-channel model must be used.
     n_free_cpus : int
         How many CPU cores to leave free.
     voxel_sizes : 3-tuple of floats
@@ -86,14 +203,37 @@ def main(
         stay in the CPU RAM while the GPU uses it. I.e. there's enough RAM.
         Otherwise, if there's a risk of the RAM being paged, it shouldn't be
         used. Defaults to False.
+    dimensions: int
+        Whether to classify using a 3D network (a z-stack cube, the default)
+        or a 2D network (a single plane). When 2, 2D signal/background arrays
+        are accepted and a depth-1 cube is squeezed to a 2D (y, x, c) image.
     callback : Callable[int], optional
         A callback function that is called during classification. Called with
         the batch number once that batch has been classified.
+    normalize_channels : bool
+        If True, the signal and background data will be each normalized
+        to a mean of zero and standard deviation of 1. Defaults to False.
+    normalization_n_sampling_planes : int
+        If `normalize_channels` is True, the data arrays will be down-sampled
+        in the first axis to use approximately this many planes -- equally
+        spaced, before calculating their mean/std. E.g. a value of 50 for a
+        dataset of 200 planes means every fourth plane will be used. Defaults
+        to 50.
     """
-    if signal_array.ndim != 3:
-        raise IOError("Signal data must be 3D")
-    if background_array.ndim != 3:
-        raise IOError("Background data must be 3D")
+    validate_dimensions(dimensions)
+
+    if dimensions == 2:
+        (
+            signal_array,
+            background_array,
+            voxel_sizes,
+            network_voxel_sizes,
+        ) = _promote_2d_arrays(
+            signal_array, background_array, voxel_sizes, network_voxel_sizes
+        )
+        cube_depth = 1
+
+    _validate_3d_arrays(signal_array, background_array)
 
     # Too many workers doesn't increase speed, and uses huge amounts of RAM
     workers = get_num_processes(min_free_cpu_cores=n_free_cpus)
@@ -102,10 +242,28 @@ def main(
     start_time = datetime.now()
 
     voxel_sizes = list(map(float, voxel_sizes))
+
+    signal_normalization = background_normalization = None
+    if normalize_channels:
+        logger.debug("Calculating channels norms")
+        signal_normalization = dataset_mean_std(
+            signal_array, normalization_n_sampling_planes
+        )
+        if background_array is not None:
+            background_normalization = dataset_mean_std(
+                background_array, normalization_n_sampling_planes
+            )
+        logger.debug(
+            f"Signal channel norm is: {signal_normalization}. "
+            f"Background channel norm is: {background_normalization}"
+        )
+
     logger.debug("Initialising cube generator")
     dataset = CuboidArrayDataset(
         signal_array=signal_array,
         background_array=background_array,
+        signal_normalization=signal_normalization,
+        background_normalization=background_normalization,
         points=points,
         data_voxel_sizes=voxel_sizes,
         network_voxel_sizes=network_voxel_sizes,
@@ -136,37 +294,44 @@ def main(
         model_weights = trained_model
         trained_model = None
 
+    model_shape = None
+    if dimensions == 2:
+        model_shape = (cube_height, cube_width, dataset.num_channels)
     model = get_model(
         existing_model=trained_model,
         model_weights=model_weights,
         network_depth=models[network_depth],
         inference=True,
+        num_channels=dataset.num_channels,
+        dimensions=dimensions,
+        shape=model_shape,
     )
 
-    logger.info("Running inference")
-    if workers:
-        dataset.start_dataset_thread(workers)
-    try:
-        outputs = []
-        for step, data in tqdm.tqdm(
-            enumerate(data_loader),
-            total=len(sampler),
-            desc="Classifying",
-            unit="batches",
-            smoothing=1 / (25 * max(1, workers)),
-            mininterval=0.5,
-        ):
-            output = model(data)
-            # in original keras, it seemed to held on to the output until the
-            # end (possibly on GPU). This causes resources issues for very
-            # heavy loads. So instead immediately move it to cpu/numpy
-            outputs.append(output.cpu().numpy())
-            if callback is not None:
-                callback(step)
-    finally:
-        dataset.stop_dataset_thread()
+    model_channels = model_input_channels(model)
+    if model_channels != dataset.num_channels:
+        raise ValueError(
+            f"The classification model expects {model_channels}-channel "
+            f"input but {dataset.num_channels} channel(s) were provided. "
+            f"Use a `trained_model` whose channel count matches the data, "
+            f"or provide data matching the model (signal only for 1, "
+            f"signal + background for 2)."
+        )
 
-    predictions = np.argmax(np.concatenate(outputs, axis=0), axis=1)
+    logger.info("Running inference")
+    outputs = _run_inference(
+        model=model,
+        data_loader=data_loader,
+        dataset=dataset,
+        workers=workers,
+        squeeze_z_axis=(
+            dataset.output_axis_order.index("z") + 1
+            if dimensions == 2
+            else None
+        ),
+        callback=callback,
+    )
+
+    predictions = np.argmax(outputs, axis=1)
     points_list = []
 
     # only go through the "extractable" points

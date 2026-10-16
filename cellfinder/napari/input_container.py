@@ -35,6 +35,20 @@ class InputContainer:
         # to avoid code repetition.
         return asdict_no_copy(cls())
 
+    @classmethod
+    def widget_defaults(cls) -> dict:
+        """Returns default values of the fields shown as widgets.
+
+        Fields the class does not represent as a widget, such as layer
+        selections, have no default to restore.
+        """
+        defaults = cls.defaults()
+        return {
+            name: defaults[name]
+            for name in cls.widget_representation()
+            if name in defaults
+        }
+
     @abstractmethod
     def as_core_arguments(self) -> dict:
         """Determines how dataclass fields are passed to cellfinder-core.
