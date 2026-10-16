@@ -1,8 +1,10 @@
 import os
 
+import keras
 import pytest
 from pytest_mock.plugin import MockerFixture
 
+from cellfinder.core.classify.tools import model_input_channels
 from cellfinder.core.train.train_yaml import cli as train_run
 
 data_dir = os.path.join(
@@ -11,6 +13,9 @@ data_dir = os.path.join(
 cell_cubes = os.path.join(data_dir, "cells")
 non_cell_cubes = os.path.join(data_dir, "non_cells")
 training_yaml_file = os.path.join(data_dir, "training.yaml")
+training_yaml_single_channel = os.path.join(
+    data_dir, "training_single_channel.yaml"
+)
 training_yaml_file_stats = os.path.join(data_dir, "training_with_stats.yaml")
 
 
@@ -39,6 +44,29 @@ def test_train(mocker, tmpdir):
 
     model_file = os.path.join(tmpdir, "model.keras")
     assert os.path.exists(model_file)
+
+
+@pytest.mark.slow
+def test_train_single_channel(mocker, tmpdir):
+    tmpdir = str(tmpdir)
+
+    train_args = [
+        "cellfinder_train",
+        "-y",
+        training_yaml_single_channel,
+        "-o",
+        tmpdir,
+        "--epochs",
+        EPOCHS,
+    ]
+    mocker.patch("sys.argv", train_args)
+    train_run()
+
+    model_file = os.path.join(tmpdir, "model.keras")
+    assert os.path.exists(model_file)
+
+    model = keras.models.load_model(model_file)
+    assert model_input_channels(model) == 1
 
 
 @pytest.mark.parametrize("lr_schedule", [True, False])

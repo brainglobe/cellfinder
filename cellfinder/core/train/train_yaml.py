@@ -509,15 +509,17 @@ def run(
         f"in {len(yaml_file)} yaml files"
     )
 
+    filenames_train, cells_train = make_tiff_lists(tiff_files)
+    num_channels = len(filenames_train[0][0])
+
     model = get_model(
         existing_model=trained_model,
         model_weights=model_weights,
         network_depth=models[network_depth],
         learning_rate=learning_rate,
         continue_training=continue_training,
+        num_channels=num_channels,
     )
-
-    filenames_train, cells_train = make_tiff_lists(tiff_files)
 
     n_processes = get_num_processes(min_free_cpu_cores=n_free_cpus)
     n_processes = min(n_processes, max_workers)

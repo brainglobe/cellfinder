@@ -21,6 +21,14 @@ def inference_wrapper(func):
     return inner_function
 
 
+def validate_dimensions(dimensions: int) -> None:
+    """
+    Raise `ValueError` unless `dimensions` is 2 or 3.
+    """
+    if dimensions not in (2, 3):
+        raise ValueError(f"dimensions must be 2 or 3, got {dimensions!r}")
+
+
 def get_max_possible_int_value(dtype: Type[np.number]) -> int:
     """
     Returns the maximum allowed integer for a numpy array of given type.
@@ -238,30 +246,6 @@ def get_number_of_bins_nd(array_size, binning):
             "use tuple or dict".format(type(array_size))
         )
     return tuple(bins)
-
-
-def interchange_np_fiji_coordinates(tuple_in):
-    """
-    Swaps the first and second element of a tuple to swap between the numpy
-    convention (vertical is first) and FIJI convention (horizontal is first)
-    :param tuple_in: A 2+ element tuple
-    :return: Same tuple with element 0 and 1 interchanged
-    """
-    tmp_list = list(tuple_in)
-    tmp_list = swap_elements_list(tmp_list, 0, 1)
-    return tuple(tmp_list)
-
-
-def swap_elements_list(list_in, swap_a, swap_b):
-    """
-    Swap two elements in a list
-    :param list_in: A list
-    :param swap_a: Index of first element to swap
-    :param swap_b: Index of second element to swap
-    :return: List with swap_a and swap_b exchanged
-    """
-    list_in[swap_a], list_in[swap_b] = list_in[swap_b], list_in[swap_a]
-    return list_in
 
 
 def is_any_list_overlap(list_a, list_b):
