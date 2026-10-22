@@ -32,6 +32,7 @@ dependencies = [
     "numpy",
     "scikit-image",
     "scikit-learn",
+    "huggingface-hub",
     "keras>=3.7.0",
     "pooch >= 1",
     "qtpy",
