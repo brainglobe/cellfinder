@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 from typing import Optional, Tuple
 
 import keras
@@ -38,7 +39,9 @@ def _default_shape(dimensions: int, num_channels: int) -> Tuple[int, ...]:
 
 
 def _set_model_weights(
-    model: Model, model_weights: Optional[os.PathLike]
+    model: Model,
+    model_weights: Optional[os.PathLike],
+    continue_training: bool = False,
 ) -> None:
     """
     Set a new model's weights from `model_weights`, which must be provided.
@@ -50,13 +53,53 @@ def _set_model_weights(
             "or continued training."
         )
     try:
-        model.optimizer.build(model.trainable_variables)
+        if (
+            continue_training
+            and hasattr(model, "optimizer")
+            and model.optimizer is not None
+        ):
+            model.optimizer.build(model.trainable_variables)
         model.load_weights(model_weights)
     except (OSError, ValueError) as e:
         raise ValueError(
             f"Error loading weights: {model_weights}.\n"
             "Provided weights don't match the model architecture.\n"
         ) from e
+
+
+def export_weights_only(
+    source_model: os.PathLike,
+    target_weights: os.PathLike,
+) -> Path:
+    """
+    Export weights-only from a trained model file to a `.weights.h5` file.
+
+    Parameters
+    ----------
+    source_model : os.PathLike
+        Path to the saved source model (e.g. `.keras` file).
+    target_weights : os.PathLike
+        Path where the weights-only `.weights.h5` file will be saved.
+
+    Returns
+    -------
+    Path
+        Path to the saved weights file.
+    """
+    source_path = Path(source_model)
+    target_path = Path(target_weights)
+
+    if not source_path.exists():
+        raise FileNotFoundError(f"Source model not found: {source_path}")
+
+    logger.debug(f"Loading full model from {source_path} to extract weights")
+    model = keras.models.load_model(source_path)
+
+    target_path.parent.mkdir(parents=True, exist_ok=True)
+    logger.debug(f"Saving weights-only to {target_path}")
+    model.save_weights(target_path)
+
+    return target_path
 
 
 def get_model(
@@ -117,7 +160,9 @@ def get_model(
             ),
         )
         if inference or continue_training:
-            _set_model_weights(model, model_weights)
+            _set_model_weights(
+                model, model_weights, continue_training=continue_training
+            )
 
     if inference:
         model.trainable = False
