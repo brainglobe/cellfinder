@@ -123,6 +123,23 @@ def test_download_models_gin(tmp_path, mocker):
     assert result == tmp_path / "resnet50_tv.h5"
 
 
+def test_download_models_gin_http_fallback(tmp_path, mocker):
+    calls = []
+
+    def fake_fetch(filename, downloader=None, progressbar=False):
+        calls.append(filename)
+        if len(calls) == 1:
+            raise OSError("Network unreachable via HTTPS")
+        return str(tmp_path / "resnet50_tv.h5")
+
+    mocker.patch.object(pooch.Pooch, "fetch", side_effect=fake_fetch)
+
+    result = download.download_models("resnet50_tv", tmp_path)
+
+    assert len(calls) == 2
+    assert result == tmp_path / "resnet50_tv.h5"
+
+
 def test_download_models_unknown_raises(tmp_path):
     with pytest.raises(
         ValueError, match="Model 'non_existent_model' not recognized"

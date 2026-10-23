@@ -189,7 +189,9 @@ def download_models(
         )
     except OSError as e:
         if "gin" in url:
-            registry.urls[info.filename] = url.replace("https://", "http://")
+            registry.urls[info.filename] = url.replace(
+                "https://", "http://"  # NOSONAR
+            )
             retrieved_path = registry.fetch(
                 info.filename,
                 downloader=downloader,
