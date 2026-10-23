@@ -115,9 +115,7 @@ def create_model_registry(
         registry={
             v.filename: v.known_hash for v in PRETRAINED_MODELS.values()
         },
-        urls={
-            v.filename: model_urls[k] for k, v in PRETRAINED_MODELS.items()
-        },
+        urls={v.filename: model_urls[k] for k, v in PRETRAINED_MODELS.items()},
         retry_if_failed=retry_if_failed,
     )
 
