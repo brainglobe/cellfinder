@@ -4,16 +4,12 @@ from pathlib import Path
 from typing import Dict, Literal, Optional
 
 import pooch
-from huggingface_hub import hf_hub_download
 
 from cellfinder import DEFAULT_CELLFINDER_DIRECTORY
 
 DEFAULT_DOWNLOAD_DIRECTORY = DEFAULT_CELLFINDER_DIRECTORY / "models"
 
-
 MODEL_URL = "https://gin.swc.ucl.ac.uk/brainglobe/cellfinder/raw/main/models"
-HF_1CH_URL = "https://huggingface.co/brainglobe/cellfinder_single_channel_default/resolve/main"  # noqa: E501
-HF_2D_URL = "https://huggingface.co/brainglobe/cellfinder_2d_default/resolve/main"  # noqa: E501
 
 
 @dataclass(frozen=True)
@@ -22,6 +18,7 @@ class PretrainedModelInfo:
 
     filename: str
     hf_repo_id: Optional[str] = None
+    hf_revision: Optional[str] = None
     gin_url: Optional[str] = None
     known_hash: Optional[str] = None
     dimensions: int = 3
@@ -46,6 +43,7 @@ PRETRAINED_MODELS: Dict[str, PretrainedModelInfo] = {
     "resnet50_1ch": PretrainedModelInfo(
         filename="resnet50_single_channel.keras",
         hf_repo_id="brainglobe/cellfinder_single_channel_default",
+        hf_revision="aa326ad87a43f5db6754897d9a8f491f98d862d7",
         known_hash="4c0af5e916195603266fc18686a84e7156683cbd6e91b27385e9d6e0b5ef5a55",  # noqa: E501
         dimensions=3,
         channels=1,
@@ -53,6 +51,7 @@ PRETRAINED_MODELS: Dict[str, PretrainedModelInfo] = {
     "resnet50_2d": PretrainedModelInfo(
         filename="resnet50_2d.keras",
         hf_repo_id="brainglobe/cellfinder_2d_default",
+        hf_revision="1bb0a3ead0e88209ffa9887690a2bdb51d04d904",
         known_hash="6e40bf25452e99ce0334d85c413ac5029b113adef1f81f2fa46d0d546bb880f6",  # noqa: E501
         dimensions=2,
         channels=2,
@@ -60,6 +59,7 @@ PRETRAINED_MODELS: Dict[str, PretrainedModelInfo] = {
     "resnet50_2d_1ch": PretrainedModelInfo(
         filename="resnet50_2d_single_channel.keras",
         hf_repo_id="brainglobe/cellfinder_2d_default",
+        hf_revision="1bb0a3ead0e88209ffa9887690a2bdb51d04d904",
         known_hash="ae71226de27d93ec9238a09eda4c47e77b2435a840cbbf512eefdb957590e8b0",  # noqa: E501
         dimensions=2,
         channels=1,
@@ -68,11 +68,12 @@ PRETRAINED_MODELS: Dict[str, PretrainedModelInfo] = {
 
 model_filenames = {k: v.filename for k, v in PRETRAINED_MODELS.items()}
 model_urls = {
-    "resnet50_tv": f"{MODEL_URL}/resnet50_tv.h5",
-    "resnet50_all": f"{MODEL_URL}/resnet50_weights.h5",
-    "resnet50_1ch": f"{HF_1CH_URL}/resnet50_single_channel.keras",
-    "resnet50_2d": f"{HF_2D_URL}/resnet50_2d.keras",
-    "resnet50_2d_1ch": f"{HF_2D_URL}/resnet50_2d_single_channel.keras",
+    k: v.gin_url
+    or (
+        f"https://huggingface.co/{v.hf_repo_id}/resolve/"
+        f"{v.hf_revision}/{v.filename}"
+    )
+    for k, v in PRETRAINED_MODELS.items()
 }
 model_hashes = {k: v.known_hash for k, v in PRETRAINED_MODELS.items()}
 model_dimensions = {k: v.dimensions for k, v in PRETRAINED_MODELS.items()}
@@ -121,34 +122,40 @@ def download_models(
 
     info = PRETRAINED_MODELS[model_name]
     download_path = Path(download_path)
+    model_path = download_path / info.filename
 
-    if info.hf_repo_id is not None:
-        model_path = hf_hub_download(
-            repo_id=info.hf_repo_id,
-            filename=info.filename,
-            cache_dir=download_path,
-            local_files_only=local_files_only,
-        )
-        return Path(model_path)
+    if local_files_only:
+        if not model_path.exists():
+            raise FileNotFoundError(
+                f"{model_path} not found and local_files_only=True"
+            )
+        return model_path
 
-    url = info.gin_url or model_urls[model_name]
-    filename = info.filename
+    url = model_urls[model_name]
+    headers = {}
+    hf_token = os.environ.get("HF_TOKEN") or os.environ.get(
+        "HUGGING_FACE_HUB_TOKEN"
+    )
+    if hf_token and info.hf_repo_id:
+        headers["Authorization"] = f"Bearer {hf_token}"
+
+    downloader = pooch.HTTPDownloader(headers=headers, progressbar=True)
     retrieve_kwargs = dict(
         known_hash=info.known_hash,
         path=download_path,
-        fname=filename,
-        progressbar=True,
+        fname=info.filename,
+        downloader=downloader,
     )
     try:
         # Try the secure endpoint first; fall back to http for internal
         # networks that can only reach GIN over plain http.
-        model_path = pooch.retrieve(url=url, **retrieve_kwargs)
+        retrieved_path = pooch.retrieve(url=url, **retrieve_kwargs)
     except OSError as e:
         if "gin" in url:
-            model_path = pooch.retrieve(
+            retrieved_path = pooch.retrieve(
                 url=url.replace("https://", "http://"), **retrieve_kwargs
             )
         else:
             raise e
 
-    return Path(model_path)
+    return Path(retrieved_path)
