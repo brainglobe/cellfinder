@@ -89,10 +89,44 @@ model_type = Literal[
 ]
 
 
+def create_model_registry(
+    download_path: os.PathLike,
+    retry_if_failed: int = 3,
+) -> pooch.Pooch:
+    """
+    Create a Pooch instance configured for default cellfinder models.
+
+    Parameters
+    ----------
+    download_path : os.PathLike
+        The directory where models are downloaded.
+    retry_if_failed : int, optional
+        Number of times to retry downloading if an error occurs.
+        Defaults to 3.
+
+    Returns
+    -------
+    pooch.Pooch
+        The configured Pooch instance.
+    """
+    return pooch.create(
+        path=download_path,
+        base_url="",
+        registry={
+            v.filename: v.known_hash for v in PRETRAINED_MODELS.values()
+        },
+        urls={
+            v.filename: model_urls[k] for k, v in PRETRAINED_MODELS.items()
+        },
+        retry_if_failed=retry_if_failed,
+    )
+
+
 def download_models(
     model_name: model_type,
     download_path: os.PathLike,
     local_files_only: bool = False,
+    retry_if_failed: int = 3,
 ) -> Path:
     """
     For a given model name and download path, download the model file
@@ -107,6 +141,9 @@ def download_models(
     local_files_only : bool, optional
         If True, only use locally cached files and do not attempt to
         reach remote servers. Defaults to False.
+    retry_if_failed : int, optional
+        Number of times to retry downloading if an error occurs.
+        Defaults to 3.
 
     Returns
     -------
@@ -140,20 +177,25 @@ def download_models(
         headers["Authorization"] = f"Bearer {hf_token}"
 
     downloader = pooch.HTTPDownloader(headers=headers, progressbar=True)
-    retrieve_kwargs = dict(
-        known_hash=info.known_hash,
-        path=download_path,
-        fname=info.filename,
-        downloader=downloader,
+    registry = create_model_registry(
+        download_path, retry_if_failed=retry_if_failed
     )
+
     try:
         # Try the secure endpoint first; fall back to http for internal
         # networks that can only reach GIN over plain http.
-        retrieved_path = pooch.retrieve(url=url, **retrieve_kwargs)
+        retrieved_path = registry.fetch(
+            info.filename,
+            downloader=downloader,
+            progressbar=True,
+        )
     except OSError as e:
         if "gin" in url:
-            retrieved_path = pooch.retrieve(
-                url=url.replace("https://", "http://"), **retrieve_kwargs
+            registry.urls[info.filename] = url.replace("https://", "http://")
+            retrieved_path = registry.fetch(
+                info.filename,
+                downloader=downloader,
+                progressbar=True,
             )
         else:
             raise e

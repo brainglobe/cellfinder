@@ -44,46 +44,51 @@ def test_2d_models_registered(model_name):
     )
 
 
+def test_create_model_registry(tmp_path):
+    registry = download.create_model_registry(tmp_path, retry_if_failed=5)
+    assert registry.retry_if_failed == 5
+    assert "resnet50_single_channel.keras" in registry.registry
+    assert (
+        registry.urls["resnet50_single_channel.keras"]
+        == download.model_urls["resnet50_1ch"]
+    )
+
+
 def test_download_models_huggingface(tmp_path, mocker):
-    mock_retrieve = mocker.patch(
-        "pooch.retrieve",
+    mock_fetch = mocker.patch.object(
+        pooch.Pooch,
+        "fetch",
         return_value=str(tmp_path / "resnet50_single_channel.keras"),
     )
 
     result = download.download_models("resnet50_1ch", tmp_path)
 
-    mock_retrieve.assert_called_once()
-    assert (
-        mock_retrieve.call_args.kwargs["fname"]
-        == "resnet50_single_channel.keras"
-    )
-    assert (
-        "aa326ad87a43f5db6754897d9a8f491f98d862d7"
-        in mock_retrieve.call_args.kwargs["url"]
-    )
-    downloader = mock_retrieve.call_args.kwargs["downloader"]
+    mock_fetch.assert_called_once()
+    assert mock_fetch.call_args.args[0] == "resnet50_single_channel.keras"
+    downloader = mock_fetch.call_args.kwargs["downloader"]
     assert isinstance(downloader, pooch.HTTPDownloader)
     assert result == tmp_path / "resnet50_single_channel.keras"
 
 
 def test_download_models_huggingface_with_token(tmp_path, mocker, monkeypatch):
     monkeypatch.setenv("HF_TOKEN", "hf_test_secret_token")
-    mock_retrieve = mocker.patch(
-        "pooch.retrieve",
+    mock_fetch = mocker.patch.object(
+        pooch.Pooch,
+        "fetch",
         return_value=str(tmp_path / "resnet50_single_channel.keras"),
     )
 
     download.download_models("resnet50_1ch", tmp_path)
 
-    mock_retrieve.assert_called_once()
-    downloader = mock_retrieve.call_args.kwargs["downloader"]
+    mock_fetch.assert_called_once()
+    downloader = mock_fetch.call_args.kwargs["downloader"]
     assert downloader.kwargs.get("headers", {}).get("Authorization") == (
         "Bearer hf_test_secret_token"
     )
 
 
 def test_download_models_local_files_only_exists(tmp_path, mocker):
-    mock_retrieve = mocker.patch("pooch.retrieve")
+    mock_fetch = mocker.patch.object(pooch.Pooch, "fetch")
     local_file = tmp_path / "resnet50_single_channel.keras"
     local_file.write_text("dummy")
 
@@ -91,7 +96,7 @@ def test_download_models_local_files_only_exists(tmp_path, mocker):
         "resnet50_1ch", tmp_path, local_files_only=True
     )
 
-    mock_retrieve.assert_not_called()
+    mock_fetch.assert_not_called()
     assert result == local_file
 
 
@@ -105,18 +110,16 @@ def test_download_models_local_files_only_missing_raises(tmp_path):
 
 
 def test_download_models_gin(tmp_path, mocker):
-    mock_retrieve = mocker.patch(
-        "pooch.retrieve",
+    mock_fetch = mocker.patch.object(
+        pooch.Pooch,
+        "fetch",
         return_value=str(tmp_path / "resnet50_tv.h5"),
     )
 
     result = download.download_models("resnet50_tv", tmp_path)
 
-    mock_retrieve.assert_called_once()
-    assert (
-        mock_retrieve.call_args.kwargs["fname"]
-        == download.model_filenames["resnet50_tv"]
-    )
+    mock_fetch.assert_called_once()
+    assert mock_fetch.call_args.args[0] == "resnet50_tv.h5"
     assert result == tmp_path / "resnet50_tv.h5"
 
 
