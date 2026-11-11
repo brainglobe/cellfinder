@@ -28,7 +28,8 @@ def run_worker_test(
         DataInputs(signal_array=signal, background_array=background),
         DetectionInputs(skip_detection=skip_detection),
         ClassificationInputs(
-            skip_classification=skip_classification, trained_model=None
+            skip_classification=skip_classification,
+            trained_model=None,
         ),
         MiscInputs(start_plane=0, end_plane=-1),
     )

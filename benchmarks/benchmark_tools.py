@@ -18,7 +18,7 @@ def get_test_data_path(path):
     """
     registry = pooch.create(
         path=pooch.os_cache("brainglobe_test_data"),
-        base_url="https://gin.g-node.org/BrainGlobe/test-data/raw/master/cellfinder/",
+        base_url="https://gin.swc.ucl.ac.uk/brainglobe/test-data/raw/main/cellfinder/",
         env="BRAINGLOBE_TEST_DATA_DIR",
     )
 

@@ -1,6 +1,6 @@
-from functools import wraps
+from functools import partial, wraps
 from random import getrandbits, uniform
-from typing import Callable, Optional, Type
+from typing import Any, Callable, Optional, Sequence, Type
 
 import numpy as np
 import torch
@@ -19,6 +19,14 @@ def inference_wrapper(func):
             return func(*args, **kwargs)
 
     return inner_function
+
+
+def validate_dimensions(dimensions: int) -> None:
+    """
+    Raise `ValueError` unless `dimensions` is 2 or 3.
+    """
+    if dimensions not in (2, 3):
+        raise ValueError(f"dimensions must be 2 or 3, got {dimensions!r}")
 
 
 def get_max_possible_int_value(dtype: Type[np.number]) -> int:
@@ -56,6 +64,34 @@ def get_min_possible_int_value(dtype: Type[np.number]) -> int:
     raise ValueError("datatype must be of integer or floating data type")
 
 
+def _unchanged(data: np.ndarray) -> np.ndarray:
+    return np.asarray(data)
+
+
+def _float_to_float_scale_down(
+    data: np.ndarray,
+    in_abs_max: float,
+    out_abs_max: float,
+    dest_dtype: np.dtype,
+) -> np.ndarray:
+    return ((np.asarray(data) / in_abs_max) * out_abs_max).astype(dest_dtype)
+
+
+def _int_to_float_scale_down(
+    data: np.ndarray,
+    in_abs_max: float,
+    out_abs_max: float,
+    dest_dtype: np.dtype,
+) -> np.ndarray:
+    # data must fit in float64
+    data = np.asarray(data).astype(np.float64)
+    return ((data / in_abs_max) * out_abs_max).astype(dest_dtype)
+
+
+def _to_float_unscaled(data: np.ndarray, dest_dtype: np.dtype) -> np.ndarray:
+    return np.asarray(data).astype(dest_dtype)
+
+
 def get_data_converter(
     src_dtype: Type[np.number], dest_dtype: Type[np.floating]
 ) -> Callable[[np.ndarray], np.ndarray]:
@@ -82,6 +118,8 @@ def get_data_converter(
         A function that takes a single input data parameter and returns
         the converted data.
     """
+    # converter functions must be global functions so they can be serialized
+    # and passed to other processes
     if not np.issubdtype(dest_dtype, np.float32) and not np.issubdtype(
         dest_dtype, np.float64
     ):
@@ -97,28 +135,12 @@ def get_data_converter(
     in_abs_max = max(in_max, abs(in_min))
     out_abs_max = max(out_max, abs(out_min))
 
-    def unchanged(data: np.ndarray) -> np.ndarray:
-        return np.asarray(data)
-
-    def float_to_float_scale_down(data: np.ndarray) -> np.ndarray:
-        return ((np.asarray(data) / in_abs_max) * out_abs_max).astype(
-            dest_dtype
-        )
-
-    def int_to_float_scale_down(data: np.ndarray) -> np.ndarray:
-        # data must fit in float64
-        data = np.asarray(data).astype(np.float64)
-        return ((data / in_abs_max) * out_abs_max).astype(dest_dtype)
-
-    def to_float_unscaled(data: np.ndarray) -> np.ndarray:
-        return np.asarray(data).astype(dest_dtype)
-
     if src_dtype == dest_dtype:
-        return unchanged
+        return _unchanged
 
     # out can hold the largest in values - just convert to float
     if out_min <= in_min < in_max <= out_max:
-        return to_float_unscaled
+        return partial(_to_float_unscaled, dest_dtype=dest_dtype)
 
     # need to scale down before converting to float
     if np.issubdtype(src_dtype, np.integer):
@@ -131,11 +153,21 @@ def get_data_converter(
                 f"The input datatype {src_dtype} cannot fit in a "
                 f"64-bit float"
             )
-        return int_to_float_scale_down
+        return partial(
+            _int_to_float_scale_down,
+            in_abs_max=in_abs_max,
+            out_abs_max=out_abs_max,
+            dest_dtype=dest_dtype,
+        )
 
     # for float input, however big it is, we can always scale it down in the
     # input data type before changing type
-    return float_to_float_scale_down
+    return partial(
+        _float_to_float_scale_down,
+        in_abs_max=in_abs_max,
+        out_abs_max=out_abs_max,
+        dest_dtype=dest_dtype,
+    )
 
 
 def union(a, b):
@@ -216,30 +248,6 @@ def get_number_of_bins_nd(array_size, binning):
     return tuple(bins)
 
 
-def interchange_np_fiji_coordinates(tuple_in):
-    """
-    Swaps the first and second element of a tuple to swap between the numpy
-    convention (vertical is first) and FIJI convention (horizontal is first)
-    :param tuple_in: A 2+ element tuple
-    :return: Same tuple with element 0 and 1 interchanged
-    """
-    tmp_list = list(tuple_in)
-    tmp_list = swap_elements_list(tmp_list, 0, 1)
-    return tuple(tmp_list)
-
-
-def swap_elements_list(list_in, swap_a, swap_b):
-    """
-    Swap two elements in a list
-    :param list_in: A list
-    :param swap_a: Index of first element to swap
-    :param swap_b: Index of second element to swap
-    :return: List with swap_a and swap_b exchanged
-    """
-    list_in[swap_a], list_in[swap_b] = list_in[swap_b], list_in[swap_a]
-    return list_in
-
-
 def is_any_list_overlap(list_a, list_b):
     """
     Is there any overlap between two lists
@@ -293,3 +301,77 @@ def all_elements_equal(x) -> bool:
     :return: True if all elements are equal, False otherwise.
     """
     return len(set(x)) <= 1
+
+
+def get_axis_reordering(
+    in_order: Sequence[Any], out_order: Sequence[Any]
+) -> list[int]:
+    """
+    Helps re-order a tensor, given an arbitrary labeled input and output axis
+    ordering.
+
+    E.g. if the original ordering of 3d data was (a, b, c) and we want
+    (b, a, c)::
+
+        reordering = get_axis_reordering(("a", "b", "c"), ("b", "a", "c"))
+        reordered = torch.permute(data, reordering)
+
+    :param in_order: A sequence of named axes. They could be arbitrary values.
+    :param out_order: A re-ordered sequence of in_order with the desired order.
+    :return: A list of indices that can be passed to `torch.permute` to reorder
+        the data tensor.
+    """
+    indices = []
+    for value in out_order:
+        indices.append(in_order.index(value))
+    return indices
+
+
+def deprecate_positional_args(func):
+    """
+    Decorator to deprecate positional arguments and map them to
+    keyword arguments. Raises a DeprecationWarning if any positional
+    arguments are used.
+    """
+    import inspect
+    import warnings
+
+    sig = inspect.signature(func)
+    param_names = [
+        name
+        for name, param in sig.parameters.items()
+        if param.kind
+        not in (
+            inspect.Parameter.VAR_POSITIONAL,
+            inspect.Parameter.VAR_KEYWORD,
+        )
+    ]
+
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        if args:
+            warnings.warn(
+                f"Calling {func.__name__} with positional arguments "
+                "is deprecated and will be removed in early 2027. "
+                "Please use keyword arguments.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+            for i, arg in enumerate(args):
+                if i < len(param_names):
+                    if param_names[i] in kwargs:
+                        raise TypeError(
+                            f"{func.__name__} got multiple values "
+                            f"for argument '{param_names[i]}'"
+                        )
+                    kwargs[param_names[i]] = arg
+                else:
+                    raise TypeError(
+                        f"{func.__name__} takes {len(param_names)} "
+                        f"positional arguments but {len(args)} were given"
+                    )
+
+            return func(**kwargs)
+        return func(**kwargs)
+
+    return wrapper

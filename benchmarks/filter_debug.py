@@ -57,7 +57,7 @@ import torch
 import tqdm
 from brainglobe_utils.cells.cells import Cell
 from brainglobe_utils.IO.cells import save_cells
-from brainglobe_utils.IO.image.load import read_with_dask
+from brainglobe_utils.IO.image.load import read_z_stack
 
 from cellfinder.core.detect.filters.plane import TileProcessor
 from cellfinder.core.detect.filters.setup_filters import DetectionSettings
@@ -72,7 +72,7 @@ from cellfinder.core.detect.filters.volume.structure_splitting import (
 
 
 def setup_filter(
-    signal_path: Path,  # expect to load z, y, x
+    signal_path: Path | np.ndarray,  # expect to load z, y, x
     batch_size: int = 1,
     torch_device="cpu",
     dtype=np.uint16,
@@ -87,14 +87,18 @@ def setup_filter(
     n_free_cpus: int = 2,
     log_sigma_size: float = 0.2,
     n_sds_above_mean_thresh: float = 10,
-    split_ball_xy_size: int = 3,
-    split_ball_z_size: int = 3,
+    detect_centre_of_intensity: bool = False,
+    split_ball_xy_size: int = 6,
+    split_ball_z_size: int = 15,
     split_ball_overlap_fraction: float = 0.8,
     n_splitting_iter: int = 10,
     start_plane: int = 0,
     end_plane: int = 0,
 ):
-    signal_array = read_with_dask(str(signal_path))
+    signal_array = signal_path
+    if not isinstance(signal_path, np.ndarray):
+        signal_array = read_z_stack(str(signal_path))
+
     if end_plane <= 0:
         end_plane = len(signal_array)
     signal_array = signal_array[start_plane:end_plane, :, :]
@@ -123,6 +127,7 @@ def setup_filter(
         batch_size=batch_size,
         torch_device=torch_device,
         n_splitting_iter=n_splitting_iter,
+        detect_centre_of_intensity=detect_centre_of_intensity,
     )
 
     kwargs = dataclasses.asdict(settings)
@@ -134,7 +139,7 @@ def setup_filter(
     splitting_settings = DetectionSettings(**kwargs)
 
     signal_array = settings.filter_data_converter_func(signal_array)
-    signal_array = torch.from_numpy(signal_array).to(torch_device)
+    signal_array_torch = torch.from_numpy(signal_array).to(torch_device)
 
     tile_processor = TileProcessor(
         plane_shape=shape[1:],
@@ -178,6 +183,7 @@ def setup_filter(
         ball_filter,
         cell_detector,
         signal_array,
+        signal_array_torch,
         batch_size,
     )
 
@@ -244,9 +250,14 @@ def dump_structures(
         writer = csv.writer(fh, delimiter=",")
         writer.writerow(["id", "x", "y", "z", "volume", "volume_type"])
 
+        s_intensities = cell_detector.get_structures_intensities()
         for cell_id, cell_points in cell_detector.get_structures().items():
+            intensity = None
+            if settings.detect_centre_of_intensity:
+                intensity = s_intensities[cell_id]
+
             vol = len(cell_points)
-            x, y, z = get_structure_centre(cell_points)
+            x, y, z = get_structure_centre(cell_points, intensity)
 
             if vol < max_vol:
                 tp = "maybe_cell"
@@ -270,7 +281,9 @@ def dump_structures(
                     struct_type_split[p[2], p[1], p[0]] = color
 
             if tp == "needs_split":
-                centers = split_cells(cell_points, settings=splitting_settings)
+                centers = split_cells(
+                    cell_points, splitting_settings, intensity
+                )
                 for x, y, z in centers:
                     x, y, z = map(int, [x, y, z])
                     if any(v < r1 for v in [x, y, z]):
@@ -347,6 +360,7 @@ def run_filter(
     tile_processor: TileProcessor,
     ball_filter: BallFilter,
     cell_detector: CellDetector,
+    signal_array_np,
     signal_array,
     batch_size,
 ):
@@ -358,6 +372,7 @@ def run_filter(
 
     for i in tqdm.tqdm(range(0, len(signal_array), batch_size)):
         batch = signal_array[i : i + batch_size]
+        batch_np = signal_array_np[i : i + batch_size]
         save_tiffs(output_root, "input", i, batch, n)
 
         batch_clipped = torch.clone(batch)
@@ -373,10 +388,11 @@ def run_filter(
         save_tiffs(output_root, "inside_brain", i, inside_brain_tiles, n)
         save_tiffs(output_root, "filtered_2d", i, filtered_2d, n)
 
-        ball_filter.append(filtered_2d, inside_brain_tiles)
+        ball_filter.append(filtered_2d, inside_brain_tiles, batch_np)
         if ball_filter.ready:
             ball_filter.walk()
             middle_planes = ball_filter.get_processed_planes()
+            raw_planes = ball_filter.get_raw_planes()
             buff = middle_planes.copy()
             buff[buff != settings.soma_centre_value] = 0
             save_tiffs(
@@ -389,11 +405,11 @@ def run_filter(
 
             detection_middle_planes = detection_converter(middle_planes)
 
-            for k, (plane, detection_plane) in enumerate(
-                zip(middle_planes, detection_middle_planes)
+            for k, (plane, raw_plane, detection_plane) in enumerate(
+                zip(middle_planes, raw_planes, detection_middle_planes)
             ):
                 previous_plane = cell_detector.process(
-                    detection_plane, previous_plane
+                    detection_plane, previous_plane, raw_plane
                 )
                 save_tiffs(
                     output_root,
@@ -429,6 +445,7 @@ if __name__ == "__main__":
             ball_overlap_fraction=0.8,
             log_sigma_size=0.35,
             n_sds_above_mean_thresh=1,
+            detect_centre_of_intensity=False,
             soma_spread_factor=4,
             max_cluster_size=10000,
             voxel_sizes=(4, 2.03, 2.03),

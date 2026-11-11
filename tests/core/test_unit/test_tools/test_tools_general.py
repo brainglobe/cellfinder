@@ -1,5 +1,7 @@
 import numpy as np
 import pytest
+import torch
+from pytest_mock.plugin import MockerFixture
 
 import cellfinder.core.tools.tools as tools
 
@@ -232,6 +234,7 @@ def test_check_unique_list():
 
 def test_common_member():
     assert (True, [10, 30]) == tools.common_member(a, b)
+    assert (False, []) == tools.common_member(a, [])
 
 
 def test_get_number_of_bins_nd():
@@ -245,16 +248,93 @@ def test_get_number_of_bins_nd():
         tools.get_number_of_bins_nd([200, 300, 400], 10)
 
 
-def test_interchange_np_fiji_coordinates():
-    tuple_in = (100, 200, 300)
-    assert tools.interchange_np_fiji_coordinates(tuple_in) == (200, 100, 300)
-
-
-def test_swap_elements_list():
-    list_in = [1, 2, 3, 4]
-    assert tools.swap_elements_list(list_in, 1, 2) == [1, 3, 2, 4]
-
-
 def test_is_any_list_overlap():
     assert tools.is_any_list_overlap(a, b)
     assert not tools.is_any_list_overlap(a, [2, "b", (1, 2, 3)])
+
+
+def test_random_bool():
+    assert tools.random_bool() in (0, 1)
+    assert tools.random_bool(0.5) in (True, False)
+
+
+@pytest.mark.parametrize("ret_val,sign_val", [(1, 1), (0, -1)])
+def test_random_sign_false(mocker: MockerFixture, ret_val, sign_val):
+    def ret():
+        return ret_val
+
+    mocker.patch("cellfinder.core.tools.tools.random_bool", new=ret)
+    assert tools.random_sign() == sign_val
+
+
+def test_random_probability():
+    assert 0 <= tools.random_probability() <= 1
+
+
+def test_all_elements_equal():
+    assert not tools.all_elements_equal([1, 1, 2])
+    assert tools.all_elements_equal([1, 1])
+    assert tools.all_elements_equal([])
+
+
+def test_get_axis_reordering():
+    x = torch.arange(10)
+    y = torch.arange(10) / 10 + 2
+    z = torch.arange(10) + 33
+
+    data = x[:, None, None] * y[None, :, None] * z[None, None, :]
+
+    reordering = tools.get_axis_reordering(("x", "y", "z"), ("y", "x", "z"))
+    reordered = torch.permute(data, reordering)
+
+    manual_reordered = y[:, None, None] * x[None, :, None] * z[None, None, :]
+
+    assert torch.allclose(reordered, manual_reordered)
+    # check data is not already symmetric in x, y
+    assert data[0, 1, 5] != data[1, 0, 5]
+
+
+def test_deprecate_positional_args():
+    import warnings
+
+    @tools.deprecate_positional_args
+    def sample_func(*, a, b=2):
+        return a + b
+
+    # 1. Keyword arguments only (No warning)
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always")
+        assert sample_func(a=5) == 7
+        assert len(w) == 0
+
+    # 2. Positional arguments (Warning)
+    with pytest.warns(
+        DeprecationWarning,
+        match="Calling sample_func with positional arguments is deprecated",
+    ):
+        assert sample_func(5, 3) == 8
+
+    # 3. Both positional and keyword for same argument (TypeError)
+    with pytest.raises(
+        TypeError, match="sample_func got multiple values for argument 'a'"
+    ):
+        sample_func(5, a=10)
+
+    # 4. Too many positional arguments (TypeError)
+    with pytest.raises(
+        TypeError,
+        match="sample_func takes 2 positional arguments but 3 were given",
+    ):
+        sample_func(1, 2, 3)
+
+
+@pytest.mark.parametrize("dimensions", [2, 3])
+def test_validate_dimensions_ok(dimensions):
+    # should not raise
+    tools.validate_dimensions(dimensions)
+
+
+@pytest.mark.parametrize("dimensions", [0, 1, 4, "2"])
+def test_validate_dimensions_bad(dimensions):
+    with pytest.raises(ValueError):
+        tools.validate_dimensions(dimensions)

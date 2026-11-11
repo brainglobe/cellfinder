@@ -1,6 +1,24 @@
 import pooch
 
 
+def fetch_from_registry(registry: pooch.Pooch, name: str, **kwargs):
+    """
+    Fetch ``name`` from ``registry``, trying the secure endpoint first.
+
+    If the https download fails with an ``OSError``, retry once against the
+    http mirror.
+    """
+    try:
+        return registry.fetch(name, **kwargs)
+    except OSError:
+        original_url = registry.base_url
+        registry.base_url = original_url.replace("https://", "http://")
+        try:
+            return registry.fetch(name, **kwargs)
+        finally:
+            registry.base_url = original_url
+
+
 def fetch_pooch_directory(
     registry: pooch.Pooch,
     directory_name: str,
@@ -35,7 +53,8 @@ def fetch_pooch_directory(
         )
 
     for name in names:
-        registry.fetch(
+        fetch_from_registry(
+            registry,
             name,
             processor=processor,
             downloader=downloader,
