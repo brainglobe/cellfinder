@@ -210,6 +210,37 @@ def test_data_dimension_error(ndim):
         )
 
 
+@pytest.mark.parametrize(
+    "kwargs,message",
+    [
+        ({"voxel_sizes": (5, 0, 2)}, "voxel_sizes must contain positive"),
+        ({"voxel_sizes": ("5", "-2", "2")}, "voxel_sizes must contain"),
+        ({"soma_diameter": 0}, "soma_diameter must be positive"),
+        ({"ball_xy_size": 0}, "ball filter sizes must be positive"),
+        ({"ball_z_size": -1}, "ball filter sizes must be positive"),
+        ({"ball_overlap_fraction": 0}, "ball_overlap_fraction must be"),
+        ({"ball_overlap_fraction": 1.5}, "ball_overlap_fraction must be"),
+    ],
+)
+def test_detection_invalid_parameters(kwargs, message):
+    signal_array = np.zeros((2, 3, 4), dtype=np.uint16)
+
+    with pytest.raises(ValueError, match=message):
+        detect_main(signal_array=signal_array, **kwargs)
+
+
+def test_detection_accepts_str_voxel_sizes():
+    # brainmapper passes voxel sizes in as str, they should still validate
+    signal_array = np.zeros((2, 3, 4), dtype=np.uint16)
+
+    with pytest.raises(ValueError, match="soma_diameter must be positive"):
+        detect_main(
+            signal_array=signal_array,
+            voxel_sizes=("5", "2", "2"),
+            soma_diameter=0,
+        )
+
+
 @pytest.mark.parametrize("device", ["cuda", "cpu"])
 @pytest.mark.parametrize(
     "dtype",

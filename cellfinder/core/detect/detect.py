@@ -31,6 +31,48 @@ from cellfinder.core.tools.tools import (
 )
 
 
+def _validate_detection_inputs(
+    signal_array: types.array,
+    voxel_sizes: Tuple[float, float, float],
+    soma_diameter: float,
+    ball_xy_size: float,
+    ball_z_size: float,
+    ball_overlap_fraction: float,
+) -> None:
+    """
+    Check the detection inputs before running the pipeline.
+
+    Raises
+    ------
+    TypeError
+        If `signal_array` is not numeric.
+    ValueError
+        If `signal_array` is not 3D, or a size parameter is not positive,
+        or `ball_overlap_fraction` is not in (0, 1].
+    """
+    if not np.issubdtype(signal_array.dtype, np.number):
+        raise TypeError(
+            "signal_array must be a numpy datatype, but has datatype "
+            f"{signal_array.dtype}"
+        )
+
+    if signal_array.ndim != 3:
+        raise ValueError("Input data must be 3D")
+
+    # brainmapper can pass voxel sizes in as str
+    if any(float(v) <= 0 for v in voxel_sizes):
+        raise ValueError("voxel_sizes must contain positive values")
+
+    if soma_diameter <= 0:
+        raise ValueError("soma_diameter must be positive")
+
+    if ball_xy_size <= 0 or ball_z_size <= 0:
+        raise ValueError("ball filter sizes must be positive")
+
+    if not 0 < ball_overlap_fraction <= 1:
+        raise ValueError("ball_overlap_fraction must be between 0 and 1")
+
+
 @deprecate_positional_args
 @inference_wrapper
 def main(
@@ -181,14 +223,14 @@ def main(
         else:
             batch_size = 1
 
-    if not np.issubdtype(signal_array.dtype, np.number):
-        raise TypeError(
-            "signal_array must be a numpy datatype, but has datatype "
-            f"{signal_array.dtype}"
-        )
-
-    if signal_array.ndim != 3:
-        raise ValueError("Input data must be 3D")
+    _validate_detection_inputs(
+        signal_array,
+        voxel_sizes,
+        soma_diameter,
+        ball_xy_size,
+        ball_z_size,
+        ball_overlap_fraction,
+    )
 
     if end_plane < 0:
         end_plane = len(signal_array)
