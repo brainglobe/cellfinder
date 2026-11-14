@@ -1,7 +1,9 @@
+import gc
 from unittest.mock import MagicMock
 
 import numpy as np
 import pytest
+import torch
 from brainglobe_utils.cells.cells import Cell
 
 from cellfinder.core.classify import classify
@@ -168,3 +170,36 @@ def test_classify_channel_mismatch_raises(synthetic_single_spot, mocker):
             None,
             "50",
         )
+
+
+def test_run_inference_frees_reference_cycles():
+    """_run_inference frees any tensor after every batch,
+    so they don't pile up."""
+    model = build_model(shape=(50, 50, 20, 2), network_depth="18-layer")
+    model.trainable = False
+    batches = [torch.rand(2, 50, 50, 20, 2) for _ in range(3)]
+    loader = MagicMock()
+    loader.__iter__.return_value = iter(batches)
+    loader.sampler = batches
+
+    gc.collect()
+    gc.disable()
+    try:
+        outputs = classify._run_inference(
+            model=model,
+            data_loader=loader,
+            dataset=MagicMock(),
+            workers=0,
+            squeeze_z_axis=None,
+            callback=None,
+        )
+        gc.set_debug(gc.DEBUG_SAVEALL)
+        gc.collect()
+        left = [o for o in gc.garbage if isinstance(o, torch.Tensor)]
+    finally:
+        gc.set_debug(0)
+        gc.garbage.clear()
+        gc.enable()
+
+    assert outputs.shape == (6, 2)
+    assert not left

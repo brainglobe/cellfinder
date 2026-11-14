@@ -1,3 +1,4 @@
+import gc
 import os
 from copy import deepcopy
 from datetime import datetime
@@ -122,6 +123,14 @@ def _run_inference(
             # end (possibly on GPU). This causes resources issues for very
             # heavy loads. So instead immediately move it to cpu/numpy
             outputs.append(output.cpu().numpy())
+            del output
+            # Force GC to release the layer's tensors held by Keras
+            # We only release gen 0 as the cycle was just created by the
+            # recent pass
+            # This is strictly needed while keras-team/keras/issues/23110
+            # bug is pending, but this GC will add a few ms only if no big
+            # collection is needed, so it's safe to keep as an extra safeward
+            gc.collect(0)
             if callback is not None:
                 callback(step)
     finally:
